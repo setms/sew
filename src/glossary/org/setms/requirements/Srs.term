@@ -4,5 +4,5 @@ term Srs {
     display     = "Software Requirements Specification"
     acronym     = "SRS
     description = "Collection of functional and quality attribute requirements"
-    seeAlso     = [ FunctionalRequirement, QualityAttributeRequirements ]
+    seeAlso     = [ FunctionalRequirement, QualityAttributeRequirement ]
 }
