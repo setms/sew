@@ -1,0 +1,9 @@
+package org.setms.requirements
+
+term userreq {
+    display     = "User requirement"
+    description = """
+        User requirements describe goals or tasks the users must be able to perform with the product to realize the
+        business requirements."""
+    seeAlso     = [ bizreq ]
+}

@@ -1,0 +1,9 @@
+package org.setms.requirements
+
+term bizreq {
+    display     = "Business requirement"
+    description = """
+        Business requirements describe why the organization is developing a system; the benefits they hope to achieve
+        in the form of a project vision, high-level business objectives, and success metrics."""
+    seeAlso     = [ bizreq ]
+}
