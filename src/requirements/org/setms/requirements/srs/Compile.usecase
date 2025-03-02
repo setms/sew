@@ -12,10 +12,10 @@ usecase Compile {
 
 scenario addFunctionalRequirement {
     steps = [
-        Person(Analyst),
-        Command(AddFunctionalRequirement),
-        Hotspot(System),
-        Event(RequirementAdded),
-        View(SRS)
+        Person("Analyst"),
+        Command("AddFunctionalRequirement"),
+        Hotspot("System"),
+        Event("RequirementAdded"),
+        View("SRS")
     ]
 }
