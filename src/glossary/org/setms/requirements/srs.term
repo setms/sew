@@ -1,8 +1,0 @@
-package org.setms.requirements
-
-term srs {
-    display     = "Software Requirements Specficiation"
-    acronym     = "SRS
-    description = "Collection of functional and quality attribute requirements"
-    seeAlso     = [ funcrec, qar ]
-}

@@ -1,9 +1,9 @@
 package org.setms.requirements
 
-term funcreq {
+term FunctionalRequirement {
     display     = "Functional requirement"
     description = """
         Functional requirements specify the behaviors the system must exhibit under specific conditions.
         They describe what the developers must implement to enable the user requirements."""
-    seeAlso     = [ srs, userreq ]
+    seeAlso     = [ Srs, UserRequirement ]
 }

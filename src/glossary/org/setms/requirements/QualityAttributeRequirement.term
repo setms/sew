@@ -1,6 +1,6 @@
 package org.setms.requirements
 
-term qar {
+term QualityAttributeRequirement {
     display     = "Quality attribute requirement"
     description = """
         Quality attribute requirements describe the product’s characteristics in various dimensions that are important
