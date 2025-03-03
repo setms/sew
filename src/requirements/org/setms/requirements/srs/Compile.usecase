@@ -7,11 +7,11 @@ usecase Compile {
         org.setms.requirements.FunctionalRequirement,
         org.setms.requirements.QualityAttributeRequirement
     ]
-    scenarios = [ addFunctionalRequirement ]
 }
 
 scenario addFunctionalRequirement {
-    steps = [
+    description = "An analyst adds a functional requirement to the SRS"
+    steps       = [
         Person("Analyst"),
         Command("AddFunctionalRequirement"),
         Hotspot("System"),
