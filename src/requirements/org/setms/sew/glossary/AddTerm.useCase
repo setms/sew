@@ -1,8 +1,9 @@
 package org.setms.sew.glossary
 
-usecase AddTerm {
+useCase AddTerm {
     display   = "Add a term to the glossary."
     terms     = [ Term, Glossary ]
+    captures  = [ MaintainGlossary ]
 }
 
 scenario AddTerm {
