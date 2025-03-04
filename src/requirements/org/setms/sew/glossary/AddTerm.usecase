@@ -12,7 +12,7 @@ scenario AddTerm {
         Person("Analyst"),
         Command("AddTermToGlossary"),
         Hotspot("System"),
-        Event("TermAddedToGlossary"),
+        Event("TermAdded"),
         ReadModel("Glossary")
     ]
 }
