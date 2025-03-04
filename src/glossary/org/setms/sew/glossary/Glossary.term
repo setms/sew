@@ -1,0 +1,7 @@
+package org.setms.sew.glossary
+
+term Glossary {
+    display     = "Glossary"
+    description = "A collection of specialized terms with their meanings."
+    seeAlso     = [ Term ]
+}

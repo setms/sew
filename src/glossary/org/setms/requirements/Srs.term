@@ -1,8 +1,0 @@
-package org.setms.requirements
-
-term Srs {
-    display     = "Software Requirements Specification"
-    acronym     = "SRS
-    description = "Collection of functional and quality attribute requirements"
-    seeAlso     = [ FunctionalRequirement, QualityAttributeRequirement ]
-}
