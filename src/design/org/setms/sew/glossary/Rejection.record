@@ -1,0 +1,9 @@
+package org.setms.sew.glossary
+
+record Rejection {
+}
+
+field Reason {
+    type     = Text
+    required = true
+}

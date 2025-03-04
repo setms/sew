@@ -3,12 +3,5 @@ package org.setms.sew.glossary
 event AddTermToGlossary {
     type          = EventCarriedStateTransfer
     explicitQueue = false
-}
-
-field Phrase {
-    type = Text
-}
-
-field Definition {
-    type = Text
+    payload       = Term
 }

@@ -1,10 +1,7 @@
 package org.setms.sew.glossary
 
 event TermAdditionRejected {
-    type          = Notification
+    type          = EventCarriedStateTransfer
     explicitQueue = false
-}
-
-field Reason {
-    type = Text
+    payload       = Rejection
 }

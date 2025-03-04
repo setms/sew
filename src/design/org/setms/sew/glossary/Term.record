@@ -1,0 +1,14 @@
+package org.setms.sew.glossary
+
+record Term {
+}
+
+field Phrase {
+    type     = Text
+    required = true
+}
+
+field Definition {
+    type     = Text
+    required = true
+}

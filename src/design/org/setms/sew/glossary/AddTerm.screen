@@ -1,0 +1,6 @@
+package org.setms.sew.glossary
+
+screen Glossary {
+    type    = InputDialog
+    command = AddTermToGlossary
+}

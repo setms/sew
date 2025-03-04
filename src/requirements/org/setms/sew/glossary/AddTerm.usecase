@@ -11,7 +11,7 @@ scenario AddTerm {
         ReadModel("Glossary"),
         Person("Analyst"),
         Command("AddTermToGlossary"),
-        Hotspot("System"),
+        Aggregate("Glossary"),
         Event("TermAdded"),
         ReadModel("Glossary")
     ]
@@ -23,7 +23,7 @@ scenario RejectAdditionOfExistingTerm {
         ReadModel("Glossary"),
         Person("Analyst"),
         Command("AddTermToGlossary"),
-        Hotspot("System"),
+        Aggregate("Glossary"),
         Event("TermAdditionRejected")
     ]
 }
