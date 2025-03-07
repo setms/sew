@@ -1,0 +1,4 @@
+stack Backend {
+    programmingLanguage = Java
+    frameworks          = [ SpringBoot ]
+}
