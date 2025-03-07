@@ -11,7 +11,7 @@ scenario AddTerm {
     steps       = [
         ReadModel("Glossary"),
         Person("Analyst"),
-        Command("AddTermToGlossary"),
+        Command("AddTerm"),
         Aggregate("Glossary"),
         Event("TermAdded"),
         ReadModel("Glossary")
@@ -23,7 +23,7 @@ scenario RejectAdditionOfExistingTerm {
     steps       = [
         ReadModel("Glossary"),
         Person("Analyst"),
-        Command("AddTermToGlossary"),
+        Command("AddTerm"),
         Aggregate("Glossary"),
         Event("TermAdditionRejected")
     ]
