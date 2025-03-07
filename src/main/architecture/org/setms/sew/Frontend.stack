@@ -1,5 +1,0 @@
-stack Frontend {
-    type                = ServerSideRendering
-    programmingLanguage = Java
-    frameworks          = [ Thymeleaf ]
-}

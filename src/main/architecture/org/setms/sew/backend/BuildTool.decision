@@ -1,0 +1,6 @@
+package Backend
+
+decision BuildTool {
+    choice    = Gradle
+    rationale = "Most flexible tool for Java"
+}

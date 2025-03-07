@@ -1,0 +1,6 @@
+package Frontend
+
+decision TemplateEngine {
+    choice    = ThymeLeaf
+    rationale = "Most common for Spring Boot"
+}
