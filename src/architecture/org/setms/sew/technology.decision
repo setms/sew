@@ -1,0 +1,10 @@
+technologyStack {
+    programmingLanguage = Java
+    framework           = SpringBoot
+    packaging           = Docker
+    runtime             = publicCloud
+    cloudVendor         = Google
+    deployment          = Kubernetes
+    databases           = [ Postgresql ]
+    messageBroker       = PubSub
+}
