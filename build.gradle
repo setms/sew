@@ -1,15 +1,18 @@
 plugins {
     id 'java'
+    alias(libs.plugins.spring.boot)
 }
+
+apply plugin: 'io.spring.dependency-management'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation libs.junit.jupiter
+    implementation libs.bundles.spring
 
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation libs.bundles.spring.test
 }
 
 java {

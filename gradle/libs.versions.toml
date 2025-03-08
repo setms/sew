@@ -4,7 +4,18 @@
 [versions]
 guava = "33.2.1-jre"
 junit-jupiter = "5.10.3"
+spring-boot = "3.4.3"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
+spring-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+
+[bundles]
+spring = [ "spring-web", "spring-thymeleaf" ]
+spring-test = [ "spring-test" ]
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

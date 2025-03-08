@@ -2,5 +2,5 @@ package Backend
 
 decision Framework {
     choice    = SpringBoot
-    rationale = "Powerful, large adoption"
+    rationale = "Powerful framework with large adoption"
 }
