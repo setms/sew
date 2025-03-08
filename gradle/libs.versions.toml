@@ -9,10 +9,11 @@ spring-boot-plugin = "3.4.3"
 [libraries]
 spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
+spring-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 
 [bundles]
-spring-boot = [ "spring-web", "spring-thymeleaf" ]
+spring-boot = [ "spring-thymeleaf", "spring-validation", "spring-web" ]
 spring-test = [ "spring-test" ]
 
 [plugins]

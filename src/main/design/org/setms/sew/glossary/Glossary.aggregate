@@ -1,9 +1,8 @@
 package org.setms.sew.glossary
 
 aggregate Glossary {
-    root = Term
 }
 
-entity Term {
-    data = Term
+field Terms {
+    type = [ Term ]
 }
