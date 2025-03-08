@@ -4,3 +4,13 @@ decision Framework {
     choice    = SpringBoot
     rationale = "Powerful framework with large adoption"
 }
+
+decision Framework {
+    choice    = Lombok
+    rationale = "Make code more concise"
+}
+
+decision Framework {
+    decision  = MapStruct
+    rationale = "Make code more concise"
+}

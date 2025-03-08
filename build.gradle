@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    alias(libs.plugins.lombok)
+    alias(libs.plugins.mapstruct)
     alias(libs.plugins.spring.boot)
 }
 
@@ -10,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation libs.bundles.spring
+    implementation libs.bundles.spring.boot
 
     testImplementation libs.bundles.spring.test
 }
@@ -23,4 +25,10 @@ java {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+mapstruct {
+    defaultComponentModel = "spring"
+    defaultInjectionStrategy = "constructor"
+    unmappedSourcePolicy = "IGNORE"
 }
