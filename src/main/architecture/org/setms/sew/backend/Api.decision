@@ -1,5 +1,5 @@
 package Backend
 
 decision Api {
-    type = JsonOverHttp
+    allowedTypes = [ JsonOverHttp ]
 }
