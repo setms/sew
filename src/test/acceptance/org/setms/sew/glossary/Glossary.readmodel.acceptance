@@ -1,3 +1,0 @@
-Given Glossary is empty
-When Glossary handles TermAdded{ $Phrase, $Definition }
-Then Glossary contains Term{ $Phrase, $Definition }
