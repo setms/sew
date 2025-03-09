@@ -1,6 +1,7 @@
 package org.setms.sew.glossary
 
-screen Glossary {
-    type    = InputDialog
-    command = AddTermToGlossary
+screen AddTerm {
+    title   = "Add term to glossary"
+    type    = AddDialog
+    command = AddTerm
 }

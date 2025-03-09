@@ -1,7 +1,6 @@
 package org.setms.sew.glossary
 
-command AddTermToGlossary {
-    processing = Synchronous
+command AddTerm {
     payload    = Term
+    processing = Synchronous
 }
-

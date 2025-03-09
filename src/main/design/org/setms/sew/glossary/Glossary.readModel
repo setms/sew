@@ -1,5 +1,5 @@
 package org.setms.sew.glossary
 
-readmodel Glossary {
+readModel Glossary {
     content = Term
 }

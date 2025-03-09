@@ -1,7 +1,8 @@
 package org.setms.sew.glossary
 
 screen Glossary {
-    type    = ListView
-    content = ReadModel("Glossary")
-    add     = AddTerm
+    title      = "Glossary"
+    type       = ListView
+    content    = ReadModel("Glossary")
+    addCommand = AddTerm
 }
