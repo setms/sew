@@ -1,0 +1,5 @@
+package Backend
+
+decision Api {
+    type = JsonOverHttp
+}
