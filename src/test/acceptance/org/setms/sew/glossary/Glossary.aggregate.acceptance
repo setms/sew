@@ -1,9 +1,16 @@
+Scenario Add non-existing term
 Given Glossary is empty
 When Glossary accepts AddTerm{ $Phrase, $Definition }
 Then Glossary contains Term{ $Phrase, $Definition }
 And Glossary emits TermAdded{ $Phrase, $Definition }
 
+Scenario Ignore addition of existing term (idempotency)
 Given Glossary contains Term{ $Phrase, $Definition }
 When Glossary accepts AddTerm { $Phrase, $Definition }
 Then Glossary contains exactly once Term{ $Phrase, $Definition }
-And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase already exists." }
+
+Scenario Reject redefinition of existing term (needs update)
+Given Glossary contains Term{ $Phrase, $Definition }
+When Glossary accepts AddTerm { $Phrase, $NewDefinition }
+Then Glossary contains exactly once Term{ $Phrase, $Definition }
+And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defined as $NewDefinition." }
