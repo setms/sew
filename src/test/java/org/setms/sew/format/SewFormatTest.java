@@ -5,13 +5,14 @@ import org.setms.sew.format.sew.SewFormat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SewFormatTest {
 
   private final Format format = new SewFormat();
-  private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+  private final OutputStream output = new ByteArrayOutputStream();
 
   @Test
   void shouldSerializeStringProperties() throws IOException {
@@ -81,11 +82,11 @@ class SewFormatTest {
   @Test
   void shouldSerializeReference() throws IOException {
     assertSerialization(new RootObject("lynx", "marmot", "otter")
-        .set("prairiedog", new Reference("Razorback")), """
+        .set("panther", new Reference("Rhino")), """
         package lynx
         
         marmot otter {
-          prairiedog = Razorback
+          panther = Rhino
         }
         """);
   }
