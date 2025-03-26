@@ -5,5 +5,5 @@ userRequirement MaintainGlossary {
     description = "Maintain a glossary that defines the terms for the ubiquitous language."
     users       = [ Analyst ]
     realizes    = [ SupportUbiquitousLanguage ]
-    scope       = poc
+    scope       = mvc
 }
