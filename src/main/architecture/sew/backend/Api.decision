@@ -1,0 +1,5 @@
+package sew.backend
+
+decision Api {
+    allowedTypes = [ JsonOverHttp ]
+}

@@ -1,6 +1,0 @@
-package org.setms.sew.glossary
-
-event AddTermToGlossary {
-    type    = EventCarriedStateTransfer
-    payload = Term
-}

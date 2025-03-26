@@ -1,0 +1,9 @@
+package sew.glossary
+
+valueObject Rejection {
+}
+
+field Reason {
+    type        = Text
+    constraints = [ required ]
+}

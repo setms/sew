@@ -1,6 +1,0 @@
-package Frontend
-
-decision DesignSystem {
-    choice    = Bootstrap
-    rationale = "Good result with low effort"
-}

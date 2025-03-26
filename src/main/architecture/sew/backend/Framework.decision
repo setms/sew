@@ -1,0 +1,6 @@
+package sew.backend
+
+decision Framework {
+    choice    = SpringBoot
+    rationale = "Powerful framework with large adoption"
+}

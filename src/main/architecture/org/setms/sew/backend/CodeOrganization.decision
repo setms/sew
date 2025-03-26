@@ -1,6 +1,0 @@
-package Backend
-
-decision CodeOrganization {
-    choice    = OnionArchitecture
-    rationale = "Keep business logic separated from frameworks and external dependencies like databases"
-}

@@ -1,0 +1,6 @@
+package sew.frontend
+
+decision TemplateEngine {
+    choice    = ThymeLeaf
+    rationale = "Most common for Spring Boot"
+}

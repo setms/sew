@@ -1,0 +1,6 @@
+package sew.glossary
+
+term Term {
+    display     = "Term"
+    description = "A word or phrase that has a precise meaning in a particular context."
+}

@@ -1,6 +1,0 @@
-package Backend
-
-decision Framework {
-    choice    = SpringBoot
-    rationale = "Powerful framework with large adoption"
-}

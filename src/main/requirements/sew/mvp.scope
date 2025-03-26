@@ -1,0 +1,5 @@
+package sew
+
+scope poc {
+    businessObjective = "Validate the feasibility of an ecosystem of tools to support an opinionated methodology"
+}

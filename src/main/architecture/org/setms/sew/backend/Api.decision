@@ -1,5 +1,0 @@
-package Backend
-
-decision Api {
-    allowedTypes = [ JsonOverHttp ]
-}

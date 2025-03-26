@@ -1,0 +1,6 @@
+package sew.frontend
+
+decision DesignSystem {
+    choice    = Bootstrap
+    rationale = "Good result with low effort"
+}

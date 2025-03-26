@@ -1,0 +1,6 @@
+package sew
+
+scope mvp {
+    dependsOn         = [ poc ]
+    businessObjective = "Build the smallest application that delivers value in the direction of the vision"
+}

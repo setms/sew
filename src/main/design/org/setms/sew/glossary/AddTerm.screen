@@ -1,7 +1,0 @@
-package org.setms.sew.glossary
-
-screen AddTerm {
-    title   = "Add term to glossary"
-    type    = AddDialog
-    command = AddTerm
-}

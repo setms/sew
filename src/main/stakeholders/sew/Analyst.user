@@ -1,0 +1,5 @@
+package sew
+
+user Analyst {
+    display = "Business analyst"
+}

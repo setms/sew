@@ -1,0 +1,6 @@
+package sew.backend
+
+decision TopLevelPackage {
+    choice    = "org.setms.sew"
+    rationale = "Follow Java convention"
+}

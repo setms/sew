@@ -1,0 +1,8 @@
+package sew.glossary
+
+screen Glossary {
+    title      = "Glossary"
+    type       = ListView
+    content    = ReadModel("Glossary")
+    addCommand = AddTerm
+}

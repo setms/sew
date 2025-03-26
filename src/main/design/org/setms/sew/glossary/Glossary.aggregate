@@ -1,9 +1,0 @@
-package org.setms.sew.glossary
-
-aggregate Glossary {
-    cqrs = false
-}
-
-field Terms {
-    type = [ Term ]
-}

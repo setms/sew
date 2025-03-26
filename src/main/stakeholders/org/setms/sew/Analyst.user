@@ -1,5 +1,0 @@
-package org.setms.sew
-
-user BusinessAnalyst {
-    display = "Business analyst"
-}

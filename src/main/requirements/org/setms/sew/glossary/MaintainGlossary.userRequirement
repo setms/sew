@@ -1,8 +1,0 @@
-package org.setms.sew.glossary
-
-userRequirement MaintainGlossary {
-    display     = "Maintain glossary"
-    description = "Maintain a glossary that defines the terms for the ubiquitous language."
-    users       = [ BusinessAnalyst ]
-    realizes    = [ SupportUbiquitousLanguage ]
-}
