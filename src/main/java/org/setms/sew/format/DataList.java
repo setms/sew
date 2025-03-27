@@ -1,12 +1,15 @@
 package org.setms.sew.format;
 
+import static java.util.Collections.addAll;
+import static java.util.stream.Collectors.joining;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import lombok.EqualsAndHashCode;
 
-import static java.util.Collections.addAll;
-
+@EqualsAndHashCode
 public class DataList implements DataItem {
 
   private final List<DataItem> values = new ArrayList<>();
@@ -30,5 +33,10 @@ public class DataList implements DataItem {
 
   public boolean hasItems() {
     return !values.isEmpty();
+  }
+
+  @Override
+  public String toString() {
+    return "[ %s ]".formatted(values.stream().map(Object::toString).collect(joining(", ")));
   }
 }

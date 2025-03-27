@@ -9,6 +9,6 @@ public class DataString implements DataItem {
 
   @Override
   public String toString() {
-    return value;
+    return "'%s'".formatted(value);
   }
 }

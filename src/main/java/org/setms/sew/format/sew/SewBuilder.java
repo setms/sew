@@ -1,5 +1,12 @@
 package org.setms.sew.format.sew;
 
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.joining;
+
+import java.io.PrintWriter;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.setms.sew.format.Builder;
 import org.setms.sew.format.DataItem;
 import org.setms.sew.format.DataList;
@@ -8,14 +15,6 @@ import org.setms.sew.format.DataString;
 import org.setms.sew.format.NestedObject;
 import org.setms.sew.format.Reference;
 import org.setms.sew.format.RootObject;
-
-import java.io.PrintWriter;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.joining;
 
 class SewBuilder implements Builder {
 
@@ -64,7 +63,7 @@ class SewBuilder implements Builder {
   }
 
   private String convertString(DataString string, String ignored) {
-    return "\"%s\"".formatted(string);
+    return "\"%s\"".formatted(string.getValue());
   }
 
   private String convertList(DataList list, String indent) {

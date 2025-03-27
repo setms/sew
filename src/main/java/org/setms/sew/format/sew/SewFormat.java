@@ -8,7 +8,7 @@ public class SewFormat implements Format {
 
   @Override
   public Parser newParser() {
-    return null;
+    return new SewParser();
   }
 
   @Override

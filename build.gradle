@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'antlr'
     alias(libs.plugins.lombok)
     alias(libs.plugins.mapstruct)
     alias(libs.plugins.spring.boot)
@@ -12,9 +13,16 @@ repositories {
 }
 
 dependencies {
+    antlr libs.bundles.antlr
+
     implementation libs.bundles.spring.boot
+    implementation libs.bundles.antlr.runtime
 
     testImplementation libs.bundles.spring.test
+}
+
+generateGrammarSource {
+    arguments = ['-package', 'org.setms.sew.antlr']
 }
 
 java {
