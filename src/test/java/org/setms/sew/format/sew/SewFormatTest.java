@@ -1,4 +1,4 @@
-package org.setms.sew.format;
+package org.setms.sew.format.sew;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -7,7 +7,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
-import org.setms.sew.format.sew.SewFormat;
+import org.setms.sew.format.DataList;
+import org.setms.sew.format.DataString;
+import org.setms.sew.format.Format;
+import org.setms.sew.format.NestedObject;
+import org.setms.sew.format.Reference;
+import org.setms.sew.format.RootObject;
 
 class SewFormatTest {
 
