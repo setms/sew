@@ -12,8 +12,9 @@ graph
     Tool -- uses as input --> Artifact
     Tool -- produces --> Artifact
     Tool -- issues --> Diagnostic
-    Tool -- uses --> Parser
-    Tool -- uses --> Builder
+    Tool -- uses --> Format
+    Format -- uses --> Builder
+    Format -- uses --> Parser
     Parser -- parses --> ArtifactType
     Builder -- builds --> ArtifactType
     Tool -- registered in --> Registry

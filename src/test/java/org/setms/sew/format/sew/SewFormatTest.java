@@ -6,6 +6,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.format.DataList;
 import org.setms.sew.format.DataString;
@@ -13,6 +18,8 @@ import org.setms.sew.format.Format;
 import org.setms.sew.format.NestedObject;
 import org.setms.sew.format.Reference;
 import org.setms.sew.format.RootObject;
+import org.setms.sew.schema.FullyQualifiedName;
+import org.setms.sew.schema.SchemaObject;
 
 class SewFormatTest {
 
@@ -195,5 +202,32 @@ class SewFormatTest {
         }
         """,
         new RootObject("lynx", "marmot", "otter").set("panther", new Reference("Rhino")));
+  }
+
+  @Test
+  void shouldConvertToObject() {
+    var actual =
+        format
+            .newParser()
+            .convert(
+                new RootObject("ape", "Bear", "cheetah").set("dingo", new DataString("elephant")),
+                Bear.class);
+
+    assertThat(actual)
+        .isEqualTo(new Bear(new FullyQualifiedName("ape.cheetah")).setDingo("elephant"));
+  }
+
+  @Getter
+  @Setter
+  @Accessors(chain = true)
+  @EqualsAndHashCode(callSuper = true)
+  @ToString(callSuper = true)
+  public static class Bear extends SchemaObject {
+
+    private String dingo;
+
+    public Bear(FullyQualifiedName fullyQualifiedName) {
+      super(fullyQualifiedName);
+    }
   }
 }
