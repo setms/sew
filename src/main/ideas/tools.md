@@ -8,18 +8,22 @@ understanding any specifics about any particular artifact type or file format.
 
 ```mermaid
 graph
-    Artifact --> ArtifactType
-    Tool -- uses as input --> Artifact
-    Tool -- produces --> Artifact
-    Tool -- issues --> Diagnostic
-    Tool -- uses --> Format
+    ArtifactType -- registered in --> Registry
+    Tool -- registered in --> Registry
+    Tool -- defines input as --> Input
+    Input -- filters artifacts by --> Glob
+    Input -- consumes artifacts of type --> ArtifactType
+    ArtifactType -- defined by --> Format
     Format -- uses --> Builder
     Format -- uses --> Parser
-    Parser -- parses --> ArtifactType
-    Builder -- builds --> ArtifactType
-    Tool -- registered in --> Registry
-    ArtifactType -- registered in --> Registry
+    Parser -- parses --> Artifact
+    Builder -- builds --> Artifact
+    Tool -- defines output as --> Output
+    Output -- builds artifacts of type --> ArtifactType
+    Tool -- consumes --> Artifact
+    Tool -- produces --> Artifact
+    Tool -- issues --> Diagnostic
 ```
 
 Every tool would live in its own jar and depend on a shared jar that implements the above model and on jars that
-implement parsers/builders for the artifact types that it uses/produces.
+implement parsers/builders for the artifact type that it uses/produces.
