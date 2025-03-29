@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +20,8 @@ import org.setms.sew.format.NestedObject;
 import org.setms.sew.format.Reference;
 import org.setms.sew.format.RootObject;
 import org.setms.sew.schema.FullyQualifiedName;
-import org.setms.sew.schema.SchemaObject;
+import org.setms.sew.schema.NamedObject;
+import org.setms.sew.schema.Pointer;
 
 class SewFormatTest {
 
@@ -210,11 +212,20 @@ class SewFormatTest {
         format
             .newParser()
             .convert(
-                new RootObject("ape", "Bear", "cheetah").set("dingo", new DataString("elephant")),
+                new RootObject("ape", "Bear", "cheetah")
+                    .set("dingo", new DataString("elephant"))
+                    .set("fox", new DataList().add(new DataString("giraffe")))
+                    .set("hyena", new NestedObject("iguana").set("jaguar", new DataString("koala")))
+                    .set("leopard", new Reference("mule")),
                 Bear.class);
 
     assertThat(actual)
-        .isEqualTo(new Bear(new FullyQualifiedName("ape.cheetah")).setDingo("elephant"));
+        .isEqualTo(
+            new Bear(new FullyQualifiedName("ape.cheetah"))
+                .setDingo("elephant")
+                .setFox(List.of("giraffe"))
+                .setHyena(new Bear.Hyena(new FullyQualifiedName("hyena.iguana")).setJaguar("koala"))
+                .setLeopard(new Pointer("mule")));
   }
 
   @Getter
@@ -222,12 +233,29 @@ class SewFormatTest {
   @Accessors(chain = true)
   @EqualsAndHashCode(callSuper = true)
   @ToString(callSuper = true)
-  public static class Bear extends SchemaObject {
+  public static class Bear extends NamedObject {
 
     private String dingo;
+    private List<String> fox;
+    private Hyena hyena;
+    private Pointer leopard;
 
     public Bear(FullyQualifiedName fullyQualifiedName) {
       super(fullyQualifiedName);
+    }
+
+    @Getter
+    @Setter
+    @Accessors(chain = true)
+    @EqualsAndHashCode(callSuper = true)
+    @ToString(callSuper = true)
+    public static class Hyena extends NamedObject {
+
+      private String jaguar;
+
+      public Hyena(FullyQualifiedName fullyQualifiedName) {
+        super(fullyQualifiedName);
+      }
     }
   }
 }

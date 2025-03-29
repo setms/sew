@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public abstract class SchemaObject {
+public abstract class NamedObject {
 
   private final FullyQualifiedName fullyQualifiedName;
 
