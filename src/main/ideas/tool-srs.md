@@ -4,6 +4,7 @@
 
 - There must be a single owner stakeholder (warning if none, error if multiple)
 - There must be a vision (warning)
+- There must be at least one scope
 - Business requirement must be realized by at least one user requirement (warning)
 - User requirement must realize existing business requirement (error)
 - User requirement must be captured by at least one use case (warning)
@@ -14,9 +15,11 @@
 
 - Create owner
 - Create vision
+- Create scope
 - Create business requirement
 
 ## Reporting
 
 - Generate SRS from vision, scopes, stakeholders, business requirements, user requirements, and use cases
 - Generate use case UML diagram
+- Generate event storm from use cases

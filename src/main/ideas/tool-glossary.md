@@ -1,15 +1,25 @@
 # Glossary
 
-## Suggest terms
+## Validations
+
+- Every `seeAlso` must refer to a defined term (error)
+
+## Reporting
+
+- Compile HTML glossary with hyperlinks from terms to related terms
+
+## Suggestions
+
+### Suggest terms
 
 Look at the requirements (business and user requirements, plus use cases) and suggests terms to add to the glossary.
 
 - NLP: named entity recognition, noun phrase extraction
 - Statistical methods:
-  - Term frequency analysis: Terms with moderate frequency (not too common, not too rare)
-  - TF-IDF (Term Frequency-Inverse Document Frequency): Find terms that are distinctive to your documents compared to
-    general language
-  - Collocation detection: Identify phrases that appear together more often than by chance
+    - Term frequency analysis: Terms with moderate frequency (not too common, not too rare)
+    - TF-IDF (Term Frequency-Inverse Document Frequency): Find terms that are distinctive to your documents compared to
+      general language
+    - Collocation detection: Identify phrases that appear together more often than by chance
 - Pattern recognition, e.g. Capitalized Phrases
 - Use case: aggregate, read model, command part, event part
 
@@ -51,7 +61,6 @@ function identifyGlossaryCandidates(requirementsText):
     return sortByScore(candidates)
 ```
 
-
-## Suggest definitions
+### Suggest definitions
 
 Look up terms in dictionaries/wikipedia to suggest definitions.
