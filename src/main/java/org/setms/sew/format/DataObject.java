@@ -2,8 +2,8 @@ package org.setms.sew.format;
 
 import static java.util.stream.Collectors.joining;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import lombok.EqualsAndHashCode;
 
@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @SuppressWarnings("unchecked")
 public abstract class DataObject<T extends DataObject<T>> implements DataItem {
 
-  private final Map<String, DataItem> valuesByKey = new LinkedHashMap<>();
+  private final Map<String, DataItem> valuesByKey = new TreeMap<>();
 
   public T set(String key, DataItem value) {
     valuesByKey.put(key, value);

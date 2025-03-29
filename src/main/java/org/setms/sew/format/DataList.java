@@ -4,6 +4,7 @@ import static java.util.Collections.addAll;
 import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -13,6 +14,11 @@ import lombok.EqualsAndHashCode;
 public class DataList implements DataItem {
 
   private final List<DataItem> values = new ArrayList<>();
+
+  public DataList add(Collection<DataItem> values) {
+    this.values.addAll(values);
+    return this;
+  }
 
   public DataList add(DataItem... values) {
     addAll(this.values, values);

@@ -89,16 +89,16 @@ class SewFormatTest {
         snake tiger {
         }
 
-        unicorn velociraptor {
-          weasel = "zebra"
-        }
-
         aardvark boar {
           cobra = "dog"
         }
 
         aardvark eagle {
           gorilla = "hound"
+        }
+
+        unicorn velociraptor {
+          weasel = "zebra"
         }
         """);
   }
@@ -207,12 +207,12 @@ class SewFormatTest {
   }
 
   @Test
-  void shouldConvertToObject() {
+  void shouldParseDomainObject() {
     var actual =
         format
             .newParser()
             .convert(
-                new RootObject("ape", "Bear", "cheetah")
+                new RootObject("ape", "bear", "cheetah")
                     .set("dingo", new DataString("elephant"))
                     .set("fox", new DataList().add(new DataString("giraffe")))
                     .set("hyena", new NestedObject("iguana").set("jaguar", new DataString("koala")))
@@ -226,6 +226,28 @@ class SewFormatTest {
                 .setFox(List.of("giraffe"))
                 .setHyena(new Bear.Hyena(new FullyQualifiedName("hyena.iguana")).setJaguar("koala"))
                 .setLeopard(new Pointer("mule")));
+  }
+
+  @Test
+  void shouldBuildDomainObject() {
+    var actual =
+        format
+            .newBuilder()
+            .toRootObject(
+                new Bear(new FullyQualifiedName("ape.cheetah"))
+                    .setDingo("elephant")
+                    .setFox(List.of("giraffe"))
+                    .setHyena(
+                        new Bear.Hyena(new FullyQualifiedName("hyena.iguana")).setJaguar("koala"))
+                    .setLeopard(new Pointer("mule")));
+
+    assertThat(actual)
+        .isEqualTo(
+            new RootObject("ape", "bear", "cheetah")
+                .set("dingo", new DataString("elephant"))
+                .set("fox", new DataList().add(new DataString("giraffe")))
+                .set("hyena", new NestedObject("iguana").set("jaguar", new DataString("koala")))
+                .set("leopard", new Reference("mule")));
   }
 
   @Getter
