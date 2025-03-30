@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class FullyQualifiedName {
+public class FullyQualifiedName implements Comparable<FullyQualifiedName> {
 
   private final String value;
 
@@ -22,5 +22,10 @@ public class FullyQualifiedName {
   @Override
   public String toString() {
     return value;
+  }
+
+  @Override
+  public int compareTo(FullyQualifiedName that) {
+    return this.value.compareTo(that.value);
   }
 }

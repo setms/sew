@@ -1,5 +1,8 @@
 package org.setms.sew.format;
 
+import static org.setms.sew.util.Strings.initCap;
+import static org.setms.sew.util.Validation.validate;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,8 +15,21 @@ import org.setms.sew.schema.Pointer;
 
 public interface Parser {
 
-  default <T extends NamedObject> T parse(InputStream input, Class<T> type) throws IOException {
-    return convert(parse(input), type);
+  default <T extends NamedObject> T parse(File file, Class<T> type) throws IOException {
+    return convert(parse(file), type);
+  }
+
+  default RootObject parse(File file) throws IOException {
+    var extension = file.getName().substring(file.getName().lastIndexOf('.'));
+    try (var input = new FileInputStream(file)) {
+      var result = parse(input);
+      if (!file.getName().equals(result.getName() + extension)) {
+        throw new IllegalArgumentException(
+            "Object name '%s' doesn't match file name '%s'"
+                .formatted(result.getName(), file.getName()));
+      }
+      return result;
+    }
   }
 
   RootObject parse(InputStream input) throws IOException;
@@ -23,7 +39,13 @@ public interface Parser {
       throw new IllegalArgumentException(
           "Can't parse %s from %s".formatted(type.getName(), object.getType()));
     }
-    return parseNamedObject(object, type, object.getScope(), object.getName());
+    var result = parseNamedObject(object, type, object.getScope(), object.getName());
+    try {
+      validate(result);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("%s: %s".formatted(result.getName(), e.getMessage()), e);
+    }
+    return result;
   }
 
   default <T extends NamedObject> T parseNamedObject(
@@ -68,7 +90,7 @@ public interface Parser {
   }
 
   default void setProperty(String name, Object targetValue, Object target) {
-    var setter = "set%s%s".formatted(Character.toUpperCase(name.charAt(0)), name.substring(1));
+    var setter = "set%s".formatted(initCap(name));
     try {
       var method = findSetter(setter, targetValue, target.getClass());
       if (method != null) {
@@ -97,15 +119,5 @@ public interface Parser {
                     || m.getParameters()[0].getType().isAssignableFrom(targetValue.getClass()))
         .findFirst()
         .orElse(null);
-  }
-
-  default <T extends NamedObject> T parse(File file, Class<T> type) throws IOException {
-    return convert(parse(file), type);
-  }
-
-  default RootObject parse(File file) throws IOException {
-    try (var input = new FileInputStream(file)) {
-      return parse(input);
-    }
   }
 }

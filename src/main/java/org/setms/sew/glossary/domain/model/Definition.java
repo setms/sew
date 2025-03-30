@@ -1,12 +1,12 @@
 package org.setms.sew.glossary.domain.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import static org.setms.sew.util.Validation.validate;
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-
-import static lombok.AccessLevel.PRIVATE;
-import static org.setms.sew.glossary.domain.model.ValidatorFactory.validate;
 
 @Value
 @AllArgsConstructor(access = PRIVATE)

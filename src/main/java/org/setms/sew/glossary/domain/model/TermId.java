@@ -1,15 +1,14 @@
 package org.setms.sew.glossary.domain.model;
 
+import static java.util.UUID.randomUUID;
+import static lombok.AccessLevel.PRIVATE;
+import static org.setms.sew.util.Validation.validate;
+
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-
-import java.util.UUID;
-
-import static java.util.UUID.randomUUID;
-import static lombok.AccessLevel.PRIVATE;
-import static org.setms.sew.glossary.domain.model.ValidatorFactory.validate;
 
 @Value
 @AllArgsConstructor(access = PRIVATE)

@@ -1,15 +1,14 @@
 package org.setms.sew.glossary.domain.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import static org.setms.sew.util.Validation.validate;
+
 import jakarta.validation.constraints.NotNull;
+import java.util.Collection;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-
-import java.util.Collection;
-
-import static lombok.AccessLevel.PRIVATE;
-import static org.setms.sew.glossary.domain.model.ValidatorFactory.validate;
 
 @Value
 @AllArgsConstructor(access = PRIVATE)
@@ -23,6 +22,7 @@ public class Glossary {
   public static Glossary of(GlossaryId id, Collection<Term> terms) {
     return validate(new Glossary(id, terms));
   }
+
   @Override
   public String toString() {
     return "Glossary[%s]: %d terms".formatted(id, terms.size());

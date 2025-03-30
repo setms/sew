@@ -1,5 +1,6 @@
 package org.setms.sew.glossary.inbound.cli;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,13 +14,13 @@ import org.setms.sew.schema.Pointer;
 @Setter
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class TermDto extends NamedObject {
+public class Term extends NamedObject {
 
-  private String display;
-  private String description;
+  @NotEmpty private String display;
+  @NotEmpty private String description;
   private List<Pointer> seeAlso;
 
-  public TermDto(FullyQualifiedName fullyQualifiedName) {
+  public Term(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

@@ -1,0 +1,7 @@
+package report
+
+term Main {
+    display     = "Maine"
+    description = "The most important term."
+    seeAlso     = [ Other ]
+}

@@ -1,0 +1,6 @@
+package report
+
+term Other {
+    display     = "Otherz"
+    description = "A much less important term."
+}
