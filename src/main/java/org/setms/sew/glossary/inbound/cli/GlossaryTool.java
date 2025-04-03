@@ -23,32 +23,15 @@ import org.setms.sew.tool.ToolException;
 public class GlossaryTool implements Tool {
 
   @Override
-  public Collection<Input> getInputs() {
-    return List.of(new Input(new Glob("src/main/glossary", "**/*.term"), new SewFormat()));
+  public Collection<Input<?>> getInputs() {
+    return List.of(
+        new Input<>(
+            "terms", new Glob("src/main/glossary", "**/*.term"), new SewFormat(), Term.class));
   }
 
   @Override
-  public void run(File dir) {
-    var inputs = getInputs().stream().map(input -> parse(dir, input)).toList();
-    run(dir, inputs);
-  }
-
-  protected List<Term> parse(File dir, Input input) {
-    var parser = input.getFormat().newParser();
-    return input.getGlob().matchingIn(dir).stream()
-        .map(
-            file -> {
-              try {
-                return parser.parse(file, Term.class);
-              } catch (IOException e) {
-                throw new IllegalArgumentException("Failed to parse " + file, e);
-              }
-            })
-        .toList();
-  }
-
-  private void run(File dir, List<List<Term>> inputs) {
-    var terms = inputs.getFirst();
+  public void run(File dir, ResolvedInputs inputs) {
+    var terms = inputs.get("terms", Term.class);
     validate(terms);
     buildGlossary(dir, terms);
   }
