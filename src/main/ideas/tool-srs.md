@@ -2,7 +2,6 @@
 
 ## Validations
 
-- There must be a single owner stakeholder (warning if none, error if multiple)
 - There must be a vision (warning)
 - There must be at least one scope
 - Business requirement must be realized by at least one user requirement (warning)
@@ -13,7 +12,6 @@
 
 ## Suggestions
 
-- Create owner
 - Create vision
 - Create scope
 - Create business requirement

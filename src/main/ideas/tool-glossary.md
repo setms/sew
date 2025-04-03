@@ -2,11 +2,11 @@
 
 ## Validations
 
-- Every `seeAlso` must refer to a defined term (error)
+- √ Every `seeAlso` must refer to a defined term (error)
 
 ## Reporting
 
-- Compile HTML glossary with hyperlinks from terms to related terms
+- √ Compile HTML glossary with hyperlinks from terms to related terms
 
 ## Suggestions
 
