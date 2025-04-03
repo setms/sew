@@ -22,7 +22,7 @@ reference: IDENTIFIER;
 
 string: STRING;
 
-IDENTIFIER: [a-zA-Z0-9_]+;
+IDENTIFIER: [a-zA-Z0-9_()]+;
 
 STRING: '"' (~["\r\n])* '"';
 

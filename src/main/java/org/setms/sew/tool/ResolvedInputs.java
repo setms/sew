@@ -1,4 +1,4 @@
-package org.setms.sew.glossary.inbound.cli;
+package org.setms.sew.tool;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,0 +1,14 @@
+package nonuser
+
+useCase JustDoIt {
+    display = "Just do it"
+}
+
+scenario HappyPath {
+    description = "All's well that ends well"
+    steps       = [
+        Person(Micky),
+        Command(DoIt),
+        Aggregate(System)
+    ]
+}

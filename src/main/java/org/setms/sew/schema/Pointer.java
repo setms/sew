@@ -1,6 +1,8 @@
 package org.setms.sew.schema;
 
 import java.util.Collection;
+import java.util.Optional;
+
 import lombok.Value;
 
 @Value

@@ -16,6 +16,7 @@ import org.setms.sew.format.sew.SewFormat;
 import org.setms.sew.schema.Pointer;
 import org.setms.sew.tool.Glob;
 import org.setms.sew.tool.Input;
+import org.setms.sew.tool.ResolvedInputs;
 import org.setms.sew.tool.Tool;
 import org.setms.sew.tool.ToolException;
 
@@ -23,7 +24,7 @@ import org.setms.sew.tool.ToolException;
 public class GlossaryTool implements Tool {
 
   @Override
-  public Collection<Input<?>> getInputs() {
+  public List<Input<?>> getInputs() {
     return List.of(
         new Input<>(
             "terms", new Glob("src/main/glossary", "**/*.term"), new SewFormat(), Term.class));
