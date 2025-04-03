@@ -215,7 +215,10 @@ class SewFormatTest {
                 new RootObject("ape", "bear", "cheetah")
                     .set("dingo", new DataString("elephant"))
                     .set("fox", new DataList().add(new DataString("giraffe")))
-                    .set("hyena", new NestedObject("iguana").set("jaguar", new DataString("koala")))
+                    .set(
+                        "hyenas",
+                        new DataList()
+                            .add(new NestedObject("iguana").set("jaguar", new DataString("koala"))))
                     .set("leopard", new Reference("mule")),
                 Bear.class);
 
@@ -224,7 +227,34 @@ class SewFormatTest {
             new Bear(new FullyQualifiedName("ape.cheetah"))
                 .setDingo("elephant")
                 .setFox(List.of("giraffe"))
-                .setHyena(new Bear.Hyena(new FullyQualifiedName("hyena.iguana")).setJaguar("koala"))
+                .setHyenas(
+                    List.of(
+                        new Bear.Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
+                .setLeopard(new Pointer("mule")));
+  }
+
+  @Test
+  void shouldParseSubObjects() {
+    var actual =
+        format
+            .newParser()
+            .convert(
+                new RootObject("ape", "bear", "cheetah")
+                    .set("dingo", new DataString("elephant"))
+                    .set("fox", new DataList().add(new DataString("giraffe")))
+                    .set(
+                        "hyenas", new NestedObject("iguana").set("jaguar", new DataString("koala")))
+                    .set("leopard", new Reference("mule")),
+                Bear.class);
+
+    assertThat(actual)
+        .isEqualTo(
+            new Bear(new FullyQualifiedName("ape.cheetah"))
+                .setDingo("elephant")
+                .setFox(List.of("giraffe"))
+                .setHyenas(
+                    List.of(
+                        new Bear.Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
                 .setLeopard(new Pointer("mule")));
   }
 
@@ -237,8 +267,10 @@ class SewFormatTest {
                 new Bear(new FullyQualifiedName("ape.cheetah"))
                     .setDingo("elephant")
                     .setFox(List.of("giraffe"))
-                    .setHyena(
-                        new Bear.Hyena(new FullyQualifiedName("hyena.iguana")).setJaguar("koala"))
+                    .setHyenas(
+                        List.of(
+                            new Bear.Hyena(new FullyQualifiedName("hyena.iguana"))
+                                .setJaguar("koala")))
                     .setLeopard(new Pointer("mule")));
 
     assertThat(actual)
@@ -246,7 +278,10 @@ class SewFormatTest {
             new RootObject("ape", "bear", "cheetah")
                 .set("dingo", new DataString("elephant"))
                 .set("fox", new DataList().add(new DataString("giraffe")))
-                .set("hyena", new NestedObject("iguana").set("jaguar", new DataString("koala")))
+                .set(
+                    "hyenas",
+                    new DataList()
+                        .add(new NestedObject("iguana").set("jaguar", new DataString("koala"))))
                 .set("leopard", new Reference("mule")));
   }
 
@@ -259,7 +294,7 @@ class SewFormatTest {
 
     private String dingo;
     private List<String> fox;
-    private Hyena hyena;
+    private List<Hyena> hyenas;
     private Pointer leopard;
 
     public Bear(FullyQualifiedName fullyQualifiedName) {

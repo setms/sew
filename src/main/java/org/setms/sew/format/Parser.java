@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import org.atteo.evo.inflector.English;
 import org.setms.sew.schema.FullyQualifiedName;
 import org.setms.sew.schema.NamedObject;
 import org.setms.sew.schema.Pointer;
@@ -82,11 +86,17 @@ public interface Parser {
     var type =
         Arrays.stream(parent.getClass().getClasses())
             .filter(NamedObject.class::isAssignableFrom)
-            .filter(c -> name.equalsIgnoreCase(c.getSimpleName()))
+            .filter(c -> matchesName(name, c.getSimpleName()))
             .map(c -> (Class<NamedObject>) c)
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Can't find class " + name));
     return parseNamedObject(source, type, name, source.getName());
+  }
+
+  default boolean matchesName(String name, String candidate) {
+    return name.equalsIgnoreCase(candidate)
+        || name.equalsIgnoreCase(English.plural(candidate))
+        || English.plural(name).equalsIgnoreCase(candidate);
   }
 
   default void setProperty(String name, Object targetValue, Object target) {
@@ -94,7 +104,13 @@ public interface Parser {
     try {
       var method = findSetter(setter, targetValue, target.getClass());
       if (method != null) {
-        method.invoke(target, targetValue);
+        if (Collection.class.isAssignableFrom(method.getParameters()[0].getType())
+            && targetValue != null
+            && !Collection.class.isAssignableFrom(targetValue.getClass())) {
+          method.invoke(target, toCollection(targetValue, method.getParameters()[0].getType()));
+        } else {
+          method.invoke(target, targetValue);
+        }
       }
     } catch (ReflectiveOperationException e) {
       throw new IllegalArgumentException(
@@ -102,8 +118,19 @@ public interface Parser {
     }
   }
 
+  default Collection<Object> toCollection(Object targetValue, Class<?> type) {
+    if (List.class.isAssignableFrom(type)) {
+      return List.of(targetValue);
+    }
+    if (Set.class.isAssignableFrom(type)) {
+      return Set.of(targetValue);
+    }
+    throw new UnsupportedOperationException("Unsupported collection type " + type.getName());
+  }
+
   default Method findSetter(String name, Object targetValue, Class<?> type) {
-    var methods = Arrays.stream(type.getMethods()).filter(m -> name.equals(m.getName())).toList();
+    var methods =
+        Arrays.stream(type.getMethods()).filter(m -> matchesName(name, m.getName())).toList();
     if (methods.isEmpty()) {
       // Ignore unsupported property (Postel's Law)
       return null;

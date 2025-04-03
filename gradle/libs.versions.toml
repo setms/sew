@@ -3,6 +3,7 @@
 
 [versions]
 antlr = "4.13.2"
+evo-inflector = "1.3"
 lombok-plugin = "8.12.2"
 mapstruct-plugin = "1.0.8"
 spring-boot-plugin = "3.4.3"
@@ -10,16 +11,18 @@ spring-boot-plugin = "3.4.3"
 [libraries]
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
 antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
+evo-inflector = { module = "org.atteo:evo-inflector", version.ref = "evo-inflector" }
 spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 spring-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 
 [bundles]
-antlr = [ "antlr" ]
-antlr-runtime = [ "antlr-runtime" ]
-spring-boot = [ "spring-thymeleaf", "spring-validation", "spring-web" ]
-spring-test = [ "spring-test" ]
+antlr = ["antlr"]
+antlr-runtime = ["antlr-runtime"]
+evo-inflector = ["evo-inflector"]
+spring-boot = ["spring-thymeleaf", "spring-validation", "spring-web"]
+spring-test = ["spring-test"]
 
 [plugins]
 lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }

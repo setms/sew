@@ -61,7 +61,8 @@ public class StakeholdersTool implements Tool {
   }
 
   private void validateUseCaseUsers(UseCase useCase, List<User> users, List<Owner> owners) {
-    Optional.ofNullable(useCase.getScenario()).map(UseCase.Scenario::getSteps).stream()
+    useCase.getScenarios().stream()
+        .map(UseCase.Scenario::getSteps)
         .flatMap(Collection::stream)
         .forEach(step -> validateStepUsers(step, users, owners));
   }

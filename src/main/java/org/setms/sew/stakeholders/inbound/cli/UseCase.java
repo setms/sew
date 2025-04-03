@@ -19,7 +19,7 @@ public class UseCase extends NamedObject {
   @NotEmpty private String display;
   private List<Pointer> terms;
   private List<Pointer> captures;
-  private Scenario scenario;
+  private List<Scenario> scenarios;
 
   public UseCase(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
