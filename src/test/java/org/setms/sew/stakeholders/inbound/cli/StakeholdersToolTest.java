@@ -1,12 +1,13 @@
 package org.setms.sew.stakeholders.inbound.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.setms.sew.tool.Level.ERROR;
 
 import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.format.sew.SewFormat;
+import org.setms.sew.tool.Diagnostic;
 import org.setms.sew.tool.Input;
 import org.setms.sew.tool.Tool;
 
@@ -44,36 +45,49 @@ class StakeholdersToolTest {
   void shouldRejectMissingOwner() {
     var dir = new File(baseDir, "invalid/owner");
 
-    assertThatThrownBy(() -> tool.run(dir)).hasMessage("Missing owner");
+    var actual = tool.run(dir);
+
+    assertThat(actual).hasSize(1).contains(new Diagnostic(ERROR, "Missing owner"));
   }
 
   @Test
   void shouldRejectMultipleOwners() {
     var dir = new File(baseDir, "invalid/owners");
 
-    assertThatThrownBy(() -> tool.run(dir))
-        .hasMessage("There can be only one owner, but found First, Second");
+    var actual = tool.run(dir);
+
+    assertThat(actual)
+        .hasSize(1)
+        .contains(new Diagnostic(ERROR, "There can be only one owner, but found First, Second"));
   }
 
   @Test
   void shouldRejectNonUserInUserCase() {
     var dir = new File(baseDir, "invalid/nonuser");
 
-    assertThatThrownBy(() -> tool.run(dir))
-        .hasMessage("Only users can appear in use case scenarios, found owner Duck");
+    var actual = tool.run(dir);
+
+    assertThat(actual)
+        .hasSize(1)
+        .contains(
+            new Diagnostic(ERROR, "Only users can appear in use case scenarios, found owner Duck"));
   }
 
   @Test
   void shouldRejectUnknownUserInUserCase() {
     var dir = new File(baseDir, "invalid/missing");
 
-    assertThatThrownBy(() -> tool.run(dir)).hasMessage("Unknown user Micky");
+    var actual = tool.run(dir);
+
+    assertThat(actual).hasSize(1).contains(new Diagnostic(ERROR, "Unknown user Micky"));
   }
 
   @Test
   void shouldAcceptUserInUserCase() {
     var dir = new File(baseDir, "valid");
 
-    assertThatNoException().isThrownBy(() -> tool.run(dir));
+    var actual = tool.run(dir);
+
+    assertThat(actual).isEmpty();
   }
 }

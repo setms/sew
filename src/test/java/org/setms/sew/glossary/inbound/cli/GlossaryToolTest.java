@@ -2,10 +2,12 @@ package org.setms.sew.glossary.inbound.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.setms.sew.tool.Level.ERROR;
 
 import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.format.sew.SewFormat;
+import org.setms.sew.tool.Diagnostic;
 import org.setms.sew.tool.Tool;
 
 class GlossaryToolTest {
@@ -44,8 +46,9 @@ class GlossaryToolTest {
 
   @Test
   void shouldBuildReport() {
-    tool.run(new File(baseDir, "report"));
+    var actual = tool.run(new File(baseDir, "report"));
 
+    assertThat(actual).isEmpty();
     var output = new File(baseDir, "report/build/reports/glossary/report.html");
     assertThat(output).isFile().content().isEqualTo(GLOSSARY);
   }
@@ -54,22 +57,35 @@ class GlossaryToolTest {
   void shouldRejectInvalidName() {
     var dir = new File(baseDir, "invalid/name");
 
-    assertThatThrownBy(() -> tool.run(dir))
-        .hasMessage("Object name 'WrongName' doesn't match file name 'InvalidName.term'");
+    var actual = tool.run(dir);
+
+    assertThat(actual)
+        .hasSize(1)
+        .contains(
+            new Diagnostic(
+                ERROR, "Object name 'WrongName' doesn't match file name 'InvalidName.term'"));
   }
 
   @Test
   void shouldRejectMissingDisplay() {
     var dir = new File(baseDir, "invalid/display");
 
-    assertThatThrownBy(() -> tool.run(dir)).hasMessage("MissingDisplay: display must not be empty");
+    var actual = tool.run(dir);
+
+    assertThat(actual)
+        .hasSize(1)
+        .contains(new Diagnostic(ERROR, "MissingDisplay: display must not be empty"));
   }
 
   @Test
   void shouldRejectInvalidSeeAlso() {
     var dir = new File(baseDir, "invalid/see");
 
-    assertThatThrownBy(() -> tool.run(dir))
-        .hasMessage("Term 'InvalidSeeAlso' refers to unknown term 'NonExistent'");
+    var actual = tool.run(dir);
+
+    assertThat(actual)
+        .hasSize(1)
+        .contains(
+            new Diagnostic(ERROR, "Term 'InvalidSeeAlso' refers to unknown term 'NonExistent'"));
   }
 }

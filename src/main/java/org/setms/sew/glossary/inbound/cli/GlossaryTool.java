@@ -2,6 +2,7 @@ package org.setms.sew.glossary.inbound.cli;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
+import static org.setms.sew.tool.Level.ERROR;
 import static org.setms.sew.util.Strings.initCap;
 
 import java.io.File;
@@ -14,11 +15,11 @@ import java.util.TreeSet;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.sew.format.sew.SewFormat;
 import org.setms.sew.schema.Pointer;
+import org.setms.sew.tool.Diagnostic;
 import org.setms.sew.tool.Glob;
 import org.setms.sew.tool.Input;
 import org.setms.sew.tool.ResolvedInputs;
 import org.setms.sew.tool.Tool;
-import org.setms.sew.tool.ToolException;
 
 @Slf4j
 public class GlossaryTool implements Tool {
@@ -31,44 +32,50 @@ public class GlossaryTool implements Tool {
   }
 
   @Override
-  public void run(File dir, ResolvedInputs inputs) {
+  public void run(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get("terms", Term.class);
-    validate(terms);
-    buildGlossary(dir, terms);
+    validate(terms, diagnostics);
+    if (diagnostics.isEmpty()) {
+      buildGlossary(dir, terms, diagnostics);
+    }
   }
 
-  private void validate(Collection<Term> terms) {
+  private void validate(Collection<Term> terms, Collection<Diagnostic> diagnostics) {
     terms.forEach(
         term ->
             Optional.ofNullable(term.getSeeAlso()).stream()
                 .flatMap(Collection::stream)
-                .forEach(pointer -> validateSeeAlso(term, pointer, terms)));
+                .forEach(pointer -> validateSeeAlso(term, pointer, terms, diagnostics)));
   }
 
-  private void validateSeeAlso(Term term, Pointer pointer, Collection<Term> candidates) {
+  private void validateSeeAlso(
+      Term term, Pointer pointer, Collection<Term> candidates, Collection<Diagnostic> diagnostics) {
     try {
       pointer.resolveFrom(candidates);
     } catch (Exception e) {
-      throw new ToolException(
-          "Term '%s' refers to unknown term '%s'".formatted(term.getName(), pointer.getId()), e);
+      diagnostics.add(
+          new Diagnostic(
+              ERROR,
+              "Term '%s' refers to unknown term '%s'".formatted(term.getName(), pointer.getId())));
     }
   }
 
-  private void buildGlossary(File dir, Collection<Term> terms) {
+  private void buildGlossary(File dir, Collection<Term> terms, Collection<Diagnostic> diagnostics) {
     var termsByPackage = terms.stream().collect(groupingBy(Term::getPackage));
     termsByPackage.forEach(
         (glossary, glossaryTerms) ->
-            buildGlossaryFile(dir, glossary, new TreeSet<>(glossaryTerms)));
+            buildGlossaryFile(dir, glossary, new TreeSet<>(glossaryTerms), diagnostics));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
-  private void buildGlossaryFile(File dir, String glossary, Collection<Term> terms) {
+  private void buildGlossaryFile(
+      File dir, String glossary, Collection<Term> terms, Collection<Diagnostic> diagnostics) {
     var file = new File(dir, "build/reports/glossary/%s.html".formatted(glossary));
     file.getParentFile().mkdirs();
     try (var writer = new PrintWriter(file)) {
       buildGlossary(glossary, writer, terms);
     } catch (IOException e) {
-      throw new ToolException("Failed to write " + file, e);
+      diagnostics.add(new Diagnostic(ERROR, "Failed to write " + file));
     }
   }
 
