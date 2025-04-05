@@ -60,18 +60,18 @@ public class GlossaryTool extends Tool {
   }
 
   @Override
-  public void build(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void build(ResolvedInputs inputs, File outputDir, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get("terms", Term.class);
     var termsByPackage = terms.stream().collect(groupingBy(Term::getPackage));
     termsByPackage.forEach(
         (glossary, glossaryTerms) ->
-            buildGlossaryFile(dir, glossary, new TreeSet<>(glossaryTerms), diagnostics));
+            buildGlossaryFile(outputDir, glossary, new TreeSet<>(glossaryTerms), diagnostics));
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   private void buildGlossaryFile(
       File dir, String glossary, Collection<Term> terms, Collection<Diagnostic> diagnostics) {
-    var file = new File(dir, "build/reports/glossary/%s.html".formatted(glossary));
+    var file = new File(dir, "reports/glossary/%s.html".formatted(glossary));
     file.getParentFile().mkdirs();
     try (var writer = new PrintWriter(file)) {
       buildGlossary(glossary, writer, terms);

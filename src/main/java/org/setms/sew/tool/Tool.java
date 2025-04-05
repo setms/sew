@@ -71,34 +71,38 @@ public abstract class Tool {
   /**
    * Build the output from the input
    *
-   * @param dir the directory in which to find input
+   * @param inputDir the directory in which to find input
+   * @param inputDir the directory in which to create output
    * @return diagnostics about building the output
    */
-  public final List<Diagnostic> build(File dir) {
+  public final List<Diagnostic> build(File inputDir, File outputDir) {
     var result = new ArrayList<Diagnostic>();
-    build(dir, resolveInputs(dir, result), result);
+    build(resolveInputs(inputDir, result), outputDir, result);
     return result;
   }
 
-  protected void build(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
+  protected void build(ResolvedInputs inputs, File outputDir, Collection<Diagnostic> diagnostics) {}
 
   /**
    * Apply a suggestion.
    *
    * @param suggestionCode the suggestion to apply
-   * @param dir the directory in which to find input
+   * @param inputDir the directory in which to find input
    * @return diagnostics about the applying the suggestion
    */
-  public final List<Diagnostic> apply(String suggestionCode, File dir) {
+  public final List<Diagnostic> apply(String suggestionCode, File inputDir) {
     var result = new ArrayList<Diagnostic>();
     var inputs = new ResolvedInputs();
-    getInputs().forEach(input -> inputs.put(input.name(), parse(dir, input, result)));
-    apply(suggestionCode, dir, inputs, result);
+    getInputs().forEach(input -> inputs.put(input.name(), parse(inputDir, input, result)));
+    apply(suggestionCode, inputs, inputDir, result);
     return result;
   }
 
   protected void apply(
-      String suggestionCode, File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+      String suggestionCode,
+      ResolvedInputs inputs,
+      File outputDir,
+      Collection<Diagnostic> diagnostics) {
     diagnostics.add(new Diagnostic(WARN, "Unknown suggestion: " + suggestionCode));
   }
 

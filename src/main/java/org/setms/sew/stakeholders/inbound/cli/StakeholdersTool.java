@@ -112,11 +112,14 @@ public class StakeholdersTool extends Tool {
 
   @Override
   public void apply(
-      String suggestionCode, File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+      String suggestionCode,
+      ResolvedInputs inputs,
+      File outputDir,
+      Collection<Diagnostic> diagnostics) {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
-      createOwner(dir, inputs, diagnostics);
+      createOwner(outputDir, inputs, diagnostics);
     } else {
-      super.apply(suggestionCode, dir, inputs, diagnostics);
+      super.apply(suggestionCode, inputs, outputDir, diagnostics);
     }
   }
 

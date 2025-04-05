@@ -55,12 +55,12 @@ class StakeholdersToolTest {
 
   @Test
   void shouldRejectMissingOwner() throws IOException {
-    var dir = new File(baseDir, "invalid/owner");
+    var inputDir = new File(baseDir, "invalid/owner");
 
-    var actual = tool.validate(dir);
+    var actual = tool.validate(inputDir);
 
     var suggestion = assertThatToolReportsErrorWithSuggestionToFix(actual);
-    assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, dir);
+    assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, inputDir);
   }
 
   private Suggestion assertThatToolReportsErrorWithSuggestionToFix(List<Diagnostic> actual) {
@@ -75,11 +75,11 @@ class StakeholdersToolTest {
     return suggestion;
   }
 
-  private void assertThatApplyingTheSuggestionCreatesAnOwner(Suggestion suggestion, File dir)
+  private void assertThatApplyingTheSuggestionCreatesAnOwner(Suggestion suggestion, File inputDir)
       throws IOException {
-    var ownerFile = new File(dir, "src/main/stakeholders/Some.owner");
+    var ownerFile = new File(inputDir, "src/main/stakeholders/Some.owner");
 
-    var actual = tool.apply(suggestion.code(), dir);
+    var actual = tool.apply(suggestion.code(), inputDir);
 
     assertThat(actual)
         .hasSize(1)
@@ -92,7 +92,7 @@ class StakeholdersToolTest {
   }
 
   @Test
-  void shouldRejectUnknowSuggestion() {
+  void shouldRejectUnknownSuggestion() {
     var dir = new File(baseDir, "invalid/suggestion");
 
     var actual = tool.apply("unknown.suggestion", dir);
