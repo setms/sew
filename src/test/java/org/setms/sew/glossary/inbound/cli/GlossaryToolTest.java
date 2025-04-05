@@ -54,7 +54,7 @@ class GlossaryToolTest {
 
   @Test
   void shouldBuildReport() {
-    var actual = tool.run(new File(baseDir, "report"));
+    var actual = tool.build(new File(baseDir, "report"));
 
     assertThat(actual).isEmpty();
     var output = new File(baseDir, "report/build/reports/glossary/report.html");
@@ -65,7 +65,7 @@ class GlossaryToolTest {
   void shouldRejectInvalidName() {
     var dir = new File(baseDir, "invalid/name");
 
-    var actual = tool.run(dir);
+    var actual = tool.build(dir);
 
     assertThat(actual)
         .hasSize(1)
@@ -78,7 +78,7 @@ class GlossaryToolTest {
   void shouldRejectMissingDisplay() {
     var dir = new File(baseDir, "invalid/display");
 
-    var actual = tool.run(dir);
+    var actual = tool.build(dir);
 
     assertThat(actual)
         .hasSize(1)
@@ -89,7 +89,7 @@ class GlossaryToolTest {
   void shouldRejectInvalidSeeAlso() {
     var dir = new File(baseDir, "invalid/see");
 
-    var actual = tool.run(dir);
+    var actual = tool.validate(dir);
 
     assertThat(actual)
         .hasSize(1)

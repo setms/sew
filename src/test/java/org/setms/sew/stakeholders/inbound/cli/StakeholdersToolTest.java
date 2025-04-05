@@ -57,7 +57,7 @@ class StakeholdersToolTest {
   void shouldRejectMissingOwner() throws IOException {
     var dir = new File(baseDir, "invalid/owner");
 
-    var actual = tool.run(dir);
+    var actual = tool.validate(dir);
 
     var suggestion = assertThatToolReportsErrorWithSuggestionToFix(actual);
     assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, dir);
@@ -106,7 +106,7 @@ class StakeholdersToolTest {
   void shouldRejectMultipleOwners() {
     var dir = new File(baseDir, "invalid/owners");
 
-    var actual = tool.run(dir);
+    var actual = tool.validate(dir);
 
     assertThat(actual)
         .hasSize(1)
@@ -117,7 +117,7 @@ class StakeholdersToolTest {
   void shouldRejectNonUserInUserCase() {
     var dir = new File(baseDir, "invalid/nonuser");
 
-    var actual = tool.run(dir);
+    var actual = tool.validate(dir);
 
     assertThat(actual)
         .hasSize(1)
@@ -129,7 +129,7 @@ class StakeholdersToolTest {
   void shouldRejectUnknownUserInUserCase() {
     var dir = new File(baseDir, "invalid/missing");
 
-    var actual = tool.run(dir);
+    var actual = tool.validate(dir);
 
     assertThat(actual).hasSize(1).contains(new Diagnostic(ERROR, "Unknown user Micky"));
   }
@@ -138,7 +138,7 @@ class StakeholdersToolTest {
   void shouldAcceptUserInUserCase() {
     var dir = new File(baseDir, "valid");
 
-    var actual = tool.run(dir);
+    var actual = tool.validate(dir);
 
     assertThat(actual).isEmpty();
   }

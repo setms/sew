@@ -23,7 +23,7 @@ import org.setms.sew.tool.ResolvedInputs;
 import org.setms.sew.tool.Tool;
 
 @Slf4j
-public class GlossaryTool implements Tool {
+public class GlossaryTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
@@ -38,15 +38,8 @@ public class GlossaryTool implements Tool {
   }
 
   @Override
-  public void run(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  protected void validate(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get("terms", Term.class);
-    validate(terms, diagnostics);
-    if (diagnostics.isEmpty()) {
-      buildGlossary(dir, terms, diagnostics);
-    }
-  }
-
-  private void validate(Collection<Term> terms, Collection<Diagnostic> diagnostics) {
     terms.forEach(
         term ->
             Optional.ofNullable(term.getSeeAlso()).stream()
@@ -66,7 +59,9 @@ public class GlossaryTool implements Tool {
     }
   }
 
-  private void buildGlossary(File dir, Collection<Term> terms, Collection<Diagnostic> diagnostics) {
+  @Override
+  public void build(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var terms = inputs.get("terms", Term.class);
     var termsByPackage = terms.stream().collect(groupingBy(Term::getPackage));
     termsByPackage.forEach(
         (glossary, glossaryTerms) ->
@@ -81,7 +76,7 @@ public class GlossaryTool implements Tool {
     try (var writer = new PrintWriter(file)) {
       buildGlossary(glossary, writer, terms);
     } catch (IOException e) {
-      diagnostics.add(new Diagnostic(ERROR, "Failed to write " + file));
+      diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
     }
   }
 

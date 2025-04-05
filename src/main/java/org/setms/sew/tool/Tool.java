@@ -11,18 +11,42 @@ import java.util.List;
 import java.util.Objects;
 import org.setms.sew.schema.NamedObject;
 
-public interface Tool {
+/**
+ * Something that validates input, builds output from input, and provides and applies suggestions
+ * based on the input.
+ */
+public abstract class Tool {
 
-  List<Input<?>> getInputs();
+  /**
+   * The inputs this tool consumes.
+   *
+   * @return the inputs
+   */
+  public abstract List<Input<?>> getInputs();
 
-  List<Output> getOutputs();
+  /**
+   * The outputs this tool produces.
+   *
+   * @return the outputs
+   */
+  public abstract List<Output> getOutputs();
 
-  default List<Diagnostic> run(File dir) {
+  /**
+   * Validate the inputs.
+   *
+   * @param dir the directory in which to find inputs
+   * @return any validation issues
+   */
+  public final List<Diagnostic> validate(File dir) {
     var result = new ArrayList<Diagnostic>();
+    validate(dir, resolveInputs(dir, result), result);
+    return result;
+  }
+
+  private ResolvedInputs resolveInputs(File dir, Collection<Diagnostic> result) {
     var inputs = new ResolvedInputs();
     getInputs().forEach(input -> inputs.put(input.name(), parse(dir, input, result)));
-    run(dir, inputs, result);
-    return result;
+    return inputs;
   }
 
   private <T extends NamedObject> List<T> parse(
@@ -42,9 +66,30 @@ public interface Tool {
         .toList();
   }
 
-  void run(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
+  protected void validate(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
 
-  default List<Diagnostic> apply(String suggestionCode, File dir) {
+  /**
+   * Build the output from the input
+   *
+   * @param dir the directory in which to find input
+   * @return diagnostics about building the output
+   */
+  public final List<Diagnostic> build(File dir) {
+    var result = new ArrayList<Diagnostic>();
+    build(dir, resolveInputs(dir, result), result);
+    return result;
+  }
+
+  protected void build(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
+
+  /**
+   * Apply a suggestion.
+   *
+   * @param suggestionCode the suggestion to apply
+   * @param dir the directory in which to find input
+   * @return diagnostics about the applying the suggestion
+   */
+  public final List<Diagnostic> apply(String suggestionCode, File dir) {
     var result = new ArrayList<Diagnostic>();
     var inputs = new ResolvedInputs();
     getInputs().forEach(input -> inputs.put(input.name(), parse(dir, input, result)));
@@ -52,12 +97,12 @@ public interface Tool {
     return result;
   }
 
-  default void apply(
+  protected void apply(
       String suggestionCode, File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     diagnostics.add(new Diagnostic(WARN, "Unknown suggestion: " + suggestionCode));
   }
 
-  default Diagnostic fileCreated(File file) {
+  protected final Diagnostic fileCreated(File file) {
     return new Diagnostic(INFO, "Created file: " + file.getPath());
   }
 }

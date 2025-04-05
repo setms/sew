@@ -22,7 +22,7 @@ import org.setms.sew.tool.ResolvedInputs;
 import org.setms.sew.tool.Suggestion;
 import org.setms.sew.tool.Tool;
 
-public class StakeholdersTool implements Tool {
+public class StakeholdersTool extends Tool {
 
   private static final Pattern PERSON = Pattern.compile("Person\\((?<name>[a-zA-Z0-9_()]+)\\)");
   private static final String STAKEHOLDERS_PATH = "src/main/stakeholders";
@@ -47,7 +47,7 @@ public class StakeholdersTool implements Tool {
   }
 
   @Override
-  public void run(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  protected void validate(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var owners = inputs.get("owners", Owner.class);
     validateOwner(owners, diagnostics);
     var users = inputs.get("users", User.class);
@@ -116,7 +116,7 @@ public class StakeholdersTool implements Tool {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
       createOwner(dir, inputs, diagnostics);
     } else {
-      Tool.super.apply(suggestionCode, dir, inputs, diagnostics);
+      super.apply(suggestionCode, dir, inputs, diagnostics);
     }
   }
 
@@ -125,7 +125,7 @@ public class StakeholdersTool implements Tool {
     try {
       var scope = scopeOf(dir, stakeholdersDir);
       var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
-      var ownerFile = new File(stakeholdersDir, "Some.owner");
+      var ownerFile = new File(stakeholdersDir, owner.getName() + ".owner");
       new SewFormat().newBuilder().build(owner, ownerFile);
       diagnostics.add(fileCreated(ownerFile));
     } catch (Exception e) {
