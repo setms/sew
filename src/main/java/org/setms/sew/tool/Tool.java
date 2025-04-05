@@ -13,24 +13,26 @@ import org.setms.sew.schema.NamedObject;
 
 public interface Tool {
 
+  List<Input<?>> getInputs();
+
+  List<Output> getOutputs();
+
   default List<Diagnostic> run(File dir) {
     var result = new ArrayList<Diagnostic>();
     var inputs = new ResolvedInputs();
-    getInputs().forEach(input -> inputs.put(input.getName(), parse(dir, input, result)));
+    getInputs().forEach(input -> inputs.put(input.name(), parse(dir, input, result)));
     run(dir, inputs, result);
     return result;
   }
 
-  List<Input<?>> getInputs();
-
   private <T extends NamedObject> List<T> parse(
       File dir, Input<T> input, Collection<Diagnostic> diagnostics) {
-    var parser = input.getFormat().newParser();
-    return input.getGlob().matchingIn(dir).stream()
+    var parser = input.format().newParser();
+    return input.glob().matchingIn(dir).stream()
         .map(
             file -> {
               try {
-                return parser.parse(file, input.getType());
+                return parser.parse(file, input.type());
               } catch (Exception e) {
                 diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
                 return null;
@@ -45,7 +47,7 @@ public interface Tool {
   default List<Diagnostic> apply(String suggestionCode, File dir) {
     var result = new ArrayList<Diagnostic>();
     var inputs = new ResolvedInputs();
-    getInputs().forEach(input -> inputs.put(input.getName(), parse(dir, input, result)));
+    getInputs().forEach(input -> inputs.put(input.name(), parse(dir, input, result)));
     apply(suggestionCode, dir, inputs, result);
     return result;
   }

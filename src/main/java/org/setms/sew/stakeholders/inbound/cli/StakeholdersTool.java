@@ -1,5 +1,6 @@
 package org.setms.sew.stakeholders.inbound.cli;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.setms.sew.tool.Level.ERROR;
 
@@ -16,6 +17,7 @@ import org.setms.sew.schema.Pointer;
 import org.setms.sew.tool.Diagnostic;
 import org.setms.sew.tool.Glob;
 import org.setms.sew.tool.Input;
+import org.setms.sew.tool.Output;
 import org.setms.sew.tool.ResolvedInputs;
 import org.setms.sew.tool.Suggestion;
 import org.setms.sew.tool.Tool;
@@ -37,6 +39,11 @@ public class StakeholdersTool implements Tool {
             new Glob("src/main/requirements", "**/*.useCase"),
             new SewFormat(),
             UseCase.class));
+  }
+
+  @Override
+  public List<Output> getOutputs() {
+    return emptyList();
   }
 
   @Override

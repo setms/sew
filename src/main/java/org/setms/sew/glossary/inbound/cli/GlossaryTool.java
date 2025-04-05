@@ -18,6 +18,7 @@ import org.setms.sew.schema.Pointer;
 import org.setms.sew.tool.Diagnostic;
 import org.setms.sew.tool.Glob;
 import org.setms.sew.tool.Input;
+import org.setms.sew.tool.Output;
 import org.setms.sew.tool.ResolvedInputs;
 import org.setms.sew.tool.Tool;
 
@@ -29,6 +30,11 @@ public class GlossaryTool implements Tool {
     return List.of(
         new Input<>(
             "terms", new Glob("src/main/glossary", "**/*.term"), new SewFormat(), Term.class));
+  }
+
+  @Override
+  public List<Output> getOutputs() {
+    return List.of(new Output(new Glob("build/reports/glossary", "*.html")));
   }
 
   @Override

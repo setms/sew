@@ -23,8 +23,7 @@ graph
     Tool -- consumes --> Artifact
     Tool -- produces --> Artifact
     Tool -- issues --> Diagnostic
-    Tool -- provides --> Suggestion
-    Suggestion -- solves --> Diagnostic
+    Diagnostic -- provides --> Suggestion
 ```
 
 Every tool would live in its own jar and depend on a shared jar that implements the above model and on jars that

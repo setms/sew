@@ -35,23 +35,22 @@ class StakeholdersToolTest {
 
     assertThat(actual).hasSize(3);
     assertThat(actual)
-        .allSatisfy(input -> assertThat(input.getFormat()).isInstanceOf(SewFormat.class));
+        .allSatisfy(input -> assertThat(input.format()).isInstanceOf(SewFormat.class));
     assertStakeholder(actual.get(0), User.class);
     assertStakeholder(actual.get(1), Owner.class);
     assertUseCase(actual.get(2));
   }
 
   private void assertStakeholder(Input<?> input, Class<? extends Stakeholder> type) {
-    assertThat(input.getGlob().getPath()).isEqualTo("src/main/stakeholders");
-    assertThat(input.getGlob().getPattern())
-        .isEqualTo("**/*." + type.getSimpleName().toLowerCase());
-    assertThat(input.getType()).isEqualTo(type);
+    assertThat(input.glob().getPath()).isEqualTo("src/main/stakeholders");
+    assertThat(input.glob().getPattern()).isEqualTo("**/*." + type.getSimpleName().toLowerCase());
+    assertThat(input.type()).isEqualTo(type);
   }
 
   private void assertUseCase(Input<?> input) {
-    assertThat(input.getGlob().getPath()).isEqualTo("src/main/requirements");
-    assertThat(input.getGlob().getPattern()).isEqualTo("**/*.useCase");
-    assertThat(input.getType()).isEqualTo(UseCase.class);
+    assertThat(input.glob().getPath()).isEqualTo("src/main/requirements");
+    assertThat(input.glob().getPattern()).isEqualTo("**/*.useCase");
+    assertThat(input.type()).isEqualTo(UseCase.class);
   }
 
   @Test

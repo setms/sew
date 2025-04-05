@@ -1,7 +1,6 @@
 package org.setms.sew.glossary.inbound.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.setms.sew.tool.Level.ERROR;
 
 import java.io.File;
@@ -39,9 +38,18 @@ class GlossaryToolTest {
     var actual = tool.getInputs();
 
     assertThat(actual).hasSize(1);
-    var input = actual.iterator().next();
-    assertThat(input.getGlob()).hasToString("src/main/glossary/**/*.term");
-    assertThat(input.getFormat()).isInstanceOf(SewFormat.class);
+    var input = actual.getFirst();
+    assertThat(input.glob()).hasToString("src/main/glossary/**/*.term");
+    assertThat(input.format()).isInstanceOf(SewFormat.class);
+  }
+
+  @Test
+  void shouldDefineOutputs() {
+    var actual = tool.getOutputs();
+
+    assertThat(actual).hasSize(1);
+    var output = actual.getFirst();
+    assertThat(output.glob()).hasToString("build/reports/glossary/*.html");
   }
 
   @Test
