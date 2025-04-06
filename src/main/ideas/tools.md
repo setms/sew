@@ -8,18 +8,17 @@ understanding any specifics about any particular artifact type or file format.
 
 ```mermaid
 graph
-    ArtifactType -- registered in --> Registry
-    Tool -- registered in --> Registry
+    Tool -- registered in --> ToolRegistry
+    Tool -- defines\noutput as --> Output
+    Output -- builds\nartifacts at --> Glob
     Tool -- defines input as --> Input
-    Input -- filters artifacts by --> Glob
-    Input -- consumes artifacts of type --> ArtifactType
-    ArtifactType -- defined by --> Format
-    Format -- uses --> Builder
+    Input -- finds\nartifacts\nusing --> Glob
+    Input -- parses\nartifacts\nusing --> Format
     Format -- uses --> Parser
+    Format -- uses --> Builder
     Parser -- parses --> Artifact
     Builder -- builds --> Artifact
-    Tool -- defines output as --> Output
-    Output -- builds artifacts of type --> ArtifactType
+    Tool -- may build\nartifacts using --> Builder
     Tool -- consumes --> Artifact
     Tool -- produces --> Artifact
     Tool -- issues --> Diagnostic
@@ -31,6 +30,6 @@ implement parsers/builders for the artifact type that it uses/produces.
 
 ## Gradle
 
-- `documentation` task depends on each tool's "reporting" functionality
+- `assemble` task depends on each tool's "build" functionality
 - `check` task depends on each tool's "validation" functionality
 - `help` task depends on each tool's "suggestions" functionality
