@@ -1,14 +1,14 @@
 # Glossary
 
-## Validations
-
-- √ Every `seeAlso` must refer to a defined term (error)
-
-## Reporting
+## Build
 
 - √ Compile HTML glossary with hyperlinks from terms to related terms
 
-## Suggestions
+## Validate
+
+- √ Every `seeAlso` must refer to a defined term (error)
+
+## Suggest
 
 ### Suggest terms
 

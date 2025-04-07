@@ -1,10 +1,16 @@
 # Stakeholders
 
-## Validations
+## Validate
 
-- √ There must be exactly one owner stakeholder
-- √ Every person in a use case must be a user stakeholder
+- √ There must be an owner stakeholder (warning)
+- √ There must not be more than one owner stakeholder (error)
+- There must be a user stakeholder (warning)
+- √ Every person in a use case must be a user stakeholder (error)
+- Every user stakeholder must have at least one user requirement (warning)
 
-## Suggestions
+## Suggest
 
 - √ Create owner
+- Create user
+- Create user requirement
+

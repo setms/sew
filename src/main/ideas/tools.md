@@ -1,10 +1,18 @@
-# Tool infrastructure
+# Architecture
+
+The architecture is mainly
+[pipes and filters](https://www.enterpriseintegrationpatterns.com/patterns/messaging/PipesAndFilters.html):
+
+- The filters are tools that consume inputs and produce outputs.
+- The overall system implements the pipes that connect the outputs of one tool to the inputs of another.
+
+## Tools infrastructure
 
 If we maintain a registry of tools, we can reason about them in the abstract.
 For instance, a Gradle plugin could read all tools from the registry and generate task definitions, without
-understanding any specifics about any particular tool.
-Or an IntelliJ plugin could read all artifact types and register syntax highlighters/parsers for them, without
-understanding any specifics about any particular artifact type or file format.
+understanding the specifics of any particular tool.
+Or an IntelliJ plugin could read all input formats and register file extensions and syntax highlighters for them,
+without understanding the specifics of particular file format.
 
 ```mermaid
 graph

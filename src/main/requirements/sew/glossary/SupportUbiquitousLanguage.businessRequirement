@@ -3,5 +3,5 @@ package sew.glossary
 businessRequirement SupportUbiquitousLanguage {
     display     = "Support ubiquitous language"
     description = "Use a common language among all collaborators."
-    rationale   = "Reduce costs by minimizing misunderstandings."
+    rationale   = "Reduce communication and rework costs by minimizing misunderstandings."
 }
