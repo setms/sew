@@ -3,6 +3,7 @@ package org.setms.sew.stakeholders.inbound.cli;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.setms.sew.tool.Level.ERROR;
+import static org.setms.sew.tool.Level.WARN;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class StakeholdersTool extends Tool {
     if (owners.isEmpty()) {
       diagnostics.add(
           new Diagnostic(
-              ERROR,
+              WARN,
               "Missing owner",
               List.of(new Suggestion(SUGGESTION_CREATE_OWNER, "Create owner"))));
     } else if (owners.size() > 1) {

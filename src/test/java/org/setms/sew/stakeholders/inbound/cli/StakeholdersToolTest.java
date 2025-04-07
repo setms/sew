@@ -59,14 +59,14 @@ class StakeholdersToolTest {
 
     var actual = tool.validate(inputDir);
 
-    var suggestion = assertThatToolReportsErrorWithSuggestionToFix(actual);
+    var suggestion = assertThatToolReportsDiagnosticWithSuggestionToFix(actual);
     assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, inputDir);
   }
 
-  private Suggestion assertThatToolReportsErrorWithSuggestionToFix(List<Diagnostic> actual) {
+  private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(List<Diagnostic> actual) {
     assertThat(actual).hasSize(1);
     var diagnostic = actual.getFirst();
-    assertThat(diagnostic.level()).isEqualTo(ERROR);
+    assertThat(diagnostic.level()).isEqualTo(WARN);
     assertThat(diagnostic.message()).isEqualTo("Missing owner");
     var suggestions = diagnostic.suggestions();
     assertThat(suggestions).hasSize(1);
