@@ -1,0 +1,9 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Sew" language="Sew" implementationClass="org.setms.sew.intellij.SewFileType"/>
+
+        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.SewParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="Sew"
+                                       implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
+    </extensions>
+</idea-plugin>

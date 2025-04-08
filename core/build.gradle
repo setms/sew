@@ -1,0 +1,23 @@
+plugins {
+    id 'antlr'
+    alias(libs.plugins.lombok)
+}
+
+dependencies {
+    antlr libs.bundles.antlr
+    antlr libs.bundles.evo.inflector
+
+    implementation libs.bundles.antlr.runtime
+    implementation libs.bundles.slf4f
+    implementation libs.bundles.validation
+
+    runtimeOnly libs.bundles.validation.runtime
+
+    testImplementation libs.bundles.junit
+    testRuntimeOnly libs.bundles.junit.runtime
+}
+
+generateGrammarSource {
+    arguments = ['-package', 'org.setms.sew.antlr']
+}
+sourceSets.main.java.srcDirs += project.layout.buildDirectory.dir('generated-src/antlr/main')

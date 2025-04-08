@@ -1,43 +1,19 @@
-plugins {
-    id 'java'
-    id 'antlr'
-    alias(libs.plugins.lombok)
-    alias(libs.plugins.mapstruct)
-    alias(libs.plugins.spring.boot)
-}
+subprojects {
 
-apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'java'
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    antlr libs.bundles.antlr
-    antlr libs.bundles.evo.inflector
-
-    implementation libs.bundles.spring.boot
-    implementation libs.bundles.antlr.runtime
-
-    testImplementation libs.bundles.spring.test
-}
-
-generateGrammarSource {
-    arguments = ['-package', 'org.setms.sew.antlr']
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    repositories {
+        mavenCentral()
     }
-}
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 
-mapstruct {
-    defaultComponentModel = "spring"
-    defaultInjectionStrategy = "constructor"
-    unmappedSourcePolicy = "IGNORE"
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
 }

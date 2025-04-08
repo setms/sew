@@ -1,0 +1,46 @@
+plugins {
+    id 'org.jetbrains.intellij.platform' version '2.5.0'
+}
+
+group = 'org.setms.sew'
+version = '0.1.0'
+
+repositories {
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+dependencies {
+    implementation project(':core')
+
+    testImplementation platform('org.junit:junit-bom:5.12.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    intellijPlatform {
+        intellijIdeaCommunity("2024.3.5")
+        instrumentationTools()
+        pluginVerifier()
+    }
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        id = 'sew'
+        version = providers.gradleProperty("pluginVersion")
+        name = 'Software Engineering Workbench (SEW)'
+        description = 'Support for SEW inside IntelliJ'
+        version = project.version
+
+        ideaVersion {
+            sinceBuild = "223"
+            untilBuild = provider { (String) null }
+        }
+
+        vendor {
+            name = 'org.setms'
+            email = 'intellij@setms.org'
+            url = 'https://www.setms.org'
+        }
+    }
+}
