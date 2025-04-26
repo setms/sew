@@ -9,22 +9,22 @@ useCase AddTerm {
 scenario AddTerm {
     description = "An analyst adds a term to a glossary."
     steps       = [
-        ReadModel("Glossary"),
-        Person("Analyst"),
-        Command("AddTerm"),
-        Aggregate("Glossary"),
-        Event("TermAdded"),
-        ReadModel("Glossary")
+        readModel(Glossary),
+        user(Analyst),
+        command(AddTerm),
+        aggregate(Glossary),
+        event(TermAdded),
+        readModel(Glossary)
     ]
 }
 
 scenario RejectAdditionOfExistingTerm {
     description = "An analyst attempts to add a term to a glossary that already contains that term. This is rejected."
     steps       = [
-        ReadModel("Glossary"),
-        Person("Analyst"),
-        Command("AddTerm"),
-        Aggregate("Glossary"),
-        Event("TermAdditionRejected")
+        readModel(Glossary),
+        user(Analyst),
+        command(AddTerm),
+        aggregate(Glossary),
+        event(TermAdditionRejected)
     ]
 }

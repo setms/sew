@@ -9,16 +9,20 @@
   elementTypeClass="org.setms.sew.intellij.SewElementType"
   tokenTypeClass="org.setms.sew.intellij.SewTokenType"
   tokens=[
-    IDENTIFIER="IDENTIFIER"
-    PACKAGE="package"
-    EQ="="
-    DOT="."
     COMMA=","
-    LBRACE="{"
-    RBRACE="}"
-    LBRACK="["
-    RBRACK="]"
     COMMENT="COMMENT"
+    DOT="."
+    EQ="="
+    IDENTIFIER="IDENTIFIER"
+    LBRACE="{"
+    LBRACK="["
+    LPAREN="("
+    OBJECT_NAME="OBJECT_NAME"
+    PACKAGE="PACKAGE"
+    RBRACE="}"
+    RBRACK="]"
+    RPAREN=")"
+    TYPE="TYPE"
   ]
 }
 
@@ -26,20 +30,14 @@ sewFile ::= scope? object+
 
 scope ::= PACKAGE qualifiedName
 
-qualifiedName ::= objectName (DOT objectName)*
+qualifiedName ::= IDENTIFIER (DOT IDENTIFIER)*
 
-objectName ::= IDENTIFIER
+object ::= TYPE OBJECT_NAME LBRACE property* RBRACE
 
-object ::= type objectName LBRACE property* RBRACE
-
-type ::= IDENTIFIER
-
-property ::= objectName EQ (item | list)
+property ::= IDENTIFIER EQ (item | list)
 
 list ::= LBRACK (item (COMMA item)*)? RBRACK
 
-item ::= referenceLiteral | stringLiteral
+item ::= OBJECT_NAME | STRING | typedName
 
-referenceLiteral ::= IDENTIFIER
-
-stringLiteral ::= STRING
+typedName ::= TYPE_NAME LPAREN OBJECT_NAME RPAREN

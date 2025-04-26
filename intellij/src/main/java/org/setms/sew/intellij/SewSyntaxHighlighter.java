@@ -5,6 +5,7 @@ import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
+import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,20 +22,11 @@ public class SewSyntaxHighlighter extends SyntaxHighlighterBase {
   }
 
   private TextAttributesKey toTextAttributesKey(IElementType tokenType) {
-    if (tokenType == SewElementTypes.IDENTIFIER) {
-      return DefaultLanguageHighlighterColors.IDENTIFIER;
+    if (tokenType == TokenType.WHITE_SPACE) {
+      return null;
     }
-    if (tokenType == SewElementTypes.STRING) {
-      return DefaultLanguageHighlighterColors.STRING;
-    }
-    if (tokenType == SewElementTypes.LBRACE || tokenType == SewElementTypes.RBRACE) {
-      return DefaultLanguageHighlighterColors.BRACES;
-    }
-    if (tokenType == SewElementTypes.EQ) {
-      return DefaultLanguageHighlighterColors.OPERATION_SIGN;
-    }
-    if (tokenType == SewElementTypes.PACKAGE) {
-      return DefaultLanguageHighlighterColors.KEYWORD;
+    if (tokenType == TokenType.BAD_CHARACTER) {
+      return DefaultLanguageHighlighterColors.INVALID_STRING_ESCAPE;
     }
     if (tokenType == SewElementTypes.DOT) {
       return DefaultLanguageHighlighterColors.DOT;
@@ -42,8 +34,29 @@ public class SewSyntaxHighlighter extends SyntaxHighlighterBase {
     if (tokenType == SewElementTypes.LBRACK || tokenType == SewElementTypes.RBRACK) {
       return DefaultLanguageHighlighterColors.BRACKETS;
     }
+    if (tokenType == SewElementTypes.LPAREN || tokenType == SewElementTypes.RPAREN) {
+      return DefaultLanguageHighlighterColors.PARENTHESES;
+    }
     if (tokenType == SewElementTypes.COMMENT) {
       return DefaultLanguageHighlighterColors.LINE_COMMENT;
+    }
+    if (tokenType == SewElementTypes.STRING) {
+      return DefaultLanguageHighlighterColors.STRING;
+    }
+    if (tokenType == SewElementTypes.LBRACE || tokenType == SewElementTypes.RBRACE) {
+      return DefaultLanguageHighlighterColors.BRACES;
+    }
+    if (tokenType == SewElementTypes.EQ || tokenType == SewElementTypes.COMMA) {
+      return DefaultLanguageHighlighterColors.OPERATION_SIGN;
+    }
+    if (tokenType == SewElementTypes.PACKAGE || tokenType == SewElementTypes.TYPE) {
+      return DefaultLanguageHighlighterColors.KEYWORD;
+    }
+    if (tokenType == SewElementTypes.OBJECT_NAME) {
+      return DefaultLanguageHighlighterColors.CLASS_NAME;
+    }
+    if (tokenType == SewElementTypes.IDENTIFIER) {
+      return DefaultLanguageHighlighterColors.IDENTIFIER;
     }
     return null;
   }
