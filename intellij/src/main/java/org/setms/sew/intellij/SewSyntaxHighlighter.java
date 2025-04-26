@@ -12,32 +12,39 @@ public class SewSyntaxHighlighter extends SyntaxHighlighterBase {
 
   @Override
   public @NotNull Lexer getHighlightingLexer() {
-    return new FlexAdapter(new SewLexer((java.io.Reader) null));
+    return new FlexAdapter(new SewLexer(null));
   }
 
   @Override
   public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
-    if (tokenType == SewElementTypes.STRING) {
-      return pack(DefaultLanguageHighlighterColors.STRING);
-    }
-    if (tokenType == SewElementTypes.COMMENT) {
-      return pack(DefaultLanguageHighlighterColors.LINE_COMMENT);
-    }
+    return pack(toTextAttributesKey(tokenType));
+  }
+
+  private TextAttributesKey toTextAttributesKey(IElementType tokenType) {
     if (tokenType == SewElementTypes.IDENTIFIER) {
-      return pack(DefaultLanguageHighlighterColors.IDENTIFIER);
+      return DefaultLanguageHighlighterColors.IDENTIFIER;
     }
-    if (tokenType == SewElementTypes.EQ
-        || tokenType == SewElementTypes.COMMA
-        || tokenType == SewElementTypes.DOT
-        || tokenType == SewElementTypes.LBRACE
-        || tokenType == SewElementTypes.RBRACE
-        || tokenType == SewElementTypes.LBRACK
-        || tokenType == SewElementTypes.RBRACK) {
-      return pack(DefaultLanguageHighlighterColors.OPERATION_SIGN);
+    if (tokenType == SewElementTypes.STRING) {
+      return DefaultLanguageHighlighterColors.STRING;
+    }
+    if (tokenType == SewElementTypes.LBRACE || tokenType == SewElementTypes.RBRACE) {
+      return DefaultLanguageHighlighterColors.BRACES;
+    }
+    if (tokenType == SewElementTypes.EQ) {
+      return DefaultLanguageHighlighterColors.OPERATION_SIGN;
     }
     if (tokenType == SewElementTypes.PACKAGE) {
-      return pack(DefaultLanguageHighlighterColors.KEYWORD);
+      return DefaultLanguageHighlighterColors.KEYWORD;
     }
-    return TextAttributesKey.EMPTY_ARRAY;
+    if (tokenType == SewElementTypes.DOT) {
+      return DefaultLanguageHighlighterColors.DOT;
+    }
+    if (tokenType == SewElementTypes.LBRACK || tokenType == SewElementTypes.RBRACK) {
+      return DefaultLanguageHighlighterColors.BRACKETS;
+    }
+    if (tokenType == SewElementTypes.COMMENT) {
+      return DefaultLanguageHighlighterColors.LINE_COMMENT;
+    }
+    return null;
   }
 }

@@ -3,6 +3,9 @@
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.DecisionFileType"
                   extensions="decision"/>
+        <fileType name="Use case" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.UseCaseFileType"
+                  extensions="useCase"/>
         <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
     </extensions>
 </idea-plugin>

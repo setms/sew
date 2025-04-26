@@ -85,6 +85,7 @@ public class SewParserDefinition implements ParserDefinition {
     String extension = viewProvider.getFileType().getDefaultExtension();
     return switch (extension) {
       case "decision" -> new DecisionFile(viewProvider);
+      case "useCase" -> new UseCaseFile(viewProvider);
       default -> throw new UnsupportedOperationException("Unknown file extension: " + extension);
     };
   }
