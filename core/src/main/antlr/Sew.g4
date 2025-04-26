@@ -26,5 +26,5 @@ IDENTIFIER: [a-zA-Z0-9_()]+;
 
 STRING: '"' (~["\r\n])* '"';
 
-WS: [ \t\r\n]+ -> skip;
-COMMENT: '#' ~[\r\n]* -> skip;
+WS: [ \t\r\n]+ -> channel(HIDDEN);
+COMMENT: '#' ~[\r\n]* -> channel(HIDDEN);

@@ -1,9 +1,8 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
-        <fileType name="Sew" language="Sew" implementationClass="org.setms.sew.intellij.SewFileType"/>
-
-        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.SewParserDefinition"/>
-        <lang.syntaxHighlighterFactory language="Sew"
-                                       implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
+        <fileType name="Decision" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.DecisionFileType"
+                  extensions="decision"/>
+        <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
     </extensions>
 </idea-plugin>

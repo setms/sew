@@ -1,35 +1,35 @@
 package org.setms.sew.intellij;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
-import com.intellij.openapi.util.IconLoader;
 import javax.swing.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SewFileType extends LanguageFileType {
-  public static final SewFileType INSTANCE = new SewFileType();
+public class DecisionFileType extends LanguageFileType {
 
-  private SewFileType() {
+  public static final DecisionFileType INSTANCE = new DecisionFileType();
+
+  private DecisionFileType() {
     super(SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull String getName() {
-    return "Sew File";
+    return "Decision";
   }
 
   @Override
   public @NotNull String getDescription() {
-    return "Sew language file";
+    return "Architecture or design decision";
   }
 
   @Override
   public @NotNull String getDefaultExtension() {
-    return "sew";
+    return "decision";
   }
 
   @Override
   public @Nullable Icon getIcon() {
-    return IconLoader.getIcon("/icons/sew_icon.png", SewFileType.class);
+    return SewIcons.DECISION;
   }
 }

@@ -1,5 +1,6 @@
 package org.setms.sew.intellij;
 
+import com.intellij.lexer.FlexAdapter;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
@@ -11,26 +12,30 @@ public class SewSyntaxHighlighter extends SyntaxHighlighterBase {
 
   @Override
   public @NotNull Lexer getHighlightingLexer() {
-    return new SewLexerAdapter();
+    return new FlexAdapter(new SewLexer((java.io.Reader) null));
   }
 
   @Override
   public TextAttributesKey @NotNull [] getTokenHighlights(IElementType tokenType) {
-    if (tokenType == SewTokenTypes.STRING) {
+    if (tokenType == SewElementTypes.STRING) {
       return pack(DefaultLanguageHighlighterColors.STRING);
-    } else if (tokenType == SewTokenTypes.IDENTIFIER) {
-      return pack(DefaultLanguageHighlighterColors.IDENTIFIER);
-    } else if (tokenType == SewTokenTypes.COMMENT) {
+    }
+    if (tokenType == SewElementTypes.COMMENT) {
       return pack(DefaultLanguageHighlighterColors.LINE_COMMENT);
-    } else if (tokenType == SewTokenTypes.EQ
-        || tokenType == SewTokenTypes.COMMA
-        || tokenType == SewTokenTypes.DOT
-        || tokenType == SewTokenTypes.LBRACE
-        || tokenType == SewTokenTypes.RBRACE
-        || tokenType == SewTokenTypes.LBRACK
-        || tokenType == SewTokenTypes.RBRACK) {
+    }
+    if (tokenType == SewElementTypes.IDENTIFIER) {
+      return pack(DefaultLanguageHighlighterColors.IDENTIFIER);
+    }
+    if (tokenType == SewElementTypes.EQ
+        || tokenType == SewElementTypes.COMMA
+        || tokenType == SewElementTypes.DOT
+        || tokenType == SewElementTypes.LBRACE
+        || tokenType == SewElementTypes.RBRACE
+        || tokenType == SewElementTypes.LBRACK
+        || tokenType == SewElementTypes.RBRACK) {
       return pack(DefaultLanguageHighlighterColors.OPERATION_SIGN);
-    } else if (tokenType == SewTokenTypes.PACKAGE) {
+    }
+    if (tokenType == SewElementTypes.PACKAGE) {
       return pack(DefaultLanguageHighlighterColors.KEYWORD);
     }
     return TextAttributesKey.EMPTY_ARRAY;

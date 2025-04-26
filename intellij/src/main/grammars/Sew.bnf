@@ -1,0 +1,45 @@
+{
+  parserClass="org.setms.sew.intellij.SewParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+  psiClassPrefix="Sew"
+  psiImplClassSuffix="Impl"
+  psiPackage="org.setms.sew.intellij"
+  psiImplPackage="org.setms.sew.intellij"
+  elementTypeHolderClass="org.setms.sew.intellij.SewElementTypes"
+  elementTypeClass="org.setms.sew.intellij.SewElementType"
+  tokenTypeClass="org.setms.sew.intellij.SewTokenType"
+  tokens=[
+    IDENTIFIER="IDENTIFIER"
+    PACKAGE="package"
+    EQ="="
+    DOT="."
+    COMMA=","
+    LBRACE="{"
+    RBRACE="}"
+    LBRACK="["
+    RBRACK="]"
+    COMMENT="COMMENT"
+  ]
+}
+
+sewFile ::= scope? object+
+
+scope ::= PACKAGE qualifiedName
+
+qualifiedName ::= objectName (DOT objectName)*
+
+objectName ::= IDENTIFIER
+
+object ::= type objectName LBRACE property* RBRACE
+
+type ::= IDENTIFIER
+
+property ::= objectName EQ (item | list)
+
+list ::= LBRACK (item (COMMA item)*)? RBRACK
+
+item ::= referenceLiteral | stringLiteral
+
+referenceLiteral ::= IDENTIFIER
+
+stringLiteral ::= STRING

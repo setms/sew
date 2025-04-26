@@ -1,5 +1,7 @@
 package sew.backend
 
+# Use simple JSON over HTTP, colloquially (but incorrectly) known as "REST"
 decision Api {
     allowedTypes = [ JsonOverHttp ]
 }
+[
