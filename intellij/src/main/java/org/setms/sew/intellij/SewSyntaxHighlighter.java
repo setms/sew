@@ -22,7 +22,7 @@ public class SewSyntaxHighlighter extends SyntaxHighlighterBase {
   }
 
   private TextAttributesKey toTextAttributesKey(IElementType tokenType) {
-    if (tokenType == TokenType.WHITE_SPACE) {
+    if (tokenType == TokenType.WHITE_SPACE || tokenType == SewElementTypes.NEWLINE) {
       return null;
     }
     if (tokenType == TokenType.BAD_CHARACTER) {
@@ -52,7 +52,7 @@ public class SewSyntaxHighlighter extends SyntaxHighlighterBase {
     if (tokenType == SewElementTypes.PACKAGE || tokenType == SewElementTypes.TYPE) {
       return DefaultLanguageHighlighterColors.KEYWORD;
     }
-    if (tokenType == SewElementTypes.OBJECT_NAME) {
+    if (tokenType == SewElementTypes.NAME) {
       return DefaultLanguageHighlighterColors.CLASS_NAME;
     }
     if (tokenType == SewElementTypes.IDENTIFIER) {

@@ -2,6 +2,7 @@ package org.setms.sew.intellij;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import javax.swing.*;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +16,11 @@ public class DecisionFileType extends LanguageFileType {
 
   @Override
   public @NotNull String getName() {
+    return "Decision";
+  }
+
+  @Override
+  public @Nls @NotNull String getDisplayName() {
     return "Decision";
   }
 

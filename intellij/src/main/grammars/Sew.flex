@@ -15,22 +15,24 @@ import static org.setms.sew.intellij.SewElementTypes.*;
 %{
 %}
 
-COMMENT="#"[^\r\n]*
+COMMENT="#"[^\r\n]*[\r\n]+
 IDENTIFIER=[a-z][a-zA-Z]*
 STRING=\"([^\"\r\n]*)\"
 TYPE=(aggregate|alternative|businessRequirement|command|decision|entity|event|field|owner|readModel|scenario|screen|scope|term|useCase|user|userRequirement|valueObject)
-OBJECT_NAME=[A-Z][a-zA-Z0-9]*
-WHITE_SPACE=[ \t\r\n]+
+NAME=[A-Z][a-zA-Z0-9]*
+WHITE_SPACE=[ \t]+
+NEWLINE=[\r\n]+
 
 %%
 
 {WHITE_SPACE}               { return TokenType.WHITE_SPACE; }
 {COMMENT}                   { return COMMENT; }
+{NEWLINE}                   { return NEWLINE; }
 
 "package"                   { return PACKAGE; }
 
 {TYPE}                      { return TYPE; }
-{OBJECT_NAME}                 { return OBJECT_NAME; }
+{NAME}                      { return NAME; }
 
 "="                         { return EQ; }
 "."                         { return DOT; }

@@ -7,5 +7,7 @@
                   implementationClass="org.setms.sew.intellij.UseCaseFileType"
                   extensions="useCase"/>
         <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.SewParserDefinition"/>
+        <postStartupActivity implementation="org.setms.sew.intellij.SewStartupActivity"/>
     </extensions>
 </idea-plugin>
