@@ -6,7 +6,7 @@ useCase AddTerm {
     captures  = [ MaintainGlossary ]
 }
 
-scenario AddTerm {
+scenario AddNewTerm {
     description = "An analyst adds a term to a glossary."
     steps       = [
         readModel(Glossary),
@@ -18,7 +18,7 @@ scenario AddTerm {
     ]
 }
 
-scenario RejectAdditionOfExistingTerm {
+scenario RejectAdditionOfDuplicateTerm {
     description = "An analyst attempts to add a term to a glossary that already contains that term. This is rejected."
     steps       = [
         readModel(Glossary),
