@@ -1,7 +1,6 @@
 package org.setms.sew.intellij;
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
-import com.intellij.ide.structureView.StructureViewBuilder;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
@@ -15,7 +14,6 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class SewParserDefinition implements ParserDefinition {
 
@@ -61,7 +59,9 @@ public class SewParserDefinition implements ParserDefinition {
     String extension = viewProvider.getFileType().getDefaultExtension();
     return switch (extension) {
       case "decision" -> new DecisionFile(viewProvider);
+      case "owner" -> new OwnerFile(viewProvider);
       case "useCase" -> new UseCaseFile(viewProvider);
+      case "user" -> new UserFile(viewProvider);
       default -> throw new UnsupportedOperationException("Unknown file extension: " + extension);
     };
   }

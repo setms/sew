@@ -3,9 +3,15 @@
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.DecisionFileType"
                   extensions="decision"/>
+        <fileType name="Owner" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.OwnerFileType"
+                  extensions="owner"/>
         <fileType name="Use case" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.UseCaseFileType"
                   extensions="useCase"/>
+        <fileType name="User" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.UserFileType"
+                  extensions="user"/>
         <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
         <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.SewParserDefinition"/>
         <postStartupActivity implementation="org.setms.sew.intellij.SewStartupActivity"/>

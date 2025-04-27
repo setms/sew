@@ -27,7 +27,7 @@
   ]
 }
 
-sewFile ::= scope? &TYPE object+
+sewFile ::= scope? object+
 
 scope ::= PACKAGE qualifiedName NEWLINE
 
