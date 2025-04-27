@@ -1,13 +1,13 @@
 package org.setms.sew.core.schema;
 
 import java.util.Collection;
-
 import lombok.Value;
 
 @Value
 @SuppressWarnings("ClassCanBeRecord")
 public class Pointer {
 
+  String type;
   String id;
 
   @Override

@@ -1,30 +1,60 @@
 grammar Sew;
 
-sew: scope? object+ EOF;
+sew : scope? object+ ;
 
-scope: 'package' qualifiedName;
+scope : PACKAGE qualifiedName NEWLINE ;
 
-qualifiedName: name ('.' name)*;
+qualifiedName : IDENTIFIER (DOT IDENTIFIER)* ;
 
-name: IDENTIFIER;
+object : TYPE OBJECT_NAME LBRACE NEWLINE property* RBRACE NEWLINE ;
 
-object: type name '{' property* '}';
+property : IDENTIFIER EQ (item | list)  NEWLINE ;
 
-type: IDENTIFIER;
+list : LBRACK NEWLINE? (item (COMMA NEWLINE? item)*)? NEWLINE? RBRACK ;
 
-property: name '=' (item | list);
+item : OBJECT_NAME
+     | STRING
+     | typedName
+     ;
 
-list: '[' (item (',' item)*)? ']';
+typedName : TYPE LPAREN OBJECT_NAME RPAREN ;
 
-item: reference | string;
 
-reference: IDENTIFIER;
+PACKAGE      : 'package';
+TYPE         : 'aggregate'
+             | 'alternative'
+             | 'businessRequirement'
+             | 'command'
+             | 'decision'
+             | 'entity'
+             | 'event'
+             | 'field'
+             | 'owner'
+             | 'readModel'
+             | 'scenario'
+             | 'screen'
+             | 'scope'
+             | 'term'
+             | 'useCase'
+             | 'user'
+             | 'userRequirement'
+             | 'valueObject';
 
-string: STRING;
+OBJECT_NAME  : [A-Z] [a-zA-Z0-9]*;
+IDENTIFIER   : [a-z] [a-zA-Z]*;
+STRING       : '"' (~["\r\n])* '"';
 
-IDENTIFIER: [a-zA-Z0-9_()]+;
+COMMENT      : '#' ~[\r\n]*[\r\n]+ -> skip;
 
-STRING: '"' (~["\r\n])* '"';
+COMMA        : ',';
+DOT          : '.';
+EQ           : '=';
+LBRACE       : '{';
+RBRACE       : '}';
+LBRACK       : '[';
+RBRACK       : ']';
+LPAREN       : '(';
+RPAREN       : ')';
 
-WS: [ \t\r\n]+ -> channel(HIDDEN);
-COMMENT: '#' ~[\r\n]* -> channel(HIDDEN);
+WHITE_SPACE  : [ \t]+ -> skip;
+NEWLINE      : [\r\n]+;

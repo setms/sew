@@ -7,8 +7,8 @@ useCase JustDoIt {
 scenario HappyPath {
     description = "All's well that ends well"
     steps       = [
-        Person(Micky),
-        Command(DoIt),
-        Aggregate(System)
+        user(Micky),
+        command(DoIt),
+        aggregate(System)
     ]
 }

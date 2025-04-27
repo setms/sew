@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import org.setms.sew.core.format.sew.SewFormat;
 import org.setms.sew.core.schema.FullyQualifiedName;
 import org.setms.sew.core.schema.Pointer;
@@ -25,7 +24,6 @@ import org.setms.sew.core.tool.Tool;
 
 public class StakeholdersTool extends Tool {
 
-  private static final Pattern PERSON = Pattern.compile("Person\\((?<name>[a-zA-Z0-9_()]+)\\)");
   private static final String STAKEHOLDERS_PATH = "src/main/stakeholders";
   private static final String SUGGESTION_CREATE_OWNER = "stakeholders.createOwner";
 
@@ -90,9 +88,8 @@ public class StakeholdersTool extends Tool {
 
   private void validateStepUsers(
       Pointer step, List<User> users, List<Owner> owners, Collection<Diagnostic> diagnostics) {
-    var matcher = PERSON.matcher(step.getId());
-    if (matcher.matches()) {
-      var name = matcher.group("name");
+    if ("user".equals(step.getType())) {
+      var name = step.getId();
       var user = find(name, users);
       if (user.isEmpty()) {
         var owner = find(name, owners);

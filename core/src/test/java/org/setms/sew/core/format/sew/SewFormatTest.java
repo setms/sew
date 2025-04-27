@@ -122,12 +122,12 @@ class SewFormatTest {
         """
         package ape
 
-        bear cheetah {
+        decision Cheetah {
           dingo = "elephant"
           fox = "giraffe"
         }
         """,
-        new RootObject("ape", "bear", "cheetah")
+        new RootObject("ape", "decision", "Cheetah")
             .set("dingo", new DataString("elephant"))
             .set("fox", new DataString("giraffe")));
   }
@@ -146,7 +146,7 @@ class SewFormatTest {
         """
         package hyena
 
-        iguana jaguar {
+        command Jaguar {
           koala = [ "leopard" ]
           mule = [
             "nightingale",
@@ -155,7 +155,7 @@ class SewFormatTest {
           parrot = [ ]
         }
         """,
-        new RootObject("hyena", "iguana", "jaguar")
+        new RootObject("hyena", "command", "Jaguar")
             .set("koala", new DataList().add(new DataString("leopard")))
             .set(
                 "mule",
@@ -169,28 +169,29 @@ class SewFormatTest {
         """
         package rabbit
 
-        snake tiger {
+        useCase Tiger {
         }
 
-        unicorn velociraptor {
+        scenario Velociraptor {
           weasel = "zebra"
         }
 
-        aardvark boar {
+        user Boar {
           cobra = "dog"
         }
 
-        aardvark eagle {
+        user Eagle {
           gorilla = "hound"
         }
         """,
-        new RootObject("rabbit", "snake", "tiger")
-            .set("unicorn", new NestedObject("velociraptor").set("weasel", new DataString("zebra")))
+        new RootObject("rabbit", "useCase", "Tiger")
             .set(
-                "aardvark",
+                "scenario", new NestedObject("Velociraptor").set("weasel", new DataString("zebra")))
+            .set(
+                "user",
                 new DataList()
-                    .add(new NestedObject("boar").set("cobra", new DataString("dog")))
-                    .add(new NestedObject("eagle").set("gorilla", new DataString("hound")))));
+                    .add(new NestedObject("Boar").set("cobra", new DataString("dog")))
+                    .add(new NestedObject("Eagle").set("gorilla", new DataString("hound")))));
   }
 
   @Test
@@ -199,11 +200,11 @@ class SewFormatTest {
         """
         package lynx
 
-        marmot otter {
+        event Otter {
           panther = Rhino
         }
         """,
-        new RootObject("lynx", "marmot", "otter").set("panther", new Reference("Rhino")));
+        new RootObject("lynx", "event", "Otter").set("panther", new Reference("Rhino")));
   }
 
   @Test
@@ -230,7 +231,7 @@ class SewFormatTest {
                 .setHyenas(
                     List.of(
                         new Bear.Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
-                .setLeopard(new Pointer("mule")));
+                .setLeopard(new Pointer(null, "mule")));
   }
 
   @Test
@@ -255,7 +256,7 @@ class SewFormatTest {
                 .setHyenas(
                     List.of(
                         new Bear.Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
-                .setLeopard(new Pointer("mule")));
+                .setLeopard(new Pointer(null, "mule")));
   }
 
   @Test
@@ -271,7 +272,7 @@ class SewFormatTest {
                         List.of(
                             new Bear.Hyena(new FullyQualifiedName("hyena.iguana"))
                                 .setJaguar("koala")))
-                    .setLeopard(new Pointer("mule")));
+                    .setLeopard(new Pointer(null, "mule")));
 
     assertThat(actual)
         .isEqualTo(

@@ -74,7 +74,7 @@ public interface Parser {
       case DataString string -> string.getValue();
       case DataList list -> list.map(item -> convert(name, item, target)).toList();
       case NestedObject object -> createObject(object, name, target);
-      case Reference reference -> new Pointer(reference.getId());
+      case Reference reference -> new Pointer(reference.getType(), reference.getId());
       default ->
           throw new UnsupportedOperationException(
               "Unexpected value of type " + value.getClass().getSimpleName());

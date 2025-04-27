@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.setms.sew.core.format.DataItem;
 import org.setms.sew.core.format.DataList;
 import org.setms.sew.core.format.DataObject;
@@ -31,9 +32,9 @@ class SewParser implements Parser {
         .skip(1)
         .forEach(
             object -> {
-              var type = object.type().getText();
+              var type = object.TYPE().getText();
               var objectsOfType = nestedObjects.computeIfAbsent(type, ignored -> new DataList());
-              var nestedObject = new NestedObject(object.name().getText());
+              var nestedObject = new NestedObject(object.OBJECT_NAME().getText());
               objectsOfType.add(nestedObject);
               parseProperties(object, nestedObject);
             });
@@ -50,9 +51,11 @@ class SewParser implements Parser {
 
   private RootObject parseRootObject(org.setms.sew.antlr.SewParser.SewContext sew) {
     var scope =
-        sew.scope().qualifiedName().name().stream().map(ParseTree::getText).collect(joining("."));
+        sew.scope().qualifiedName().IDENTIFIER().stream()
+            .map(ParseTree::getText)
+            .collect(joining("."));
     var rootObject = sew.object(0);
-    return new RootObject(scope, rootObject.type().getText(), rootObject.name().getText());
+    return new RootObject(scope, rootObject.TYPE().getText(), rootObject.OBJECT_NAME().getText());
   }
 
   private void parseProperties(
@@ -61,7 +64,7 @@ class SewParser implements Parser {
         .property()
         .forEach(
             property -> {
-              var key = property.name().getText();
+              var key = property.IDENTIFIER().getText();
               var value =
                   Optional.ofNullable(property.list())
                       .map(this::parseList)
@@ -77,16 +80,17 @@ class SewParser implements Parser {
   }
 
   private DataItem parseItem(org.setms.sew.antlr.SewParser.ItemContext item) {
-    return Optional.ofNullable(item.reference())
-        .map(this::toReferenceItem)
-        .orElseGet(() -> toStringItem(item.string()));
+    if (item.STRING() != null) {
+      return toStringItem(item.STRING());
+    }
+    if (item.OBJECT_NAME() != null) {
+      return new Reference(item.OBJECT_NAME().getText());
+    }
+    return new Reference(
+        item.typedName().TYPE().getText(), item.typedName().OBJECT_NAME().getText());
   }
 
-  private DataItem toReferenceItem(org.setms.sew.antlr.SewParser.ReferenceContext reference) {
-    return new Reference(reference.getText());
-  }
-
-  private DataItem toStringItem(org.setms.sew.antlr.SewParser.StringContext string) {
+  private DataItem toStringItem(TerminalNode string) {
     return new DataString(stripQuotesFrom(string.getText()));
   }
 
