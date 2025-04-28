@@ -3,6 +3,7 @@ antlr = "4.13.2"
 antlr-intellij = "0.1"
 assertj = "3.27.3"
 evo-inflector = "1.3"
+jgraphx = "4.2.2"
 junit5 = "5.12.1"
 junit5-launcher = "1.12.1"
 lombok-plugin = "8.12.2"
@@ -20,6 +21,7 @@ antlr-intellij = { module = "org.antlr:antlr4-intellij-adaptor", version.ref = "
 antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 evo-inflector = { module = "org.atteo:evo-inflector", version.ref = "evo-inflector" }
+jgraphx = { module = "com.github.vlsi.mxgraph:jgraphx", version.ref = "jgraphx" }
 junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
 junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5-launcher" }
 junit5-runtime = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
@@ -38,6 +40,7 @@ antlr = ["antlr"]
 antlr-runtime = ["antlr-runtime"]
 antlr-intellij = ["antlr-intellij"]
 evo-inflector = ["evo-inflector"]
+jgraphx = ["jgraphx"]
 junit = ["junit5", "mockito", "assertj"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
 slf4f = ["slf4j-api"]
