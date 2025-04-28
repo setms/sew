@@ -116,7 +116,7 @@ public class UseCaseTool extends Tool {
         0,
         ICON_SIZE,
         ICON_SIZE,
-        "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#000000"
+        "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9"
             .formatted(url.toExternalForm()));
   }
 }
