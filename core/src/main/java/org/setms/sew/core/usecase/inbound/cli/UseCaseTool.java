@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -51,21 +52,41 @@ public class UseCaseTool extends Tool {
     useCases.forEach(useCase -> build(useCase, reportDir, diagnostics));
   }
 
-  private void build(UseCase useCase, File outputDir, Collection<Diagnostic> diagnostics) {
-    useCase.getScenarios().forEach(scenario -> build(scenario, outputDir, diagnostics));
-  }
-
   @SuppressWarnings("ResultOfMethodCallIgnored")
-  private void build(
-      UseCase.Scenario scenario, File outputDir, Collection<Diagnostic> diagnostics) {
-    try {
-      var file = new File(outputDir, scenario.getName() + ".png");
-      file.getParentFile().mkdirs();
-      var image = render(scenario);
-      ImageIO.write(image, "PNG", file);
+  private void build(UseCase useCase, File outputDir, Collection<Diagnostic> diagnostics) {
+    var report = new File(outputDir, useCase.getName() + ".html");
+    report.getParentFile().mkdirs();
+    try (var writer = new PrintWriter(report)) {
+      writer.println("<html>");
+      writer.println("  <body>");
+      writer.printf("    <h1>%s</h1>%n", useCase.getDisplay());
+      useCase
+          .getScenarios()
+          .forEach(
+              scenario -> {
+                writer.printf("    <h2>%s</h2>%n", scenario.getDescription());
+                var image = build(scenario, outputDir, diagnostics);
+                writer.printf("    <img src=\"%s\"/>%n", image.getName());
+              });
+      writer.println("  </body>");
+      writer.println("</html>");
     } catch (IOException e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
     }
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  private File build(
+      UseCase.Scenario scenario, File outputDir, Collection<Diagnostic> diagnostics) {
+    var result = new File(outputDir, scenario.getName() + ".png");
+    try {
+      result.getParentFile().mkdirs();
+      var image = render(scenario);
+      ImageIO.write(image, "PNG", result);
+    } catch (IOException e) {
+      diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
+    }
+    return result;
   }
 
   private RenderedImage render(UseCase.Scenario scenario) {

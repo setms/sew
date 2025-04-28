@@ -11,6 +11,16 @@ import org.setms.sew.core.tool.Tool;
 
 class UseCaseToolTest {
 
+  private static final String USE_CASE_HTML =
+      """
+    <html>
+      <body>
+        <h1>Just do it</h1>
+        <h2>All's well that ends well</h2>
+        <img src="HappyPath.png"/>
+      </body>
+    </html>
+    """;
   private final Tool tool = new UseCaseTool();
   private final File baseDir = new File("src/test/resources/use-cases");
 
@@ -42,7 +52,7 @@ class UseCaseToolTest {
   }
 
   @Test
-  void shouldBuildScenarioImage() {
+  void shouldBuildReport() {
     var testDir = new File(baseDir, "valid");
     var buildDir = new File(testDir, "build");
 
@@ -51,5 +61,7 @@ class UseCaseToolTest {
     assertThat(actual).isEmpty();
     var output = new File(buildDir, "reports/useCases/HappyPath.png");
     assertThat((output)).isFile();
+    output = new File(buildDir, "reports/useCases/JustDoIt.html");
+    assertThat((output)).isFile().hasContent(USE_CASE_HTML);
   }
 }
