@@ -4,7 +4,6 @@ import static org.setms.sew.core.tool.Level.ERROR;
 import static org.setms.sew.core.tool.Level.INFO;
 import static org.setms.sew.core.tool.Level.WARN;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,29 +33,29 @@ public abstract class Tool {
   /**
    * Validate the inputs.
    *
-   * @param dir the directory in which to find inputs
+   * @param source the directory in which to find inputs
    * @return any validation issues
    */
-  public final List<Diagnostic> validate(File dir) {
+  public final List<Diagnostic> validate(InputSource source) {
     var result = new ArrayList<Diagnostic>();
-    validate(dir, resolveInputs(dir, result), result);
+    validate(source, resolveInputs(source, result), result);
     return result;
   }
 
-  private ResolvedInputs resolveInputs(File dir, Collection<Diagnostic> result) {
+  private ResolvedInputs resolveInputs(InputSource source, Collection<Diagnostic> diagnostics) {
     var inputs = new ResolvedInputs();
-    getInputs().forEach(input -> inputs.put(input.name(), parse(dir, input, result)));
+    getInputs().forEach(input -> inputs.put(input.name(), parse(source, input, diagnostics)));
     return inputs;
   }
 
   private <T extends NamedObject> List<T> parse(
-      File dir, Input<T> input, Collection<Diagnostic> diagnostics) {
+      InputSource source, Input<T> input, Collection<Diagnostic> diagnostics) {
     var parser = input.format().newParser();
-    return input.glob().matchingIn(dir).stream()
+    return source.matching(input.glob()).stream()
         .map(
-            file -> {
+            inputSource -> {
               try {
-                return parser.parse(file, input.type());
+                return parser.parse(inputSource.open(), input.type());
               } catch (Exception e) {
                 diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
                 return null;
@@ -66,47 +65,50 @@ public abstract class Tool {
         .toList();
   }
 
-  protected void validate(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
+  protected void validate(
+      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
 
   /**
    * Build the output from the input
    *
-   * @param inputDir the directory in which to find input
-   * @param inputDir the directory in which to create output
+   * @param source where to load input
+   * @param sink where to store output
    * @return diagnostics about building the output
    */
-  public final List<Diagnostic> build(File inputDir, File outputDir) {
+  public final List<Diagnostic> build(InputSource source, OutputSink sink) {
     var result = new ArrayList<Diagnostic>();
-    build(resolveInputs(inputDir, result), outputDir, result);
+    build(resolveInputs(source, result), sink, result);
     return result;
   }
 
-  protected void build(ResolvedInputs inputs, File outputDir, Collection<Diagnostic> diagnostics) {}
+  protected void build(
+      ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {}
 
   /**
    * Apply a suggestion.
    *
    * @param suggestionCode the suggestion to apply
-   * @param inputDir the directory in which to find input
+   * @param source where to load input
+   * @param sink where to store input
    * @return diagnostics about the applying the suggestion
    */
-  public final List<Diagnostic> apply(String suggestionCode, File inputDir) {
+  public final List<Diagnostic> apply(String suggestionCode, InputSource source, OutputSink sink) {
     var result = new ArrayList<Diagnostic>();
     var inputs = new ResolvedInputs();
-    getInputs().forEach(input -> inputs.put(input.name(), parse(inputDir, input, result)));
-    apply(suggestionCode, inputs, inputDir, result);
+    getInputs().forEach(input -> inputs.put(input.name(), parse(source, input, result)));
+    apply(suggestionCode, inputs, sink, result);
     return result;
   }
 
   protected void apply(
       String suggestionCode,
       ResolvedInputs inputs,
-      File outputDir,
+      OutputSink sink,
       Collection<Diagnostic> diagnostics) {
     diagnostics.add(new Diagnostic(WARN, "Unknown suggestion: " + suggestionCode));
   }
 
-  protected final Diagnostic fileCreated(File file) {
-    return new Diagnostic(INFO, "Created file: " + file.getPath());
+  protected final Diagnostic sinkCreated(OutputSink sink) {
+    return new Diagnostic(INFO, "Created " + sink.toUri());
   }
 }

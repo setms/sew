@@ -7,12 +7,15 @@ import static org.setms.sew.core.tool.Level.WARN;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.format.sew.SewFormat;
 import org.setms.sew.core.tool.Diagnostic;
+import org.setms.sew.core.tool.FileInputSource;
+import org.setms.sew.core.tool.FileOutputSink;
 import org.setms.sew.core.tool.Input;
+import org.setms.sew.core.tool.InputSource;
+import org.setms.sew.core.tool.OutputSink;
 import org.setms.sew.core.tool.Suggestion;
 import org.setms.sew.core.tool.Tool;
 
@@ -42,25 +45,30 @@ class StakeholdersToolTest {
   }
 
   private void assertStakeholder(Input<?> input, Class<? extends Stakeholder> type) {
-    assertThat(input.glob().getPath()).isEqualTo("src/main/stakeholders");
-    assertThat(input.glob().getPattern()).isEqualTo("**/*." + type.getSimpleName().toLowerCase());
+    assertThat(input.glob().path()).isEqualTo("src/main/stakeholders");
+    assertThat(input.glob().pattern()).isEqualTo("**/*." + type.getSimpleName().toLowerCase());
     assertThat(input.type()).isEqualTo(type);
   }
 
   private void assertUseCase(Input<?> input) {
-    assertThat(input.glob().getPath()).isEqualTo("src/main/requirements");
-    assertThat(input.glob().getPattern()).isEqualTo("**/*.useCase");
+    assertThat(input.glob().path()).isEqualTo("src/main/requirements");
+    assertThat(input.glob().pattern()).isEqualTo("**/*.useCase");
     assertThat(input.type()).isEqualTo(UseCase.class);
   }
 
   @Test
   void shouldRejectMissingOwner() throws IOException {
-    var inputDir = new File(baseDir, "invalid/owner");
+    var testDir = new File(baseDir, "invalid/owner");
+    var source = new FileInputSource(testDir);
 
-    var actual = tool.validate(inputDir);
+    var actual = tool.validate(source);
 
     var suggestion = assertThatToolReportsDiagnosticWithSuggestionToFix(actual);
-    assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, inputDir);
+    assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, source, new FileOutputSink(testDir));
+  }
+
+  private FileInputSource inputSourceFor(String path) {
+    return new FileInputSource(new File(baseDir, path));
   }
 
   private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(List<Diagnostic> actual) {
@@ -75,27 +83,25 @@ class StakeholdersToolTest {
     return suggestion;
   }
 
-  private void assertThatApplyingTheSuggestionCreatesAnOwner(Suggestion suggestion, File inputDir)
-      throws IOException {
-    var ownerFile = new File(inputDir, "src/main/stakeholders/Some.owner");
+  private void assertThatApplyingTheSuggestionCreatesAnOwner(
+      Suggestion suggestion, InputSource source, OutputSink sink) throws IOException {
+    var owner = sink.select("src/main/stakeholders/Some.owner");
 
-    var actual = tool.apply(suggestion.code(), inputDir);
+    var actual = tool.apply(suggestion.code(), source, sink);
 
-    assertThat(actual)
-        .hasSize(1)
-        .contains(new Diagnostic(INFO, "Created file: " + ownerFile.getPath()));
+    assertThat(actual).hasSize(1).contains(new Diagnostic(INFO, "Created " + owner.toUri()));
     try {
-      assertThat(ownerFile).isFile().hasContent(OWNER_SKELETON);
+      assertThat(owner.toInput().open()).hasContent(OWNER_SKELETON);
     } finally {
-      Files.delete(ownerFile.toPath());
+      owner.delete();
     }
   }
 
   @Test
   void shouldRejectUnknownSuggestion() {
-    var dir = new File(baseDir, "invalid/suggestion");
+    var source = inputSourceFor("invalid/suggestion");
 
-    var actual = tool.apply("unknown.suggestion", dir);
+    var actual = tool.apply("unknown.suggestion", source, null);
 
     assertThat(actual)
         .hasSize(1)
@@ -104,9 +110,9 @@ class StakeholdersToolTest {
 
   @Test
   void shouldRejectMultipleOwners() {
-    var dir = new File(baseDir, "invalid/owners");
+    var source = inputSourceFor("invalid/owners");
 
-    var actual = tool.validate(dir);
+    var actual = tool.validate(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -115,9 +121,9 @@ class StakeholdersToolTest {
 
   @Test
   void shouldRejectNonUserInUserCase() {
-    var dir = new File(baseDir, "invalid/nonuser");
+    var source = inputSourceFor("invalid/nonuser");
 
-    var actual = tool.validate(dir);
+    var actual = tool.validate(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -127,18 +133,18 @@ class StakeholdersToolTest {
 
   @Test
   void shouldRejectUnknownUserInUserCase() {
-    var dir = new File(baseDir, "invalid/missing");
+    var source = inputSourceFor("invalid/missing");
 
-    var actual = tool.validate(dir);
+    var actual = tool.validate(source);
 
     assertThat(actual).hasSize(1).contains(new Diagnostic(ERROR, "Unknown user Micky"));
   }
 
   @Test
   void shouldAcceptUserInUserCase() {
-    var dir = new File(baseDir, "valid");
+    var source = inputSourceFor("valid");
 
-    var actual = tool.validate(dir);
+    var actual = tool.validate(source);
 
     assertThat(actual).isEmpty();
   }

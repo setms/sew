@@ -7,6 +7,9 @@ import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.format.sew.SewFormat;
 import org.setms.sew.core.tool.Diagnostic;
+import org.setms.sew.core.tool.FileInputSource;
+import org.setms.sew.core.tool.FileOutputSink;
+import org.setms.sew.core.tool.InputSource;
 import org.setms.sew.core.tool.Tool;
 
 class GlossaryToolTest {
@@ -54,34 +57,25 @@ class GlossaryToolTest {
 
   @Test
   void shouldBuildReport() {
-    var testDir = new File(baseDir, "report");
-    var buildDir = new File(testDir, "build");
+    var source = inputSourceFor("report");
+    var sink = new FileOutputSink(new File(baseDir, "build"));
 
-    var actual = tool.build(testDir, buildDir);
+    var actual = tool.build(source, sink);
 
     assertThat(actual).isEmpty();
-    var output = new File(buildDir, "reports/glossary/report.html");
+    var output = sink.select("reports/glossary/report.html").getFile();
     assertThat(output).isFile().content().isEqualTo(GLOSSARY);
   }
 
-  @Test
-  void shouldRejectInvalidName() {
-    var dir = new File(baseDir, "invalid/name");
-
-    var actual = tool.validate(dir);
-
-    assertThat(actual)
-        .hasSize(1)
-        .contains(
-            new Diagnostic(
-                ERROR, "Object name 'WrongName' doesn't match file name 'InvalidName.term'"));
+  private InputSource inputSourceFor(String path) {
+    return new FileInputSource(new File(baseDir, path));
   }
 
   @Test
   void shouldRejectMissingDisplay() {
-    var dir = new File(baseDir, "invalid/display");
+    var source = inputSourceFor("invalid/display");
 
-    var actual = tool.validate(dir);
+    var actual = tool.validate(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -90,9 +84,9 @@ class GlossaryToolTest {
 
   @Test
   void shouldRejectInvalidSeeAlso() {
-    var dir = new File(baseDir, "invalid/see");
+    var source = inputSourceFor("invalid/see");
 
-    var actual = tool.validate(dir);
+    var actual = tool.validate(source);
 
     assertThat(actual)
         .hasSize(1)

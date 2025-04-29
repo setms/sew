@@ -16,7 +16,8 @@ import org.setms.sew.core.schema.Pointer;
 @EqualsAndHashCode(callSuper = true)
 public class UseCase extends NamedObject {
 
-  @NotEmpty private String display;
+  @NotEmpty private String title;
+  private String description;
   private List<Pointer> terms;
   private List<Pointer> captures;
   private List<Scenario> scenarios;
@@ -31,6 +32,7 @@ public class UseCase extends NamedObject {
   @EqualsAndHashCode(callSuper = true)
   public static class Scenario extends NamedObject {
 
+    @NotEmpty private String title;
     @NotEmpty private String description;
     @NotEmpty private List<Pointer> steps;
 

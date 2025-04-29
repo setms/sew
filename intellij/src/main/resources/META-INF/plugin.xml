@@ -14,6 +14,7 @@
                   extensions="user"/>
         <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
         <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.SewParserDefinition"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.UseCaseEditorProvider"/>
         <postStartupActivity implementation="org.setms.sew.intellij.SewStartupActivity"/>
     </extensions>
 </idea-plugin>

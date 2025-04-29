@@ -5,9 +5,6 @@ import static java.util.stream.Collectors.joining;
 import static org.setms.sew.core.tool.Level.ERROR;
 import static org.setms.sew.core.tool.Level.WARN;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +14,9 @@ import org.setms.sew.core.schema.Pointer;
 import org.setms.sew.core.tool.Diagnostic;
 import org.setms.sew.core.tool.Glob;
 import org.setms.sew.core.tool.Input;
+import org.setms.sew.core.tool.InputSource;
 import org.setms.sew.core.tool.Output;
+import org.setms.sew.core.tool.OutputSink;
 import org.setms.sew.core.tool.ResolvedInputs;
 import org.setms.sew.core.tool.Suggestion;
 import org.setms.sew.core.tool.Tool;
@@ -46,7 +45,8 @@ public class StakeholdersTool extends Tool {
   }
 
   @Override
-  protected void validate(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  protected void validate(
+      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var owners = inputs.get("owners", Owner.class);
     validateOwner(owners, diagnostics);
     var users = inputs.get("users", User.class);
@@ -112,44 +112,34 @@ public class StakeholdersTool extends Tool {
   public void apply(
       String suggestionCode,
       ResolvedInputs inputs,
-      File outputDir,
+      OutputSink sink,
       Collection<Diagnostic> diagnostics) {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
-      createOwner(outputDir, inputs, diagnostics);
+      createOwner(sink, inputs, diagnostics);
     } else {
-      super.apply(suggestionCode, inputs, outputDir, diagnostics);
+      super.apply(suggestionCode, inputs, sink, diagnostics);
     }
   }
 
-  private void createOwner(File dir, ResolvedInputs ignored, Collection<Diagnostic> diagnostics) {
-    var stakeholdersDir = new File(dir, STAKEHOLDERS_PATH);
+  private void createOwner(
+      OutputSink sink, ResolvedInputs ignored, Collection<Diagnostic> diagnostics) {
+    var stakeholders = sink.select(STAKEHOLDERS_PATH);
     try {
-      var scope = scopeOf(dir, stakeholdersDir);
+      var scope = scopeOf(sink, stakeholders);
       var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
-      var ownerFile = new File(stakeholdersDir, owner.getName() + ".owner");
-      new SewFormat().newBuilder().build(owner, ownerFile);
-      diagnostics.add(fileCreated(ownerFile));
+      var ownerSink = stakeholders.select(owner.getName() + ".owner");
+      new SewFormat().newBuilder().build(owner, ownerSink.open());
+      diagnostics.add(sinkCreated(ownerSink));
     } catch (Exception e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
     }
   }
 
-  private String scopeOf(File baseDir, File stakeholdersDir) {
-    var children = stakeholdersDir.listFiles();
-    if (children != null) {
-      var subdirs =
-          Arrays.stream(children)
-              .filter(File::isDirectory)
-              .filter(d -> !d.getName().startsWith("."))
-              .toList();
-      if (subdirs.size() == 1) {
-        return subdirs.getFirst().getName();
-      }
-    }
-    try {
-      return baseDir.getCanonicalFile().getName();
-    } catch (IOException e) {
-      throw new IllegalStateException(e.getMessage());
-    }
+  private String scopeOf(OutputSink sink, OutputSink stakeholders) {
+    var containers = stakeholders.containers();
+    var uri = containers.isEmpty() ? sink.toUri() : containers.getFirst().toUri();
+    var path = uri.getPath();
+    path = path.substring(0, path.length() - 1);
+    return path.substring(1 + path.lastIndexOf('/'));
   }
 }

@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.joining;
 import static org.setms.sew.core.tool.Level.ERROR;
 import static org.setms.sew.core.util.Strings.initCap;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -18,7 +17,9 @@ import org.setms.sew.core.schema.Pointer;
 import org.setms.sew.core.tool.Diagnostic;
 import org.setms.sew.core.tool.Glob;
 import org.setms.sew.core.tool.Input;
+import org.setms.sew.core.tool.InputSource;
 import org.setms.sew.core.tool.Output;
+import org.setms.sew.core.tool.OutputSink;
 import org.setms.sew.core.tool.ResolvedInputs;
 import org.setms.sew.core.tool.Tool;
 
@@ -38,7 +39,8 @@ public class GlossaryTool extends Tool {
   }
 
   @Override
-  protected void validate(File dir, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  protected void validate(
+      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get("terms", Term.class);
     terms.forEach(
         term ->
@@ -60,20 +62,21 @@ public class GlossaryTool extends Tool {
   }
 
   @Override
-  public void build(ResolvedInputs inputs, File outputDir, Collection<Diagnostic> diagnostics) {
+  public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get("terms", Term.class);
     var termsByPackage = terms.stream().collect(groupingBy(Term::getPackage));
     termsByPackage.forEach(
         (glossary, glossaryTerms) ->
-            buildGlossaryFile(outputDir, glossary, new TreeSet<>(glossaryTerms), diagnostics));
+            buildGlossaryFile(sink, glossary, new TreeSet<>(glossaryTerms), diagnostics));
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
   private void buildGlossaryFile(
-      File dir, String glossary, Collection<Term> terms, Collection<Diagnostic> diagnostics) {
-    var file = new File(dir, "reports/glossary/%s.html".formatted(glossary));
-    file.getParentFile().mkdirs();
-    try (var writer = new PrintWriter(file)) {
+      OutputSink sink,
+      String glossary,
+      Collection<Term> terms,
+      Collection<Diagnostic> diagnostics) {
+    var report = sink.select("reports/glossary/%s.html".formatted(glossary));
+    try (var writer = new PrintWriter(report.open())) {
       buildGlossary(glossary, writer, terms);
     } catch (IOException e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));

@@ -7,7 +7,6 @@ import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -21,6 +20,7 @@ import org.setms.sew.core.tool.Diagnostic;
 import org.setms.sew.core.tool.Glob;
 import org.setms.sew.core.tool.Input;
 import org.setms.sew.core.tool.Output;
+import org.setms.sew.core.tool.OutputSink;
 import org.setms.sew.core.tool.ResolvedInputs;
 import org.setms.sew.core.tool.Tool;
 
@@ -46,27 +46,29 @@ public class UseCaseTool extends Tool {
   }
 
   @Override
-  public void build(ResolvedInputs inputs, File outputDir, Collection<Diagnostic> diagnostics) {
+  public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get("useCases", UseCase.class);
-    var reportDir = new File(outputDir, "reports/useCases");
-    useCases.forEach(useCase -> build(useCase, reportDir, diagnostics));
+    var reportSink = sink.select("reports/useCases");
+    useCases.forEach(useCase -> build(useCase, reportSink, diagnostics));
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  private void build(UseCase useCase, File outputDir, Collection<Diagnostic> diagnostics) {
-    var report = new File(outputDir, useCase.getName() + ".html");
-    report.getParentFile().mkdirs();
-    try (var writer = new PrintWriter(report)) {
+  private void build(UseCase useCase, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    var report = sink.select(useCase.getName() + ".html");
+    try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      writer.printf("    <h1>%s</h1>%n", useCase.getDisplay());
+      writer.printf("    <h1>%s</h1>%n", useCase.getTitle());
+      writer.printf("    <p>%s</p>%n", useCase.getDescription());
       useCase
           .getScenarios()
           .forEach(
               scenario -> {
-                writer.printf("    <h2>%s</h2>%n", scenario.getDescription());
-                var image = build(scenario, outputDir, diagnostics);
-                writer.printf("    <img src=\"%s\"/>%n", image.getName());
+                writer.printf("    <h2>%s</h2>%n", scenario.getTitle());
+                writer.printf("    <p>%s</p>%n", scenario.getDescription());
+                var image = build(scenario, sink, diagnostics);
+                writer.printf(
+                    "    <img src=\"%s\"/>%n",
+                    report.toUri().resolve(".").normalize().relativize(image.toUri()));
               });
       writer.println("  </body>");
       writer.println("</html>");
@@ -75,14 +77,12 @@ public class UseCaseTool extends Tool {
     }
   }
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
-  private File build(
-      UseCase.Scenario scenario, File outputDir, Collection<Diagnostic> diagnostics) {
-    var result = new File(outputDir, scenario.getName() + ".png");
+  private OutputSink build(
+      UseCase.Scenario scenario, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    var result = sink.select(scenario.getName() + ".png");
     try {
-      result.getParentFile().mkdirs();
       var image = render(scenario);
-      ImageIO.write(image, "PNG", result);
+      ImageIO.write(image, "PNG", result.open());
     } catch (IOException e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
     }

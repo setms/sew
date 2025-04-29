@@ -1,11 +1,11 @@
 package nonuser
 
 useCase JustDoIt {
-    display = "Just do it"
+    title = "Just do it"
 }
 
 scenario HappyPath {
-    description = "All's well that ends well"
+    title = "All's well that ends well"
     steps       = [
         user(Micky),
         command(DoIt),

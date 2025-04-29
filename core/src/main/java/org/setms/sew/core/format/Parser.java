@@ -3,8 +3,6 @@ package org.setms.sew.core.format;
 import static org.setms.sew.core.util.Strings.initCap;
 import static org.setms.sew.core.util.Validation.validate;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -19,21 +17,8 @@ import org.setms.sew.core.schema.Pointer;
 
 public interface Parser {
 
-  default <T extends NamedObject> T parse(File file, Class<T> type) throws IOException {
-    return convert(parse(file), type);
-  }
-
-  default RootObject parse(File file) throws IOException {
-    var extension = file.getName().substring(file.getName().lastIndexOf('.'));
-    try (var input = new FileInputStream(file)) {
-      var result = parse(input);
-      if (!file.getName().equals(result.getName() + extension)) {
-        throw new IllegalArgumentException(
-            "Object name '%s' doesn't match file name '%s'"
-                .formatted(result.getName(), file.getName()));
-      }
-      return result;
-    }
+  default <T extends NamedObject> T parse(InputStream input, Class<T> type) throws IOException {
+    return convert(parse(input), type);
   }
 
   RootObject parse(InputStream input) throws IOException;
