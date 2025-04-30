@@ -49,7 +49,7 @@ intellijPlatform {
 
 generateLexer {
     sourceFile = file('src/main/grammars/Sew.flex')
-    targetOutputDir = file('build/generated/sources/flex/org/setms/sew/intellij')
+    targetOutputDir = file('build/generated/sources/flex/org/setms/sew/intellij/language/sew')
     purgeOldFiles = true
 }
 sourceSets.main.java.srcDir 'build/generated/sources/flex'
