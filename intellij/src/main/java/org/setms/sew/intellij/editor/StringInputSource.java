@@ -1,4 +1,4 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.editor;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -24,5 +24,10 @@ public class StringInputSource implements InputSource {
   @Override
   public InputStream open() {
     return new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+  }
+
+  @Override
+  public String toString() {
+    return text;
   }
 }

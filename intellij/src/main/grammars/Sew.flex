@@ -1,4 +1,4 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.language.sew;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;

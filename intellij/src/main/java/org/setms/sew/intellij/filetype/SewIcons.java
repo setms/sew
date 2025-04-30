@@ -1,4 +1,4 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.filetype;
 
 import com.intellij.openapi.util.IconLoader;
 import javax.swing.*;

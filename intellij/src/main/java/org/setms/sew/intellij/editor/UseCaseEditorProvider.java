@@ -1,4 +1,4 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.editor;
 
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.setms.sew.intellij.filetype.UseCaseFileType;
 
 public class UseCaseEditorProvider implements FileEditorProvider, DumbAware {
 
@@ -22,7 +23,7 @@ public class UseCaseEditorProvider implements FileEditorProvider, DumbAware {
   @Override
   public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
     var textEditor = (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
-    var htmlEditor = new HtmlPreviewFileEditor(project, file);
+    var htmlEditor = new UseCasePreview(project, file);
     return new TextEditorWithPreview(textEditor, htmlEditor);
   }
 

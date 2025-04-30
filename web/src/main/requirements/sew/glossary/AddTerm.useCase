@@ -1,13 +1,13 @@
 package sew.glossary
 
 useCase AddTerm {
-    display   = "Add a term to the glossary."
+    title   = "Add a term to the glossary"
     terms     = [ Term, Glossary ]
     captures  = [ MaintainGlossary ]
 }
 
 scenario AddNewTerm {
-    description = "An analyst adds a term to a glossary."
+    title = "An analyst adds a term to a glossary"
     steps       = [
         readModel(Glossary),
         user(Analyst),
@@ -19,6 +19,7 @@ scenario AddNewTerm {
 }
 
 scenario RejectAdditionOfDuplicateTerm {
+    title       = "Re-adding an exsting term is rejected"
     description = "An analyst attempts to add a term to a glossary that already contains that term. This is rejected."
     steps       = [
         readModel(Glossary),

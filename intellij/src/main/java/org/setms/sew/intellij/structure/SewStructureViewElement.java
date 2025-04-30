@@ -1,4 +1,4 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.structure;
 
 import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.structureView.impl.common.PsiTreeElementBase;
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.setms.sew.intellij.SewElementTypes;
 
 public class SewStructureViewElement extends PsiTreeElementBase<PsiElement> {
 

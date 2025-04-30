@@ -1,20 +1,20 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.DecisionFileType"
+                  implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
                   extensions="decision"/>
         <fileType name="Owner" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.OwnerFileType"
+                  implementationClass="org.setms.sew.intellij.filetype.OwnerFileType"
                   extensions="owner"/>
         <fileType name="Use case" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.UseCaseFileType"
+                  implementationClass="org.setms.sew.intellij.filetype.UseCaseFileType"
                   extensions="useCase"/>
         <fileType name="User" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.UserFileType"
+                  implementationClass="org.setms.sew.intellij.filetype.UserFileType"
                   extensions="user"/>
-        <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.SewSyntaxHighlighterFactory"/>
-        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.SewParserDefinition"/>
-        <fileEditorProvider implementation="org.setms.sew.intellij.UseCaseEditorProvider"/>
-        <postStartupActivity implementation="org.setms.sew.intellij.SewStartupActivity"/>
+        <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewParserDefinition"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.editor.UseCaseEditorProvider"/>
+        <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
     </extensions>
 </idea-plugin>

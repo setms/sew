@@ -1,41 +1,42 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.filetype;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import javax.swing.*;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.setms.sew.intellij.language.sew.SewLanguage;
 
-public class UserFileType extends LanguageFileType {
+public class DecisionFileType extends LanguageFileType {
 
-  public static final UserFileType INSTANCE = new UserFileType();
+  public static final DecisionFileType INSTANCE = new DecisionFileType();
 
-  private UserFileType() {
+  private DecisionFileType() {
     super(SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull String getName() {
-    return "User";
+    return "Decision";
   }
 
   @Override
   public @Nls @NotNull String getDisplayName() {
-    return "User";
+    return "Decision";
   }
 
   @Override
   public @NotNull String getDescription() {
-    return "Stakeholder who uses the system";
+    return "Architecture or design decision";
   }
 
   @Override
   public @NotNull String getDefaultExtension() {
-    return "user";
+    return "decision";
   }
 
   @Override
   public @Nullable Icon getIcon() {
-    return SewIcons.USER;
+    return SewIcons.DECISION;
   }
 }

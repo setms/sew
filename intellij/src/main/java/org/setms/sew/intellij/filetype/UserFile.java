@@ -1,18 +1,19 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.filetype;
 
 import com.intellij.extapi.psi.PsiFileBase;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.FileViewProvider;
 import org.jetbrains.annotations.NotNull;
+import org.setms.sew.intellij.language.sew.SewLanguage;
 
-public class OwnerFile extends PsiFileBase {
+public class UserFile extends PsiFileBase {
 
-  public OwnerFile(@NotNull FileViewProvider viewProvider) {
+  public UserFile(@NotNull FileViewProvider viewProvider) {
     super(viewProvider, SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull FileType getFileType() {
-    return OwnerFileType.INSTANCE;
+    return UserFileType.INSTANCE;
   }
 }

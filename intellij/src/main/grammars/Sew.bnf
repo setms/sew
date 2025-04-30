@@ -6,8 +6,8 @@
   psiPackage="org.setms.sew.intellij"
   psiImplPackage="org.setms.sew.intellij"
   elementTypeHolderClass="org.setms.sew.intellij.SewElementTypes"
-  elementTypeClass="org.setms.sew.intellij.SewElementType"
-  tokenTypeClass="org.setms.sew.intellij.SewTokenType"
+  elementTypeClass="org.setms.sew.intellij.language.sew.SewElementType"
+  tokenTypeClass="org.setms.sew.intellij.language.sew.SewTokenType"
   tokens=[
     COMMA=","
     COMMENT="comment"

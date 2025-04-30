@@ -1,13 +1,13 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.editor;
 
-import javax.swing.*;
+import javax.swing.Timer;
 
-class Debouncer {
+class RateLimiter {
 
   private final Timer timer;
 
-  public Debouncer(Runnable task, long delayMs) {
-    timer = new Timer((int) delayMs, e -> task.run());
+  public RateLimiter(Runnable task, int delayMs) {
+    timer = new Timer(delayMs, e -> task.run());
     timer.setRepeats(false);
   }
 

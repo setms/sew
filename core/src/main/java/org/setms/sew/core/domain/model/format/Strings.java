@@ -9,4 +9,8 @@ public class Strings {
   public static String initCap(String value) {
     return Character.toUpperCase(value.charAt(0)) + value.substring(1);
   }
+
+  public static boolean isNotBlank(String value) {
+    return value != null && !value.isBlank();
+  }
 }

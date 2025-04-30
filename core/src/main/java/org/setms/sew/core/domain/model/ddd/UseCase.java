@@ -33,7 +33,7 @@ public class UseCase extends NamedObject {
   public static class Scenario extends NamedObject {
 
     @NotEmpty private String title;
-    @NotEmpty private String description;
+    private String description;
     @NotEmpty private List<Pointer> steps;
 
     public Scenario(FullyQualifiedName fullyQualifiedName) {

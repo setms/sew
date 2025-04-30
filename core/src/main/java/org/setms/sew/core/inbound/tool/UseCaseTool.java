@@ -1,5 +1,6 @@
 package org.setms.sew.core.inbound.tool;
 
+import static org.setms.sew.core.domain.model.format.Strings.isNotBlank;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
@@ -13,9 +14,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.imageio.ImageIO;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
-import org.setms.sew.core.domain.model.schema.Pointer;
 import org.setms.sew.core.domain.model.ddd.UseCase;
+import org.setms.sew.core.domain.model.schema.Pointer;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
@@ -23,6 +23,7 @@ import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class UseCaseTool extends Tool {
 
@@ -58,13 +59,17 @@ public class UseCaseTool extends Tool {
       writer.println("<html>");
       writer.println("  <body>");
       writer.printf("    <h1>%s</h1>%n", useCase.getTitle());
-      writer.printf("    <p>%s</p>%n", useCase.getDescription());
+      if (isNotBlank(useCase.getDescription())) {
+        writer.printf("    <p>%s</p>%n", useCase.getDescription());
+      }
       useCase
           .getScenarios()
           .forEach(
               scenario -> {
                 writer.printf("    <h2>%s</h2>%n", scenario.getTitle());
-                writer.printf("    <p>%s</p>%n", scenario.getDescription());
+                if (isNotBlank(scenario.getDescription())) {
+                  writer.printf("    <p>%s</p>%n", scenario.getDescription());
+                }
                 var image = build(scenario, sink, diagnostics);
                 writer.printf(
                     "    <img src=\"%s\"/>%n",

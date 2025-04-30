@@ -1,9 +1,11 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.structure;
 
 import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.structureView.TextEditorBasedStructureViewModel;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
+import org.setms.sew.intellij.SewObject;
+import org.setms.sew.intellij.SewProperty;
 
 public class SewStructureViewModel extends TextEditorBasedStructureViewModel {
 
@@ -18,6 +20,6 @@ public class SewStructureViewModel extends TextEditorBasedStructureViewModel {
 
   @Override
   protected Class<?> @NotNull [] getSuitableClasses() {
-    return new Class[] { SewObject.class, SewProperty.class };
+    return new Class[] {SewObject.class, SewProperty.class};
   }
 }

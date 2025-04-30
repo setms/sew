@@ -1,4 +1,7 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.editor;
+
+import static java.util.stream.Collectors.joining;
+import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 
 import com.intellij.ide.ui.LafManagerListener;
 import com.intellij.openapi.application.ApplicationManager;
@@ -17,11 +20,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import javax.swing.*;
-import org.cef.CefSettings;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
-import org.cef.handler.CefDisplayHandlerAdapter;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,81 +33,86 @@ import org.setms.sew.core.domain.model.tool.FileOutputSink;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.tool.UseCaseTool;
 
-public class HtmlPreviewFileEditor extends UserDataHolderBase implements FileEditor {
+public abstract class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
-  public static final String STYLE =
+  private static final String STYLE =
       """
           document.body.style.backgroundColor = '%s';
           document.body.style.color = '%s';""";
+  private static final String ERRORS =
+      """
+      <html>
+        <body>
+          <h1>Oops!</h1>
+          <ul>
+            <li>%s</li>
+          </ul>
+        </body>
+      </html>""";
+  private static final String ERROR_SEPARATOR = "</li><li>>";
   private final JBCefBrowser browser;
   private final JPanel panel;
-  private final Debouncer debouncer;
-  private final Tool tool = new UseCaseTool();
+  private final RateLimiter rateLimiter;
+  private final Tool tool;
   private OutputSink sink;
 
-  public HtmlPreviewFileEditor(Project ignored, VirtualFile file) {
-    if (!JBCefApp.isSupported()) {
-      panel = new JPanel();
-      panel.add(new JLabel("In-place browser not supported."));
-      browser = null;
-      debouncer = null;
-    } else {
+  public HtmlPreview(Project ignored, VirtualFile file, Tool tool) {
+    this.tool = tool;
+    panel = new JPanel(new BorderLayout());
+    var document = FileDocumentManager.getInstance().getDocument(file);
+    if (JBCefApp.isSupported() && document != null) {
       browser = new JBCefBrowser();
-      panel = new JPanel(new BorderLayout());
       panel.add(browser.getComponent(), BorderLayout.CENTER);
-
-      var client = browser.getJBCefClient();
-      client.addDisplayHandler(
-          new CefDisplayHandlerAdapter() {
-            @Override
-            public boolean onConsoleMessage(
-                CefBrowser browser,
-                CefSettings.LogSeverity level,
-                String message,
-                String source,
-                int line) {
-              System.out.println(message);
-              return false;
-            }
-          },
-          browser.getCefBrowser());
-      client.addLoadHandler(
-          new CefLoadHandlerAdapter() {
-            @Override
-            public void onLoadEnd(CefBrowser browser, CefFrame frame, int httpStatusCode) {
-              forceStyle();
-            }
-          },
-          browser.getCefBrowser());
-
-      var document = FileDocumentManager.getInstance().getDocument(file);
-      if (document != null) {
-        debouncer = new Debouncer(() -> updateHtml(document), 500);
-        document.addDocumentListener(
-            new com.intellij.openapi.editor.event.DocumentListener() {
-              @Override
-              public void documentChanged(
-                  @NotNull com.intellij.openapi.editor.event.DocumentEvent event) {
-                debouncer.call();
-              }
-            });
-        updateHtml(document);
-      } else {
-        debouncer = null;
-        browser.loadHTML("<html><body><p>Could not load use case.</p></body></html>");
-      }
+      rateLimiter = new RateLimiter(() -> showDocument(document), 500);
+      initBrowser(document);
+    } else {
+      browser = null;
+      panel.add(new JLabel("In-place browser not supported."));
+      rateLimiter = null;
     }
+  }
 
-    LafManagerListener listener = source -> forceStyle();
+  private void initBrowser(Document document) {
+    setBrowserStyle();
+    updateStyleWhenColorSchemeChanges();
+    trackDocumentChanges(document);
+    showDocument(document);
+  }
+
+  private void setBrowserStyle() {
+    browser
+        .getJBCefClient()
+        .addLoadHandler(
+            new CefLoadHandlerAdapter() {
+              @Override
+              public void onLoadEnd(CefBrowser browser, CefFrame frame, int httpStatusCode) {
+                forceStyle();
+              }
+            },
+            browser.getCefBrowser());
+  }
+
+  private void trackDocumentChanges(Document document) {
+    document.addDocumentListener(
+        new com.intellij.openapi.editor.event.DocumentListener() {
+          @Override
+          public void documentChanged(
+              @NotNull com.intellij.openapi.editor.event.DocumentEvent event) {
+            assert rateLimiter != null;
+            rateLimiter.call();
+          }
+        });
+  }
+
+  private void updateStyleWhenColorSchemeChanges() {
     ApplicationManager.getApplication()
         .getMessageBus()
         .connect()
-        .subscribe(LafManagerListener.TOPIC, listener);
+        .subscribe(LafManagerListener.TOPIC, (LafManagerListener) source -> forceStyle());
   }
 
-  private void forceStyle() {
+  protected void forceStyle() {
     browser.getCefBrowser().executeJavaScript(getStyle(), browser.getCefBrowser().getURL(), 0);
   }
 
@@ -117,11 +126,31 @@ public class HtmlPreviewFileEditor extends UserDataHolderBase implements FileEdi
     return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
   }
 
-  private void updateHtml(Document document) {
+  protected void showDocument(Document document) {
     SwingUtilities.invokeLater(() -> browser.loadURL(htmlUriOf(document.getText())));
   }
 
   private String htmlUriOf(String text) {
+    deleteSink();
+    sink = new FileOutputSink();
+    var diagnostics =
+        tool.build(new StringInputSource(text), sink).stream()
+            .filter(diagnostic -> diagnostic.level() == ERROR)
+            .toList();
+    if (!diagnostics.isEmpty()) {
+      return ERRORS.formatted(
+          diagnostics.stream()
+              .map(diagnostic -> "%s: %s".formatted(diagnostic.level(), diagnostic.message()))
+              .collect(joining(ERROR_SEPARATOR)));
+    }
+    var htmls = sink.matching(new Glob("", "**/*.html"));
+    if (htmls.isEmpty()) {
+      return "about:blank";
+    }
+    return htmls.getFirst().toUri().toString();
+  }
+
+  private void deleteSink() {
     if (sink != null) {
       try {
         sink.delete();
@@ -129,9 +158,7 @@ public class HtmlPreviewFileEditor extends UserDataHolderBase implements FileEdi
         // Ignore: someone will clean up temp files at some point
       }
     }
-    sink = new FileOutputSink();
-    tool.build(new StringInputSource(text), sink);
-    return sink.matching(new Glob("reports/useCases", "**/*.html")).getFirst().toUri().toString();
+    sink = null;
   }
 
   @Override
@@ -151,10 +178,13 @@ public class HtmlPreviewFileEditor extends UserDataHolderBase implements FileEdi
 
   @Override
   public void dispose() {
+    if (rateLimiter != null) {
+      rateLimiter.cancel();
+    }
     if (browser != null) {
-      debouncer.cancel();
       browser.dispose();
     }
+    deleteSink();
   }
 
   @Override

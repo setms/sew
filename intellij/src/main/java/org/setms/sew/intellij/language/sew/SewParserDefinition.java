@@ -1,4 +1,4 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.language.sew;
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
@@ -14,6 +14,12 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
+import org.setms.sew.intellij.SewElementTypes;
+import org.setms.sew.intellij.filetype.DecisionFile;
+import org.setms.sew.intellij.filetype.OwnerFile;
+import org.setms.sew.intellij.filetype.UseCaseFile;
+import org.setms.sew.intellij.filetype.UserFile;
+import org.setms.sew.intellij.language.sew.SewLexer;
 
 public class SewParserDefinition implements ParserDefinition {
 

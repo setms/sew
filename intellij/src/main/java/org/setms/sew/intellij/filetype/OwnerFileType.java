@@ -1,41 +1,42 @@
-package org.setms.sew.intellij;
+package org.setms.sew.intellij.filetype;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import javax.swing.*;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.setms.sew.intellij.language.sew.SewLanguage;
 
-public class UseCaseFileType extends LanguageFileType {
+public class OwnerFileType extends LanguageFileType {
 
-  public static final UseCaseFileType INSTANCE = new UseCaseFileType();
+  public static final OwnerFileType INSTANCE = new OwnerFileType();
 
-  private UseCaseFileType() {
+  private OwnerFileType() {
     super(SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull String getName() {
-    return "Use case";
+    return "Owner";
   }
 
   @Override
   public @Nls @NotNull String getDisplayName() {
-    return "Use case";
+    return "Owner";
   }
 
   @Override
   public @NotNull String getDescription() {
-    return "Describes scenarios for user requirement";
+    return "Stakeholder who finances the development of the system";
   }
 
   @Override
   public @NotNull String getDefaultExtension() {
-    return "useCase";
+    return "owner";
   }
 
   @Override
   public @Nullable Icon getIcon() {
-    return SewIcons.USE_CASE;
+    return SewIcons.OWNER;
   }
 }
