@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
-import org.setms.sew.core.tool.Glob;
-import org.setms.sew.core.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Glob;
+import org.setms.sew.core.domain.model.tool.InputSource;
 
 public class StringInputSource implements InputSource {
 

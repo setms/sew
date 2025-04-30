@@ -25,11 +25,11 @@ import org.cef.handler.CefDisplayHandlerAdapter;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.sew.core.tool.FileOutputSink;
-import org.setms.sew.core.tool.Glob;
-import org.setms.sew.core.tool.OutputSink;
-import org.setms.sew.core.tool.Tool;
-import org.setms.sew.core.usecase.inbound.cli.UseCaseTool;
+import org.setms.sew.core.domain.model.tool.FileOutputSink;
+import org.setms.sew.core.domain.model.tool.Glob;
+import org.setms.sew.core.domain.model.tool.OutputSink;
+import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.inbound.tool.UseCaseTool;
 
 public class HtmlPreviewFileEditor extends UserDataHolderBase implements FileEditor {
 

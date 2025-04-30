@@ -1,0 +1,31 @@
+package org.setms.sew.core.domain.model.tool;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class FileInputSource implements InputSource {
+
+  private final File file;
+
+  @Override
+  public Collection<FileInputSource> matching(Glob glob) {
+    return FileGlob.matching(file, glob).stream().map(FileInputSource::new).toList();
+  }
+
+  @Override
+  public InputStream open() throws IOException {
+    return new FileInputStream(file);
+  }
+
+  @Override
+  public String toString() {
+    return file.toURI().toString();
+  }
+}

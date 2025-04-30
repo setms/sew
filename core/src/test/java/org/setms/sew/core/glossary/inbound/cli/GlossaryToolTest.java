@@ -1,16 +1,17 @@
 package org.setms.sew.core.glossary.inbound.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.setms.sew.core.tool.Level.ERROR;
+import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 
 import java.io.File;
 import org.junit.jupiter.api.Test;
-import org.setms.sew.core.format.sew.SewFormat;
-import org.setms.sew.core.tool.Diagnostic;
-import org.setms.sew.core.tool.FileInputSource;
-import org.setms.sew.core.tool.FileOutputSink;
-import org.setms.sew.core.tool.InputSource;
-import org.setms.sew.core.tool.Tool;
+import org.setms.sew.core.inbound.tool.GlossaryTool;
+import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.domain.model.tool.Diagnostic;
+import org.setms.sew.core.domain.model.tool.FileInputSource;
+import org.setms.sew.core.domain.model.tool.FileOutputSink;
+import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Tool;
 
 class GlossaryToolTest {
 
