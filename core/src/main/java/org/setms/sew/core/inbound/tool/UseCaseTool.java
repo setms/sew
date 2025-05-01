@@ -11,7 +11,9 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.imageio.ImageIO;
 import org.setms.sew.core.domain.model.ddd.UseCase;
@@ -107,18 +109,19 @@ public class UseCaseTool extends Tool {
     var result = new mxGraph();
     result.getModel().beginUpdate();
     try {
-      var from = new AtomicReference<>(addVertex(result, scenario.getSteps().getFirst()));
+      var verticesByStep = new HashMap<Pointer, Object>();
+      var from =
+          new AtomicReference<>(addVertex(result, scenario.getSteps().getFirst(), verticesByStep));
       scenario.getSteps().stream()
           .skip(1)
           .forEach(
               step -> {
-                var to = addVertex(result, step);
+                var to = addVertex(result, step, verticesByStep);
                 result.insertEdge(result.getDefaultParent(), null, "", from.get(), to);
                 from.set(to);
               });
 
-      var layout = new mxHierarchicalLayout(result);
-      layout.setOrientation(7); // left-to-right
+      var layout = new mxHierarchicalLayout(result, 7); // left-to-right
       layout.setInterRankCellSpacing(ICON_SIZE / 2.0);
       layout.setIntraCellSpacing(ICON_SIZE / 4.0);
       layout.execute(result.getDefaultParent());
@@ -129,20 +132,26 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
-  private Object addVertex(mxGraph graph, Pointer step) {
+  private Object addVertex(mxGraph graph, Pointer step, Map<Pointer, Object> verticesByStep) {
+    if (verticesByStep.containsKey(step)) {
+      return verticesByStep.get(step);
+    }
     var url = getClass().getClassLoader().getResource("resin/" + step.getType() + ".png");
     if (url == null) {
       throw new IllegalArgumentException("Icon not found for " + step.getType());
     }
-    return graph.insertVertex(
-        graph.getDefaultParent(),
-        null,
-        step.getId(),
-        0,
-        0,
-        ICON_SIZE,
-        ICON_SIZE,
-        "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9"
-            .formatted(url.toExternalForm()));
+    var result =
+        graph.insertVertex(
+            graph.getDefaultParent(),
+            null,
+            step.getId(),
+            0,
+            0,
+            ICON_SIZE,
+            ICON_SIZE,
+            "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9"
+                .formatted(url.toExternalForm()));
+    verticesByStep.put(step, result);
+    return result;
   }
 }
