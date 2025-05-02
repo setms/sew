@@ -17,9 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import org.setms.sew.intellij.SewElementTypes;
 import org.setms.sew.intellij.filetype.DecisionFile;
 import org.setms.sew.intellij.filetype.OwnerFile;
-import org.setms.sew.intellij.filetype.UseCaseFile;
 import org.setms.sew.intellij.filetype.UserFile;
-import org.setms.sew.intellij.language.sew.SewLexer;
+import org.setms.sew.intellij.usecase.UseCaseFile;
 
 public class SewParserDefinition implements ParserDefinition {
 

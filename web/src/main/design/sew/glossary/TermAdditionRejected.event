@@ -1,7 +1,5 @@
 package sew.glossary
 
 event TermAdditionRejected {
-    type          = EventCarriedStateTransfer
-    explicitQueue = false
     payload       = Rejection
 }

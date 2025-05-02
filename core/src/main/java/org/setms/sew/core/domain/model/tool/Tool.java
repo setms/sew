@@ -56,8 +56,8 @@ public abstract class Tool {
     return source.matching(input.glob()).stream()
         .map(
             inputSource -> {
-              try {
-                return parser.parse(inputSource.open(), input.type());
+              try (var inputStream = inputSource.open()) {
+                return parser.parse(inputStream, input.type());
               } catch (Exception e) {
                 diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
                 return null;

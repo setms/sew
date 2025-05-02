@@ -26,6 +26,7 @@ import org.setms.sew.core.domain.model.sdlc.Event;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.Policy;
+import org.setms.sew.core.domain.model.sdlc.ReadModel;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.sdlc.User;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
@@ -63,7 +64,7 @@ public class UseCaseTool extends Tool {
           "aggregate",
           List.of("event", "hotspot"),
           "event",
-          List.of("policy", "externalSystem", "hotspot"),
+          List.of("policy", "externalSystem", "readModel", "hotspot"),
           "policy",
           List.of("command", "hotspot"),
           "hotspot",
@@ -95,6 +96,11 @@ public class UseCaseTool extends Tool {
             "events", new Glob("src/main/design", "**/*.event"), new SewFormat(), Event.class),
         new Input<>(
             "policies", new Glob("src/main/design", "**/*.policy"), new SewFormat(), Policy.class),
+        new Input<>(
+            "readModels",
+            new Glob("src/main/design", "**/*.readModel"),
+            new SewFormat(),
+            ReadModel.class),
         new Input<>(
             "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class));
   }
@@ -203,7 +209,9 @@ public class UseCaseTool extends Tool {
     var result = sink.select(scenario.getName() + ".png");
     try {
       var image = render(scenario);
-      ImageIO.write(image, "PNG", result.open());
+      try (var output = result.open()) {
+        ImageIO.write(image, "PNG", output);
+      }
     } catch (IOException e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
     }

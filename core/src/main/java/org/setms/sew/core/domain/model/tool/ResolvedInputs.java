@@ -1,5 +1,6 @@
 package org.setms.sew.core.domain.model.tool;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,7 @@ public class ResolvedInputs {
   }
 
   public <T extends NamedObject> List<T> get(String name, Class<T> type) {
-    var namedObjects =
-        Optional.ofNullable(values.get(name))
-            .orElseThrow(() -> new IllegalArgumentException("Unknown input " + name));
+    var namedObjects = Optional.ofNullable(values.get(name)).orElseGet(Collections::emptyList);
     return namedObjects.stream().map(type::cast).toList();
   }
 }

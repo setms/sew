@@ -5,19 +5,16 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.Accessors;
 
 @Getter
 @Setter
-@Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Event extends NamedObject {
+public class ReadModel extends NamedObject {
 
-  @NotNull private Pointer payload;
+  @NotNull private Pointer content;
 
-  public Event(FullyQualifiedName fullyQualifiedName) {
+  public ReadModel(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
-
 }

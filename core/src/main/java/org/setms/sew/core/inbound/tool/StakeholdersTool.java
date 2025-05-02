@@ -132,7 +132,9 @@ public class StakeholdersTool extends Tool {
       var scope = scopeOf(sink, stakeholders);
       var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
       var ownerSink = stakeholders.select(owner.getName() + ".owner");
-      new SewFormat().newBuilder().build(owner, ownerSink.open());
+      try (var output = ownerSink.open()) {
+        new SewFormat().newBuilder().build(owner, output);
+      }
       diagnostics.add(sinkCreated(ownerSink));
     } catch (Exception e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));

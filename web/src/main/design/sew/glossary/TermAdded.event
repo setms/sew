@@ -1,6 +1,5 @@
 package sew.glossary
 
-event AddTermToGlossary {
-    type    = EventCarriedStateTransfer
+event TermAdded {
     payload = Term
 }

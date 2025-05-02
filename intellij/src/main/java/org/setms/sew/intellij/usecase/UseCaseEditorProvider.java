@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.editor;
+package org.setms.sew.intellij.usecase;
 
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.filetype.UseCaseFileType;
 
 public class UseCaseEditorProvider implements FileEditorProvider, DumbAware {
 

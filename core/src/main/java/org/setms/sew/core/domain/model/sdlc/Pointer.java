@@ -9,8 +9,7 @@ import lombok.Value;
 public class Pointer {
 
   String type;
-  @NotEmpty
-  String id;
+  @NotEmpty String id;
 
   public <T extends NamedObject> T resolveFrom(Collection<T> candidates) {
     return candidates.stream()

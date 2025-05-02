@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.UserDataHolderBase;
@@ -50,21 +49,23 @@ public abstract class HtmlPreview extends UserDataHolderBase implements FileEdit
           </ul>
         </body>
       </html>""";
-  private static final String ERROR_SEPARATOR = "</li><li>>";
+  private static final String ERROR_SEPARATOR = "</li><li>";
   private final JBCefBrowser browser;
   private final JPanel panel;
   private final RateLimiter rateLimiter;
+  private final VirtualFile file;
   private final Tool tool;
   private OutputSink sink;
 
-  public HtmlPreview(Project ignored, VirtualFile file, Tool tool) {
+  public HtmlPreview(Project ignored, VirtualFile file, @NotNull Tool tool) {
     this.tool = tool;
+    this.file = file;
     panel = new JPanel(new BorderLayout());
     var document = FileDocumentManager.getInstance().getDocument(file);
     if (JBCefApp.isSupported() && document != null) {
       browser = new JBCefBrowser();
       panel.add(browser.getComponent(), BorderLayout.CENTER);
-      rateLimiter = new RateLimiter(() -> showDocument(document), 500);
+      rateLimiter = new RateLimiter(this::showDocument, 500);
       initBrowser(document);
     } else {
       browser = null;
@@ -77,7 +78,7 @@ public abstract class HtmlPreview extends UserDataHolderBase implements FileEdit
     setBrowserStyle();
     updateStyleWhenColorSchemeChanges();
     trackDocumentChanges(document);
-    showDocument(document);
+    showDocument();
   }
 
   private void setBrowserStyle() {
@@ -126,28 +127,30 @@ public abstract class HtmlPreview extends UserDataHolderBase implements FileEdit
     return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
   }
 
-  protected void showDocument(Document document) {
-    SwingUtilities.invokeLater(() -> browser.loadURL(htmlUriOf(document.getText())));
+  protected void showDocument() {
+    SwingUtilities.invokeLater(this::updateDocument);
   }
 
-  private String htmlUriOf(String text) {
+  private void updateDocument() {
     deleteSink();
     sink = new FileOutputSink();
     var diagnostics =
-        tool.build(new StringInputSource(text), sink).stream()
+        tool.build(new VirtualFileInputSource(file, tool), sink).stream()
             .filter(diagnostic -> diagnostic.level() == ERROR)
             .toList();
     if (!diagnostics.isEmpty()) {
-      return ERRORS.formatted(
-          diagnostics.stream()
-              .map(diagnostic -> "%s: %s".formatted(diagnostic.level(), diagnostic.message()))
-              .collect(joining(ERROR_SEPARATOR)));
+      browser.loadHTML(
+          ERRORS.formatted(
+              diagnostics.stream()
+                  .map(diagnostic -> "%s: %s".formatted(diagnostic.level(), diagnostic.message()))
+                  .collect(joining(ERROR_SEPARATOR))));
+      return;
     }
     var htmls = sink.matching(new Glob("", "**/*.html"));
     if (htmls.isEmpty()) {
-      return "about:blank";
+      browser.loadURL("about:blank");
     }
-    return htmls.getFirst().toUri().toString();
+    browser.loadURL(htmls.getFirst().toUri().toString());
   }
 
   private void deleteSink() {
@@ -198,21 +201,10 @@ public abstract class HtmlPreview extends UserDataHolderBase implements FileEdit
   }
 
   @Override
-  public void selectNotify() {}
-
-  @Override
-  public void deselectNotify() {}
-
-  @Override
   public void addPropertyChangeListener(@NotNull PropertyChangeListener listener) {}
 
   @Override
   public void removePropertyChangeListener(@NotNull PropertyChangeListener listener) {}
-
-  @Override
-  public @Nullable FileEditorLocation getCurrentLocation() {
-    return null;
-  }
 
   @Override
   public void setState(@NotNull FileEditorState state) {}
