@@ -7,14 +7,12 @@ import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.SequencedCollection;
 import org.junit.jupiter.api.Test;
-import org.setms.sew.core.domain.model.ddd.Owner;
-import org.setms.sew.core.domain.model.ddd.Stakeholder;
-import org.setms.sew.core.domain.model.ddd.UseCase;
-import org.setms.sew.core.domain.model.ddd.User;
-import org.setms.sew.core.inbound.tool.StakeholdersTool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.domain.model.sdlc.Owner;
+import org.setms.sew.core.domain.model.sdlc.Stakeholder;
+import org.setms.sew.core.domain.model.sdlc.UseCase;
+import org.setms.sew.core.domain.model.sdlc.User;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.FileInputSource;
 import org.setms.sew.core.domain.model.tool.FileOutputSink;
@@ -23,6 +21,8 @@ import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.tool.StakeholdersTool;
 
 class StakeholdersToolTest {
 
@@ -76,7 +76,7 @@ class StakeholdersToolTest {
     return new FileInputSource(new File(baseDir, path));
   }
 
-  private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(List<Diagnostic> actual) {
+  private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(SequencedCollection<Diagnostic> actual) {
     assertThat(actual).hasSize(1);
     var diagnostic = actual.getFirst();
     assertThat(diagnostic.level()).isEqualTo(WARN);

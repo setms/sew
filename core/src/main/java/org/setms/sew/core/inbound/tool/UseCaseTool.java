@@ -1,7 +1,10 @@
 package org.setms.sew.core.inbound.tool;
 
+import static java.util.Collections.emptyList;
+import static org.setms.sew.core.domain.model.format.Strings.initCap;
 import static org.setms.sew.core.domain.model.format.Strings.isNotBlank;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.util.mxCellRenderer;
@@ -16,11 +19,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.imageio.ImageIO;
-import org.setms.sew.core.domain.model.ddd.UseCase;
-import org.setms.sew.core.domain.model.schema.Pointer;
+import org.atteo.evo.inflector.English;
+import org.setms.sew.core.domain.model.sdlc.Aggregate;
+import org.setms.sew.core.domain.model.sdlc.Command;
+import org.setms.sew.core.domain.model.sdlc.Event;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.Policy;
+import org.setms.sew.core.domain.model.sdlc.UseCase;
+import org.setms.sew.core.domain.model.sdlc.User;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
+import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
@@ -30,7 +41,37 @@ import org.setms.sew.core.inbound.format.sew.SewFormat;
 public class UseCaseTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/useCases";
-  public static final int ICON_SIZE = 80;
+  private static final int ICON_SIZE = 80;
+  private static final List<String> ELEMENT_ORDER =
+      List.of(
+          "readModel",
+          "user",
+          "command",
+          "aggregate",
+          "event",
+          "policy",
+          "externalSystem",
+          "hotspot");
+  private static final Map<String, Collection<String>> ALLOWED_FOLLOWING =
+      Map.of(
+          "readModel",
+          List.of("user", "policy", "event", "hotspot"),
+          "user",
+          List.of("command", "policy", "hotspot"),
+          "command",
+          List.of("aggregate", "hotspot"),
+          "aggregate",
+          List.of("event", "hotspot"),
+          "event",
+          List.of("policy", "externalSystem", "hotspot"),
+          "policy",
+          List.of("command", "hotspot"),
+          "hotspot",
+          ELEMENT_ORDER);
+  private static final Collection<String> ALLOWED_ENDING =
+      List.of("event", "hotspot", "readModel", "externalSystem");
+  private static final Map<String, String> VERBS =
+      Map.of("event", "emit", "command", "issue", "readModel", "update");
 
   @Override
   public List<Input<?>> getInputs() {
@@ -39,13 +80,86 @@ public class UseCaseTool extends Tool {
             "useCases",
             new Glob("src/main/requirements", "**/*.useCase"),
             new SewFormat(),
-            UseCase.class));
+            UseCase.class),
+        new Input<>(
+            "aggregates",
+            new Glob("src/main/design", "**/*.aggregate"),
+            new SewFormat(),
+            Aggregate.class),
+        new Input<>(
+            "commands",
+            new Glob("src/main/design", "**/*.command"),
+            new SewFormat(),
+            Command.class),
+        new Input<>(
+            "events", new Glob("src/main/design", "**/*.event"), new SewFormat(), Event.class),
+        new Input<>(
+            "policies", new Glob("src/main/design", "**/*.policy"), new SewFormat(), Policy.class),
+        new Input<>(
+            "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class));
   }
 
   @Override
   public List<Output> getOutputs() {
     return List.of(
         new Output(new Glob(OUTPUT_PATH, "*.html")), new Output(new Glob(OUTPUT_PATH, "*.png")));
+  }
+
+  @Override
+  protected void validate(
+      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var useCases = inputs.get("useCases", UseCase.class);
+    useCases.stream()
+        .map(UseCase::getScenarios)
+        .flatMap(Collection::stream)
+        .forEach(scenario -> validate(scenario.getSteps(), inputs, diagnostics));
+  }
+
+  private void validate(
+      List<Pointer> steps, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validateStepReferences(steps, inputs, diagnostics);
+    validateGrammar(steps, diagnostics);
+  }
+
+  private void validateStepReferences(
+      List<Pointer> steps, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    steps.forEach(
+        step -> {
+          var types = English.plural(step.getType());
+          var candidates = inputs.get(types, NamedObject.class);
+          try {
+            step.resolveFrom(candidates);
+          } catch (Exception e) {
+            diagnostics.add(
+                new Diagnostic(WARN, "Unknown %s '%s'".formatted(step.getType(), step.getId())));
+          }
+        });
+  }
+
+  private void validateGrammar(List<Pointer> steps, Collection<Diagnostic> diagnostics) {
+    var prev = new AtomicReference<>(steps.getFirst());
+    steps.stream()
+        .skip(1)
+        .forEach(
+            step -> {
+              var previous = prev.get();
+              var allowed = ALLOWED_FOLLOWING.getOrDefault(previous.getType(), emptyList());
+              if (!allowed.contains(step.getType())) {
+                diagnostics.add(
+                    new Diagnostic(
+                        ERROR,
+                        "%s can't %s %s"
+                            .formatted(
+                                initCap(English.plural(previous.getType())),
+                                VERBS.getOrDefault(step.getType(), "precede"),
+                                English.plural(step.getType()))));
+              }
+              prev.set(step);
+            });
+    var last = steps.getLast();
+    if (!ALLOWED_ENDING.contains(last.getType())) {
+      diagnostics.add(new Diagnostic(ERROR, "Can't end with %s".formatted(last.getType())));
+    }
   }
 
   @Override

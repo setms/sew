@@ -8,8 +8,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.setms.sew.core.domain.model.schema.NamedObject;
-import org.setms.sew.core.domain.model.schema.Pointer;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
 
 public interface Builder {
 

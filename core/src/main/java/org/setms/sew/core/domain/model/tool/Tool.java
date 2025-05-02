@@ -6,9 +6,11 @@ import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import org.setms.sew.core.domain.model.schema.NamedObject;
+import java.util.SequencedSet;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
 
 /**
  * Something that validates input, builds output from input, and provides and applies suggestions
@@ -36,8 +38,8 @@ public abstract class Tool {
    * @param source the directory in which to find inputs
    * @return any validation issues
    */
-  public final List<Diagnostic> validate(InputSource source) {
-    var result = new ArrayList<Diagnostic>();
+  public final SequencedSet<Diagnostic> validate(InputSource source) {
+    var result = new LinkedHashSet<Diagnostic>();
     validate(source, resolveInputs(source, result), result);
     return result;
   }

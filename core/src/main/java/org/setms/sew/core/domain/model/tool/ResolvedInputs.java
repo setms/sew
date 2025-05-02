@@ -3,7 +3,8 @@ package org.setms.sew.core.domain.model.tool;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.setms.sew.core.domain.model.schema.NamedObject;
+import java.util.Optional;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
 
 public class ResolvedInputs {
 
@@ -14,6 +15,9 @@ public class ResolvedInputs {
   }
 
   public <T extends NamedObject> List<T> get(String name, Class<T> type) {
-    return values.get(name).stream().map(type::cast).toList();
+    var namedObjects =
+        Optional.ofNullable(values.get(name))
+            .orElseThrow(() -> new IllegalArgumentException("Unknown input " + name));
+    return namedObjects.stream().map(type::cast).toList();
   }
 }

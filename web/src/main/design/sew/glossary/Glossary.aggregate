@@ -1,9 +1,6 @@
 package sew.glossary
 
 aggregate Glossary {
-    cqrs = false
-}
-
-field Terms {
-    type = [ Term ]
+    display = "Glossary"
+    root = Term
 }

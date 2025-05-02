@@ -11,9 +11,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.atteo.evo.inflector.English;
-import org.setms.sew.core.domain.model.schema.FullyQualifiedName;
-import org.setms.sew.core.domain.model.schema.NamedObject;
-import org.setms.sew.core.domain.model.schema.Pointer;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
 
 public interface Parser {
 

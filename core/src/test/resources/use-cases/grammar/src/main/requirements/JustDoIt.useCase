@@ -1,0 +1,16 @@
+package valid
+
+useCase JustDoIt {
+    title = "Just do it"
+}
+
+scenario HappyPath {
+    title = "All's well that ends well"
+    steps = [
+        user(Duck),
+        event(ItWasDone),
+        aggregate(System),
+        command(DoIt),
+        policy(WheneverItWasDone)
+    ]
+}

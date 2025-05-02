@@ -8,13 +8,12 @@ import static org.setms.sew.core.domain.model.tool.Level.WARN;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
-import org.setms.sew.core.domain.model.schema.FullyQualifiedName;
-import org.setms.sew.core.domain.model.schema.Pointer;
-import org.setms.sew.core.domain.model.ddd.Owner;
-import org.setms.sew.core.domain.model.ddd.Stakeholder;
-import org.setms.sew.core.domain.model.ddd.UseCase;
-import org.setms.sew.core.domain.model.ddd.User;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.Owner;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.Stakeholder;
+import org.setms.sew.core.domain.model.sdlc.UseCase;
+import org.setms.sew.core.domain.model.sdlc.User;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
@@ -24,6 +23,7 @@ import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class StakeholdersTool extends Tool {
 

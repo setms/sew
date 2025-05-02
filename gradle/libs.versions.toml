@@ -24,6 +24,7 @@ evo-inflector = { module = "org.atteo:evo-inflector", version.ref = "evo-inflect
 jgraphx = { module = "com.github.vlsi.mxgraph:jgraphx", version.ref = "jgraphx" }
 junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
 junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5-launcher" }
+junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
 junit5-runtime = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
@@ -41,7 +42,7 @@ antlr-runtime = ["antlr-runtime"]
 antlr-intellij = ["antlr-intellij"]
 evo-inflector = ["evo-inflector"]
 jgraphx = ["jgraphx"]
-junit = ["junit5", "mockito", "assertj"]
+junit = ["junit5", "junit5-params", "mockito", "assertj"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
 slf4f = ["slf4j-api"]
 spring-boot = ["spring-thymeleaf", "spring-validation", "spring-web"]

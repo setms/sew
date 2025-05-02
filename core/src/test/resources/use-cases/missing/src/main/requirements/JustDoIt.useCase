@@ -1,0 +1,21 @@
+package valid
+
+useCase JustDoIt {
+    title       = "Just do it"
+    description = "A sample use case for demonstration purposes."
+}
+
+scenario HappyPath {
+    title       = "All's well that ends well"
+    description = "This is the happy path scenario, where everything goes according to plan."
+    steps       = [
+        user(Duck),
+        command(DoIt),
+        aggregate(System),
+        event(ItWasDone),
+        policy(WheneverItWasDone),
+        command(DoItAgain),
+        aggregate(System),
+        event(ItWasDone)
+    ]
+}

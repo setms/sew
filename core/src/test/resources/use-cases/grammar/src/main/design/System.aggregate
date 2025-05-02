@@ -1,0 +1,6 @@
+package grammar
+
+aggregate System {
+    display = "System"
+    root = Root
+}

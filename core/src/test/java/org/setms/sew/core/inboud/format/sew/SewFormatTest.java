@@ -19,10 +19,10 @@ import org.setms.sew.core.domain.model.format.Format;
 import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
-import org.setms.sew.core.domain.model.schema.FullyQualifiedName;
-import org.setms.sew.core.domain.model.schema.NamedObject;
-import org.setms.sew.core.domain.model.schema.Pointer;
 
 class SewFormatTest {
 

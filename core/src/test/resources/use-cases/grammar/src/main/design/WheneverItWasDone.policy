@@ -1,0 +1,5 @@
+package grammar
+
+policy WheneverItWasDone {
+    title = "Whenever it was done"
+}

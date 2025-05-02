@@ -1,5 +1,6 @@
-package org.setms.sew.core.domain.model.schema;
+package org.setms.sew.core.domain.model.sdlc;
 
+import jakarta.validation.constraints.NotEmpty;
 import java.util.Collection;
 import lombok.Value;
 
@@ -8,6 +9,7 @@ import lombok.Value;
 public class Pointer {
 
   String type;
+  @NotEmpty
   String id;
 
   public <T extends NamedObject> T resolveFrom(Collection<T> candidates) {

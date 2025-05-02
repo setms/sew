@@ -1,0 +1,5 @@
+package grammar
+
+event ItWasDone {
+    payload = Payload
+}

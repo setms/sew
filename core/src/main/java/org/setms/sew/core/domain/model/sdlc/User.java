@@ -1,6 +1,4 @@
-package org.setms.sew.core.domain.model.ddd;
-
-import org.setms.sew.core.domain.model.schema.FullyQualifiedName;
+package org.setms.sew.core.domain.model.sdlc;
 
 public class User extends Stakeholder {
 

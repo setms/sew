@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.ddd;
+package org.setms.sew.core.domain.model.sdlc;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.setms.sew.core.domain.model.schema.FullyQualifiedName;
-import org.setms.sew.core.domain.model.schema.NamedObject;
 
 @Getter
 @Setter

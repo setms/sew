@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.schema;
+package org.setms.sew.core.domain.model.sdlc;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
