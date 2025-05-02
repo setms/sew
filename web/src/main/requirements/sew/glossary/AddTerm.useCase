@@ -19,7 +19,7 @@ scenario AddNewTerm {
 }
 
 scenario RejectAdditionOfDuplicateTerm {
-    title       = "Re-adding an exsting term is rejected"
+    title       = "Re-adding an existing term is rejected"
     description = "An analyst attempts to add a term to a glossary that already contains that term. This is rejected."
     steps       = [
         readModel(Glossary),
