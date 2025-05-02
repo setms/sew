@@ -28,10 +28,9 @@ public class SewAnnotator implements Annotator {
     }
     tool.validate(new VirtualFileInputSource(file.getVirtualFile(), tool))
         .forEach(
-            diagnostic -> {
-              holder
-                  .newAnnotation(LevelSeverity.of(diagnostic.level()), diagnostic.message())
-                  .create();
-            });
+            diagnostic ->
+                holder
+                    .newAnnotation(LevelSeverity.of(diagnostic.level()), diagnostic.message())
+                    .create());
   }
 }
