@@ -1,6 +1,6 @@
 package org.setms.sew.core.domain.model.format;
 
-import static org.setms.sew.core.domain.model.format.Strings.initCap;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.format.Validation.validate;
 
 import java.io.IOException;
@@ -85,7 +85,7 @@ public interface Parser {
   }
 
   default void setProperty(String name, Object targetValue, Object target) {
-    var setter = "set%s".formatted(initCap(name));
+    var setter = "set%s".formatted(initUpper(name));
     try {
       var method = findSetter(setter, targetValue, target.getClass());
       if (method != null) {

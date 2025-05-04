@@ -2,7 +2,7 @@ package org.setms.sew.core.inbound.tool;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
-import static org.setms.sew.core.domain.model.format.Strings.initCap;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 
 import java.io.IOException;
@@ -53,9 +53,7 @@ public class GlossaryTool extends Tool {
 
   private void validateSeeAlso(
       Term term, Pointer pointer, Collection<Term> candidates, Collection<Diagnostic> diagnostics) {
-    try {
-      pointer.resolveFrom(candidates);
-    } catch (Exception e) {
+    if (pointer.resolveFrom(candidates).isEmpty()) {
       diagnostics.add(
           new Diagnostic(
               ERROR,
@@ -87,7 +85,7 @@ public class GlossaryTool extends Tool {
   }
 
   private void buildGlossary(String glossary, PrintWriter writer, Collection<Term> terms) {
-    var title = "Glossary: %s".formatted(initCap(glossary));
+    var title = "Glossary: %s".formatted(initUpper(glossary));
     writer.println("<html>");
     writer.println("  <head>");
     writer.printf("    <title>%s</title>%n", title);
@@ -111,6 +109,7 @@ public class GlossaryTool extends Tool {
           "%s.%n      ",
           term.getSeeAlso().stream()
               .map(pointer -> pointer.resolveFrom(terms))
+              .flatMap(Optional::stream)
               .map(a -> "<a href=\"#%s\">%s</a>".formatted(a.getName(), a.getDisplay()))
               .collect(joining(", ")));
     }

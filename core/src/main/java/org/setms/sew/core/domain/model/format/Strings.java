@@ -6,8 +6,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Strings {
 
-  public static String initCap(String value) {
+  public static String initUpper(String value) {
     return Character.toUpperCase(value.charAt(0)) + value.substring(1);
+  }
+
+  public static String initLower(String value) {
+    return Character.toLowerCase(value.charAt(0)) + value.substring(1);
   }
 
   public static boolean isNotBlank(String value) {

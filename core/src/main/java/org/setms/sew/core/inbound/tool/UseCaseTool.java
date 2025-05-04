@@ -1,7 +1,8 @@
 package org.setms.sew.core.inbound.tool;
 
 import static java.util.Collections.emptyList;
-import static org.setms.sew.core.domain.model.format.Strings.initCap;
+import static org.setms.sew.core.domain.model.format.Strings.initLower;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.format.Strings.isNotBlank;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
@@ -13,12 +14,18 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.imageio.ImageIO;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.Command;
@@ -38,6 +45,7 @@ import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.tool.UnresolvedObject;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class UseCaseTool extends Tool {
@@ -149,9 +157,7 @@ public class UseCaseTool extends Tool {
         step -> {
           var types = English.plural(step.getType());
           var candidates = inputs.get(types, NamedObject.class);
-          try {
-            step.resolveFrom(candidates);
-          } catch (Exception e) {
+          if (step.resolveFrom(candidates).isEmpty()) {
             diagnostics.add(
                 new Diagnostic(
                     WARN,
@@ -176,7 +182,7 @@ public class UseCaseTool extends Tool {
                         ERROR,
                         "%s can't %s %s"
                             .formatted(
-                                initCap(English.plural(previous.getType())),
+                                initUpper(English.plural(previous.getType())),
                                 VERBS.getOrDefault(step.getType(), "precede"),
                                 English.plural(step.getType())),
                         location.plus("steps[%d]".formatted(steps.indexOf(step)))));
@@ -197,10 +203,11 @@ public class UseCaseTool extends Tool {
   public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get("useCases", UseCase.class);
     var reportSink = sink.select("reports/useCases");
-    useCases.forEach(useCase -> build(useCase, reportSink, diagnostics));
+    useCases.forEach(useCase -> build(useCase, inputs, reportSink, diagnostics));
   }
 
-  private void build(UseCase useCase, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  private void build(
+      UseCase useCase, ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var report = sink.select(useCase.getName() + ".html");
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
@@ -221,6 +228,16 @@ public class UseCaseTool extends Tool {
                 writer.printf(
                     "    <img src=\"%s\"/>%n",
                     report.toUri().resolve(".").normalize().relativize(image.toUri()));
+                if (!scenario.getSteps().isEmpty()) {
+                  writer.println("    <ol>");
+                  writer.print("      <li>");
+                  writer.print(
+                      String.join(
+                          "</li>%s      <li>".formatted(System.lineSeparator()),
+                          describeSteps(scenario.getSteps(), inputs)));
+                  writer.println("</li>");
+                  writer.println("    </ol>");
+                }
               });
       writer.println("  </body>");
       writer.println("</html>");
@@ -300,5 +317,143 @@ public class UseCaseTool extends Tool {
                 .formatted(url.toExternalForm()));
     verticesByStep.put(step, result);
     return result;
+  }
+
+  private List<String> describeSteps(List<Pointer> steps, ResolvedInputs context) {
+    var result = new ArrayList<String>();
+    var inputs = new ArrayList<NamedObject>();
+    Optional<Actor> actor = Optional.empty();
+    var resolvedSteps = steps.stream().map(context::resolve).toList();
+    for (var step : resolvedSteps) {
+      if (actor.isPresent()) {
+        var description = actor.get().getDescription(step);
+        if (description.isPresent()) {
+          result.add(description.get());
+          inputs.clear();
+          actor = Optional.empty();
+        }
+      } else {
+        actor = Actor.from(step);
+        if (actor.isEmpty()) {
+          inputs.add(step);
+        } else {
+          actor.get().setInput(inputs);
+        }
+      }
+    }
+    actor.map(Actor::finishDescription).ifPresent(result::add);
+    return result;
+  }
+
+  @Getter(AccessLevel.PROTECTED)
+  @RequiredArgsConstructor
+  private abstract static class Actor {
+
+    private final String name;
+    @Setter private List<NamedObject> input;
+
+    public static Optional<Actor> from(NamedObject step) {
+      if (isType(step, User.class)) {
+        var userName = step instanceof User user ? user.getDisplay() : step.getName();
+        return Optional.of(new UserActor(userName));
+      }
+      if (isType(step, Aggregate.class) || isType(step, Policy.class)) {
+        return Optional.of(new SystemActor());
+      }
+      return Optional.empty();
+    }
+
+    protected static <T extends NamedObject> boolean isType(NamedObject object, Class<T> type) {
+      return type.isInstance(object)
+          || (object instanceof UnresolvedObject unresolvedObject
+              && type.getSimpleName().equals(initUpper(unresolvedObject.getType())));
+    }
+
+    public abstract Optional<String> getDescription(NamedObject eventStormElement);
+
+    public String finishDescription() {
+      return null;
+    }
+
+    private static class UserActor extends Actor {
+
+      public UserActor(String name) {
+        super(name);
+      }
+
+      @Override
+      public Optional<String> getDescription(NamedObject eventStormElement) {
+        if (isType(eventStormElement, Command.class)) {
+          var commandText =
+              eventStormElement instanceof Command command
+                  ? command.getDisplay()
+                  : eventStormElement.getName();
+          return Optional.of(descriptionFor(commandText));
+        }
+        return Optional.empty();
+      }
+
+      private String descriptionFor(String commandText) {
+        return "The %s%s %s."
+            .formatted(initLower(getName()), describeInputs(), initLower(commandText));
+      }
+
+      private String describeInputs() {
+        if (getInput().isEmpty()) {
+          return "";
+        }
+        var input = getInput().getFirst();
+        var readModelText =
+            input instanceof ReadModel readModel ? readModel.getDisplay() : input.getName();
+        return ", looking at the %s,".formatted(initLower(readModelText));
+      }
+    }
+
+    private static class SystemActor extends Actor {
+
+      private final List<NamedObject> actions = new ArrayList<>();
+
+      public SystemActor() {
+        super("The system");
+      }
+
+      @Override
+      public Optional<String> getDescription(NamedObject eventStormElement) {
+        actions.add(eventStormElement);
+        if (isType(eventStormElement, ReadModel.class)
+            || isType(eventStormElement, Command.class)) {
+          return Optional.of(describeActions());
+        }
+        return Optional.empty();
+      }
+
+      @Override
+      public String finishDescription() {
+        if (actions.isEmpty()) {
+          return null;
+        }
+        var action = actions.getLast();
+        if (isType(action, Event.class)) {
+          var eventText =
+              action instanceof Event event ? event.getPayload().getId() : action.getName();
+          return "%s responds with %s.".formatted(getName(), initLower(eventText));
+        }
+        return actions.isEmpty() ? null : "%s does nothing.".formatted(getName());
+      }
+
+      private String describeActions() {
+        var last = actions.getLast();
+        if (isType(last, Command.class)) {
+          var commandText = last instanceof Command command ? command.getDisplay() : last.getName();
+          return "%s %s.".formatted(getName(), commandText);
+        }
+        if (isType(last, ReadModel.class)) {
+          var readModelText =
+              last instanceof ReadModel readModel ? readModel.getDisplay() : last.getName();
+          return "%s updates the %s.".formatted(getName(), initLower(readModelText));
+        }
+        throw new IllegalStateException("Unknown last action: " + last.getClass().getSimpleName());
+      }
+    }
   }
 }

@@ -93,6 +93,9 @@ class GlossaryToolTest {
     assertThat(actual)
         .hasSize(1)
         .contains(
-            new Diagnostic(ERROR, "Term 'InvalidSeeAlso' refers to unknown term 'NonExistent'", new Location("InvalidSeeAlso")));
+            new Diagnostic(
+                ERROR,
+                "Term 'InvalidSeeAlso' refers to unknown term 'NonExistent'",
+                new Location("term", "InvalidSeeAlso")));
   }
 }

@@ -1,6 +1,6 @@
 package sew.glossary
 
 command AddTerm {
-    display    = "Add term"
+    display    = "adds a term"
     payload    = Term
 }
