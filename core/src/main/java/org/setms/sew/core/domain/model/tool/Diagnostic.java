@@ -1,12 +1,17 @@
 package org.setms.sew.core.domain.model.tool;
 
-import java.util.SequencedCollection;
-
 import static java.util.Collections.emptyList;
 
-public record Diagnostic(Level level, String message, SequencedCollection<Suggestion> suggestions) {
+import java.util.SequencedCollection;
+
+public record Diagnostic(
+    Level level, String message, Location location, SequencedCollection<Suggestion> suggestions) {
 
   public Diagnostic(Level level, String message) {
-    this(level, message, emptyList());
+    this(level, message, null);
+  }
+
+  public Diagnostic(Level level, String message, Location location) {
+    this(level, message, location, emptyList());
   }
 }

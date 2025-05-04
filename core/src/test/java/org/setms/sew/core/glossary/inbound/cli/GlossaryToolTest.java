@@ -5,13 +5,14 @@ import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 
 import java.io.File;
 import org.junit.jupiter.api.Test;
-import org.setms.sew.core.inbound.tool.GlossaryTool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.FileInputSource;
 import org.setms.sew.core.domain.model.tool.FileOutputSink;
 import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.tool.GlossaryTool;
 
 class GlossaryToolTest {
 
@@ -92,6 +93,6 @@ class GlossaryToolTest {
     assertThat(actual)
         .hasSize(1)
         .contains(
-            new Diagnostic(ERROR, "Term 'InvalidSeeAlso' refers to unknown term 'NonExistent'"));
+            new Diagnostic(ERROR, "Term 'InvalidSeeAlso' refers to unknown term 'NonExistent'", new Location("InvalidSeeAlso")));
   }
 }

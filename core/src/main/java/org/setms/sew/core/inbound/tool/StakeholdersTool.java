@@ -18,6 +18,7 @@ import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
@@ -64,6 +65,7 @@ public class StakeholdersTool extends Tool {
           new Diagnostic(
               WARN,
               "Missing owner",
+              null,
               List.of(new Suggestion(SUGGESTION_CREATE_OWNER, "Create owner"))));
     } else if (owners.size() > 1) {
       diagnostics.add(
@@ -84,14 +86,33 @@ public class StakeholdersTool extends Tool {
 
   private void validateUseCaseUsers(
       UseCase useCase, List<User> users, List<Owner> owners, Collection<Diagnostic> diagnostics) {
-    useCase.getScenarios().stream()
-        .map(UseCase.Scenario::getSteps)
-        .flatMap(Collection::stream)
-        .forEach(step -> validateStepUsers(step, users, owners, diagnostics));
+    useCase
+        .getScenarios()
+        .forEach(
+            scenario ->
+                scenario
+                    .getSteps()
+                    .forEach(
+                        step ->
+                            validateStepUsers(
+                                new Location(
+                                    "useCase",
+                                    useCase.getName(),
+                                    "scenario",
+                                    scenario.getName(),
+                                    "steps[%d]".formatted(scenario.getSteps().indexOf(step))),
+                                step,
+                                users,
+                                owners,
+                                diagnostics)));
   }
 
   private void validateStepUsers(
-      Pointer step, List<User> users, List<Owner> owners, Collection<Diagnostic> diagnostics) {
+      Location location,
+      Pointer step,
+      List<User> users,
+      List<Owner> owners,
+      Collection<Diagnostic> diagnostics) {
     if ("user".equals(step.getType())) {
       var name = step.getId();
       var user = find(name, users);
@@ -100,9 +121,11 @@ public class StakeholdersTool extends Tool {
         if (owner.isPresent()) {
           diagnostics.add(
               new Diagnostic(
-                  ERROR, "Only users can appear in use case scenarios, found owner " + name));
+                  ERROR,
+                  "Only users can appear in use case scenarios, found owner " + name,
+                  location));
         } else {
-          diagnostics.add(new Diagnostic(ERROR, "Unknown user " + name));
+          diagnostics.add(new Diagnostic(ERROR, "Unknown user " + name, location));
         }
       }
     }

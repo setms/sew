@@ -33,16 +33,24 @@ scope ::= PACKAGE qualifiedName NEWLINE
 
 qualifiedName ::= IDENTIFIER (DOT IDENTIFIER)*
 
-object ::= TYPE objectName LBRACE NEWLINE property* RBRACE NEWLINE
+object ::= objectStart LBRACE NEWLINE property* RBRACE NEWLINE
+
+objectStart ::= TYPE objectName
 
 objectName ::= NAME
 
-property ::= propertyName EQ (item | list) NEWLINE
+property ::= propertyName EQ propertyValue NEWLINE
 
 propertyName ::= IDENTIFIER
 
-list ::= LBRACK NEWLINE? (item (COMMA NEWLINE? item)*)? NEWLINE? RBRACK
+propertyValue ::= (singleValue | list)
 
-item ::= objectName | STRING | typedName
+singleValue ::= scalar
+
+scalar ::= objectName | STRING | typedName
 
 typedName ::= TYPE LPAREN objectName RPAREN
+
+list ::= LBRACK NEWLINE? (listItem (COMMA NEWLINE? listItem)*)? NEWLINE? RBRACK
+
+listItem ::= scalar

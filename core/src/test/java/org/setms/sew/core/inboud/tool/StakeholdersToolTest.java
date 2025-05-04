@@ -18,6 +18,7 @@ import org.setms.sew.core.domain.model.tool.FileInputSource;
 import org.setms.sew.core.domain.model.tool.FileOutputSink;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
@@ -76,7 +77,8 @@ class StakeholdersToolTest {
     return new FileInputSource(new File(baseDir, path));
   }
 
-  private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(SequencedCollection<Diagnostic> actual) {
+  private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(
+      SequencedCollection<Diagnostic> actual) {
     assertThat(actual).hasSize(1);
     var diagnostic = actual.getFirst();
     assertThat(diagnostic.level()).isEqualTo(WARN);
@@ -133,7 +135,10 @@ class StakeholdersToolTest {
     assertThat(actual)
         .hasSize(1)
         .contains(
-            new Diagnostic(ERROR, "Only users can appear in use case scenarios, found owner Duck"));
+            new Diagnostic(
+                ERROR,
+                "Only users can appear in use case scenarios, found owner Duck",
+                new Location("useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
   }
 
   @Test
@@ -142,7 +147,13 @@ class StakeholdersToolTest {
 
     var actual = tool.validate(source);
 
-    assertThat(actual).hasSize(1).contains(new Diagnostic(ERROR, "Unknown user Micky"));
+    assertThat(actual)
+        .hasSize(1)
+        .contains(
+            new Diagnostic(
+                ERROR,
+                "Unknown user Micky",
+                new Location("useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
   }
 
   @Test

@@ -33,6 +33,7 @@ import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
@@ -114,21 +115,36 @@ public class UseCaseTool extends Tool {
   @Override
   protected void validate(
       InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get("useCases", UseCase.class);
-    useCases.stream()
-        .map(UseCase::getScenarios)
-        .flatMap(Collection::stream)
-        .forEach(scenario -> validate(scenario.getSteps(), inputs, diagnostics));
+    inputs
+        .get("useCases", UseCase.class)
+        .forEach(
+            useCase ->
+                useCase
+                    .getScenarios()
+                    .forEach(
+                        scenario ->
+                            validateScenario(
+                                new Location(
+                                    "useCase", useCase.getName(), "scenario", scenario.getName()),
+                                scenario.getSteps(),
+                                inputs,
+                                diagnostics)));
   }
 
-  private void validate(
-      List<Pointer> steps, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    validateStepReferences(steps, inputs, diagnostics);
-    validateGrammar(steps, diagnostics);
+  private void validateScenario(
+      Location location,
+      List<Pointer> steps,
+      ResolvedInputs inputs,
+      Collection<Diagnostic> diagnostics) {
+    validateStepReferences(location, steps, inputs, diagnostics);
+    validateGrammar(location, steps, diagnostics);
   }
 
   private void validateStepReferences(
-      List<Pointer> steps, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+      Location location,
+      List<Pointer> steps,
+      ResolvedInputs inputs,
+      Collection<Diagnostic> diagnostics) {
     steps.forEach(
         step -> {
           var types = English.plural(step.getType());
@@ -137,12 +153,16 @@ public class UseCaseTool extends Tool {
             step.resolveFrom(candidates);
           } catch (Exception e) {
             diagnostics.add(
-                new Diagnostic(WARN, "Unknown %s '%s'".formatted(step.getType(), step.getId())));
+                new Diagnostic(
+                    WARN,
+                    "Unknown %s '%s'".formatted(step.getType(), step.getId()),
+                    location.plus("steps[%d]".formatted(steps.indexOf(step)))));
           }
         });
   }
 
-  private void validateGrammar(List<Pointer> steps, Collection<Diagnostic> diagnostics) {
+  private void validateGrammar(
+      Location location, List<Pointer> steps, Collection<Diagnostic> diagnostics) {
     var prev = new AtomicReference<>(steps.getFirst());
     steps.stream()
         .skip(1)
@@ -158,13 +178,18 @@ public class UseCaseTool extends Tool {
                             .formatted(
                                 initCap(English.plural(previous.getType())),
                                 VERBS.getOrDefault(step.getType(), "precede"),
-                                English.plural(step.getType()))));
+                                English.plural(step.getType())),
+                        location.plus("steps[%d]".formatted(steps.indexOf(step)))));
               }
               prev.set(step);
             });
     var last = steps.getLast();
     if (!ALLOWED_ENDING.contains(last.getType())) {
-      diagnostics.add(new Diagnostic(ERROR, "Can't end with %s".formatted(last.getType())));
+      diagnostics.add(
+          new Diagnostic(
+              ERROR,
+              "Can't end with %s".formatted(last.getType()),
+              location.plus(last.getType(), last.getId())));
     }
   }
 

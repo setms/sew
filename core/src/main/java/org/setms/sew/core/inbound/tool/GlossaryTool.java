@@ -18,6 +18,7 @@ import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
@@ -58,7 +59,8 @@ public class GlossaryTool extends Tool {
       diagnostics.add(
           new Diagnostic(
               ERROR,
-              "Term '%s' refers to unknown term '%s'".formatted(term.getName(), pointer.getId())));
+              "Term '%s' refers to unknown term '%s'".formatted(term.getName(), pointer.getId()),
+              new Location("term", term.getName())));
     }
   }
 
