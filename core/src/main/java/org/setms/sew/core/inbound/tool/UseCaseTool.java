@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import javax.imageio.ImageIO;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -369,6 +370,11 @@ public class UseCaseTool extends Tool {
               && type.getSimpleName().equals(initUpper(unresolvedObject.getType())));
     }
 
+    protected <T extends NamedObject> String friendlyName(
+        NamedObject source, Class<T> type, Function<T, String> extractor) {
+      return type.isInstance(source) ? extractor.apply(type.cast(source)) : source.getName();
+    }
+
     public abstract Optional<String> getDescription(NamedObject eventStormElement);
 
     public String finishDescription() {
@@ -384,18 +390,14 @@ public class UseCaseTool extends Tool {
       @Override
       public Optional<String> getDescription(NamedObject eventStormElement) {
         if (isType(eventStormElement, Command.class)) {
-          var commandText =
-              eventStormElement instanceof Command command
-                  ? command.getDisplay()
-                  : eventStormElement.getName();
-          return Optional.of(descriptionFor(commandText));
+          var command = friendlyName(eventStormElement, Command.class, Command::getDisplay);
+          return Optional.of(userIssues(command));
         }
         return Optional.empty();
       }
 
-      private String descriptionFor(String commandText) {
-        return "The %s%s %s."
-            .formatted(initLower(getName()), describeInputs(), initLower(commandText));
+      private String userIssues(String command) {
+        return "The %s%s %s.".formatted(initLower(getName()), describeInputs(), initLower(command));
       }
 
       private String describeInputs() {
@@ -434,9 +436,8 @@ public class UseCaseTool extends Tool {
         }
         var action = actions.getLast();
         if (isType(action, Event.class)) {
-          var eventText =
-              action instanceof Event event ? event.getPayload().getId() : action.getName();
-          return "%s responds with %s.".formatted(getName(), initLower(eventText));
+          var response = friendlyName(action, Event.class, event -> event.getPayload().getId());
+          return "%s responds with %s.".formatted(getName(), initLower(response));
         }
         return actions.isEmpty() ? null : "%s does nothing.".formatted(getName());
       }
@@ -444,12 +445,11 @@ public class UseCaseTool extends Tool {
       private String describeActions() {
         var last = actions.getLast();
         if (isType(last, Command.class)) {
-          var commandText = last instanceof Command command ? command.getDisplay() : last.getName();
-          return "%s %s.".formatted(getName(), commandText);
+          var command = friendlyName(last, Command.class, Command::getDisplay);
+          return "%s %s.".formatted(getName(), command);
         }
         if (isType(last, ReadModel.class)) {
-          var readModelText =
-              last instanceof ReadModel readModel ? readModel.getDisplay() : last.getName();
+          var readModelText = friendlyName(last, ReadModel.class, ReadModel::getDisplay);
           return "%s updates the %s.".formatted(getName(), initLower(readModelText));
         }
         throw new IllegalStateException("Unknown last action: " + last.getClass().getSimpleName());
