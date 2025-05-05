@@ -1,4 +1,4 @@
-package org.setms.sew.core.glossary.inbound.cli;
+package org.setms.sew.core.inboud.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
