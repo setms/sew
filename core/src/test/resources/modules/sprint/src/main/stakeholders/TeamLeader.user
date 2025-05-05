@@ -1,0 +1,5 @@
+package sprint
+
+user TeamLeader {
+    display = "Team leader"
+}

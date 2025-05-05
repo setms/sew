@@ -1,0 +1,23 @@
+package sprint
+
+useCase FinalizeSprint {
+    title = "Automatically finalize sprint"
+}
+
+scenario CollectStats {
+    title       = "Collect statistics"
+    description = "When the sprint ends, automatically collect statistics and publish them."
+    steps       = [
+        clockEvent(TimePassed),
+        policy(CheckActiveSprint, reads = readModel(ActiveSprints)),
+        command(FinalizeSprint),
+        aggregate(Sprints),
+        event(SprintEnded, updates = readModel(ActiveSprints)),
+        policy(CheckStatistics),
+        command(CollectStatistics),
+        aggregate(Statistics),
+        event(StatisticsCollected),
+        readModel(Statistics),
+        user(TeamLeader)
+    ]
+}

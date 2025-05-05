@@ -89,6 +89,9 @@ public class UseCaseTool extends Tool {
       List.of("event", "hotspot", "readModel", "externalSystem");
   private static final Map<String, String> VERBS =
       Map.of("event", "emit", "command", "issue", "readModel", "update");
+  private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
+      Map.of("event", List.of("updates"), "policy", List.of("reads"));
+  private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
 
   @Override
   public List<Input<?>> getInputs() {
@@ -162,16 +165,36 @@ public class UseCaseTool extends Tool {
       Collection<Diagnostic> diagnostics) {
     steps.forEach(
         step -> {
-          var types = English.plural(step.getType());
-          var candidates = inputs.get(types, NamedObject.class);
-          if (step.resolveFrom(candidates).isEmpty()) {
-            diagnostics.add(
-                new Diagnostic(
-                    WARN,
-                    "Unknown %s '%s'".formatted(step.getType(), step.getId()),
-                    location.plus("steps[%d]".formatted(steps.indexOf(step)))));
-          }
+          var stepLocation = location.plus("steps[%d]".formatted(steps.indexOf(step)));
+          validateStepReference(step, inputs, diagnostics, stepLocation);
+          step.getAttributes()
+              .forEach(
+                  (name, reference) -> {
+                    validateStepReference(reference, inputs, diagnostics, stepLocation);
+                    var allowed = ALLOWED_ATTRIBUTES.getOrDefault(step.getType(), emptyList());
+                    if (!allowed.contains(name)) {
+                      diagnostics.add(
+                          new Diagnostic(
+                              WARN, "Invalid attribute '%s'".formatted(name), stepLocation));
+                    }
+                  });
         });
+  }
+
+  private void validateStepReference(
+      Pointer reference,
+      ResolvedInputs inputs,
+      Collection<Diagnostic> diagnostics,
+      Location stepLocation) {
+    var types = English.plural(reference.getType());
+    var candidates = inputs.get(types, NamedObject.class);
+    if (reference.resolveFrom(candidates).isEmpty()) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Unknown %s '%s'".formatted(reference.getType(), reference.getId()),
+              stepLocation));
+    }
   }
 
   private void validateGrammar(
@@ -290,6 +313,19 @@ public class UseCaseTool extends Tool {
                 var to = addVertex(result, step, verticesByStep);
                 result.insertEdge(result.getDefaultParent(), null, "", from.get(), to);
                 from.set(to);
+
+                step.getAttributes()
+                    .forEach(
+                        (name, reference) -> {
+                          var begin = from.get();
+                          var end = addVertex(result, reference, verticesByStep);
+                          if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
+                            var node = begin;
+                            begin = end;
+                            end = node;
+                          }
+                          result.insertEdge(result.getDefaultParent(), null, "", begin, end);
+                        });
               });
 
       var layout = new mxHierarchicalLayout(result, 7); // left-to-right
