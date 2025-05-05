@@ -111,4 +111,15 @@ class UseCaseToolTest {
     output = sink.select("reports/useCases/JustDoIt.html").getFile();
     assertThat((output)).isFile().hasContent(USE_CASE_HTML);
   }
+
+  @Test
+  void shouldBuildComplexUseCaseWithoutProblems() {
+    var testDir = new File(baseDir, "../modules/gdpr");
+    var source = new FileInputSource(testDir);
+    var sink = new FileOutputSink(testDir).select("build");
+
+    var actual = tool.build(source, sink);
+
+    assertThat(actual).isEmpty();
+  }
 }

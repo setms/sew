@@ -47,9 +47,13 @@ propertyValue ::= (singleValue | list)
 
 singleValue ::= scalar
 
-scalar ::= objectName | STRING | typedName
+scalar ::= objectName | STRING | typedReference
 
-typedName ::= TYPE LPAREN objectName RPAREN
+typedReference ::= TYPE LPAREN objectName (COMMA attribute)* RPAREN
+
+attribute ::= IDENTIFIER EQ attributeValue
+
+attributeValue ::= TYPE LPAREN objectName RPAREN
 
 list ::= LBRACK NEWLINE? (listItem (COMMA NEWLINE? listItem)*)? NEWLINE? RBRACK
 

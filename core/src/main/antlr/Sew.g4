@@ -14,10 +14,14 @@ list : LBRACK NEWLINE? (item (COMMA NEWLINE? item)*)? NEWLINE? RBRACK ;
 
 item : OBJECT_NAME
      | STRING
-     | typedName
+     | typedReference
      ;
 
-typedName : TYPE LPAREN OBJECT_NAME RPAREN ;
+typedReference : TYPE LPAREN OBJECT_NAME (COMMA attribute)* RPAREN ;
+
+attribute : IDENTIFIER EQ attributeValue ;
+
+attributeValue : TYPE LPAREN OBJECT_NAME RPAREN ;
 
 
 PACKAGE      : 'package';

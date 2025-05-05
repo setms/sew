@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
@@ -74,7 +75,13 @@ public interface Builder {
       case String string -> new DataString(string);
       case Collection<?> collection ->
           new DataList().add(collection.stream().map(this::convert).toList());
-      case Pointer pointer -> new Reference(pointer.getId());
+      case Pointer pointer -> {
+        var attributes = new HashMap<String, Reference>();
+        pointer
+            .getAttributes()
+            .forEach((key, ptr) -> attributes.put(key, new Reference(ptr.getType(), ptr.getId())));
+        yield new Reference(pointer.getType(), pointer.getId(), attributes);
+      }
       case NamedObject namedObject -> toNestedObject(namedObject);
       default ->
           throw new UnsupportedOperationException("Can't convert " + value.getClass().getName());

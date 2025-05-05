@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import org.atteo.evo.inflector.English;
@@ -59,7 +60,13 @@ public interface Parser {
       case DataString string -> string.getValue();
       case DataList list -> list.map(item -> convert(name, item, target)).toList();
       case NestedObject object -> createObject(object, name, target);
-      case Reference reference -> new Pointer(reference.getType(), reference.getId());
+      case Reference reference -> {
+        var attributes = new HashMap<String, Pointer>();
+        reference
+            .getAttributes()
+            .forEach((key, ref) -> attributes.put(key, new Pointer(ref.getType(), ref.getId())));
+        yield new Pointer(reference.getType(), reference.getId(), attributes);
+      }
       default ->
           throw new UnsupportedOperationException(
               "Unexpected value of type " + value.getClass().getSimpleName());

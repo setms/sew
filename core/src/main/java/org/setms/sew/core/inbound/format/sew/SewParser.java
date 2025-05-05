@@ -5,7 +5,10 @@ import static java.util.stream.Collectors.joining;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -86,8 +89,22 @@ class SewParser implements Parser {
     if (item.OBJECT_NAME() != null) {
       return new Reference(item.OBJECT_NAME().getText());
     }
+    Map<String, Reference> map;
+    var attributes = item.typedReference().attribute();
+    if (attributes == null) {
+      map = Collections.emptyMap();
+    } else {
+      map = new HashMap<>();
+      attributes.forEach(
+          attribute -> {
+            var value = attribute.attributeValue();
+            map.put(
+                attribute.IDENTIFIER().getText(),
+                new Reference(value.TYPE().getText(), value.OBJECT_NAME().getText()));
+          });
+    }
     return new Reference(
-        item.typedName().TYPE().getText(), item.typedName().OBJECT_NAME().getText());
+        item.typedReference().TYPE().getText(), item.typedReference().OBJECT_NAME().getText(), map);
   }
 
   private DataItem toStringItem(TerminalNode string) {
