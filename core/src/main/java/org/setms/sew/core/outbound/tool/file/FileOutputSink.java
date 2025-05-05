@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.tool;
+package org.setms.sew.core.outbound.tool.file;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.setms.sew.core.domain.model.tool.Glob;
+import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.OutputSink;
 
 @Getter
 @RequiredArgsConstructor

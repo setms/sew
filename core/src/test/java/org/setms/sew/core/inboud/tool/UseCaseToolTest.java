@@ -7,13 +7,13 @@ import static org.setms.sew.core.domain.model.tool.Level.WARN;
 import java.io.File;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
-import org.setms.sew.core.domain.model.tool.FileInputSource;
-import org.setms.sew.core.domain.model.tool.FileOutputSink;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 import org.setms.sew.core.inbound.tool.UseCaseTool;
+import org.setms.sew.core.outbound.tool.file.FileInputSource;
+import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
 class UseCaseToolTest {
 

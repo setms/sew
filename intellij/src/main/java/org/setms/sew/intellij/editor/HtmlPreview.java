@@ -28,10 +28,10 @@ import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.sew.core.domain.model.tool.FileOutputSink;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
 public abstract class HtmlPreview extends UserDataHolderBase implements FileEditor {
 

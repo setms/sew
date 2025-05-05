@@ -1,10 +1,9 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.outbound.tool.file;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import org.junit.jupiter.api.Test;
-import org.setms.sew.core.domain.model.tool.FileInputSource;
 import org.setms.sew.core.domain.model.tool.Glob;
 
 class FileInputSourceTest {

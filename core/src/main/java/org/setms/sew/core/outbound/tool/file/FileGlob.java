@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.tool;
+package org.setms.sew.core.outbound.tool.file;
 
 import static java.util.Collections.emptyList;
 
@@ -9,9 +9,10 @@ import java.nio.file.Path;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.setms.sew.core.domain.model.tool.Glob;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class FileGlob {
+class FileGlob {
 
   public static List<File> matching(File file, Glob glob) {
     try {
