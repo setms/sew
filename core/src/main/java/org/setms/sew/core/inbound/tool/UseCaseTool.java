@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
@@ -306,6 +307,7 @@ public class UseCaseTool extends Tool {
       var verticesByStep = new HashMap<Pointer, Object>();
       var from =
           new AtomicReference<>(addVertex(result, scenario.getSteps().getFirst(), verticesByStep));
+      var first = from.get();
       scenario.getSteps().stream()
           .skip(1)
           .forEach(
@@ -328,7 +330,13 @@ public class UseCaseTool extends Tool {
                         });
               });
 
-      var layout = new mxHierarchicalLayout(result, 7); // left-to-right
+      var layout = new mxHierarchicalLayout(result, 7) { // left-to-right
+
+            @Override
+            public List<Object> findRoots(Object parent, Set<Object> vertices) {
+              return List.of(first);
+            }
+          };
       layout.setInterRankCellSpacing(ICON_SIZE / 2.0);
       layout.setIntraCellSpacing(ICON_SIZE / 4.0);
       layout.execute(result.getDefaultParent());
