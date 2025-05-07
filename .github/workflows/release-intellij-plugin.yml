@@ -16,7 +16,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'coretto'
+          distribution: 'corretto'
           java-version: '21'
 
       - name: Set up Gradle
