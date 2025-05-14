@@ -304,6 +304,7 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
+  @SuppressWarnings("StringConcatenationInLoop")
   private mxGraph toGraph(UseCase.Scenario scenario) {
     var stepTexts = new HashMap<Pointer, String>();
     scenario
@@ -315,14 +316,16 @@ public class UseCaseTool extends Tool {
                   .values()
                   .forEach(reference -> stepTexts.put(reference, wrap(reference.getId())));
             });
-    var height =
-        ICON_SIZE
-            + (stepTexts.values().stream()
-                        .mapToInt(text -> text.split(NL).length)
-                        .max()
-                        .orElseThrow()
-                    - 1)
-                * 16;
+    var maxLines = stepTexts.values().stream().mapToInt(this::numLinesIn).max().orElseThrow();
+    stepTexts.forEach(
+        (step, text) -> {
+          var addLines = maxLines - numLinesIn(text);
+          for (var i = 0; i < addLines; i++) {
+            text += NL;
+          }
+          stepTexts.put(step, text);
+        });
+    var height = ICON_SIZE + (maxLines - 1) * 16;
     var result = new mxGraph();
     result.getModel().beginUpdate();
     try {
@@ -367,6 +370,10 @@ public class UseCaseTool extends Tool {
     }
 
     return result;
+  }
+
+  private int numLinesIn(String text) {
+    return text.split(NL).length;
   }
 
   private Object addVertex(
