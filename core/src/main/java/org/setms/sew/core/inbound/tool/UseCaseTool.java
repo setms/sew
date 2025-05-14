@@ -53,7 +53,8 @@ import org.setms.sew.core.inbound.format.sew.SewFormat;
 public class UseCaseTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/useCases";
-  private static final int ICON_SIZE = 80;
+  private static final int ICON_SIZE = 60;
+  private static final int MAX_TEXT_LENGTH = 15;
   private static final List<String> ELEMENT_ORDER =
       List.of(
           "readModel",
@@ -93,6 +94,9 @@ public class UseCaseTool extends Tool {
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
+  private static final String NL = "\n";
+  private static final String VERTEX_STYLE =
+      "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
 
   @Override
   public List<Input<?>> getInputs() {
@@ -301,18 +305,37 @@ public class UseCaseTool extends Tool {
   }
 
   private mxGraph toGraph(UseCase.Scenario scenario) {
+    var stepTexts = new HashMap<Pointer, String>();
+    scenario
+        .getSteps()
+        .forEach(
+            step -> {
+              stepTexts.put(step, wrap(step.getId()));
+              step.getAttributes()
+                  .values()
+                  .forEach(reference -> stepTexts.put(reference, wrap(reference.getId())));
+            });
+    var height =
+        ICON_SIZE
+            + (stepTexts.values().stream()
+                        .mapToInt(text -> text.split(NL).length)
+                        .max()
+                        .orElseThrow()
+                    - 1)
+                * 16;
     var result = new mxGraph();
     result.getModel().beginUpdate();
     try {
       var verticesByStep = new HashMap<Pointer, Object>();
+      var firstStep = scenario.getSteps().getFirst();
       var from =
-          new AtomicReference<>(addVertex(result, scenario.getSteps().getFirst(), verticesByStep));
+          new AtomicReference<>(addVertex(result, firstStep, height, verticesByStep, stepTexts));
       var first = from.get();
       scenario.getSteps().stream()
           .skip(1)
           .forEach(
               step -> {
-                var to = addVertex(result, step, verticesByStep);
+                var to = addVertex(result, step, height, verticesByStep, stepTexts);
                 result.insertEdge(result.getDefaultParent(), null, "", from.get(), to);
                 from.set(to);
 
@@ -320,7 +343,7 @@ public class UseCaseTool extends Tool {
                     .forEach(
                         (name, reference) -> {
                           var begin = from.get();
-                          var end = addVertex(result, reference, verticesByStep);
+                          var end = addVertex(result, reference, height, verticesByStep, stepTexts);
                           if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
                             var node = begin;
                             begin = end;
@@ -331,13 +354,12 @@ public class UseCaseTool extends Tool {
               });
 
       var layout = new mxHierarchicalLayout(result, 7) { // left-to-right
-
             @Override
             public List<Object> findRoots(Object parent, Set<Object> vertices) {
               return List.of(first);
             }
           };
-      layout.setInterRankCellSpacing(ICON_SIZE / 2.0);
+      layout.setInterRankCellSpacing(2.0 * ICON_SIZE / 3);
       layout.setIntraCellSpacing(ICON_SIZE / 4.0);
       layout.execute(result.getDefaultParent());
     } finally {
@@ -347,7 +369,12 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
-  private Object addVertex(mxGraph graph, Pointer step, Map<Pointer, Object> verticesByStep) {
+  private Object addVertex(
+      mxGraph graph,
+      Pointer step,
+      int height,
+      Map<Pointer, Object> verticesByStep,
+      Map<Pointer, String> stepTexts) {
     if (verticesByStep.containsKey(step)) {
       return verticesByStep.get(step);
     }
@@ -359,15 +386,25 @@ public class UseCaseTool extends Tool {
         graph.insertVertex(
             graph.getDefaultParent(),
             null,
-            step.getId(),
+            stepTexts.get(step),
             0,
             0,
             ICON_SIZE,
-            ICON_SIZE,
-            "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9"
-                .formatted(url.toExternalForm()));
+            height,
+            VERTEX_STYLE.formatted(url.toExternalForm()));
     verticesByStep.put(step, result);
     return result;
+  }
+
+  private String wrap(String text) {
+    if (text.length() <= MAX_TEXT_LENGTH) {
+      return text;
+    }
+    var index = MAX_TEXT_LENGTH - 1;
+    while (index > 0 && !Character.isUpperCase(text.charAt(index))) {
+      index--;
+    }
+    return text.substring(0, index) + NL + wrap(text.substring(index));
   }
 
   private List<String> describeSteps(List<Pointer> steps, ResolvedInputs context) {
