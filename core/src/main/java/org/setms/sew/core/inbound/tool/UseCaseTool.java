@@ -304,67 +304,22 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
-  @SuppressWarnings("StringConcatenationInLoop")
   private mxGraph toGraph(UseCase.Scenario scenario) {
-    var stepTexts = new HashMap<Pointer, String>();
-    scenario
-        .getSteps()
-        .forEach(
-            step -> {
-              stepTexts.put(step, wrap(step.getId()));
-              step.getAttributes()
-                  .values()
-                  .forEach(reference -> stepTexts.put(reference, wrap(reference.getId())));
-            });
-    var maxLines = stepTexts.values().stream().mapToInt(this::numLinesIn).max().orElseThrow();
-    stepTexts.forEach(
-        (step, text) -> {
-          var addLines = maxLines - numLinesIn(text);
-          for (var i = 0; i < addLines; i++) {
-            text += NL;
-          }
-          stepTexts.put(step, text);
-        });
-    var height = ICON_SIZE + (maxLines - 1) * 16;
+    var stepTexts = wrappedStepTextsFor(scenario);
+    var numLines = ensureSameNumberOfLinesFor(stepTexts);
+    var height = ICON_SIZE + (numLines - 1) * 16;
+    var verticesByStep = new HashMap<Pointer, Object>();
     var result = new mxGraph();
     result.getModel().beginUpdate();
     try {
-      var verticesByStep = new HashMap<Pointer, Object>();
-      var firstStep = scenario.getSteps().getFirst();
       var from =
-          new AtomicReference<>(addVertex(result, firstStep, height, verticesByStep, stepTexts));
+          new AtomicReference<>(
+              addVertex(result, scenario.getSteps().getFirst(), height, verticesByStep, stepTexts));
       var first = from.get();
       scenario.getSteps().stream()
           .skip(1)
-          .forEach(
-              step -> {
-                var to = addVertex(result, step, height, verticesByStep, stepTexts);
-                result.insertEdge(result.getDefaultParent(), null, "", from.get(), to);
-                from.set(to);
-
-                step.getAttributes()
-                    .forEach(
-                        (name, reference) -> {
-                          var begin = from.get();
-                          var end = addVertex(result, reference, height, verticesByStep, stepTexts);
-                          if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
-                            var node = begin;
-                            begin = end;
-                            end = node;
-                          }
-                          result.insertEdge(result.getDefaultParent(), null, "", begin, end);
-                        });
-              });
-
-      var layout = new mxHierarchicalLayout(result, 7) { // left-to-right
-            @Override
-            public List<Object> findRoots(Object parent, Set<Object> vertices) {
-              return List.of(first);
-            }
-          };
-      layout.setInterRankCellSpacing(2.0 * ICON_SIZE / 3);
-      layout.setIntraCellSpacing(ICON_SIZE / 4.0);
-      layout.execute(result.getDefaultParent());
+          .forEach(step -> addStepToGraph(step, result, height, verticesByStep, stepTexts, from));
+      layoutGraph(result, first);
     } finally {
       result.getModel().endUpdate();
     }
@@ -372,14 +327,89 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
+  private Map<Pointer, String> wrappedStepTextsFor(UseCase.Scenario scenario) {
+    var result = new HashMap<Pointer, String>();
+    scenario
+        .getSteps()
+        .forEach(
+            step -> {
+              result.put(step, wrap(step.getId()));
+              step.getAttributes()
+                  .values()
+                  .forEach(reference -> result.put(reference, wrap(reference.getId())));
+            });
+    return result;
+  }
+
+  private String wrap(String text) {
+    if (text.length() <= MAX_TEXT_LENGTH) {
+      return text;
+    }
+    var index = MAX_TEXT_LENGTH - 1;
+    while (index > 0 && !Character.isUpperCase(text.charAt(index))) {
+      index--;
+    }
+    return text.substring(0, index) + NL + wrap(text.substring(index));
+  }
+
+  @SuppressWarnings("StringConcatenationInLoop")
+  private int ensureSameNumberOfLinesFor(Map<Pointer, String> textsByPointer) {
+    var result = textsByPointer.values().stream().mapToInt(this::numLinesIn).max().orElseThrow();
+    textsByPointer.forEach(
+        (pointer, text) -> {
+          var addLines = result - numLinesIn(text);
+          for (var i = 0; i < addLines; i++) {
+            text += NL;
+          }
+          textsByPointer.put(pointer, text);
+        });
+    return result;
+  }
+
   private int numLinesIn(String text) {
     return text.split(NL).length;
+  }
+
+  private void addStepToGraph(
+      Pointer step,
+      mxGraph graph,
+      int vertexHeight,
+      HashMap<Pointer, Object> verticesByStep,
+      Map<Pointer, String> stepTexts,
+      AtomicReference<Object> lastVertex) {
+    var to = addVertex(graph, step, vertexHeight, verticesByStep, stepTexts);
+    graph.insertEdge(graph.getDefaultParent(), null, "", lastVertex.get(), to);
+    lastVertex.set(to);
+    step.getAttributes()
+        .forEach(
+            (name, reference) -> {
+              var begin = lastVertex.get();
+              var end = addVertex(graph, reference, vertexHeight, verticesByStep, stepTexts);
+              if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
+                var node = begin;
+                begin = end;
+                end = node;
+              }
+              graph.insertEdge(graph.getDefaultParent(), null, "", begin, end);
+            });
+  }
+
+  private void layoutGraph(mxGraph graph, Object firstVertex) {
+    var layout = new mxHierarchicalLayout(graph, 7) { // left-to-right
+          @Override
+          public List<Object> findRoots(Object parent, Set<Object> vertices) {
+            return List.of(firstVertex);
+          }
+        };
+    layout.setInterRankCellSpacing(2.0 * ICON_SIZE / 3);
+    layout.setIntraCellSpacing(ICON_SIZE / 4.0);
+    layout.execute(graph.getDefaultParent());
   }
 
   private Object addVertex(
       mxGraph graph,
       Pointer step,
-      int height,
+      int vertexHeight,
       Map<Pointer, Object> verticesByStep,
       Map<Pointer, String> stepTexts) {
     if (verticesByStep.containsKey(step)) {
@@ -397,21 +427,10 @@ public class UseCaseTool extends Tool {
             0,
             0,
             ICON_SIZE,
-            height,
+            vertexHeight,
             VERTEX_STYLE.formatted(url.toExternalForm()));
     verticesByStep.put(step, result);
     return result;
-  }
-
-  private String wrap(String text) {
-    if (text.length() <= MAX_TEXT_LENGTH) {
-      return text;
-    }
-    var index = MAX_TEXT_LENGTH - 1;
-    while (index > 0 && !Character.isUpperCase(text.charAt(index))) {
-      index--;
-    }
-    return text.substring(0, index) + NL + wrap(text.substring(index));
   }
 
   private List<String> describeSteps(List<Pointer> steps, ResolvedInputs context) {
