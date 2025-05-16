@@ -14,13 +14,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import javax.imageio.ImageIO;
@@ -88,7 +88,7 @@ public class UseCaseTool extends Tool {
           "hotspot",
           ELEMENT_ORDER);
   private static final Collection<String> ALLOWED_ENDING =
-      List.of("event", "hotspot", "readModel", "externalSystem");
+      List.of("event", "hotspot", "policy", "readModel", "externalSystem");
   private static final Map<String, String> VERBS =
       Map.of("event", "emit", "command", "issue", "readModel", "update");
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
@@ -97,6 +97,8 @@ public class UseCaseTool extends Tool {
   private static final String NL = "\n";
   private static final String VERTEX_STYLE =
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
+  public static final int LINE_HEIGHT = 16;
+  public static final String STYLE_INVISIBLE = "opacity=0;";
 
   @Override
   public List<Input<?>> getInputs() {
@@ -243,6 +245,7 @@ public class UseCaseTool extends Tool {
 
   private void build(
       UseCase useCase, ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    log("Start building use case");
     var report = sink.select(useCase.getName() + ".html");
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
@@ -279,6 +282,11 @@ public class UseCaseTool extends Tool {
     } catch (IOException e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
     }
+    log("Finished building use case");
+  }
+
+  private void log(String message) {
+    System.err.printf("%s %s%n", LocalDateTime.now(), message);
   }
 
   private OutputSink build(
@@ -298,16 +306,31 @@ public class UseCaseTool extends Tool {
   private RenderedImage render(UseCase.Scenario scenario) {
     var graph = toGraph(scenario);
     var image = mxCellRenderer.createBufferedImage(graph, null, 1, null, true, null);
+    clear(graph);
     var result =
         new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-    result.getGraphics().drawImage(image, 0, 0, null);
+    var graphics = result.getGraphics();
+    graphics.drawImage(image, 0, 0, null);
+    graphics.dispose();
     return result;
   }
 
+  private void clear(mxGraph graph) {
+    graph.getModel().beginUpdate();
+    try {
+      Object[] cells = graph.getChildCells(graph.getDefaultParent(), true, true);
+      graph.removeCells(cells);
+    } finally {
+      graph.getModel().endUpdate();
+    }
+    graph.clearSelection();
+  }
+
   private mxGraph toGraph(UseCase.Scenario scenario) {
+    log("Start building graph");
     var stepTexts = wrappedStepTextsFor(scenario);
     var numLines = ensureSameNumberOfLinesFor(stepTexts);
-    var height = ICON_SIZE + (numLines - 1) * 16;
+    var height = ICON_SIZE + (numLines - 1) * LINE_HEIGHT;
     var verticesByStep = new HashMap<Pointer, Object>();
     var result = new mxGraph();
     result.getModel().beginUpdate();
@@ -323,6 +346,7 @@ public class UseCaseTool extends Tool {
     } finally {
       result.getModel().endUpdate();
     }
+    log("Finished building graph of {} nodes and {} edges");
 
     return result;
   }
@@ -395,14 +419,14 @@ public class UseCaseTool extends Tool {
   }
 
   private void layoutGraph(mxGraph graph, Object firstVertex) {
-    var layout = new mxHierarchicalLayout(graph, 7) { // left-to-right
-          @Override
-          public List<Object> findRoots(Object parent, Set<Object> vertices) {
-            return List.of(firstVertex);
-          }
-        };
+    // Insert fake vertex without incoming edges that will be positioned at the left
+    var root = graph.insertVertex(graph.getDefaultParent(), null, "", 0, 0, 0, 0, STYLE_INVISIBLE);
+    graph.insertEdge(graph.getDefaultParent(), null, "", root, firstVertex, STYLE_INVISIBLE);
+
+    var layout = new mxHierarchicalLayout(graph, 7);
     layout.setInterRankCellSpacing(2.0 * ICON_SIZE / 3);
     layout.setIntraCellSpacing(ICON_SIZE / 4.0);
+    layout.setFineTuning(false);
     layout.execute(graph.getDefaultParent());
   }
 

@@ -93,8 +93,7 @@ class UseCaseToolTest {
             "Users can't emit events",
             "Events can't precede aggregates",
             "Aggregates can't issue commands",
-            "Commands can't precede policies",
-            "Can't end with policy");
+            "Commands can't precede policies");
   }
 
   @Test
