@@ -2,11 +2,10 @@ package org.setms.sew.core.domain.model.tool;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public record Location(Collection<String> segments) {
+public record Location(List<String> segments) {
 
   public Location(String... segments) {
     this(collect(segments));

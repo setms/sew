@@ -1,5 +1,0 @@
-package sprint
-
-event StatisticsStored {
-    payload = Success
-}

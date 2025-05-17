@@ -1,0 +1,5 @@
+package velocityehs
+
+policy CheckApproval {
+  title = "Check approval"
+}

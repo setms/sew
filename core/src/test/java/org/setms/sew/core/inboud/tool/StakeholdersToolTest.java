@@ -94,7 +94,7 @@ class StakeholdersToolTest {
       Suggestion suggestion, InputSource source, OutputSink sink) throws IOException {
     var owner = sink.select("src/main/stakeholders/Some.owner");
 
-    var actual = tool.apply(suggestion.code(), source, sink);
+    var actual = tool.apply(suggestion.code(), source, null, sink);
 
     assertThat(actual).hasSize(1).contains(new Diagnostic(INFO, "Created " + owner.toUri()));
     try {
@@ -108,7 +108,7 @@ class StakeholdersToolTest {
   void shouldRejectUnknownSuggestion() {
     var source = inputSourceFor("invalid/suggestion");
 
-    var actual = tool.apply("unknown.suggestion", source, null);
+    var actual = tool.apply("unknown.suggestion", source, null, null);
 
     assertThat(actual)
         .hasSize(1)

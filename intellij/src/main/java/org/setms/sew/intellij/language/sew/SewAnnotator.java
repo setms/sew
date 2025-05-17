@@ -12,7 +12,6 @@ import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.tree.IElementType;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,7 +54,13 @@ public class SewAnnotator implements Annotator {
       return;
     }
 
-    var diagnostics = validateFile(file);
+    var maybeTool =
+        Optional.ofNullable(TOOLS_BY_EXTENSION.get(file.getVirtualFile().getExtension()));
+    if (maybeTool.isEmpty()) {
+      return;
+    }
+    var tool = maybeTool.get();
+    var diagnostics = validateFile(tool, file);
     if (diagnostics.isEmpty()) {
       return;
     }
@@ -64,16 +69,22 @@ public class SewAnnotator implements Annotator {
         .filter(diagnostic -> diagnostic.location() != null)
         .filter(diagnostic -> diagnostic.location().toString().equals(location))
         .forEach(
-            diagnostic ->
-                holder
-                    .newAnnotation(LevelSeverity.of(diagnostic.level()), diagnostic.message())
-                    .create());
+            diagnostic -> {
+              var builder =
+                  holder
+                      .newAnnotation(LevelSeverity.of(diagnostic.level()), diagnostic.message())
+                      .range(psiElement);
+              for (var suggestion : diagnostic.suggestions()) {
+                builder
+                    .newFix(new ApplySuggestion(tool, suggestion, location, psiElement))
+                    .registerFix();
+              }
+              builder.create();
+            });
   }
 
-  private Set<Diagnostic> validateFile(PsiFile file) {
-    return Optional.ofNullable(TOOLS_BY_EXTENSION.get(file.getVirtualFile().getExtension()))
-        .map(tool -> tool.validate(new VirtualFileInputSource(file, tool)))
-        .orElseGet(LinkedHashSet::new);
+  private Set<Diagnostic> validateFile(Tool tool, PsiFile file) {
+    return tool.validate(new VirtualFileInputSource(file, tool));
   }
 
   private String locationOf(PsiElement psiElement) {

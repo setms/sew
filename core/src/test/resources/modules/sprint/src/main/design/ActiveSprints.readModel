@@ -1,0 +1,6 @@
+package velocityehs
+
+readModel ActiveSprints {
+    display = "Active sprints"
+    content = ActiveSprint
+}

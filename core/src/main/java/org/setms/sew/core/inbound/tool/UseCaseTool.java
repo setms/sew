@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -30,8 +31,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
+import org.setms.sew.core.domain.model.sdlc.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.Command;
 import org.setms.sew.core.domain.model.sdlc.Event;
+import org.setms.sew.core.domain.model.sdlc.ExternalSystem;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.Policy;
@@ -46,6 +49,7 @@ import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
+import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.domain.model.tool.UnresolvedObject;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
@@ -99,6 +103,8 @@ public class UseCaseTool extends Tool {
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   public static final int LINE_HEIGHT = 16;
   public static final String STYLE_INVISIBLE = "opacity=0;";
+  private static final String CREATE_MISSING_STEP = "step.missing.create";
+  private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
 
   @Override
   public List<Input<?>> getInputs() {
@@ -114,12 +120,22 @@ public class UseCaseTool extends Tool {
             new SewFormat(),
             Aggregate.class),
         new Input<>(
+            "clockEvents",
+            new Glob("src/main/design", "**/*.clockEvent"),
+            new SewFormat(),
+            ClockEvent.class),
+        new Input<>(
             "commands",
             new Glob("src/main/design", "**/*.command"),
             new SewFormat(),
             Command.class),
         new Input<>(
             "events", new Glob("src/main/design", "**/*.event"), new SewFormat(), Event.class),
+        new Input<>(
+            "externalSystems",
+            new Glob("src/main/design", "**/*.externalSystem"),
+            new SewFormat(),
+            ExternalSystem.class),
         new Input<>(
             "policies", new Glob("src/main/design", "**/*.policy"), new SewFormat(), Policy.class),
         new Input<>(
@@ -200,7 +216,11 @@ public class UseCaseTool extends Tool {
           new Diagnostic(
               WARN,
               "Unknown %s '%s'".formatted(reference.getType(), reference.getId()),
-              stepLocation));
+              stepLocation,
+              List.of(
+                  new Suggestion(
+                      CREATE_MISSING_STEP,
+                      "Create %s '%s'".formatted(reference.getType(), reference.getId())))));
     }
   }
 
@@ -234,6 +254,149 @@ public class UseCaseTool extends Tool {
               "Can't end with %s".formatted(last.getType()),
               location.plus(last.getType(), last.getId())));
     }
+  }
+
+  @Override
+  protected void apply(
+      String suggestionCode,
+      ResolvedInputs inputs,
+      Location location,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    if (CREATE_MISSING_STEP.equals(suggestionCode)) {
+      createMissingStep(inputs, location, sink, diagnostics);
+    } else {
+      super.apply(suggestionCode, inputs, location, sink, diagnostics);
+    }
+  }
+
+  private void createMissingStep(
+      ResolvedInputs inputs,
+      Location location,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    var useCaseName = location.segments().get(1);
+    var scenarioName = location.segments().get(3);
+    var stepRef = location.segments().get(4);
+    var matcher = PATTERN_STEP.matcher(stepRef);
+    if (matcher.matches()) {
+      var stepIndex = Integer.parseInt(matcher.group("index"));
+      createMissingStep(inputs, useCaseName, scenarioName, stepIndex, sink, diagnostics);
+    } else {
+      addError(
+          diagnostics,
+          "Unknown step reference %s in scenario %s of use case %s",
+          stepRef,
+          scenarioName,
+          useCaseName);
+    }
+  }
+
+  private void createMissingStep(
+      ResolvedInputs inputs,
+      String useCaseName,
+      String scenarioName,
+      int stepIndex,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    inputs.get("useCases", UseCase.class).stream()
+        .filter(useCase -> useCaseName.equals(useCase.getName()))
+        .findFirst()
+        .ifPresentOrElse(
+            useCase -> createMissingStep(useCase, scenarioName, stepIndex, sink, diagnostics),
+            () -> addError(diagnostics, "Unknown use case %s", useCaseName));
+  }
+
+  private void createMissingStep(
+      UseCase useCase,
+      String scenarioName,
+      int stepIndex,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    useCase.getScenarios().stream()
+        .filter(scenario -> scenarioName.equals(scenario.getName()))
+        .findFirst()
+        .ifPresentOrElse(
+            scenario ->
+                createMissingStep(useCase, scenario, stepIndex, normalize(sink), diagnostics),
+            () ->
+                addError(
+                    diagnostics,
+                    "Unknown scenario %s in use case %s",
+                    scenarioName,
+                    useCase.getName()));
+  }
+
+  private OutputSink normalize(OutputSink sink) {
+    if (sink.toUri().toString().endsWith(".useCase")) {
+      return sink.select("../../../..");
+    }
+    return sink;
+  }
+
+  private void createMissingStep(
+      UseCase useCase,
+      UseCase.Scenario scenario,
+      int stepIndex,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    if (0 <= stepIndex && stepIndex < scenario.getSteps().size()) {
+      createMissingStep(
+          useCase.getPackage(), scenario.getSteps().get(stepIndex), sink, diagnostics);
+    } else {
+      addError(
+          diagnostics,
+          "Invalid step %d for scenario %s in use case %s",
+          stepIndex + 1,
+          scenario.getName(),
+          useCase.getName());
+    }
+  }
+
+  private void createMissingStep(
+      String packageName, Pointer step, OutputSink output, Collection<Diagnostic> diagnostics) {
+    var type = step.getType();
+    var sink = output.select("src/main");
+    if ("user".equals(type)) {
+      sink = sink.select("stakeholders");
+    } else {
+      sink = sink.select("design");
+    }
+    var name = step.getId();
+    sink = sink.select("%s.%s".formatted(name, type));
+    try (var writer = new PrintWriter(sink.open())) {
+      writer.printf("package %s%n%n", packageName);
+      writer.printf("%s %s {%n", type, name);
+      writeProperties(type, name, writer);
+      writer.println("}");
+    } catch (IOException e) {
+      addError(diagnostics, e.getMessage());
+    }
+    diagnostics.add(sinkCreated(sink));
+  }
+
+  private void writeProperties(String type, String name, PrintWriter writer) {
+    var nameProperty =
+        switch (type) {
+          case "aggregate", "command", "readModel", "user" -> "display";
+          case "policy" -> "title";
+          default -> null;
+        };
+    if (nameProperty == null) {
+      return;
+    }
+    writer.printf("  %s = \"%s\"%n", nameProperty, toFriendlyName(name));
+  }
+
+  private String toFriendlyName(String name) {
+    var result = new StringBuilder(name);
+    for (var i = 1; i < result.length(); i++) {
+      if (Character.isUpperCase(result.charAt(i))) {
+        result.setCharAt(i, Character.toLowerCase(result.charAt(i)));
+        result.insert(i, ' ');
+      }
+    }
+    return result.toString();
   }
 
   @Override
@@ -280,7 +443,7 @@ public class UseCaseTool extends Tool {
       writer.println("  </body>");
       writer.println("</html>");
     } catch (IOException e) {
-      diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
+      addError(diagnostics, e.getMessage());
     }
     log("Finished building use case");
   }
@@ -298,7 +461,7 @@ public class UseCaseTool extends Tool {
         ImageIO.write(image, "PNG", output);
       }
     } catch (IOException e) {
-      diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
+      addError(diagnostics, e.getMessage());
     }
     return result;
   }

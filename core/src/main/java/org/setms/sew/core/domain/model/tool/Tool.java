@@ -83,6 +83,10 @@ public abstract class Tool {
     return result;
   }
 
+  protected void addError(Collection<Diagnostic> diagnostics, String message, Object... args) {
+    diagnostics.add(new Diagnostic(ERROR, message.formatted(args)));
+  }
+
   protected void build(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {}
 
@@ -91,20 +95,23 @@ public abstract class Tool {
    *
    * @param suggestionCode the suggestion to apply
    * @param source where to load input
+   * @param location where in the input to apply the suggestion
    * @param sink where to store input
    * @return diagnostics about the applying the suggestion
    */
-  public final List<Diagnostic> apply(String suggestionCode, InputSource source, OutputSink sink) {
-    var result = new ArrayList<Diagnostic>();
+  public final SequencedSet<Diagnostic> apply(
+      String suggestionCode, InputSource source, Location location, OutputSink sink) {
+    var result = new LinkedHashSet<Diagnostic>();
     var inputs = new ResolvedInputs();
     getInputs().forEach(input -> inputs.put(input.name(), parse(source, input, result)));
-    apply(suggestionCode, inputs, sink, result);
+    apply(suggestionCode, inputs, location, sink, result);
     return result;
   }
 
   protected void apply(
       String suggestionCode,
       ResolvedInputs inputs,
+      Location location,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
     diagnostics.add(new Diagnostic(WARN, "Unknown suggestion: " + suggestionCode));

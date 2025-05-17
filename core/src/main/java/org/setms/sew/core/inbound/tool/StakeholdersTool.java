@@ -139,12 +139,13 @@ public class StakeholdersTool extends Tool {
   public void apply(
       String suggestionCode,
       ResolvedInputs inputs,
+      Location location,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
       createOwner(sink, inputs, diagnostics);
     } else {
-      super.apply(suggestionCode, inputs, sink, diagnostics);
+      super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
   }
 

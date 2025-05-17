@@ -35,7 +35,11 @@ public class FileOutputSink implements OutputSink {
 
   @Override
   public FileOutputSink select(String path) {
-    return new FileOutputSink(new File(file, path));
+    try {
+      return new FileOutputSink(new File(file, path).getCanonicalFile());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -47,6 +51,7 @@ public class FileOutputSink implements OutputSink {
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public OutputStream open() throws IOException {
     file.getParentFile().mkdirs();
+    System.err.printf("Opening file for writing: %s", file);
     return new FileOutputStream(file);
   }
 

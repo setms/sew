@@ -5,6 +5,8 @@ import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
@@ -32,6 +34,14 @@ class UseCaseToolTest {
         </ol>
       </body>
     </html>
+    """;
+  private static final String DUCK_USER =
+      """
+    package missing
+
+    user Duck {
+      display = "Duck"
+    }
     """;
   private final Tool tool = new UseCaseTool();
   private final File baseDir = new File("src/test/resources/use-cases");
@@ -64,7 +74,7 @@ class UseCaseToolTest {
   }
 
   @Test
-  void shouldWarnAboutMissingElements() {
+  void shouldWarnAboutMissingElementsAndCreateThem() throws IOException {
     var testDir = new File(baseDir, "missing");
     var source = new FileInputSource(testDir);
 
@@ -74,9 +84,23 @@ class UseCaseToolTest {
         .hasSize(6)
         .allSatisfy(
             diagnostic -> {
-              assertThat(diagnostic.level()).isEqualTo(WARN);
-              assertThat(diagnostic.message()).startsWith("Unknown");
+              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
+              assertThat(diagnostic.message()).as("Message").startsWith("Unknown");
+              assertThat(diagnostic.location()).as("Location").isNotNull();
+              assertThat(diagnostic.suggestions()).as("Suggestions").isNotEmpty();
             });
+    var sink = new FileOutputSink(testDir);
+    var diagnostic = diagnostics.getFirst();
+    diagnostics =
+        tool.apply(diagnostic.suggestions().getFirst().code(), source, diagnostic.location(), sink);
+    assertThat(diagnostics).hasSize(1).allSatisfy(d -> assertThat(d.message()).contains("Created"));
+    var file = sink.select("src/main/stakeholders/Duck.user").getFile();
+    assertThat(file).isFile();
+    try {
+      assertThat(file).hasContent(DUCK_USER);
+    } finally {
+      Files.delete(file.toPath());
+    }
   }
 
   @Test

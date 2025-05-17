@@ -1,5 +1,0 @@
-package sprint
-
-event StatisticsCollected {
-    payload = Statistics
-}

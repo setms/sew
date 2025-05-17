@@ -1,5 +1,5 @@
-package sprint
+package velocityehs
 
 command FinalizeSprint {
-    display = "finalizes the sprint"
+    display = "starts the workflow to finalize the sprint"
 }
