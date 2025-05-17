@@ -1,11 +1,29 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Aggregate" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.AggregateFileType"
+                  extensions="aggregate"/>
+        <fileType name="ClockEvent" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.ClockEventFileType"
+                  extensions="clockEvent"/>
+        <fileType name="Command" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.CommandFileType"
+                  extensions="command"/>
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
                   extensions="decision"/>
+        <fileType name="Event" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.EventFileType"
+                  extensions="event"/>
         <fileType name="Owner" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.OwnerFileType"
                   extensions="owner"/>
+        <fileType name="Policy" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.PolicyFileType"
+                  extensions="policy"/>
+        <fileType name="ReadModel" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.ReadModelFileType"
+                  extensions="readModel"/>
         <fileType name="Use case" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.usecase.UseCaseFileType"
                   extensions="useCase"/>
