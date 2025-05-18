@@ -33,7 +33,7 @@ import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
-public abstract class HtmlPreview extends UserDataHolderBase implements FileEditor {
+public class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
   private static final String STYLE =
       """

@@ -1,11 +1,10 @@
-package org.setms.sew.intellij.usecase;
+package org.setms.sew.intellij.filetype;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import javax.swing.*;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.sew.intellij.filetype.SewIcons;
 import org.setms.sew.intellij.language.sew.SewLanguage;
 
 public class UseCaseFileType extends LanguageFileType {

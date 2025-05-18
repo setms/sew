@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.usecase;
+package org.setms.sew.intellij.filetype;
 
 import com.intellij.extapi.psi.PsiFileBase;
 import com.intellij.openapi.fileTypes.FileType;

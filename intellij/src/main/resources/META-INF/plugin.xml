@@ -25,7 +25,7 @@
                   implementationClass="org.setms.sew.intellij.filetype.ReadModelFileType"
                   extensions="readModel"/>
         <fileType name="Use case" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.usecase.UseCaseFileType"
+                  implementationClass="org.setms.sew.intellij.filetype.UseCaseFileType"
                   extensions="useCase"/>
         <fileType name="User" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.UserFileType"

@@ -23,8 +23,8 @@ import org.setms.sew.intellij.filetype.EventFile;
 import org.setms.sew.intellij.filetype.OwnerFile;
 import org.setms.sew.intellij.filetype.PolicyFile;
 import org.setms.sew.intellij.filetype.ReadModelFile;
+import org.setms.sew.intellij.filetype.UseCaseFile;
 import org.setms.sew.intellij.filetype.UserFile;
-import org.setms.sew.intellij.usecase.UseCaseFile;
 
 public class SewParserDefinition implements ParserDefinition {
 
