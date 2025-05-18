@@ -2,9 +2,13 @@
 !gradle-wrapper.jar
 !gradle-wrapper.properties
 .gradle/
+/build/
 **/build/
 
 # IntelliJ
 .intellijPlatform/
 .idea/
 *.iml
+
+# MacOS
+.DS_Store
