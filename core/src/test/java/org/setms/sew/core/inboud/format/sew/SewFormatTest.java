@@ -222,7 +222,8 @@ class SewFormatTest {
                         new DataList()
                             .add(new NestedObject("iguana").set("jaguar", new DataString("koala"))))
                     .set("leopard", new Reference("mule")),
-                Bear.class);
+                Bear.class,
+                false);
 
     assertThat(actual)
         .isEqualTo(
@@ -247,7 +248,8 @@ class SewFormatTest {
                     .set(
                         "hyenas", new NestedObject("iguana").set("jaguar", new DataString("koala")))
                     .set("leopard", new Reference("mule")),
-                Bear.class);
+                Bear.class,
+                false);
 
     assertThat(actual)
         .isEqualTo(

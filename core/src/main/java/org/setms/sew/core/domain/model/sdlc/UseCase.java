@@ -17,7 +17,7 @@ public class UseCase extends NamedObject {
   private String description;
   private List<Pointer> terms;
   private List<Pointer> captures;
-  private List<Scenario> scenarios;
+  @NotEmpty private List<Scenario> scenarios;
 
   public UseCase(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

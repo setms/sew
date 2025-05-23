@@ -18,48 +18,52 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 
 public interface Parser {
 
-  default <T extends NamedObject> T parse(InputStream input, Class<T> type) throws IOException {
-    return convert(parse(input), type);
+  default <T extends NamedObject> T parse(InputStream input, Class<T> type, boolean validate)
+      throws IOException {
+    return convert(parse(input), type, validate);
   }
 
   RootObject parse(InputStream input) throws IOException;
 
-  default <T extends NamedObject> T convert(RootObject object, Class<T> type) {
+  default <T extends NamedObject> T convert(RootObject object, Class<T> type, boolean validate) {
     if (!object.getType().equalsIgnoreCase(type.getSimpleName())) {
       throw new IllegalArgumentException(
           "Can't parse %s from %s".formatted(type.getName(), object.getType()));
     }
-    var result = parseNamedObject(object, type, object.getScope(), object.getName());
-    try {
-      validate(result);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("%s: %s".formatted(result.getName(), e.getMessage()), e);
+    var result = parseNamedObject(object, type, object.getScope(), object.getName(), validate);
+    if (validate) {
+      try {
+        validate(result);
+      } catch (IllegalArgumentException e) {
+        throw new IllegalArgumentException("%s: %s".formatted(result.getName(), e.getMessage()), e);
+      }
     }
     return result;
   }
 
   default <T extends NamedObject> T parseNamedObject(
-      DataObject<?> source, Class<T> type, String scope, Object name) {
+      DataObject<?> source, Class<T> type, String scope, Object name, boolean validate) {
     try {
       var result =
           type.getConstructor(FullyQualifiedName.class)
               .newInstance(new FullyQualifiedName("%s.%s".formatted(scope, name)));
-      setProperties(source, result);
+      setProperties(source, result, validate);
       return result;
     } catch (ReflectiveOperationException e) {
       throw new IllegalArgumentException(e);
     }
   }
 
-  default void setProperties(DataObject<?> source, Object target) {
-    source.properties((name, value) -> setProperty(name, convert(name, value, target), target));
+  default void setProperties(DataObject<?> source, Object target, boolean validate) {
+    source.properties(
+        (name, value) -> setProperty(name, convert(name, value, target, validate), target));
   }
 
-  default Object convert(String name, DataItem value, Object target) {
+  default Object convert(String name, DataItem value, Object target, boolean validate) {
     return switch (value) {
       case DataString string -> string.getValue();
-      case DataList list -> list.map(item -> convert(name, item, target)).toList();
-      case NestedObject object -> createObject(object, name, target);
+      case DataList list -> list.map(item -> convert(name, item, target, validate)).toList();
+      case NestedObject object -> createObject(object, name, target, validate);
       case Reference reference -> {
         var attributes = new HashMap<String, Pointer>();
         reference
@@ -74,7 +78,8 @@ public interface Parser {
   }
 
   @SuppressWarnings("unchecked")
-  default NamedObject createObject(NestedObject source, String name, Object parent) {
+  default NamedObject createObject(
+      NestedObject source, String name, Object parent, boolean validate) {
     var type =
         Arrays.stream(parent.getClass().getClasses())
             .filter(NamedObject.class::isAssignableFrom)
@@ -82,7 +87,7 @@ public interface Parser {
             .map(c -> (Class<NamedObject>) c)
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Can't find class " + name));
-    return parseNamedObject(source, type, name, source.getName());
+    return parseNamedObject(source, type, name, source.getName(), validate);
   }
 
   default boolean matchesName(String name, String candidate) {

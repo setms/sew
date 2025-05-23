@@ -1,5 +1,6 @@
 package org.setms.sew.core.domain.model.sdlc;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,10 +14,9 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 public class Event extends NamedObject {
 
-  private Pointer payload;
+  @NotNull private Pointer payload;
 
   public Event(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
-
 }

@@ -51,7 +51,6 @@ public class FileOutputSink implements OutputSink {
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public OutputStream open() throws IOException {
     file.getParentFile().mkdirs();
-    System.err.printf("Opening file for writing: %s", file);
     return new FileOutputStream(file);
   }
 

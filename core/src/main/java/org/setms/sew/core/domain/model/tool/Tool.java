@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.SequencedSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 
 /**
@@ -45,19 +46,24 @@ public abstract class Tool {
   }
 
   private ResolvedInputs resolveInputs(InputSource source, Collection<Diagnostic> diagnostics) {
-    var inputs = new ResolvedInputs();
-    getInputs().forEach(input -> inputs.put(input.name(), parse(source, input, diagnostics)));
-    return inputs;
+    var result = new ResolvedInputs();
+    var validate = new AtomicBoolean(true);
+    getInputs()
+        .forEach(
+            input ->
+                result.put(
+                    input.name(), parse(source, input, validate.getAndSet(false), diagnostics)));
+    return result;
   }
 
   private <T extends NamedObject> List<T> parse(
-      InputSource source, Input<T> input, Collection<Diagnostic> diagnostics) {
+      InputSource source, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
     var parser = input.format().newParser();
     return source.matching(input.glob()).stream()
         .map(
             inputSource -> {
               try (var inputStream = inputSource.open()) {
-                return parser.parse(inputStream, input.type());
+                return parser.parse(inputStream, input.type(), validate);
               } catch (Exception e) {
                 diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
                 return null;
@@ -102,8 +108,7 @@ public abstract class Tool {
   public final SequencedSet<Diagnostic> apply(
       String suggestionCode, InputSource source, Location location, OutputSink sink) {
     var result = new LinkedHashSet<Diagnostic>();
-    var inputs = new ResolvedInputs();
-    getInputs().forEach(input -> inputs.put(input.name(), parse(source, input, result)));
+    var inputs = resolveInputs(source, result);
     apply(suggestionCode, inputs, location, sink, result);
     return result;
   }

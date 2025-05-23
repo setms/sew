@@ -30,6 +30,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.atteo.evo.inflector.English;
+import org.languagetool.JLanguageTool;
+import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.Command;
@@ -408,7 +410,6 @@ public class UseCaseTool extends Tool {
 
   private void build(
       UseCase useCase, ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    log("Start building use case");
     var report = sink.select(useCase.getName() + ".html");
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
@@ -445,7 +446,6 @@ public class UseCaseTool extends Tool {
     } catch (IOException e) {
       addError(diagnostics, e.getMessage());
     }
-    log("Finished building use case");
   }
 
   private void log(String message) {
@@ -490,7 +490,6 @@ public class UseCaseTool extends Tool {
   }
 
   private mxGraph toGraph(UseCase.Scenario scenario) {
-    log("Start building graph");
     var stepTexts = wrappedStepTextsFor(scenario);
     var numLines = ensureSameNumberOfLinesFor(stepTexts);
     var height = ICON_SIZE + (numLines - 1) * LINE_HEIGHT;
@@ -509,7 +508,6 @@ public class UseCaseTool extends Tool {
     } finally {
       result.getModel().endUpdate();
     }
-    log("Finished building graph of {} nodes and {} edges");
 
     return result;
   }
@@ -629,7 +627,9 @@ public class UseCaseTool extends Tool {
       if (actor.isPresent()) {
         var description = actor.get().getDescription(step);
         if (description.isPresent()) {
-          result.add(description.get());
+          var sentence = description.get();
+          validate(sentence);
+          result.add(sentence);
           inputs.clear();
           actor = Optional.empty();
         }
@@ -646,6 +646,21 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
+  private void validate(String sentence) {
+    var langTool = new JLanguageTool(Languages.getLanguageForShortCode("en"));
+    try {
+      var matches = langTool.check(sentence);
+      for (var match : matches) {
+        System.err.printf(
+            "Potential error in sentence '%s' at characters %d-%d: %s%n",
+            sentence, match.getFromPos(), match.getToPos(), match.getMessage());
+        System.err.println("- Suggested correction(s): " + match.getSuggestedReplacements());
+      }
+    } catch (IOException e) {
+      System.err.println("Error checking grammar: " + e.getMessage());
+    }
+  }
+
   @Getter(AccessLevel.PROTECTED)
   @RequiredArgsConstructor
   private abstract static class Actor {
@@ -655,7 +670,7 @@ public class UseCaseTool extends Tool {
 
     public static Optional<Actor> from(NamedObject step) {
       if (isType(step, User.class)) {
-        var userName = step instanceof User user ? user.getDisplay() : step.getName();
+        var userName = friendlyName(step, User.class, User::getDisplay);
         return Optional.of(new UserActor(userName));
       }
       if (isType(step, Aggregate.class) || isType(step, Policy.class)) {
@@ -670,9 +685,21 @@ public class UseCaseTool extends Tool {
               && type.getSimpleName().equals(initUpper(unresolvedObject.getType())));
     }
 
-    protected <T extends NamedObject> String friendlyName(
+    protected static <T extends NamedObject> String friendlyName(
         NamedObject source, Class<T> type, Function<T, String> extractor) {
-      return type.isInstance(source) ? extractor.apply(type.cast(source)) : source.getName();
+      var result = type.isInstance(source) ? extractor.apply(type.cast(source)) : null;
+      return result == null ? friendlyName(source.getName()) : result;
+    }
+
+    private static String friendlyName(String name) {
+      var result = new StringBuilder(name);
+      for (var i = 1; i < result.length(); i++) {
+        if (Character.isUpperCase(result.charAt(i))) {
+          result.setCharAt(i, Character.toLowerCase(result.charAt(i)));
+          result.insert(i, ' ');
+        }
+      }
+      return result.toString();
     }
 
     public abstract Optional<String> getDescription(NamedObject eventStormElement);
@@ -693,11 +720,13 @@ public class UseCaseTool extends Tool {
           var command = friendlyName(eventStormElement, Command.class, Command::getDisplay);
           return Optional.of(userIssues(command));
         }
+        getInput().add(eventStormElement);
         return Optional.empty();
       }
 
       private String userIssues(String command) {
-        return "The %s%s %s.".formatted(initLower(getName()), describeInputs(), initLower(command));
+        return "The %s%s %s."
+            .formatted(initLower(getName()), describeInputs(), commandToText(command));
       }
 
       private String describeInputs() {
@@ -705,10 +734,31 @@ public class UseCaseTool extends Tool {
           return "";
         }
         var input = getInput().getFirst();
-        var readModelText =
-            input instanceof ReadModel readModel ? readModel.getDisplay() : input.getName();
-        return ", looking at the %s,".formatted(initLower(readModelText));
+        if (isType(input, ReadModel.class)) {
+          var readModelText = friendlyName(input, ReadModel.class, ReadModel::getDisplay);
+          return ", looking at the %s,".formatted(initLower(readModelText));
+        }
+        if (isType(input, ExternalSystem.class)) {
+          var externalSystemText =
+              friendlyName(input, ExternalSystem.class, ExternalSystem::getDisplay);
+          return ", via the %s,".formatted(initLower(externalSystemText));
+        }
+        return "";
       }
+    }
+
+    private static String commandToText(String command) {
+      var result = initLower(command);
+      var index = result.indexOf(" my ");
+      if (index > 0) {
+        result = result.substring(0, index) + "s their " + result.substring(index + 4);
+      } else {
+        index = result.indexOf(' ');
+        if (index > 0 && result.charAt(index - 1) != 's') {
+          result = result.substring(0, index) + "s" + result.substring(index);
+        }
+      }
+      return result;
     }
 
     private static class SystemActor extends Actor {
@@ -746,7 +796,7 @@ public class UseCaseTool extends Tool {
         var last = actions.getLast();
         if (isType(last, Command.class)) {
           var command = friendlyName(last, Command.class, Command::getDisplay);
-          return "%s %s.".formatted(getName(), command);
+          return "%s %s.".formatted(getName(), commandToText(command));
         }
         if (isType(last, ReadModel.class)) {
           var readModelText = friendlyName(last, ReadModel.class, ReadModel::getDisplay);

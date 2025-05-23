@@ -1,5 +1,7 @@
 package org.setms.sew.core.domain.model.sdlc;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,8 +16,8 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 public class Aggregate extends NamedObject {
 
-  private String display;
-  private Pointer root;
+  @NotEmpty private String display;
+  @NotNull private Pointer root;
 
   public Aggregate(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
