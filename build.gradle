@@ -4,6 +4,9 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven {
+            url = uri('https://repo.languagetool.org/artifactory/languagetool-os-release/')
+        }
     }
 
     java {

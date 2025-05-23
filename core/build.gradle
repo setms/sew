@@ -5,10 +5,10 @@ plugins {
 
 dependencies {
     antlr libs.bundles.antlr
-    antlr libs.bundles.evo.inflector
 
     implementation libs.bundles.antlr.runtime
     implementation libs.bundles.jgraphx
+    implementation libs.bundles.language
     implementation libs.bundles.slf4f
     implementation libs.bundles.validation
 

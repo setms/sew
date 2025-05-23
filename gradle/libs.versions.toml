@@ -6,6 +6,7 @@ evo-inflector = "1.3"
 jgraphx = "4.2.2"
 junit5 = "5.12.2"
 junit5-launcher = "1.12.1"
+languagetool = "6.6.12-3"
 lombok-plugin = "8.13.1"
 mapstruct-plugin = "1.0.8"
 mockito = "5.18.0"
@@ -26,6 +27,7 @@ junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5
 junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5-launcher" }
 junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
 junit5-runtime = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
+languagetool = { module = "org.languagetool:language-en", version.ref = "languagetool" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
@@ -40,7 +42,7 @@ validation-runtime = { module = "org.hibernate.validator:hibernate-validator", v
 antlr = ["antlr"]
 antlr-runtime = ["antlr-runtime"]
 antlr-intellij = ["antlr-intellij"]
-evo-inflector = ["evo-inflector"]
+language = ["evo-inflector", "languagetool"]
 jgraphx = ["jgraphx"]
 junit = ["junit5", "junit5-params", "mockito", "assertj"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
