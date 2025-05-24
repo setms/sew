@@ -688,7 +688,7 @@ public class UseCaseTool extends Tool {
     protected static <T extends NamedObject> String friendlyName(
         NamedObject source, Class<T> type, Function<T, String> extractor) {
       var result = type.isInstance(source) ? extractor.apply(type.cast(source)) : null;
-      return result == null ? friendlyName(source.getName()) : result;
+      return friendlyName(result == null ? source.getName() : result);
     }
 
     private static String friendlyName(String name) {
@@ -787,7 +787,7 @@ public class UseCaseTool extends Tool {
         var action = actions.getLast();
         if (isType(action, Event.class)) {
           var response = friendlyName(action, Event.class, event -> event.getPayload().getId());
-          return "%s responds with %s.".formatted(getName(), initLower(response));
+          return "%s responds with the %s.".formatted(getName(), initLower(response));
         }
         return actions.isEmpty() ? null : "%s does nothing.".formatted(getName());
       }
