@@ -1,5 +1,5 @@
 package velocityehs
 
 command EndSprint {
-  display = "End sprint"
+  display = "Ends the active sprint"
 }
