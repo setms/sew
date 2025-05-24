@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import lombok.Getter;
 
 public class DesignStructureMatrix<E> {
 
@@ -19,6 +20,7 @@ public class DesignStructureMatrix<E> {
   private static final String SEPARATOR = "|";
   private static final String NL = System.lineSeparator();
 
+  @Getter
   private final List<E> elements = new ArrayList<>();
   private final Map<E, Map<E, Double>> interactionWeights = new HashMap<>();
 
