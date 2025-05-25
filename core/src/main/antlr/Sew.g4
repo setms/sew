@@ -27,10 +27,12 @@ attributeValue : TYPE LPAREN OBJECT_NAME RPAREN ;
 PACKAGE      : 'package';
 TYPE         : 'aggregate'
              | 'alternative'
+             | 'boundedContext'
              | 'businessRequirement'
              | 'calendarEvent'
              | 'clockEvent'
              | 'command'
+             | 'contextMap'
              | 'decision'
              | 'entity'
              | 'event'

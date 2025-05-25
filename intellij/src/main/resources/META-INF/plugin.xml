@@ -9,6 +9,9 @@
         <fileType name="Command" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.CommandFileType"
                   extensions="command"/>
+        <fileType name="ContextMap" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.ContextMapFileType"
+                  extensions="contextMap"/>
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
                   extensions="decision"/>

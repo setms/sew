@@ -16,4 +16,5 @@ public class SewIcons {
   public static final Icon READ_MODEL = IconLoader.getIcon("/icons/read_model.png", SewIcons.class);
   public static final Icon USE_CASE = IconLoader.getIcon("/icons/use_case.png", SewIcons.class);
   public static final Icon USER = IconLoader.getIcon("/icons/user.png", SewIcons.class);
+  public static final Icon CONTEXT_MAP = IconLoader.getIcon("/icons/context_map.png", SewIcons.class);
 }
