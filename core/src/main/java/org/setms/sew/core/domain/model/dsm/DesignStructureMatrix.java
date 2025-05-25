@@ -20,8 +20,7 @@ public class DesignStructureMatrix<E> {
   private static final String SEPARATOR = "|";
   private static final String NL = System.lineSeparator();
 
-  @Getter
-  private final List<E> elements = new ArrayList<>();
+  @Getter private final List<E> elements = new ArrayList<>();
   private final Map<E, Map<E, Double>> interactionWeights = new HashMap<>();
 
   @SafeVarargs
@@ -45,7 +44,9 @@ public class DesignStructureMatrix<E> {
     if (!elements.contains(from) || !elements.contains(to)) {
       throw new IllegalArgumentException("Unknown element");
     }
-    interactionWeights.computeIfAbsent(from, ignored -> new HashMap<>()).put(to, weight);
+    var dependency = interactionWeights.computeIfAbsent(from, ignored -> new HashMap<>());
+    var current = dependency.getOrDefault(to, 0.0);
+    dependency.put(to, current + weight);
     return this;
   }
 
@@ -106,7 +107,7 @@ public class DesignStructureMatrix<E> {
     text.append(SEPARATOR).append(padded(element.toString(), maxLength + 2)).append(SEPARATOR);
     for (var i = 0; i < elements.size(); i++) {
       var other = elements.get(i);
-      var weight = Optional.ofNullable(interactionWeights.get(other)).map(m -> m.get(element));
+      var weight = Optional.ofNullable(interactionWeights.get(element)).map(m -> m.get(other));
       var symbol =
           i == index ? "X" : weight.map(value -> unweighted ? "X" : value.toString()).orElse(" ");
       text.append(' ').append(padded(symbol, maxLength)).append(' ').append(SEPARATOR);

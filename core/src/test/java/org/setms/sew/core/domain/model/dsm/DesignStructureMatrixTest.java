@@ -71,9 +71,9 @@ class DesignStructureMatrixTest {
         """
         |   | A | B | C |
         |---|---|---|---|
-        | A | X |   |   |
+        | A | X |   | X |
         | B |   | X |   |
-        | C | X |   | X |
+        | C |   |   | X |
         """);
   }
 
@@ -85,9 +85,9 @@ class DesignStructureMatrixTest {
         """
         |   | A | B | C |
         |---|---|---|---|
-        | A | X |   |   |
+        | A | X |   | 0.5 |
         | B |   | X |   |
-        | C | 0.5 |   | X |
+        | C |   |   | X |
         """);
   }
 }
