@@ -13,6 +13,7 @@ public class TotalCostMinimizingClusteringAlgorithm<E> {
   private static final double SIZE_EXPONENT = 3;
   private static final int TIMES = 4;
   private static final int ACCEPT_TIMES = 5;
+  private static final int MAX_STALLED = 5;
 
   private final Random random = new SecureRandom();
   private final DesignStructureMatrix<E> dsm;
@@ -27,22 +28,30 @@ public class TotalCostMinimizingClusteringAlgorithm<E> {
     this.clusters = new Clusters<>(elements);
   }
 
-  public Set<? extends Set<E>> findClusters() {
+  public Set<Cluster<E>> findClusters() {
     initializeCosts();
-    var totalCost = Double.MAX_VALUE;
     var totalTimes = elements.size() * TIMES;
-    while (innerCost + outerCost < totalCost) {
-      totalCost = innerCost + outerCost;
+    var stalledCount = 0;
+    while (stalledCount < MAX_STALLED) {
+      var saveInnerCost = innerCost;
+      var saveOuterCost = outerCost;
+      var improvedCount = 0;
       for (var i = 0; i < totalTimes; i++) {
         var element = randomElement();
         var fromCluster = clusters.get(element);
         var toCluster = bid(element);
         clusters.move(element, toCluster);
         updateCosts(element, fromCluster, toCluster);
-        if (innerCost + outerCost >= totalCost && !shouldAcceptAnyway()) {
+        if (innerCost + outerCost < saveInnerCost + saveOuterCost) {
+          improvedCount++;
+        } else if (!shouldAcceptAnyway()) {
           clusters.move(element, fromCluster);
-          updateCosts(element, toCluster, fromCluster);
+          innerCost = saveInnerCost;
+          outerCost = saveOuterCost;
         }
+      }
+      if (improvedCount == 0) {
+        stalledCount++;
       }
     }
     return clusters.all();
