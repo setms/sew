@@ -1,7 +1,7 @@
 package org.setms.sew.core.domain.model.sdlc;
 
 import jakarta.validation.constraints.NotEmpty;
-import java.util.List;
+import java.util.Set;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 public class BoundedContext extends NamedObject {
 
-  @NotEmpty private List<Pointer> content;
+  @NotEmpty private Set<Pointer> content;
 
   public BoundedContext(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

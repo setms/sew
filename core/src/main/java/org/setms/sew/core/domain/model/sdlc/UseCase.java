@@ -2,6 +2,7 @@ package org.setms.sew.core.domain.model.sdlc;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
+import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,10 @@ public class UseCase extends NamedObject {
     super(fullyQualifiedName);
   }
 
+  public Stream<Scenario> scenarios() {
+    return scenarios.stream();
+  }
+
   @Getter
   @Setter
   @ToString(callSuper = true)
@@ -35,6 +40,10 @@ public class UseCase extends NamedObject {
 
     public Scenario(FullyQualifiedName fullyQualifiedName) {
       super(fullyQualifiedName);
+    }
+
+    public Stream<Pointer> steps() {
+      return steps.stream();
     }
   }
 }

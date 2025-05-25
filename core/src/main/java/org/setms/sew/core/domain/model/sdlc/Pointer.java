@@ -25,6 +25,10 @@ public class Pointer implements Comparable<Pointer> {
     this(type, id, emptyMap());
   }
 
+  public Optional<Pointer> optAttribute(String name) {
+    return Optional.ofNullable(attributes.get(name));
+  }
+
   public <T extends NamedObject> Optional<T> resolveFrom(Collection<T> candidates) {
     return Optional.ofNullable(candidates).stream()
         .flatMap(Collection::stream)
