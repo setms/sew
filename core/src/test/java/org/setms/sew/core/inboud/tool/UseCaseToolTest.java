@@ -29,8 +29,9 @@ class UseCaseToolTest {
         <p>This is the happy path scenario, where everything goes according to plan.</p>
         <img src="HappyPath.png"/>
         <ol>
-          <li>The donald does it.</li>
+          <li>The donald, looking at the info, does it.</li>
           <li>The system does it again.</li>
+          <li>The system updates the info.</li>
         </ol>
       </body>
     </html>
