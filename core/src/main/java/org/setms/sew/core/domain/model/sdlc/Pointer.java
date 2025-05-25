@@ -9,7 +9,7 @@ import java.util.Optional;
 import lombok.Value;
 
 @Value
-public class Pointer {
+public class Pointer implements Comparable<Pointer> {
 
   String type;
   @NotEmpty String id;
@@ -33,7 +33,16 @@ public class Pointer {
   }
 
   @Override
+  public int compareTo(Pointer that) {
+    var result = this.type.compareTo(that.type);
+    if (result == 0) {
+      result = this.id.compareTo(that.id);
+    }
+    return result;
+  }
+
+  @Override
   public String toString() {
-    return type == null ? "-> %s".formatted(id) : "-> %s(%s)".formatted(type, id);
+    return type == null ? id : "%s(%s)".formatted(type, id);
   }
 }
