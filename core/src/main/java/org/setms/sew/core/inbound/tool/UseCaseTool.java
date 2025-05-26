@@ -605,6 +605,12 @@ public class UseCaseTool extends Tool {
               var begin = lastVertex.get();
               var end = addVertex(graph, reference, vertexHeight, verticesByStep, stepTexts);
               if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
+                // Add an invisible edge to prevent this vertex from becoming a root in the
+                // hierarchical layout, which would render it at the left
+                graph.insertEdge(
+                    graph.getDefaultParent(), null, "", begin, end, "opacity=0;strokeColor=none;");
+
+                // Reverse the direction of the edge
                 var node = begin;
                 begin = end;
                 end = node;
@@ -783,14 +789,13 @@ public class UseCaseTool extends Tool {
 
     private static String commandToText(String command) {
       var result = initLower(command);
-      var index = result.indexOf(" my ");
+      var index = result.indexOf(' ');
+      if (index > 0 && result.charAt(index - 1) != 's') {
+        result = result.substring(0, index) + "s" + result.substring(index);
+      }
+      index = result.indexOf(" my ");
       if (index > 0) {
-        result = result.substring(0, index) + "s their " + result.substring(index + 4);
-      } else {
-        index = result.indexOf(' ');
-        if (index > 0 && result.charAt(index - 1) != 's') {
-          result = result.substring(0, index) + "s" + result.substring(index);
-        }
+        result = result.substring(0, index) + " their " + result.substring(index + 4);
       }
       return result;
     }
