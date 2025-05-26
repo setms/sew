@@ -165,7 +165,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
         .filter(isType(POLICY))
         .map(
             policy ->
-                policy.optAttribute(ATTR_READS).map(readModel -> new Sequence(readModel, policy)))
+                policy.optAttribute(ATTR_READS).map(readModel -> new Sequence(policy, readModel)))
         .flatMap(Optional::stream)
         .forEach(
             sequence ->
