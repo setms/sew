@@ -82,11 +82,10 @@ class UseCaseToolTest {
     var diagnostics = tool.validate(source);
 
     assertThat(diagnostics)
-        .hasSize(6)
+        .hasSize(7)
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.message()).as("Message").startsWith("Unknown");
               assertThat(diagnostic.location()).as("Location").isNotNull();
               assertThat(diagnostic.suggestions()).as("Suggestions").isNotEmpty();
             });
@@ -112,7 +111,7 @@ class UseCaseToolTest {
     var diagnostics = tool.validate(source);
 
     assertThat(diagnostics)
-        .allSatisfy(diagnostic -> assertThat(diagnostic.level()).isEqualTo(ERROR))
+        .filteredOn(diagnostic -> diagnostic.level() == ERROR)
         .map(Diagnostic::message)
         .containsExactlyInAnyOrder(
             "Users can't emit events",
@@ -145,5 +144,27 @@ class UseCaseToolTest {
     var actual = tool.build(source, sink);
 
     assertThat(actual).isEmpty();
+  }
+
+  @Test
+  void shouldCreateContextMap() {
+    var testDir = new File(baseDir, "valid");
+    var source = new FileInputSource(testDir);
+    var sink = new FileOutputSink(testDir).select("build");
+
+    var actual = tool.validate(source);
+
+    assertThat(actual.size()).isGreaterThanOrEqualTo(1);
+    var maybeDiagnostic =
+        actual.stream().filter(d -> d.message().equals("Missing context map")).findFirst();
+    assertThat(maybeDiagnostic).as("Warning about missing context map").isPresent();
+    var diagnostic = maybeDiagnostic.get();
+    assertThat(diagnostic.suggestions()).hasSize(1);
+    var suggestion = diagnostic.suggestions().getFirst();
+    assertThat(suggestion.message()).isEqualTo("Create context map");
+    actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
+    assertThat(actual).hasSize(1);
+    diagnostic = actual.getFirst();
+    assertThat(diagnostic.message()).startsWith("Created ");
   }
 }

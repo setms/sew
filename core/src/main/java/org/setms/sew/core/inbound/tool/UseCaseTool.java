@@ -14,7 +14,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.Command;
+import org.setms.sew.core.domain.model.sdlc.ContextMap;
 import org.setms.sew.core.domain.model.sdlc.Event;
 import org.setms.sew.core.domain.model.sdlc.ExternalSystem;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
@@ -54,6 +54,7 @@ import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.domain.model.tool.UnresolvedObject;
+import org.setms.sew.core.domain.services.GenerateContextMapFromUseCases;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class UseCaseTool extends Tool {
@@ -106,6 +107,7 @@ public class UseCaseTool extends Tool {
   public static final int LINE_HEIGHT = 16;
   public static final String STYLE_INVISIBLE = "opacity=0;";
   private static final String CREATE_MISSING_STEP = "step.missing.create";
+  private static final String CREATE_CONTEXT_MAP = "contextMap.create";
   private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
 
   @Override
@@ -146,7 +148,12 @@ public class UseCaseTool extends Tool {
             new SewFormat(),
             ReadModel.class),
         new Input<>(
-            "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class));
+            "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class),
+        new Input<>(
+            "contextMaps",
+            new Glob("src/main/architecture", "**/*.contextMap"),
+            new SewFormat(),
+            ContextMap.class));
   }
 
   @Override
@@ -158,20 +165,32 @@ public class UseCaseTool extends Tool {
   @Override
   protected void validate(
       InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    inputs
-        .get("useCases", UseCase.class)
-        .forEach(
-            useCase ->
-                useCase
-                    .getScenarios()
-                    .forEach(
-                        scenario ->
-                            validateScenario(
-                                new Location(
-                                    "useCase", useCase.getName(), "scenario", scenario.getName()),
-                                scenario.getSteps(),
-                                inputs,
-                                diagnostics)));
+    var useCases = inputs.get("useCases", UseCase.class);
+    useCases.forEach(
+        useCase ->
+            useCase
+                .getScenarios()
+                .forEach(
+                    scenario ->
+                        validateScenario(
+                            new Location(
+                                "useCase", useCase.getName(), "scenario", scenario.getName()),
+                            scenario.getSteps(),
+                            inputs,
+                            diagnostics)));
+    if (!useCases.isEmpty()) {
+      var contextMaps = inputs.get("contextMaps", ContextMap.class);
+      if (contextMaps.isEmpty()) {
+        diagnostics.add(
+            new Diagnostic(
+                WARN,
+                "Missing context map",
+                useCases.size() == 1
+                    ? new Location("useCase", useCases.getFirst().getName())
+                    : null,
+                List.of(new Suggestion(CREATE_CONTEXT_MAP, "Create context map"))));
+      }
+    }
   }
 
   private void validateScenario(
@@ -267,6 +286,8 @@ public class UseCaseTool extends Tool {
       Collection<Diagnostic> diagnostics) {
     if (CREATE_MISSING_STEP.equals(suggestionCode)) {
       createMissingStep(inputs, location, sink, diagnostics);
+    } else if (CREATE_CONTEXT_MAP.equals(suggestionCode)) {
+      createContextMap(inputs, sink, diagnostics);
     } else {
       super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
@@ -401,6 +422,23 @@ public class UseCaseTool extends Tool {
     return result.toString();
   }
 
+  private void createContextMap(
+      ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    try {
+      var contextMap =
+          new GenerateContextMapFromUseCases().apply(inputs.get("useCases", UseCase.class));
+      var contextMapSink =
+          normalize(sink)
+              .select("src/main/architecture/%s.contextMap".formatted(contextMap.getName()));
+      try (var output = contextMapSink.open()) {
+        new SewFormat().newBuilder().build(contextMap, output);
+      }
+      diagnostics.add(sinkCreated(contextMapSink));
+    } catch (Exception e) {
+      addError(diagnostics, e.getMessage());
+    }
+  }
+
   @Override
   public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get("useCases", UseCase.class);
@@ -446,10 +484,6 @@ public class UseCaseTool extends Tool {
     } catch (IOException e) {
       addError(diagnostics, e.getMessage());
     }
-  }
-
-  private void log(String message) {
-    System.err.printf("%s %s%n", LocalDateTime.now(), message);
   }
 
   private OutputSink build(

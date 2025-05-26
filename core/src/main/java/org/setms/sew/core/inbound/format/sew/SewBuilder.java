@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.format.Builder;
 import org.setms.sew.core.domain.model.format.DataItem;
 import org.setms.sew.core.domain.model.format.DataList;
@@ -26,13 +27,27 @@ class SewBuilder implements Builder {
     writer.format("package %s%n%n", root.getScope());
     buildObject(writer, root.getType(), root.getName(), root, nestedObjects);
     nestedObjects.forEach(
-        (type, objects) -> {
-          objects.forEach(
-              object -> {
-                writer.println();
-                buildObject(writer, type, object.getName(), object, emptyMap());
-              });
-        });
+        (type, objects) ->
+            objects.forEach(
+                object -> {
+                  writer.println();
+                  buildObject(writer, singular(type), object.getName(), object, emptyMap());
+                }));
+  }
+
+  private String singular(String type) {
+    var result = type;
+    if (result.endsWith("s")) {
+      result = result.substring(0, result.length() - 1);
+      if (!English.plural(result).equals(type) && result.endsWith("e")) {
+        result = result.substring(0, result.length() - 1);
+        if (!English.plural(result).equals(type)) {
+          throw new IllegalStateException(
+              "Don't know how to turn '%s' into singular form".formatted(type));
+        }
+      }
+    }
+    return result;
   }
 
   private void buildObject(

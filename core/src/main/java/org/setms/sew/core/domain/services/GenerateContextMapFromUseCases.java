@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +20,6 @@ import java.util.stream.Stream;
 import org.setms.sew.core.domain.model.dsm.Cluster;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
 import org.setms.sew.core.domain.model.dsm.TotalCostMinimizingClusteringAlgorithm;
-import org.setms.sew.core.domain.model.sdlc.BoundedContext;
 import org.setms.sew.core.domain.model.sdlc.ContextMap;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
@@ -190,14 +190,14 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private ContextMap contextMapFrom(
       Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters, String packageName) {
     return new ContextMap(toFullyQualifiedName(packageName))
-        .setContexts(boundedContextsFor(packageName, useCases, clusters));
+        .setBoundedContexts(boundedContextsFor(packageName, useCases, clusters));
   }
 
   private FullyQualifiedName toFullyQualifiedName(String packageName) {
-    return new FullyQualifiedName("%1$s.%1$s".formatted(packageName));
+    return new FullyQualifiedName("%s.%s".formatted(packageName, initUpper(packageName)));
   }
 
-  private List<BoundedContext> boundedContextsFor(
+  private List<ContextMap.BoundedContext> boundedContextsFor(
       String packageName, Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters) {
     var contracts = new TreeSet<Pointer>();
     var result =
@@ -211,10 +211,10 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
     return result;
   }
 
-  private BoundedContext toBoundedContext(
+  private ContextMap.BoundedContext toBoundedContext(
       Collection<UseCase> useCases, String packageName, Cluster<Pointer> currentCluster) {
     addCommands(useCases, currentCluster);
-    return new BoundedContext(
+    return new ContextMap.BoundedContext(
             new FullyQualifiedName("%s.%s".formatted(packageName, nameFor(currentCluster))))
         .setContent(currentCluster);
   }
@@ -299,8 +299,10 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
     return result;
   }
 
-  private BoundedContext toContractsBoundedContext(String packageName, Set<Pointer> content) {
-    return new BoundedContext(new FullyQualifiedName("%s.contracts".formatted(packageName)))
+  private ContextMap.BoundedContext toContractsBoundedContext(
+      String packageName, Set<Pointer> content) {
+    return new ContextMap.BoundedContext(
+            new FullyQualifiedName("%s.Contracts".formatted(packageName)))
         .setContent(content);
   }
 

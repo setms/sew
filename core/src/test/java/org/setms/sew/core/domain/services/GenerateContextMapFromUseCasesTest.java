@@ -17,9 +17,9 @@ class GenerateContextMapFromUseCasesTest {
     var actual = new GenerateContextMapFromUseCases().apply(List.of(useCase));
 
     assertThat(actual.getPackage()).isEqualTo("valid");
-    assertThat(actual.getName()).isEqualTo("valid");
-    assertThat(actual.getContexts()).hasSize(1);
-    var context = actual.getContexts().getFirst();
+    assertThat(actual.getName()).isEqualTo("Valid");
+    assertThat(actual.getBoundedContexts()).hasSize(1);
+    var context = actual.getBoundedContexts().getFirst();
     assertThat(context.getPackage()).isEqualTo("valid");
     assertThat(context.getName()).isEqualTo("System");
     assertThat(context.getContent()).hasSize(8);

@@ -6,9 +6,11 @@ import static org.setms.sew.core.domain.model.format.Validation.validate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.atteo.evo.inflector.English;
@@ -103,7 +105,7 @@ public interface Parser {
       if (method != null) {
         if (Collection.class.isAssignableFrom(method.getParameters()[0].getType())
             && targetValue != null
-            && !Collection.class.isAssignableFrom(targetValue.getClass())) {
+            && !method.getParameters()[0].getType().isAssignableFrom(targetValue.getClass())) {
           method.invoke(target, toCollection(targetValue, method.getParameters()[0].getType()));
         } else {
           method.invoke(target, targetValue);
@@ -115,12 +117,17 @@ public interface Parser {
     }
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   default Collection<Object> toCollection(Object targetValue, Class<?> type) {
     if (List.class.isAssignableFrom(type)) {
-      return List.of(targetValue);
+      return targetValue instanceof Collection collection
+          ? new ArrayList<>(collection)
+          : List.of(targetValue);
     }
     if (Set.class.isAssignableFrom(type)) {
-      return Set.of(targetValue);
+      return targetValue instanceof Collection collection
+          ? new LinkedHashSet<>(collection)
+          : Set.of(targetValue);
     }
     throw new UnsupportedOperationException("Unsupported collection type " + type.getName());
   }
