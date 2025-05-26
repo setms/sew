@@ -198,6 +198,9 @@ public class UseCaseTool extends Tool {
       List<Pointer> steps,
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics) {
+    if (steps == null) {
+      return;
+    }
     validateStepReferences(location, steps, inputs, diagnostics);
     validateGrammar(location, steps, diagnostics);
   }
@@ -213,10 +216,13 @@ public class UseCaseTool extends Tool {
           validateStepReference(step, inputs, diagnostics, stepLocation);
           step.getAttributes()
               .forEach(
-                  (name, reference) -> {
-                    validateStepReference(reference, inputs, diagnostics, stepLocation);
+                  (name, references) -> {
                     var allowed = ALLOWED_ATTRIBUTES.getOrDefault(step.getType(), emptyList());
-                    if (!allowed.contains(name)) {
+                    if (allowed.contains(name)) {
+                      references.forEach(
+                          reference ->
+                              validateStepReference(reference, inputs, diagnostics, stepLocation));
+                    } else {
                       diagnostics.add(
                           new Diagnostic(
                               WARN, "Invalid attribute '%s'".formatted(name), stepLocation));
@@ -247,6 +253,9 @@ public class UseCaseTool extends Tool {
 
   private void validateGrammar(
       Location location, List<Pointer> steps, Collection<Diagnostic> diagnostics) {
+    if (steps.isEmpty()) {
+      return;
+    }
     var prev = new AtomicReference<>(steps.getFirst());
     steps.stream()
         .skip(1)
@@ -448,6 +457,7 @@ public class UseCaseTool extends Tool {
 
   private void build(
       UseCase useCase, ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    System.out.printf("%nRendering use case in %s%n%n", sink.toUri());
     var report = sink.select(useCase.getName() + ".html");
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
@@ -464,20 +474,21 @@ public class UseCaseTool extends Tool {
                 if (isNotBlank(scenario.getDescription())) {
                   writer.printf("    <p>%s</p>%n", scenario.getDescription());
                 }
+                if (scenario.getSteps() == null || scenario.getSteps().isEmpty()) {
+                  return;
+                }
                 var image = build(scenario, sink, diagnostics);
                 writer.printf(
                     "    <img src=\"%s\"/>%n",
                     report.toUri().resolve(".").normalize().relativize(image.toUri()));
-                if (!scenario.getSteps().isEmpty()) {
-                  writer.println("    <ol>");
-                  writer.print("      <li>");
-                  writer.print(
-                      String.join(
-                          "</li>%s      <li>".formatted(System.lineSeparator()),
-                          describeSteps(scenario.getSteps(), inputs)));
-                  writer.println("</li>");
-                  writer.println("    </ol>");
-                }
+                writer.println("    <ol>");
+                writer.print("      <li>");
+                writer.print(
+                    String.join(
+                        "</li>%s      <li>".formatted(System.lineSeparator()),
+                        describeSteps(scenario.getSteps(), inputs)));
+                writer.println("</li>");
+                writer.println("    </ol>");
               });
       writer.println("  </body>");
       writer.println("</html>");
@@ -553,8 +564,8 @@ public class UseCaseTool extends Tool {
         .forEach(
             step -> {
               result.put(step, wrap(step.getId()));
-              step.getAttributes()
-                  .values()
+              step.getAttributes().values().stream()
+                  .flatMap(Collection::stream)
                   .forEach(reference -> result.put(reference, wrap(reference.getId())));
             });
     return result;
@@ -597,25 +608,30 @@ public class UseCaseTool extends Tool {
       Map<Pointer, String> stepTexts,
       AtomicReference<Object> lastVertex) {
     var to = addVertex(graph, step, vertexHeight, verticesByStep, stepTexts);
-    graph.insertEdge(graph.getDefaultParent(), null, "", lastVertex.get(), to);
+    var previous = lastVertex.get();
+    graph.insertEdge(graph.getDefaultParent(), null, "", previous, to);
     lastVertex.set(to);
     step.getAttributes()
         .forEach(
-            (name, reference) -> {
+            (name, references) -> {
               var begin = lastVertex.get();
-              var end = addVertex(graph, reference, vertexHeight, verticesByStep, stepTexts);
-              if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
-                // Add an invisible edge to prevent this vertex from becoming a root in the
-                // hierarchical layout, which would render it at the left
-                graph.insertEdge(
-                    graph.getDefaultParent(), null, "", begin, end, "opacity=0;strokeColor=none;");
-
-                // Reverse the direction of the edge
-                var node = begin;
-                begin = end;
-                end = node;
+              for (var reference : references) {
+                var end = addVertex(graph, reference, vertexHeight, verticesByStep, stepTexts);
+                if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
+                  // Add an invisible edge to prevent this vertex from becoming a root in the
+                  // hierarchical layout, which would render it at the left
+                  graph.insertEdge(
+                      graph.getDefaultParent(),
+                      null,
+                      "",
+                      previous,
+                      end,
+                      "opacity=0;strokeColor=none;");
+                  graph.insertEdge(graph.getDefaultParent(), null, "", end, begin);
+                } else {
+                  graph.insertEdge(graph.getDefaultParent(), null, "", begin, end);
+                }
               }
-              graph.insertEdge(graph.getDefaultParent(), null, "", begin, end);
             });
   }
 

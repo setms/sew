@@ -76,10 +76,16 @@ public interface Builder {
       case Collection<?> collection ->
           new DataList().add(collection.stream().map(this::convert).toList());
       case Pointer pointer -> {
-        var attributes = new HashMap<String, Reference>();
+        var attributes = new HashMap<String, List<Reference>>();
         pointer
             .getAttributes()
-            .forEach((key, ptr) -> attributes.put(key, new Reference(ptr.getType(), ptr.getId())));
+            .forEach(
+                (key, pointers) ->
+                    attributes.put(
+                        key,
+                        pointers.stream()
+                            .map(ptr -> new Reference(ptr.getType(), ptr.getId()))
+                            .toList()));
         yield new Reference(pointer.getType(), pointer.getId(), attributes);
       }
       case NamedObject namedObject -> toNestedObject(namedObject);

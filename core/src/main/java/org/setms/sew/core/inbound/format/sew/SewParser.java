@@ -5,10 +5,13 @@ import static java.util.stream.Collectors.joining;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -33,6 +36,7 @@ class SewParser implements Parser {
     var nestedObjects = new LinkedHashMap<String, DataList>();
     sew.object().stream()
         .skip(1)
+        .filter(object -> object.OBJECT_NAME() != null && object.TYPE() != null)
         .forEach(
             object -> {
               var type = object.TYPE().getText();
@@ -78,18 +82,26 @@ class SewParser implements Parser {
 
   private DataItem parseList(org.setms.sew.antlr.SewParser.ListContext list) {
     var result = new DataList();
-    list.item().stream().map(this::parseItem).forEach(result::add);
+    list.item().stream().map(this::parseItem).filter(Objects::nonNull).forEach(result::add);
     return result;
   }
 
   private DataItem parseItem(org.setms.sew.antlr.SewParser.ItemContext item) {
+    if (item == null) {
+      return null;
+    }
     if (item.STRING() != null) {
       return toStringItem(item.STRING());
     }
     if (item.OBJECT_NAME() != null) {
       return new Reference(item.OBJECT_NAME().getText());
     }
-    Map<String, Reference> map;
+    if (item.typedReference() == null
+        || item.typedReference().OBJECT_NAME() == null
+        || item.typedReference().TYPE() == null) {
+      return null;
+    }
+    Map<String, List<Reference>> map;
     var attributes = item.typedReference().attribute();
     if (attributes == null) {
       map = Collections.emptyMap();
@@ -98,9 +110,13 @@ class SewParser implements Parser {
       attributes.forEach(
           attribute -> {
             var value = attribute.attributeValue();
-            map.put(
-                attribute.IDENTIFIER().getText(),
-                new Reference(value.TYPE().getText(), value.OBJECT_NAME().getText()));
+            if (attribute.IDENTIFIER() != null
+                && value != null
+                && value.TYPE() != null
+                && value.OBJECT_NAME() != null) {
+              map.computeIfAbsent(attribute.IDENTIFIER().getText(), ignored -> new ArrayList<>())
+                  .add(new Reference(value.TYPE().getText(), value.OBJECT_NAME().getText()));
+            }
           });
     }
     return new Reference(

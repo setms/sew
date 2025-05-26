@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -85,7 +84,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private void addReferenceFromAttribute(
       Pointer element, String type, String attribute, Collection<Pointer> references) {
     if (type.equals(element.getType())) {
-      element.optAttribute(attribute).ifPresent(references::add);
+      references.addAll(element.optAttribute(attribute));
     }
   }
 
@@ -152,21 +151,18 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   }
 
   private Stream<Sequence> replaceEventByReadModelThatItUpdates(Sequence sequence) {
-    return sequence
-        .last()
-        .optAttribute(ATTR_UPDATES)
-        .map(readModel -> new Sequence(sequence.first(), readModel))
-        .stream();
+    return sequence.last().optAttribute(ATTR_UPDATES).stream()
+        .map(readModel -> new Sequence(sequence.first(), readModel));
   }
 
   private void addPoliciesDependingOnReadModels(
       List<Pointer> steps, DesignStructureMatrix<Pointer> dsm) {
     steps.stream()
         .filter(isType(POLICY))
-        .map(
+        .flatMap(
             policy ->
-                policy.optAttribute(ATTR_READS).map(readModel -> new Sequence(policy, readModel)))
-        .flatMap(Optional::stream)
+                policy.optAttribute(ATTR_READS).stream()
+                    .map(readModel -> new Sequence(policy, readModel)))
         .forEach(
             sequence ->
                 dsm.addDependency(
@@ -280,10 +276,9 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private List<Cluster<Pointer>> clustersHandling(
       Pointer event, Collection<UseCase> useCases, Set<Cluster<Pointer>> allClusters) {
     var result = new ArrayList<Cluster<Pointer>>();
-    event
-        .optAttribute(ATTR_UPDATES)
+    event.optAttribute(ATTR_UPDATES).stream()
         .map(readModel -> clusterOf(readModel, allClusters))
-        .ifPresent(result::add);
+        .forEach(result::add);
     useCases.stream()
         .flatMap(UseCase::scenarios)
         .map(UseCase.Scenario::getSteps)

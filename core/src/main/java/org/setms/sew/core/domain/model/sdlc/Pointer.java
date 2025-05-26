@@ -1,9 +1,11 @@
 package org.setms.sew.core.domain.model.sdlc;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.Value;
@@ -13,9 +15,9 @@ public class Pointer implements Comparable<Pointer> {
 
   String type;
   @NotEmpty String id;
-  Map<String, Pointer> attributes;
+  Map<String, List<Pointer>> attributes;
 
-  public Pointer(String type, String id, Map<String, Pointer> attributes) {
+  public Pointer(String type, String id, Map<String, List<Pointer>> attributes) {
     this.type = type;
     this.id = id;
     this.attributes = attributes;
@@ -25,8 +27,8 @@ public class Pointer implements Comparable<Pointer> {
     this(type, id, emptyMap());
   }
 
-  public Optional<Pointer> optAttribute(String name) {
-    return Optional.ofNullable(attributes.get(name));
+  public List<Pointer> optAttribute(String name) {
+    return attributes.getOrDefault(name, emptyList());
   }
 
   public <T extends NamedObject> Optional<T> resolveFrom(Collection<T> candidates) {

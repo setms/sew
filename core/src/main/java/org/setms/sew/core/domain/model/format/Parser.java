@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
@@ -63,14 +64,22 @@ public interface Parser {
 
   default Object convert(String name, DataItem value, Object target, boolean validate) {
     return switch (value) {
+      case null -> null;
       case DataString string -> string.getValue();
-      case DataList list -> list.map(item -> convert(name, item, target, validate)).toList();
+      case DataList list ->
+          list.map(item -> convert(name, item, target, validate)).filter(Objects::nonNull).toList();
       case NestedObject object -> createObject(object, name, target, validate);
       case Reference reference -> {
-        var attributes = new HashMap<String, Pointer>();
+        var attributes = new HashMap<String, List<Pointer>>();
         reference
             .getAttributes()
-            .forEach((key, ref) -> attributes.put(key, new Pointer(ref.getType(), ref.getId())));
+            .forEach(
+                (key, references) ->
+                    attributes.put(
+                        key,
+                        references.stream()
+                            .map(ref -> new Pointer(ref.getType(), ref.getId()))
+                            .toList()));
         yield new Pointer(reference.getType(), reference.getId(), attributes);
       }
       default ->
@@ -82,14 +91,13 @@ public interface Parser {
   @SuppressWarnings("unchecked")
   default NamedObject createObject(
       NestedObject source, String name, Object parent, boolean validate) {
-    var type =
-        Arrays.stream(parent.getClass().getClasses())
-            .filter(NamedObject.class::isAssignableFrom)
-            .filter(c -> matchesName(name, c.getSimpleName()))
-            .map(c -> (Class<NamedObject>) c)
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Can't find class " + name));
-    return parseNamedObject(source, type, name, source.getName(), validate);
+    return Arrays.stream(parent.getClass().getClasses())
+        .filter(NamedObject.class::isAssignableFrom)
+        .filter(c -> matchesName(name, c.getSimpleName()))
+        .map(c -> (Class<NamedObject>) c)
+        .findFirst()
+        .map(type -> parseNamedObject(source, type, name, source.getName(), validate))
+        .orElse(null);
   }
 
   default boolean matchesName(String name, String candidate) {
