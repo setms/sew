@@ -1,0 +1,120 @@
+package gdpr
+
+useCase DeleteData {
+    title       = "Delete data"
+    description = "A series of incremental scenarios that showcase the requirements elicitation process."
+}
+
+scenario NotMuchToGoOnYet {
+    title = "I want a system to support GDPR"
+    steps = [
+        hotspot(GDPR)
+    ]
+}
+
+scenario UsersDeleteTheirData {
+    title = "Users delete their data"
+    steps = [
+        user(User),
+        command(DeleteMyData),
+        hotspot(GDPR),
+        event(UserDataDeleted)
+    ]
+}
+
+scenario LoggedInUserDeletesTheirData {
+    title = "Logged in user deletes their data"
+    steps = [
+        user(User),
+        externalSystem(App),
+        command(DeleteUserData),
+        hotspot(GDPR),
+        event(UserDataDeleted)
+    ]
+}
+
+scenario UnknownUserRequestsDataDeletion {
+    title = "Unknown user requests data deletion"
+    steps = [
+        user(User),
+        command(RequestDataDeletion),
+        aggregate(PrivacyForm),
+        event(DataDeletionRequested),
+        readModel(DataDeletionRequests),
+        user(CustomerSupport),
+        policy(CheckUserIdentity, reads=readModel(Users)),
+        command(DeleteUserData),
+        hotspot(GDPR),
+        event(UserDataDeleted),
+        readModel(DataDeletionRequests)
+    ]
+}
+
+scenario InvalidUserRequestsDataDeletion {
+    title = "Non-user requests data deletion"
+    steps = [
+        user(User),
+        command(RequestDataDeletion),
+        aggregate(PrivacyForm),
+        event(DataDeletionRequested),
+        readModel(DataDeletionRequests),
+        user(CustomerSupport),
+        policy(CheckUserIdentity, reads=readModel(Users)),
+        command(DenyDataDeletionRequest),
+        aggregate(Requests),
+        event(DataDeletionDenied),
+        readModel(DataDeletionRequests)
+    ]
+}
+
+scenario UpdateUsers {
+    title = "App updates its users"
+    steps = [
+        externalSystem(App),
+        event(UserUpdated),
+        readModel(Users)
+    ]
+}
+
+scenario InstructServicesToDeleteData {
+    title = "The systems tells all services to delete the user's data"
+    steps = [
+        user(User),
+        externalSystem(App),
+        command(DeleteUserData),
+        aggregate(Requests),
+        event(DataDeletionStarted, updates=readModel(RequestsInProgress)),
+        policy(CheckProgress, reads=readModel(RequestsInProgress)),
+        command(DeleteUserDataFromService),
+        externalSystem(Service),
+        event(UserDataDeletedFromService),
+        policy(CheckProgress, reads=readModel(RequestsInProgress)),
+        command(CompleteDataDeletion),
+        aggregate(Requests),
+        event(UserDataDeleted, updates=readModel(RequestsInProgress)),
+        readModel(DataDeletionRequests)
+    ]
+}
+
+scenario ServiceDoesntRespond {
+    title = "Service doesn't respond in time"
+    steps = [
+        clockEvent(TimePassed),
+        policy(CheckProgress, reads=readModel(RequestsInProgress)),
+        command(DeleteUserDataFromService),
+        externalSystem(Service)
+    ]
+}
+
+scenario InformUser {
+    title = "Notify user that request is complete"
+    steps = [
+         event(UserDataDeleted),
+         policy(CheckNotifications, reads=readModel(DataDeletionRequests)),
+         command(NotifyUser),
+         aggregate(Notifications),
+         event(UserNotified),
+         readModel(Notifications),
+         user(User)
+    ]
+}

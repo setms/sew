@@ -1,0 +1,5 @@
+tasks.register('copyImagesToBook', JavaExec) {
+    mainClass = 'org.setms.sew.core.inbound.tool.ToolRunner'
+    args = ['UseCaseTool', 'book', '../../book/docs/examples/gdpr']
+    classpath = project(':core').sourceSets.main.runtimeClasspath
+}
