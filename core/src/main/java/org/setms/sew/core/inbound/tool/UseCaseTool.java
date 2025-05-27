@@ -8,6 +8,7 @@ import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
 import java.awt.image.BufferedImage;
@@ -15,6 +16,7 @@ import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -99,13 +101,12 @@ public class UseCaseTool extends Tool {
   private static final Map<String, String> VERBS =
       Map.of("event", "emit", "command", "issue", "readModel", "update");
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
-      Map.of("event", List.of("updates"), "policy", List.of("reads"));
+      Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
   private static final String NL = "\n";
   private static final String VERTEX_STYLE =
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
-  public static final int LINE_HEIGHT = 16;
-  public static final String STYLE_INVISIBLE = "opacity=0;";
+  private static final int LINE_HEIGHT = 16;
   private static final String CREATE_MISSING_STEP = "step.missing.create";
   private static final String CREATE_CONTEXT_MAP = "contextMap.create";
   private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
@@ -457,7 +458,6 @@ public class UseCaseTool extends Tool {
 
   private void build(
       UseCase useCase, ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    System.out.printf("%nRendering use case in %s%n%n", sink.toUri());
     var report = sink.select(useCase.getName() + ".html");
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
@@ -538,18 +538,16 @@ public class UseCaseTool extends Tool {
     var stepTexts = wrappedStepTextsFor(scenario);
     var numLines = ensureSameNumberOfLinesFor(stepTexts);
     var height = ICON_SIZE + (numLines - 1) * LINE_HEIGHT;
-    var verticesByStep = new HashMap<Pointer, Object>();
     var result = new mxGraph();
     result.getModel().beginUpdate();
     try {
       var from =
           new AtomicReference<>(
-              addVertex(result, scenario.getSteps().getFirst(), height, verticesByStep, stepTexts));
-      var first = from.get();
+              addVertex(result, scenario.getSteps().getFirst(), height, stepTexts));
       scenario.getSteps().stream()
           .skip(1)
-          .forEach(step -> addStepToGraph(step, result, height, verticesByStep, stepTexts, from));
-      layoutGraph(result, first);
+          .forEach(step -> addStepToGraph(step, result, height, stepTexts, from));
+      layoutGraph(result, height);
     } finally {
       result.getModel().endUpdate();
     }
@@ -604,10 +602,9 @@ public class UseCaseTool extends Tool {
       Pointer step,
       mxGraph graph,
       int vertexHeight,
-      HashMap<Pointer, Object> verticesByStep,
       Map<Pointer, String> stepTexts,
       AtomicReference<Object> lastVertex) {
-    var to = addVertex(graph, step, vertexHeight, verticesByStep, stepTexts);
+    var to = addVertex(graph, step, vertexHeight, stepTexts);
     var previous = lastVertex.get();
     graph.insertEdge(graph.getDefaultParent(), null, "", previous, to);
     lastVertex.set(to);
@@ -616,62 +613,49 @@ public class UseCaseTool extends Tool {
             (name, references) -> {
               var begin = lastVertex.get();
               for (var reference : references) {
-                var end = addVertex(graph, reference, vertexHeight, verticesByStep, stepTexts);
                 if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
-                  // Add an invisible edge to prevent this vertex from becoming a root in the
-                  // hierarchical layout, which would render it at the left
-                  graph.insertEdge(
-                      graph.getDefaultParent(),
-                      null,
-                      "",
-                      previous,
-                      end,
-                      "opacity=0;strokeColor=none;");
+                  var edges =
+                      graph.getEdges(previous, graph.getDefaultParent(), false, true, false);
+                  var text = stepTexts.get(reference);
+                  var end =
+                      Arrays.stream(edges)
+                          .map(mxCell.class::cast)
+                          .map(mxCell::getTarget)
+                          .filter(vertex -> text.equals(vertex.getValue()))
+                          .map(Object.class::cast)
+                          .findFirst()
+                          .orElseGet(() -> addVertex(graph, reference, vertexHeight, stepTexts));
                   graph.insertEdge(graph.getDefaultParent(), null, "", end, begin);
                 } else {
+                  var end = addVertex(graph, reference, vertexHeight, stepTexts);
                   graph.insertEdge(graph.getDefaultParent(), null, "", begin, end);
                 }
               }
             });
   }
 
-  private void layoutGraph(mxGraph graph, Object firstVertex) {
-    // Insert fake vertex without incoming edges that will be positioned at the left
-    var root = graph.insertVertex(graph.getDefaultParent(), null, "", 0, 0, 0, 0, STYLE_INVISIBLE);
-    graph.insertEdge(graph.getDefaultParent(), null, "", root, firstVertex, STYLE_INVISIBLE);
-
+  private void layoutGraph(mxGraph graph, int height) {
     var layout = new mxHierarchicalLayout(graph, 7);
     layout.setInterRankCellSpacing(2.0 * ICON_SIZE / 3);
-    layout.setIntraCellSpacing(ICON_SIZE / 4.0);
-    layout.setFineTuning(false);
+    layout.setIntraCellSpacing(height - ICON_SIZE + LINE_HEIGHT);
     layout.execute(graph.getDefaultParent());
   }
 
   private Object addVertex(
-      mxGraph graph,
-      Pointer step,
-      int vertexHeight,
-      Map<Pointer, Object> verticesByStep,
-      Map<Pointer, String> stepTexts) {
-    if (verticesByStep.containsKey(step)) {
-      return verticesByStep.get(step);
-    }
+      mxGraph graph, Pointer step, int vertexHeight, Map<Pointer, String> stepTexts) {
     var url = getClass().getClassLoader().getResource("resin/" + step.getType() + ".png");
     if (url == null) {
       throw new IllegalArgumentException("Icon not found for " + step.getType());
     }
-    var result =
-        graph.insertVertex(
-            graph.getDefaultParent(),
-            null,
-            stepTexts.get(step),
-            0,
-            0,
-            ICON_SIZE,
-            vertexHeight,
-            VERTEX_STYLE.formatted(url.toExternalForm()));
-    verticesByStep.put(step, result);
-    return result;
+    return graph.insertVertex(
+        graph.getDefaultParent(),
+        null,
+        stepTexts.get(step),
+        0,
+        0,
+        ICON_SIZE,
+        vertexHeight,
+        VERTEX_STYLE.formatted(url.toExternalForm()));
   }
 
   private List<String> describeSteps(List<Pointer> steps, ResolvedInputs context) {
