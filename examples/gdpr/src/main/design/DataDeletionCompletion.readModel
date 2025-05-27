@@ -1,5 +1,0 @@
-package gdpr
-
-readModel DataDeletionCompletion {
-  display = "Data deletion completions"
-}

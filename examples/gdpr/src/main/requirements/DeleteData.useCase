@@ -5,27 +5,30 @@ useCase DeleteData {
     description = "A user requests to delete their data."
 }
 
-scenario LoggedInUserRequestsDataDeletion {
-    title       = "Logged in user requests data deletion"
-    description = "A user who is logged in to one of our apps requests deletion of their data."
+scenario UpdateUsers {
+    title       = "Apps notify about user updates"
+    description = "Our applications keep us up-to-date, so we can check user identities."
+    steps       = [
+        externalSystem(App),
+        event(UserUpdated),
+        readModel(Users)
+    ]
+}
+
+scenario InvalidUserRequestsDataDeletion {
+    title       = "Non-user requests data deletion"
+    description = "When someone who's not a user of our applications requests data deletion, customer support denies the request."
     steps       = [
         user(User),
-        externalSystem(App),
-        command(DeleteMyData),
-        aggregate(Services),
-        event(DataDeletionStarted, updates = readModel(DataDeletionRequests)),
-        policy(CheckServices, reads = readModel(DataDeletionRequests)),
-        command(DeleteDataFromService),
-        aggregate(Services),
-        event(DataDeletionFromServiceRequested),
-        externalSystem(Service),
-        event(DataDeletedInService),
-        policy(CheckRequestComplete, reads = readModel(DataDeletionRequests)),
-        command(InformUser),
-        aggregate(Notifications),
-        event(DataDeleted),
-        readModel(DataDeletionCompletion),
-        user(User)
+        command(RequestDataDeletion),
+        aggregate(Requests),
+        event(DataDeletionRequested),
+        readModel(DataDeletionRequests),
+        user(CustomerSupport, reads=readModel(Users)),
+        command(DenyDataDeletionRequest),
+        aggregate(Requests),
+        event(DataDeletionDenied),
+        readModel(DataDeletionRequests)
     ]
 }
 
@@ -34,54 +37,71 @@ scenario UnknownUserRequestsDataDeletion {
     description = "A user who isn't logged in to one of our apps requests deletion of their data."
     steps       = [
         user(User),
-        command(DeleteMyData),
-        aggregate(DataDeletionRequestForm),
+        command(RequestDataDeletion),
+        aggregate(Requests),
         event(DataDeletionRequested),
         readModel(DataDeletionRequests),
-        user(CustomerSupport),
-        policy(CheckUserIdentity),
-        command(DataDeletionRequestedInService),
+        user(CustomerSupport, reads=readModel(Users)),
+        command(DeleteUserData),
+        aggregate(Requests),
+        event(DataDeletionStarted),
+        readModel(DataDeletionRequests)
+    ]
+}
+
+scenario LoggedInUserRequestsDataDeletion {
+    title       = "Logged in user requests data deletion"
+    description = "A user who is logged in to one of our apps requests deletion of their data."
+    steps       = [
+        user(User),
+        externalSystem(App),
+        command(DeleteUserData),
+        aggregate(Requests),
+        event(DataDeletionStarted)
+    ]
+}
+
+scenario InstructServicesToDeleteUserData {
+    title       = "All services delete the user's data"
+    description = "The system instructs all services to delete the user's data and waits for them to confirm they did."
+    steps       = [
+        event(DataDeletionStarted, updates=readModel(DataDeletionRequests)),
+        policy(CheckRequests, reads=readModel(Services)),
+        command(StartDeletionByServices),
+        aggregate(Services),
+        event(ServiceDeletionStarted, updates=readModel(RequestsInProgress)),
+        policy(CheckServices),
+        command(ServiceDeleteUserData),
         externalSystem(Service),
-        event(DataDeletedInService),
-        policy(CheckRequestComplete),
-        command(InformUser),
-        aggregate(Notifications),
-        event(DataDeleted),
-        readModel(DataDeletionCompletion),
-        user(User)
+        event(ServiceDeletedUserData),
+        policy(CheckProgress, reads=readModel(RequestsInProgress)),
+        command(CompleteDataDeletion),
+        aggregate(Requests),
+        event(UserDataDeleted, updates=readModel(RequestsInProgress)),
+        readModel(DataDeletionRequests)
     ]
 }
 
 scenario ServiceDoesntDeleteDataInTime {
     title       = "Service doesn't delete data in time"
-    description = "A service doesn't respond within the allotted time period that it has deleted the user's data. The system sends a reminder."
+    description = "A service doesn't confirm within the allotted time period that it has deleted the user's data. The system sends a reminder."
     steps       = [
-        clockEvent(ServiceDeletionTimeOut),
-        policy(CheckUnresponsiveService),
-        command(RemindService),
-        aggregate(Services),
-        event(DataDeletionRequestedInService),
-        externalSystem(Service),
-        event(DataDeletedInService),
-        policy(CheckRequestComplete),
-        command(InformUser),
-        aggregate(Notifications),
-        event(DataDeleted),
-        readModel(DataDeletionCompletion),
-        user(User)
+        clockEvent(TimePassed),
+        policy(CheckServices, reads=readModel(RequestsInProgress)),
+        command(DeleteUserDataFromService),
+        externalSystem(Service)
     ]
 }
 
-scenario ServicesRemainsUnresponsive {
-    title       = "Service remains unresponsive"
-    description = "A services remains unresponsive despite several reminders. The system gives up on the request and manual intervention is required."
-    steps       = [
-        clockEvent(ServiceDeletionTimeOut),
-        policy(CheckUnresponsiveService),
-        command(GiveUpOnUnresponsiveService),
-        aggregate(Services),
-        event(DataDeletionInServiceAborted),
-        readModel(AbortedDataDeletions),
-        user(CustomerSupport)
+scenario InformUser {
+    title = "Notify user that request is complete"
+    steps = [
+         event(UserDataDeleted),
+         policy(CheckNotifications, reads=readModel(DataDeletionRequests)),
+         command(NotifyUser),
+         aggregate(Notifications),
+         event(UserNotified),
+         readModel(Notifications),
+         user(User)
     ]
 }
