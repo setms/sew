@@ -1,5 +1,13 @@
-tasks.register('copyImagesToBook', JavaExec) {
+tasks.register('renderUseCases', JavaExec) {
     mainClass = 'org.setms.sew.core.inbound.tool.ToolRunner'
-    args = ['UseCaseTool', 'book', '../../book/docs/examples/gdpr']
+    args = ['UseCaseTool', 'book', 'build']
     classpath = project(':core').sourceSets.main.runtimeClasspath
+}
+
+tasks.register('copyImagesToBook', Copy) {
+    from layout.buildDirectory.dir('reports/useCases')
+    include '*.png'
+    into new File('../../../book/docs/examples/gdpr')
+
+    dependsOn 'renderUseCases'
 }
