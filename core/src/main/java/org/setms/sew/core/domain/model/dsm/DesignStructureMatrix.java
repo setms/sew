@@ -1,6 +1,7 @@
 package org.setms.sew.core.domain.model.dsm;
 
 import static java.lang.Math.max;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toCollection;
 
 import java.util.ArrayList;
@@ -10,9 +11,11 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Getter;
+import org.atteo.evo.inflector.English;
 
 public class DesignStructureMatrix<E> {
 
@@ -113,5 +116,32 @@ public class DesignStructureMatrix<E> {
       text.append(' ').append(padded(symbol, maxLength)).append(' ').append(SEPARATOR);
     }
     text.append(NL);
+  }
+
+  public DesignStructureMatrix<E> without(Collection<E> toRemove) {
+    if (toRemove.isEmpty()) {
+      return this;
+    }
+    var unknown = toRemove.stream().filter(not(elements::contains)).map(Objects::toString).toList();
+    if (!unknown.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Unknown %s can't be removed from DSM: %s"
+              .formatted(English.plural("element", unknown.size()), String.join(", ", unknown)));
+    }
+    var newElements = new LinkedHashSet<>(this.elements);
+    toRemove.forEach(newElements::remove);
+    var result = new DesignStructureMatrix<>(newElements);
+    interactionWeights.forEach(
+        (from, weightsByTarget) -> {
+          if (!toRemove.contains(from)) {
+            weightsByTarget.forEach(
+                (to, weight) -> {
+                  if (!toRemove.contains(to)) {
+                    result.addDependency(from, to, weight);
+                  }
+                });
+          }
+        });
+    return result;
   }
 }
