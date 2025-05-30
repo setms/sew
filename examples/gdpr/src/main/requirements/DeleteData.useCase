@@ -88,7 +88,7 @@ scenario ServiceDoesntDeleteDataInTime {
     steps       = [
         clockEvent(TimePassed),
         policy(CheckServices, reads=readModel(RequestsInProgress)),
-        command(DeleteUserDataFromService),
+        command(ServiceDeleteUserData),
         externalSystem(Service)
     ]
 }
@@ -97,7 +97,7 @@ scenario InformUser {
     title = "Notify user that request is complete"
     steps = [
          event(UserDataDeleted),
-         policy(CheckNotifications, reads=readModel(DataDeletionRequests)),
+         policy(CheckNotifications),
          command(NotifyUser),
          aggregate(Notifications),
          event(UserNotified),

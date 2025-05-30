@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 @Value
@@ -15,7 +16,7 @@ public class Pointer implements Comparable<Pointer> {
 
   String type;
   @NotEmpty String id;
-  Map<String, List<Pointer>> attributes;
+  @EqualsAndHashCode.Exclude Map<String, List<Pointer>> attributes;
 
   public Pointer(String type, String id, Map<String, List<Pointer>> attributes) {
     this.type = type;
@@ -36,6 +37,14 @@ public class Pointer implements Comparable<Pointer> {
         .flatMap(Collection::stream)
         .filter(t -> id.equals(t.getName()))
         .findFirst();
+  }
+
+  public Pointer withoutAttributes() {
+    return attributes.isEmpty() ? this : new Pointer(type, id);
+  }
+
+  public boolean isType(String type) {
+    return this.type.equals(type);
   }
 
   @Override

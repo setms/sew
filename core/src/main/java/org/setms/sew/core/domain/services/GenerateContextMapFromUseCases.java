@@ -3,12 +3,13 @@ package org.setms.sew.core.domain.services;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -33,11 +34,9 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private static final String COMMAND = "command";
   private static final String ATTR_UPDATES = "updates";
   private static final String ATTR_READS = "reads";
-  private static final Collection<String> ACTIVE_ELEMENT_TYPES =
-      List.of(AGGREGATE, POLICY, READ_MODEL);
-  private static final Collection<String> ACTIVE_ELEMENT_CONTAINER_TYPES = List.of(EVENT);
-  private static final int AVAILABILITY_COUPLING_STRENGTH = 5;
-  private static final int CONTRACT_COUPLING_STRENGTH = 3;
+  private static final List<String> ACTIVE_ELEMENT_TYPES = List.of(AGGREGATE, READ_MODEL, POLICY);
+  private static final int AVAILABILITY_COUPLING = 5;
+  private static final int CONTRACT_COUPLING = 1;
 
   @Override
   public ContextMap apply(Collection<UseCase> useCases) {
@@ -46,74 +45,82 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
     }
     var dsm = dsmFrom(useCases);
     var clusters = new TotalCostMinimizingClusteringAlgorithm<>(dsm).findClusters();
-    return contextMapFrom(useCases, clusters, packageFrom(useCases));
-  }
-
-  private DesignStructureMatrix<Pointer> dsmFrom(Collection<UseCase> useCases) {
-    var result = new DesignStructureMatrix<>(activeElementsFrom(useCases));
-    addDependencies(useCases, result);
+    clusters.forEach(cluster -> System.out.printf("- cluster: %s%n", cluster));
+    var result = contextMapFrom(useCases, clusters, packageFrom(useCases));
+    result
+        .getBoundedContexts()
+        .forEach(
+            context -> System.out.printf("- %s: %s%n", context.getName(), context.getContent()));
     return result;
   }
 
-  private Set<Pointer> activeElementsFrom(Collection<UseCase> useCases) {
-    return useCases.stream()
-        .flatMap(UseCase::scenarios)
-        .flatMap(UseCase.Scenario::steps)
-        .filter(this::isPotentiallyActive)
-        .flatMap(this::extractActiveElementsFrom)
-        .filter(this::isActive)
-        .collect(toSet());
+  private DesignStructureMatrix<Pointer> dsmFrom(Collection<UseCase> useCases) {
+    var completeEventStorm = combine(useCases);
+    var result = new DesignStructureMatrix<>(activeElementsIn(completeEventStorm));
+    addDependencies(completeEventStorm, result);
+    return result;
   }
 
-  private boolean isPotentiallyActive(Pointer pointer) {
-    return isActive(pointer) || ACTIVE_ELEMENT_CONTAINER_TYPES.contains(pointer.getType());
-  }
-
-  private boolean isActive(Pointer pointer) {
-    return ACTIVE_ELEMENT_TYPES.contains(pointer.getType());
-  }
-
-  private Stream<Pointer> extractActiveElementsFrom(Pointer element) {
-    var result = new ArrayList<Pointer>();
-    result.add(element);
-    addReferenceFromAttribute(element, POLICY, ATTR_READS, result);
-    addReferenceFromAttribute(element, EVENT, ATTR_UPDATES, result);
-    return result.stream();
-  }
-
-  private void addReferenceFromAttribute(
-      Pointer element, String type, String attribute, Collection<Pointer> references) {
-    if (type.equals(element.getType())) {
-      references.addAll(element.optAttribute(attribute));
-    }
-  }
-
-  private void addDependencies(Collection<UseCase> useCases, DesignStructureMatrix<Pointer> dsm) {
+  private EventStormingModel combine(Collection<UseCase> useCases) {
+    var result = new EventStormingModel();
     useCases.stream()
         .flatMap(UseCase::scenarios)
         .map(UseCase.Scenario::getSteps)
-        .forEach(steps -> addDependencies(steps, dsm));
+        .forEach(
+            steps -> {
+              for (var i = 0; i < steps.size() - 1; i++) {
+                addStep(steps.get(i), result);
+                result.add(steps.get(i), steps.get(i + 1));
+              }
+              addStep(steps.getLast(), result);
+            });
+    return result;
   }
 
-  private void addDependencies(List<Pointer> steps, DesignStructureMatrix<Pointer> dsm) {
-    addPoliciesDependingOnAggregates(steps, dsm);
-    addPoliciesDependingOnReadModels(steps, dsm);
-    addReadModelsDependingOnAggregates(steps, dsm);
+  private void addStep(Pointer step, EventStormingModel model) {
+    step.optAttribute(ATTR_READS).forEach(readModel -> model.add(readModel, step));
+    step.optAttribute(ATTR_UPDATES).forEach(readModel -> model.add(step, readModel));
+  }
+
+  private Set<Pointer> activeElementsIn(EventStormingModel model) {
+    return model.elements().stream()
+        .filter(p -> ACTIVE_ELEMENT_TYPES.contains(p.getType()))
+        .sorted(this::compareActiveElements)
+        .collect(toCollection(LinkedHashSet::new));
+  }
+
+  private int compareActiveElements(Pointer p1, Pointer p2) {
+    var result =
+        ACTIVE_ELEMENT_TYPES.indexOf(p1.getType()) - ACTIVE_ELEMENT_TYPES.indexOf(p2.getType());
+    if (result != 0) {
+      return result;
+    }
+    return p1.getId().compareTo(p2.getId());
+  }
+
+  private void addDependencies(EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+    addPoliciesDependingOnAggregates(model, dsm);
+    addPoliciesDependingOnReadModels(model, dsm);
+    addReadModelsDependingOnAggregates(model, dsm);
   }
 
   private void addPoliciesDependingOnAggregates(
-      List<Pointer> steps, DesignStructureMatrix<Pointer> dsm) {
-    findSequences(steps, POLICY, COMMAND, AGGREGATE)
+      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+    model
+        .findSequences(POLICY, COMMAND, AGGREGATE)
         .forEach(
             sequence ->
-                dsm.addDependency(sequence.first(), sequence.last(), CONTRACT_COUPLING_STRENGTH));
-    findSequences(steps, AGGREGATE, EVENT, POLICY)
+                dsm.addDependency(sequence.first(), sequence.last(), AVAILABILITY_COUPLING));
+    model
+        .findSequences(AGGREGATE, EVENT, POLICY)
         .forEach(
-            sequence ->
-                dsm.addDependency(sequence.last(), sequence.first(), CONTRACT_COUPLING_STRENGTH));
+            sequence -> dsm.addDependency(sequence.last(), sequence.first(), CONTRACT_COUPLING));
   }
 
   private Stream<Sequence> findSequences(List<Pointer> steps, String... types) {
+    if (steps.size() < types.length) {
+      return Stream.empty();
+    }
     return steps.stream()
         .limit(steps.size() - 2)
         .filter(isType(types[0]))
@@ -138,35 +145,20 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   }
 
   private void addReadModelsDependingOnAggregates(
-      List<Pointer> steps, DesignStructureMatrix<Pointer> dsm) {
-    findSequences(steps, AGGREGATE, EVENT, READ_MODEL)
+      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+    model
+        .findSequences(AGGREGATE, EVENT, READ_MODEL)
         .forEach(
-            sequence ->
-                dsm.addDependency(sequence.last(), sequence.first(), CONTRACT_COUPLING_STRENGTH));
-    findSequences(steps, AGGREGATE, EVENT)
-        .flatMap(this::replaceEventByReadModelThatItUpdates)
-        .forEach(
-            sequence ->
-                dsm.addDependency(sequence.last(), sequence.first(), CONTRACT_COUPLING_STRENGTH));
-  }
-
-  private Stream<Sequence> replaceEventByReadModelThatItUpdates(Sequence sequence) {
-    return sequence.last().optAttribute(ATTR_UPDATES).stream()
-        .map(readModel -> new Sequence(sequence.first(), readModel));
+            sequence -> dsm.addDependency(sequence.last(), sequence.first(), CONTRACT_COUPLING));
   }
 
   private void addPoliciesDependingOnReadModels(
-      List<Pointer> steps, DesignStructureMatrix<Pointer> dsm) {
-    steps.stream()
-        .filter(isType(POLICY))
-        .flatMap(
-            policy ->
-                policy.optAttribute(ATTR_READS).stream()
-                    .map(readModel -> new Sequence(policy, readModel)))
+      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+    model
+        .findSequences(READ_MODEL, POLICY)
         .forEach(
             sequence ->
-                dsm.addDependency(
-                    sequence.first(), sequence.last(), AVAILABILITY_COUPLING_STRENGTH));
+                dsm.addDependency(sequence.last(), sequence.first(), AVAILABILITY_COUPLING));
   }
 
   private String packageFrom(Collection<UseCase> useCases) {
@@ -304,6 +296,4 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private String nameFor(Cluster<Pointer> cluster) {
     return cluster.stream().filter(isType(AGGREGATE)).map(Pointer::getId).collect(joining("And"));
   }
-
-  private record Sequence(Pointer first, Pointer last) {}
 }

@@ -46,7 +46,7 @@ public class DesignStructureMatrix<E> {
     }
     var dependency = interactionWeights.computeIfAbsent(from, ignored -> new HashMap<>());
     var current = dependency.getOrDefault(to, 0.0);
-    dependency.put(to, current + weight);
+    dependency.put(to, Math.max(current, weight));
     return this;
   }
 
