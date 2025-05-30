@@ -36,6 +36,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private static final String ATTR_READS = "reads";
   private static final List<String> ACTIVE_ELEMENT_TYPES = List.of(AGGREGATE, READ_MODEL, POLICY);
   private static final int AVAILABILITY_COUPLING = 5;
+  private static final int DATA_COUPLING = 2;
   private static final int CONTRACT_COUPLING = 1;
 
   @Override
@@ -148,8 +149,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
       EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(AGGREGATE, EVENT, READ_MODEL)
-        .forEach(
-            sequence -> dsm.addDependency(sequence.last(), sequence.first(), CONTRACT_COUPLING));
+        .forEach(sequence -> dsm.addDependency(sequence.last(), sequence.first(), DATA_COUPLING));
   }
 
   private void addPoliciesDependingOnReadModels(
@@ -294,6 +294,11 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   }
 
   private String nameFor(Cluster<Pointer> cluster) {
-    return cluster.stream().filter(isType(AGGREGATE)).map(Pointer::getId).collect(joining("And"));
+    var result =
+        cluster.stream().filter(isType(AGGREGATE)).map(Pointer::getId).collect(joining("And"));
+    if (result.isEmpty()) {
+      return cluster.stream().map(Pointer::getId).collect(joining("And"));
+    }
+    return result;
   }
 }
