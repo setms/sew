@@ -83,7 +83,10 @@ class SewBuilder implements Builder {
     return switch (value) {
       case DataString string -> convertString(string, indent);
       case DataList list -> convertList(list, indent);
-      case Reference reference -> reference.getId();
+      case Reference reference ->
+          reference.getType() == null
+              ? reference.getId()
+              : "%s(%s)".formatted(reference.getType(), reference.getId());
       default ->
           throw new UnsupportedOperationException(
               "Can't build value of type " + value.getClass().getSimpleName());
