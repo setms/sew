@@ -16,8 +16,7 @@ dependencies {
     implementation project(':core')
     implementation libs.bundles.antlr.intellij
 
-    testImplementation platform('org.junit:junit-bom:5.13.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation libs.bundles.junit
 
     intellijPlatform {
         intellijIdeaCommunity("2024.3.5")
