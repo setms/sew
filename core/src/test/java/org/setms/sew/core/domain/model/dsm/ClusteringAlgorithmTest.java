@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-class TotalCostMinimizingClusteringAlgorithmTest {
+class ClusteringAlgorithmTest {
 
   private final DesignStructureMatrix<String> dsm =
       new DesignStructureMatrix<>("A", "B", "C", "E", "F", "G", "H", "I", "O", "P");
@@ -16,8 +16,8 @@ class TotalCostMinimizingClusteringAlgorithmTest {
     givenDependencies();
 
     var clusters =
-        new TotalCostMinimizingClusteringAlgorithm<>(dsm)
-            .findClusters().stream().map(Set.class::cast).collect(toSet());
+        new StochasticGradientDescentClusteringAlgorithm<String>()
+            .apply(dsm).stream().map(Set.class::cast).collect(toSet());
 
     assertThat(clusters)
         .containsExactlyInAnyOrder(

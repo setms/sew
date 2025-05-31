@@ -58,6 +58,41 @@ public class DesignStructureMatrix<E> {
         .map(dependencies -> dependencies.get(to));
   }
 
+  public Collection<Dependency<E>> getDependencies() {
+    var result = new LinkedHashSet<Dependency<E>>();
+    interactionWeights.forEach(
+        (from, dependents) ->
+            dependents.forEach((to, weight) -> result.add(new Dependency<>(from, to, weight))));
+    return result;
+  }
+
+  public DesignStructureMatrix<E> without(Collection<E> toRemove) {
+    if (toRemove.isEmpty()) {
+      return this;
+    }
+    var unknown = toRemove.stream().filter(not(elements::contains)).map(Objects::toString).toList();
+    if (!unknown.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Unknown %s can't be removed from DSM: %s"
+              .formatted(English.plural("element", unknown.size()), String.join(", ", unknown)));
+    }
+    var newElements = new LinkedHashSet<>(this.elements);
+    toRemove.forEach(newElements::remove);
+    var result = new DesignStructureMatrix<>(newElements);
+    interactionWeights.forEach(
+        (from, weightsByTarget) -> {
+          if (!toRemove.contains(from)) {
+            weightsByTarget.forEach(
+                (to, weight) -> {
+                  if (!toRemove.contains(to)) {
+                    result.addDependency(from, to, weight);
+                  }
+                });
+          }
+        });
+    return result;
+  }
+
   @Override
   public String toString() {
     var result = new StringBuilder();
@@ -118,30 +153,5 @@ public class DesignStructureMatrix<E> {
     text.append(NL);
   }
 
-  public DesignStructureMatrix<E> without(Collection<E> toRemove) {
-    if (toRemove.isEmpty()) {
-      return this;
-    }
-    var unknown = toRemove.stream().filter(not(elements::contains)).map(Objects::toString).toList();
-    if (!unknown.isEmpty()) {
-      throw new IllegalArgumentException(
-          "Unknown %s can't be removed from DSM: %s"
-              .formatted(English.plural("element", unknown.size()), String.join(", ", unknown)));
-    }
-    var newElements = new LinkedHashSet<>(this.elements);
-    toRemove.forEach(newElements::remove);
-    var result = new DesignStructureMatrix<>(newElements);
-    interactionWeights.forEach(
-        (from, weightsByTarget) -> {
-          if (!toRemove.contains(from)) {
-            weightsByTarget.forEach(
-                (to, weight) -> {
-                  if (!toRemove.contains(to)) {
-                    result.addDependency(from, to, weight);
-                  }
-                });
-          }
-        });
-    return result;
-  }
+  public record Dependency<E>(E from, E to, double weight) {}
 }

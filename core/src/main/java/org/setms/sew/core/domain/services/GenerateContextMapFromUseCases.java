@@ -17,14 +17,17 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import org.setms.sew.core.domain.model.dsm.Cluster;
+import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
-import org.setms.sew.core.domain.model.dsm.TotalCostMinimizingClusteringAlgorithm;
+import org.setms.sew.core.domain.model.dsm.StochasticGradientDescentClusteringAlgorithm;
 import org.setms.sew.core.domain.model.sdlc.ContextMap;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 
+@RequiredArgsConstructor
 public class GenerateContextMapFromUseCases implements Function<Collection<UseCase>, ContextMap> {
 
   private static final String AGGREGATE = "aggregate";
@@ -35,9 +38,15 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private static final String ATTR_UPDATES = "updates";
   private static final String ATTR_READS = "reads";
   private static final List<String> ACTIVE_ELEMENT_TYPES = List.of(AGGREGATE, READ_MODEL, POLICY);
-  private static final int AVAILABILITY_COUPLING = 5;
-  private static final int DATA_COUPLING = 2;
+  private static final int AVAILABILITY_COUPLING = 10;
+  private static final int DATA_COUPLING = 4;
   private static final int CONTRACT_COUPLING = 1;
+
+  private final ClusteringAlgorithm<Pointer> clusteringAlgorithm;
+
+  public GenerateContextMapFromUseCases() {
+    this(new StochasticGradientDescentClusteringAlgorithm<>());
+  }
 
   @Override
   public ContextMap apply(Collection<UseCase> useCases) {
@@ -45,7 +54,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
       throw new IllegalArgumentException("Missing use cases");
     }
     var dsm = dsmFrom(useCases);
-    var clusters = new TotalCostMinimizingClusteringAlgorithm<>(dsm).findClusters();
+    var clusters = findClustersIn(dsm);
     clusters.forEach(cluster -> System.out.printf("- cluster: %s%n", cluster));
     var result = contextMapFrom(useCases, clusters, packageFrom(useCases));
     result
@@ -53,6 +62,10 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
         .forEach(
             context -> System.out.printf("- %s: %s%n", context.getName(), context.getContent()));
     return result;
+  }
+
+  private Set<Cluster<Pointer>> findClustersIn(DesignStructureMatrix<Pointer> dsm) {
+    return clusteringAlgorithm.apply(dsm);
   }
 
   private DesignStructureMatrix<Pointer> dsmFrom(Collection<UseCase> useCases) {
@@ -100,18 +113,17 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   }
 
   private void addDependencies(EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
-    addPoliciesDependingOnAggregates(model, dsm);
-    addPoliciesDependingOnReadModels(model, dsm);
-    addReadModelsDependingOnAggregates(model, dsm);
+    addDependenciesBetweenPoliciesAndAggregates(model, dsm);
+    addDependenciesBetweenPoliciesAndReadModels(model, dsm);
+    addDependenciesBetweenReadModelsAndAggregates(model, dsm);
   }
 
-  private void addPoliciesDependingOnAggregates(
+  private void addDependenciesBetweenPoliciesAndAggregates(
       EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(POLICY, COMMAND, AGGREGATE)
         .forEach(
-            sequence ->
-                dsm.addDependency(sequence.first(), sequence.last(), AVAILABILITY_COUPLING));
+            sequence -> dsm.addDependency(sequence.first(), sequence.last(), CONTRACT_COUPLING));
     model
         .findSequences(AGGREGATE, EVENT, POLICY)
         .forEach(
@@ -145,14 +157,14 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
     return new Sequence(fromStep, toStep);
   }
 
-  private void addReadModelsDependingOnAggregates(
+  private void addDependenciesBetweenReadModelsAndAggregates(
       EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(AGGREGATE, EVENT, READ_MODEL)
         .forEach(sequence -> dsm.addDependency(sequence.last(), sequence.first(), DATA_COUPLING));
   }
 
-  private void addPoliciesDependingOnReadModels(
+  private void addDependenciesBetweenPoliciesAndReadModels(
       EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(READ_MODEL, POLICY)
