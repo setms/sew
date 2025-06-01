@@ -32,6 +32,9 @@ class SewParser implements Parser {
   public RootObject parse(InputStream input) throws IOException {
     var sew = parseTreeFrom(input).sew();
     var result = parseRootObject(sew);
+    if (result == null) {
+      return null;
+    }
     parseProperties(sew.object(0), result);
     var nestedObjects = new LinkedHashMap<String, DataList>();
     sew.object().stream()
@@ -57,6 +60,11 @@ class SewParser implements Parser {
   }
 
   private RootObject parseRootObject(org.setms.sew.antlr.SewParser.SewContext sew) {
+    if (sew.scope() == null
+        || sew.scope().qualifiedName() == null
+        || sew.scope().qualifiedName().IDENTIFIER() == null) {
+      return null;
+    }
     var scope =
         sew.scope().qualifiedName().IDENTIFIER().stream()
             .map(ParseTree::getText)

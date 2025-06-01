@@ -86,7 +86,6 @@ class UseCaseToolTest {
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.location()).as("Location").isNotNull();
               assertThat(diagnostic.suggestions()).as("Suggestions").isNotEmpty();
             });
     var sink = new FileOutputSink(testDir);

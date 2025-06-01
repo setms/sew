@@ -71,6 +71,11 @@ public class VirtualFileInputSource implements InputSource {
     return result;
   }
 
+  @Override
+  public String name() {
+    return file.getName();
+  }
+
   @SuppressWarnings("UnsafeVfsRecursion")
   private void addChildren(
       VirtualFile file, Pattern pattern, Collection<VirtualFileInputSource> sources) {

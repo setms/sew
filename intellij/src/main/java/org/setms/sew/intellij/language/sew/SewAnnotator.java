@@ -9,6 +9,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +33,7 @@ public class SewAnnotator implements Annotator {
       Map.of(UseCaseFileType.INSTANCE.getDefaultExtension(), new UseCaseTool());
 
   @Override
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   public void annotate(@NotNull PsiElement psiElement, @NotNull AnnotationHolder holder) {
     if (psiElement instanceof PsiWhiteSpace
         || PUNCTUATION.contains(psiElement.getNode().getElementType())) {
@@ -39,7 +41,6 @@ public class SewAnnotator implements Annotator {
     }
     var file = psiElement.getContainingFile();
     if (file == null || !file.isValid()) {
-      System.out.println("Invalid file");
       return;
     }
 
@@ -50,7 +51,7 @@ public class SewAnnotator implements Annotator {
     }
 
     var location = locationOf(psiElement);
-    if (location.isEmpty()) {
+    if (location == null) {
       return;
     }
 
@@ -66,8 +67,11 @@ public class SewAnnotator implements Annotator {
     }
 
     diagnostics.stream()
-        .filter(diagnostic -> diagnostic.location() != null)
-        .filter(diagnostic -> diagnostic.location().toString().equals(location))
+        .filter(
+            diagnostic ->
+                diagnostic.location() == null
+                    ? location.isEmpty()
+                    : diagnostic.location().toString().equals(location))
         .forEach(
             diagnostic -> {
               var builder =
@@ -88,6 +92,10 @@ public class SewAnnotator implements Annotator {
   }
 
   private String locationOf(PsiElement psiElement) {
+    if (psiElement instanceof LeafPsiElement leaf
+        && leaf.getParent().getNode().getElementType() == SewElementTypes.QUALIFIED_NAME) {
+      return "";
+    }
     if (psiElement.getNode().getElementType() == SewElementTypes.OBJECT_START) {
       var rootObject = rootObjectOf(psiElement);
       return toLocation(rootObject, psiElement);
@@ -100,7 +108,7 @@ public class SewAnnotator implements Annotator {
           .formatted(
               toLocation(rootObject, containingObject, propertyName), itemIndexOf(psiElement));
     }
-    return "";
+    return null;
   }
 
   private PsiElement rootObjectOf(PsiElement psiElement) {

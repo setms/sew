@@ -62,7 +62,7 @@ import org.setms.sew.core.inbound.format.sew.SewFormat;
 public class UseCaseTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/useCases";
-  private static final int ICON_SIZE = 60;
+  private static final int ICON_SIZE = 40;
   private static final int MAX_TEXT_LENGTH = 15;
   private static final List<String> ELEMENT_ORDER =
       List.of(
@@ -186,9 +186,7 @@ public class UseCaseTool extends Tool {
             new Diagnostic(
                 WARN,
                 "Missing context map",
-                useCases.size() == 1
-                    ? new Location("useCase", useCases.getFirst().getName())
-                    : null,
+                null,
                 List.of(new Suggestion(CREATE_CONTEXT_MAP, "Create context map"))));
       }
     }

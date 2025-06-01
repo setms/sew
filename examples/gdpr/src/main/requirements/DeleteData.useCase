@@ -5,16 +5,6 @@ useCase DeleteData {
     description = "A user requests to delete their data."
 }
 
-scenario UpdateUsers {
-    title       = "Apps notify about user updates"
-    description = "Our applications keep us up-to-date, so we can check user identities."
-    steps       = [
-        externalSystem(App),
-        event(UserUpdated),
-        readModel(Users)
-    ]
-}
-
 scenario InvalidUserRequestsDataDeletion {
     title       = "Non-user requests data deletion"
     description = "When someone who's not a user of our applications requests data deletion, customer support denies the request."

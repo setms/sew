@@ -22,6 +22,11 @@ public class FileInputSource implements InputSource {
   }
 
   @Override
+  public String name() {
+    return file.getName();
+  }
+
+  @Override
   public InputStream open() throws IOException {
     return new FileInputStream(file);
   }

@@ -29,6 +29,9 @@ public interface Parser {
   RootObject parse(InputStream input) throws IOException;
 
   default <T extends NamedObject> T convert(RootObject object, Class<T> type, boolean validate) {
+    if (object == null) {
+      return null;
+    }
     if (!object.getType().equalsIgnoreCase(type.getSimpleName())) {
       throw new IllegalArgumentException(
           "Can't parse %s from %s".formatted(type.getName(), object.getType()));

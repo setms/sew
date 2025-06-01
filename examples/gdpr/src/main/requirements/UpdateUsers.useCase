@@ -1,0 +1,16 @@
+package gdpr
+
+useCase UpdateUsers {
+    title = "Update users"
+    description = "Apps informs us of changes in their users."
+}
+
+scenario UpdateUsers {
+    title       = "Apps notify about user updates"
+    description = "Our applications keep us up-to-date, so we can check user identities."
+    steps       = [
+        externalSystem(App),
+        event(UserUpdated),
+        readModel(Users)
+    ]
+}

@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SequencedSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
@@ -65,7 +66,16 @@ public abstract class Tool {
               try (var inputStream = inputSource.open()) {
                 return parser.parse(inputStream, input.type(), validate);
               } catch (Exception e) {
-                diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
+                diagnostics.add(
+                    new Diagnostic(
+                        ERROR,
+                        e.getMessage(),
+                        Optional.ofNullable(inputSource.name())
+                            .map(n -> n.split("\\."))
+                            .filter(a -> a.length == 2)
+                            .map(a -> new String[] {a[1], a[0]})
+                            .map(Location::new)
+                            .orElse(null)));
                 return null;
               }
             })

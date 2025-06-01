@@ -8,5 +8,7 @@ public interface InputSource {
 
   Collection<? extends InputSource> matching(Glob glob);
 
+  String name();
+
   InputStream open() throws IOException;
 }

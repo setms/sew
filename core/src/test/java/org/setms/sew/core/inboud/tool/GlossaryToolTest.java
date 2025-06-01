@@ -81,7 +81,11 @@ class GlossaryToolTest {
 
     assertThat(actual)
         .hasSize(1)
-        .contains(new Diagnostic(ERROR, "MissingDisplay: display must not be empty"));
+        .contains(
+            new Diagnostic(
+                ERROR,
+                "MissingDisplay: display must not be empty",
+                new Location("term", "MissingDisplay")));
   }
 
   @Test

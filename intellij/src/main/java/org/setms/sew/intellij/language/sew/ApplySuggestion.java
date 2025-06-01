@@ -18,6 +18,7 @@ import com.intellij.util.IncorrectOperationException;
 import java.io.File;
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Location;
@@ -37,7 +38,8 @@ public class ApplySuggestion implements IntentionAction {
   public ApplySuggestion(Tool tool, Suggestion suggestion, String location, PsiElement psiElement) {
     this.tool = tool;
     this.suggestion = suggestion;
-    this.location = new Location(location.split("/"));
+    this.location =
+        Optional.ofNullable(location).map(text -> text.split("/")).map(Location::new).orElse(null);
     this.psiElement = psiElement;
   }
 
