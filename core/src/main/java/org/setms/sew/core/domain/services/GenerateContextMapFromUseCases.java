@@ -129,7 +129,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
       return Stream.empty();
     }
     return steps.stream()
-        .limit(steps.size() - 2)
+        .limit(steps.size() - 1)
         .filter(isType(types[0]))
         .map(fromStep -> toSequence(steps, fromStep, types))
         .filter(Objects::nonNull);
@@ -255,6 +255,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
         .flatMap(UseCase::scenarios)
         .flatMap(UseCase.Scenario::steps)
         .filter(isType(EVENT))
+        .distinct()
         .forEach(event -> addEvent(useCases, clusters, contractsCluster, event));
   }
 

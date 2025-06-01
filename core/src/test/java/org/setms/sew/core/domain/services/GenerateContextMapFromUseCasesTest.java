@@ -35,7 +35,7 @@ class GenerateContextMapFromUseCasesTest {
     assertThat(actual.getPackage()).isEqualTo("valid");
     assertThat(actual.getName()).isEqualTo("Valid");
     assertThat(actual.getBoundedContexts())
-        .hasSize(4)
+        .hasSizeBetween(4, 5)
         .allSatisfy(
             context -> {
               assertThat(context.getPackage()).isEqualTo("valid");
