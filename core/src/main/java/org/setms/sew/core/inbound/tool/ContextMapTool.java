@@ -26,12 +26,12 @@ import org.setms.sew.core.inbound.format.sew.SewFormat;
 public class ContextMapTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/contextMaps";
-  private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;";
+  private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";
   private static final String EDGE_POINT_STYLE =
       """
       fontSize=9;resizable=0;movable=0;rotatable=0;\
       shape=label;align=center;verticalAlign=middle;connectable=0;\
-      strokeColor=none;fillColor=none""";
+      strokeColor=none;fillColor=none;fontColor=#6482B9;""";
   private static final String EDGE_STYLE = "endArrow=none";
 
   @Override
@@ -67,10 +67,9 @@ public class ContextMapTool extends Tool {
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      writer.printf("    <h1>%s</h1>%n", contextMap.getName());
       var image = build(contextMap, toGraph(contextMap), sink, diagnostics);
       writer.printf(
-          "    <img src=\"%s\"/>%n",
+          "    <img src=\"%s\" width=\"100%%\">%n",
           report.toUri().resolve(".").normalize().relativize(image.toUri()));
       writer.println("  </body>");
       writer.println("</html>");
