@@ -33,6 +33,7 @@ public class ContextMapTool extends Tool {
       shape=label;align=center;verticalAlign=middle;connectable=0;\
       strokeColor=none;fillColor=none;fontColor=#6482B9;""";
   private static final String EDGE_STYLE = "endArrow=none";
+  private static final int MAX_TEXT_LENGTH = 15;
 
   @Override
   public List<Input<?>> getInputs() {
@@ -120,7 +121,7 @@ public class ContextMapTool extends Tool {
     return graph.insertVertex(
         graph.getDefaultParent(),
         null,
-        wrap(boundedContext.getName()),
+        wrap(boundedContext.getName(), MAX_TEXT_LENGTH),
         0,
         0,
         120,

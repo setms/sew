@@ -26,7 +26,6 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 public abstract class Tool {
 
   protected static final String NL = "\n";
-  private static final int MAX_TEXT_LENGTH = 15;
 
   /**
    * The inputs this tool consumes.
@@ -180,14 +179,17 @@ public abstract class Tool {
     graph.clearSelection();
   }
 
-  protected String wrap(String text) {
-    if (text.length() <= MAX_TEXT_LENGTH) {
+  protected String wrap(String text, int maxLength) {
+    if (text.length() <= maxLength) {
       return text;
     }
-    var index = MAX_TEXT_LENGTH - 1;
-    while (index > 0 && !Character.isUpperCase(text.charAt(index))) {
+    var index = maxLength - 1;
+    while (index >= 0 && !Character.isUpperCase(text.charAt(index))) {
       index--;
     }
-    return text.substring(0, index) + NL + wrap(text.substring(index));
+    if (index <= 0) {
+      index = maxLength;
+    }
+    return text.substring(0, index) + NL + wrap(text.substring(index), maxLength);
   }
 }

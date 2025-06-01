@@ -97,7 +97,8 @@ public class UseCaseTool extends Tool {
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
-  private static final int ICON_SIZE = 40;
+  private static final int ICON_SIZE = 45;
+  private static final int MAX_TEXT_LENGTH = 13;
   private static final String VERTEX_STYLE =
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   private static final int LINE_HEIGHT = 16;
@@ -521,10 +522,11 @@ public class UseCaseTool extends Tool {
         .getSteps()
         .forEach(
             step -> {
-              result.put(step, wrap(step.getId()));
+              result.put(step, wrap(step.getId(), MAX_TEXT_LENGTH));
               step.getAttributes().values().stream()
                   .flatMap(Collection::stream)
-                  .forEach(reference -> result.put(reference, wrap(reference.getId())));
+                  .forEach(
+                      reference -> result.put(reference, wrap(reference.getId(), MAX_TEXT_LENGTH)));
             });
     return result;
   }
