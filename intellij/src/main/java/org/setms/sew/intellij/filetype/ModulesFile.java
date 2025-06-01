@@ -6,14 +6,14 @@ import com.intellij.psi.FileViewProvider;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.intellij.language.sew.SewLanguage;
 
-public class ContextMapFile extends PsiFileBase {
+public class ModulesFile extends PsiFileBase {
 
-  public ContextMapFile(@NotNull FileViewProvider viewProvider) {
+  public ModulesFile(@NotNull FileViewProvider viewProvider) {
     super(viewProvider, SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull FileType getFileType() {
-    return ContextMapFileType.INSTANCE;
+    return ModulesFileType.INSTANCE;
   }
 }

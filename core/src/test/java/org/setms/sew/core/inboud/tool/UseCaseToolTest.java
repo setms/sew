@@ -146,7 +146,7 @@ class UseCaseToolTest {
   }
 
   @Test
-  void shouldCreateContextMap() {
+  void shouldCreateModules() {
     var testDir = new File(baseDir, "valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");

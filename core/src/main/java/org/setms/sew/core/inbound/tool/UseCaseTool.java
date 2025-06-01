@@ -32,9 +32,9 @@ import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.Command;
-import org.setms.sew.core.domain.model.sdlc.ContextMap;
 import org.setms.sew.core.domain.model.sdlc.Event;
 import org.setms.sew.core.domain.model.sdlc.ExternalSystem;
+import org.setms.sew.core.domain.model.sdlc.Modules;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.Policy;
@@ -52,7 +52,7 @@ import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.domain.model.tool.UnresolvedObject;
-import org.setms.sew.core.domain.services.GenerateContextMapFromUseCases;
+import org.setms.sew.core.domain.services.GenerateModulesFromUseCases;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class UseCaseTool extends Tool {
@@ -103,7 +103,7 @@ public class UseCaseTool extends Tool {
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   private static final int LINE_HEIGHT = 16;
   private static final String CREATE_MISSING_STEP = "step.missing.create";
-  private static final String CREATE_CONTEXT_MAP = "contextMap.create";
+  private static final String CREATE_MODULES = "modules.create";
   private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
 
   @Override
@@ -146,10 +146,10 @@ public class UseCaseTool extends Tool {
         new Input<>(
             "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class),
         new Input<>(
-            "contextMaps",
-            new Glob("src/main/architecture", "**/*.contextMap"),
+            "modules",
+            new Glob("src/main/architecture", "**/*.modules"),
             new SewFormat(),
-            ContextMap.class));
+            Modules.class));
   }
 
   @Override
@@ -175,14 +175,14 @@ public class UseCaseTool extends Tool {
                             inputs,
                             diagnostics)));
     if (!useCases.isEmpty()) {
-      var contextMaps = inputs.get("contextMaps", ContextMap.class);
-      if (contextMaps.isEmpty()) {
+      var modules = inputs.get("modules", Modules.class);
+      if (modules.isEmpty()) {
         diagnostics.add(
             new Diagnostic(
                 WARN,
-                "Missing context map",
+                "Missing modules",
                 null,
-                List.of(new Suggestion(CREATE_CONTEXT_MAP, "Create context map"))));
+                List.of(new Suggestion(CREATE_MODULES, "Create modules"))));
       }
     }
   }
@@ -289,8 +289,8 @@ public class UseCaseTool extends Tool {
       Collection<Diagnostic> diagnostics) {
     if (CREATE_MISSING_STEP.equals(suggestionCode)) {
       createMissingStep(inputs, location, sink, diagnostics);
-    } else if (CREATE_CONTEXT_MAP.equals(suggestionCode)) {
-      createContextMap(inputs, sink, diagnostics);
+    } else if (CREATE_MODULES.equals(suggestionCode)) {
+      createModules(inputs, sink, diagnostics);
     } else {
       super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
@@ -425,18 +425,16 @@ public class UseCaseTool extends Tool {
     return result.toString();
   }
 
-  private void createContextMap(
+  private void createModules(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
-      var contextMap =
-          new GenerateContextMapFromUseCases().apply(inputs.get("useCases", UseCase.class));
-      var contextMapSink =
-          normalize(sink)
-              .select("src/main/architecture/%s.contextMap".formatted(contextMap.getName()));
-      try (var output = contextMapSink.open()) {
-        new SewFormat().newBuilder().build(contextMap, output);
+      var modules = new GenerateModulesFromUseCases().apply(inputs.get("useCases", UseCase.class));
+      var modulesSink =
+          normalize(sink).select("src/main/architecture/%s.modules".formatted(modules.getName()));
+      try (var output = modulesSink.open()) {
+        new SewFormat().newBuilder().build(modules, output);
       }
-      diagnostics.add(sinkCreated(contextMapSink));
+      diagnostics.add(sinkCreated(modulesSink));
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }

@@ -16,12 +16,12 @@ import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 @SuppressWarnings("unchecked")
-class GenerateContextMapFromUseCasesTest {
+class GenerateModulesFromUseCasesTest {
 
   private final ClusteringAlgorithm<Pointer> clusteringAlgorithm = mock(ClusteringAlgorithm.class);
 
   @Test
-  void shouldGenerateContextMap() throws IOException {
+  void shouldGenerateModules() throws IOException {
     var useCase = loadUseCase();
     when(clusteringAlgorithm.apply(any(DesignStructureMatrix.class)))
         .thenAnswer(
@@ -30,11 +30,11 @@ class GenerateContextMapFromUseCasesTest {
               return new Clusters<Pointer>(dsm.getElements()).all();
             });
 
-    var actual = new GenerateContextMapFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
+    var actual = new GenerateModulesFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
 
     assertThat(actual.getPackage()).isEqualTo("valid");
     assertThat(actual.getName()).isEqualTo("Valid");
-    assertThat(actual.getBoundedContexts())
+    assertThat(actual.getModules())
         .hasSizeBetween(4, 5)
         .allSatisfy(
             context -> {

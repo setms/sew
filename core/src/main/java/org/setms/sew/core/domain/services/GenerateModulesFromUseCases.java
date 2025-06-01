@@ -26,13 +26,13 @@ import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
 import org.setms.sew.core.domain.model.dsm.Dependency;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
 import org.setms.sew.core.domain.model.dsm.StochasticGradientDescentClusteringAlgorithm;
-import org.setms.sew.core.domain.model.sdlc.ContextMap;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.Modules;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 
 @RequiredArgsConstructor
-public class GenerateContextMapFromUseCases implements Function<Collection<UseCase>, ContextMap> {
+public class GenerateModulesFromUseCases implements Function<Collection<UseCase>, Modules> {
 
   private static final String AGGREGATE = "aggregate";
   private static final String POLICY = "policy";
@@ -48,18 +48,18 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
 
   private final ClusteringAlgorithm<Pointer> clusteringAlgorithm;
 
-  public GenerateContextMapFromUseCases() {
+  public GenerateModulesFromUseCases() {
     this(new StochasticGradientDescentClusteringAlgorithm<>());
   }
 
   @Override
-  public ContextMap apply(Collection<UseCase> useCases) {
+  public Modules apply(Collection<UseCase> useCases) {
     if (useCases.isEmpty()) {
       throw new IllegalArgumentException("Missing use cases");
     }
     var dsm = dsmFrom(useCases);
     var clusters = findClustersIn(dsm);
-    return contextMapFrom(useCases, clusters, packageFrom(useCases));
+    return modulesFrom(useCases, clusters, packageFrom(useCases));
   }
 
   private DesignStructureMatrix<Pointer> dsmFrom(Collection<UseCase> useCases) {
@@ -199,41 +199,41 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
         .getFirst();
   }
 
-  private ContextMap contextMapFrom(
+  private Modules modulesFrom(
       Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters, String packageName) {
-    return new ContextMap(toFullyQualifiedName(packageName))
-        .setBoundedContexts(boundedContextsFor(packageName, useCases, clusters));
+    return new Modules(toFullyQualifiedName(packageName))
+        .setModules(modulesFor(packageName, useCases, clusters));
   }
 
   private FullyQualifiedName toFullyQualifiedName(String packageName) {
     return new FullyQualifiedName("%s.%s".formatted(packageName, initUpper(packageName)));
   }
 
-  private List<ContextMap.BoundedContext> boundedContextsFor(
+  private List<Modules.Module> modulesFor(
       String packageName, Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters) {
     var contracts = new TreeSet<Pointer>();
-    var clustersByBoundedContext = new HashMap<Cluster<Pointer>, ContextMap.BoundedContext>();
+    var clustersByModule = new HashMap<Cluster<Pointer>, Modules.Module>();
     var result =
         clusters.stream()
             .map(
                 cluster -> {
-                  var boundedContext = toBoundedContext(useCases, packageName, cluster);
-                  clustersByBoundedContext.put(cluster, boundedContext);
-                  return boundedContext;
+                  var module = toModule(useCases, packageName, cluster);
+                  clustersByModule.put(cluster, module);
+                  return module;
                 })
             .collect(toList());
     addEvents(useCases, clusters, contracts);
     if (!contracts.isEmpty()) {
-      result.add(toContractsBoundedContext(packageName, contracts));
+      result.add(toContractsModule(packageName, contracts));
     }
-    addDependencies(clustersByBoundedContext);
+    addDependencies(clustersByModule);
     return result;
   }
 
-  private ContextMap.BoundedContext toBoundedContext(
+  private Modules.Module toModule(
       Collection<UseCase> useCases, String packageName, Cluster<Pointer> currentCluster) {
     addCommands(useCases, currentCluster);
-    return new ContextMap.BoundedContext(
+    return new Modules.Module(
             new FullyQualifiedName("%s.%s".formatted(packageName, nameFor(currentCluster))))
         .setContent(currentCluster);
   }
@@ -318,10 +318,8 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
     return result;
   }
 
-  private ContextMap.BoundedContext toContractsBoundedContext(
-      String packageName, Set<Pointer> content) {
-    return new ContextMap.BoundedContext(
-            new FullyQualifiedName("%s.Contracts".formatted(packageName)))
+  private Modules.Module toContractsModule(String packageName, Set<Pointer> content) {
+    return new Modules.Module(new FullyQualifiedName("%s.Contracts".formatted(packageName)))
         .setContent(content);
   }
 
@@ -334,17 +332,16 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
     return result;
   }
 
-  private void addDependencies(
-      Map<Cluster<Pointer>, ContextMap.BoundedContext> clustersByBoundedContext) {
-    clustersByBoundedContext.forEach(
-        ((cluster, boundedContext) -> {
+  private void addDependencies(Map<Cluster<Pointer>, Modules.Module> clustersByModule) {
+    clustersByModule.forEach(
+        ((cluster, module) -> {
           var dependencies =
               cluster.getDependencies().stream()
-                  .map(clustersByBoundedContext::get)
-                  .map(bc -> new Pointer("boundedContext", bc.getName()))
+                  .map(clustersByModule::get)
+                  .map(bc -> new Pointer("module", bc.getName()))
                   .collect(toSet());
           if (!dependencies.isEmpty()) {
-            boundedContext.setDependsOn(dependencies);
+            module.setDependsOn(dependencies);
           }
         }));
   }

@@ -9,9 +9,9 @@
         <fileType name="Command" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.CommandFileType"
                   extensions="command"/>
-        <fileType name="ContextMap" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.ContextMapFileType"
-                  extensions="contextMap"/>
+        <fileType name="Modules" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.ModulesFileType"
+                  extensions="modules"/>
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
                   extensions="decision"/>
@@ -38,6 +38,6 @@
         <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
         <annotator language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewAnnotator"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.usecase.UseCaseEditorProvider"/>
-        <fileEditorProvider implementation="org.setms.sew.intellij.contextmap.ContextMapEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>
     </extensions>
 </idea-plugin>

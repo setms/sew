@@ -16,11 +16,11 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class ContextMap extends NamedObject {
+public class Modules extends NamedObject {
 
-  @NotEmpty private List<BoundedContext> boundedContexts;
+  @NotEmpty private List<Module> modules;
 
-  public ContextMap(FullyQualifiedName fullyQualifiedName) {
+  public Modules(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 
@@ -29,12 +29,12 @@ public class ContextMap extends NamedObject {
   @Accessors(chain = true)
   @ToString(callSuper = true)
   @EqualsAndHashCode(callSuper = true)
-  public static class BoundedContext extends NamedObject {
+  public static class Module extends NamedObject {
 
     @NotEmpty private Set<Pointer> content;
     private Set<Pointer> dependsOn;
 
-    public BoundedContext(FullyQualifiedName fullyQualifiedName) {
+    public Module(FullyQualifiedName fullyQualifiedName) {
       super(fullyQualifiedName);
     }
 

@@ -7,32 +7,32 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.setms.sew.intellij.language.sew.SewLanguage;
 
-public class ContextMapFileType extends LanguageFileType {
+public class ModulesFileType extends LanguageFileType {
 
-  public static final ContextMapFileType INSTANCE = new ContextMapFileType();
+  public static final ModulesFileType INSTANCE = new ModulesFileType();
 
-  private ContextMapFileType() {
+  private ModulesFileType() {
     super(SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull String getName() {
-    return "ContextMap";
+    return "Modules";
   }
 
   @Override
   public @Nls @NotNull String getDisplayName() {
-    return "Context map";
+    return "modules";
   }
 
   @Override
   public @NotNull String getDescription() {
-    return "Context map";
+    return "Modules";
   }
 
   @Override
   public @NotNull String getDefaultExtension() {
-    return "contextMap";
+    return "modules";
   }
 
   @Override
