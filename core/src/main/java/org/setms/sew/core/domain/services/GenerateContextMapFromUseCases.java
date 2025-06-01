@@ -5,12 +5,15 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -20,6 +23,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.setms.sew.core.domain.model.dsm.Cluster;
 import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
+import org.setms.sew.core.domain.model.dsm.Dependency;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
 import org.setms.sew.core.domain.model.dsm.StochasticGradientDescentClusteringAlgorithm;
 import org.setms.sew.core.domain.model.sdlc.ContextMap;
@@ -55,17 +59,7 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
     }
     var dsm = dsmFrom(useCases);
     var clusters = findClustersIn(dsm);
-    clusters.forEach(cluster -> System.out.printf("- cluster: %s%n", cluster));
-    var result = contextMapFrom(useCases, clusters, packageFrom(useCases));
-    result
-        .getBoundedContexts()
-        .forEach(
-            context -> System.out.printf("- %s: %s%n", context.getName(), context.getContent()));
-    return result;
-  }
-
-  private Set<Cluster<Pointer>> findClustersIn(DesignStructureMatrix<Pointer> dsm) {
-    return clusteringAlgorithm.apply(dsm);
+    return contextMapFrom(useCases, clusters, packageFrom(useCases));
   }
 
   private DesignStructureMatrix<Pointer> dsmFrom(Collection<UseCase> useCases) {
@@ -173,6 +167,24 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
                 dsm.addDependency(sequence.last(), sequence.first(), AVAILABILITY_COUPLING));
   }
 
+  private Set<Cluster<Pointer>> findClustersIn(DesignStructureMatrix<Pointer> dsm) {
+    var result = clusteringAlgorithm.apply(dsm);
+    var dependencies = dsm.getDependencies();
+    result.forEach(
+        cluster ->
+            cluster.stream()
+                .flatMap(element -> dependenciesOf(element, dependencies))
+                .map(dependency -> clusterOf(dependency, result))
+                .filter(not(cluster::equals))
+                .forEach(cluster::addDependency));
+    return result;
+  }
+
+  private Stream<Pointer> dependenciesOf(
+      Pointer element, Collection<Dependency<Pointer>> dependencies) {
+    return dependencies.stream().filter(d -> d.from().equals(element)).map(Dependency::to);
+  }
+
   private String packageFrom(Collection<UseCase> useCases) {
     var packages = useCases.stream().map(UseCase::getPackage).toList();
     if (packages.size() == 1) {
@@ -200,14 +212,21 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
   private List<ContextMap.BoundedContext> boundedContextsFor(
       String packageName, Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters) {
     var contracts = new TreeSet<Pointer>();
+    var clustersByBoundedContext = new HashMap<Cluster<Pointer>, ContextMap.BoundedContext>();
     var result =
         clusters.stream()
-            .map(cluster -> toBoundedContext(useCases, packageName, cluster))
+            .map(
+                cluster -> {
+                  var boundedContext = toBoundedContext(useCases, packageName, cluster);
+                  clustersByBoundedContext.put(cluster, boundedContext);
+                  return boundedContext;
+                })
             .collect(toList());
     addEvents(useCases, clusters, contracts);
     if (!contracts.isEmpty()) {
       result.add(toContractsBoundedContext(packageName, contracts));
     }
+    addDependencies(clustersByBoundedContext);
     return result;
   }
 
@@ -312,5 +331,20 @@ public class GenerateContextMapFromUseCases implements Function<Collection<UseCa
       return cluster.stream().map(Pointer::getId).collect(joining("And"));
     }
     return result;
+  }
+
+  private void addDependencies(
+      Map<Cluster<Pointer>, ContextMap.BoundedContext> clustersByBoundedContext) {
+    clustersByBoundedContext.forEach(
+        ((cluster, boundedContext) -> {
+          var dependencies =
+              cluster.getDependencies().stream()
+                  .map(clustersByBoundedContext::get)
+                  .map(bc -> new Pointer("boundedContext", bc.getName()))
+                  .collect(toSet());
+          if (!dependencies.isEmpty()) {
+            boundedContext.setDependsOn(dependencies);
+          }
+        }));
   }
 }

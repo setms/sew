@@ -146,11 +146,15 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
                   .collect(joining(ERROR_SEPARATOR))));
       return;
     }
-    var htmls = sink.matching(new Glob("", "**/*.html"));
-    if (htmls.isEmpty()) {
-      browser.loadURL("about:blank");
+    var content = sink.matching(new Glob("", "**/*.html"));
+    if (content.isEmpty()) {
+      content = sink.matching(new Glob("", "**/*.png"));
     }
-    browser.loadURL(htmls.getFirst().toUri().toString());
+    if (content.isEmpty()) {
+      browser.loadURL("about:blank");
+    } else {
+      browser.loadURL(content.getFirst().toUri().toString());
+    }
   }
 
   private void deleteSink() {

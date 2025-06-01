@@ -72,7 +72,7 @@ public abstract class BaseClusteringAlgorithm<E> implements ClusteringAlgorithm<
     return dsm.getWeight(from, to).orElse(0.0);
   }
 
-  protected Collection<DesignStructureMatrix.Dependency<E>> getDependencies() {
+  protected Collection<Dependency<E>> getDependencies() {
     return dsm.getDependencies();
   }
 

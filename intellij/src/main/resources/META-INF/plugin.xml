@@ -38,5 +38,6 @@
         <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
         <annotator language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewAnnotator"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.usecase.UseCaseEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.contextmap.ContextMapEditorProvider"/>
     </extensions>
 </idea-plugin>

@@ -12,6 +12,7 @@ class ClusteringAlgorithmTest {
       new DesignStructureMatrix<>("A", "B", "C", "E", "F", "G", "H", "I", "O", "P");
 
   @Test
+  @SuppressWarnings("unchecked")
   void shouldFindClusters() {
     givenDependencies();
 
@@ -19,9 +20,16 @@ class ClusteringAlgorithmTest {
         new StochasticGradientDescentClusteringAlgorithm<String>()
             .apply(dsm).stream().map(Set.class::cast).collect(toSet());
 
-    assertThat(clusters)
-        .containsExactlyInAnyOrder(
-            Set.of("A", "B"), Set.of("C", "G", "O", "P"), Set.of("E", "F", "H", "I"));
+    assertThat(clusters).hasSize(3);
+    Set.of(Set.of("A", "B"), Set.of("C", "G", "O", "P"), Set.of("E", "F", "H", "I"))
+        .forEach(
+            elements ->
+                assertThat(
+                        clusters.stream()
+                            .filter(c -> c.size() == elements.size() && c.containsAll(elements))
+                            .findFirst())
+                    .as("Cluster with values " + elements)
+                    .isPresent());
   }
 
   private void givenDependencies() {

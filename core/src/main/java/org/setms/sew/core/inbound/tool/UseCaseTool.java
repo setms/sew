@@ -9,10 +9,7 @@ import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
-import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -25,7 +22,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import javax.imageio.ImageIO;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -497,39 +493,7 @@ public class UseCaseTool extends Tool {
 
   private OutputSink build(
       UseCase.Scenario scenario, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var result = sink.select(scenario.getName() + ".png");
-    try {
-      var image = render(scenario);
-      try (var output = result.open()) {
-        ImageIO.write(image, "PNG", output);
-      }
-    } catch (IOException e) {
-      addError(diagnostics, e.getMessage());
-    }
-    return result;
-  }
-
-  private RenderedImage render(UseCase.Scenario scenario) {
-    var graph = toGraph(scenario);
-    var image = mxCellRenderer.createBufferedImage(graph, null, 1, null, true, null);
-    clear(graph);
-    var result =
-        new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-    var graphics = result.getGraphics();
-    graphics.drawImage(image, 0, 0, null);
-    graphics.dispose();
-    return result;
-  }
-
-  private void clear(mxGraph graph) {
-    graph.getModel().beginUpdate();
-    try {
-      Object[] cells = graph.getChildCells(graph.getDefaultParent(), true, true);
-      graph.removeCells(cells);
-    } finally {
-      graph.getModel().endUpdate();
-    }
-    graph.clearSelection();
+    return build(scenario, toGraph(scenario), sink, diagnostics);
   }
 
   private mxGraph toGraph(UseCase.Scenario scenario) {

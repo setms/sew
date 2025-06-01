@@ -153,5 +153,4 @@ public class DesignStructureMatrix<E> {
     text.append(NL);
   }
 
-  public record Dependency<E>(E from, E to, double weight) {}
 }

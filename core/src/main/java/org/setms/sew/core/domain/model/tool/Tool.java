@@ -4,6 +4,10 @@ import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.INFO;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
+import com.mxgraph.util.mxCellRenderer;
+import com.mxgraph.view.mxGraph;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -12,6 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SequencedSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.imageio.ImageIO;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 
 /**
@@ -134,5 +139,41 @@ public abstract class Tool {
 
   protected final Diagnostic sinkCreated(OutputSink sink) {
     return new Diagnostic(INFO, "Created " + sink.toUri());
+  }
+
+  protected OutputSink build(
+      NamedObject object, mxGraph graph, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    var result = sink.select(object.getName() + ".png");
+    try {
+      var image = renderGraph(graph);
+      try (var output = result.open()) {
+        ImageIO.write(image, "PNG", output);
+      }
+    } catch (IOException e) {
+      addError(diagnostics, e.getMessage());
+    }
+    return result;
+  }
+
+  private BufferedImage renderGraph(mxGraph graph) {
+    var image = mxCellRenderer.createBufferedImage(graph, null, 1, null, true, null);
+    clear(graph);
+    var result =
+        new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    var graphics = result.getGraphics();
+    graphics.drawImage(image, 0, 0, null);
+    graphics.dispose();
+    return result;
+  }
+
+  private void clear(mxGraph graph) {
+    graph.getModel().beginUpdate();
+    try {
+      Object[] cells = graph.getChildCells(graph.getDefaultParent(), true, true);
+      graph.removeCells(cells);
+    } finally {
+      graph.getModel().endUpdate();
+    }
+    graph.clearSelection();
   }
 }

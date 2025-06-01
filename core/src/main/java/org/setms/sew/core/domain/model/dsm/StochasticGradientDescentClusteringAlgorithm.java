@@ -13,7 +13,7 @@ public class StochasticGradientDescentClusteringAlgorithm<E> extends BaseCluster
    */
   private static final double DISTANCE_POWER = 1.5;
 
-  private Collection<DesignStructureMatrix.Dependency<E>> dependencies;
+  private Collection<Dependency<E>> dependencies;
 
   /*
    * We're using stochastic gradient descent, which is a greedy hillclimbing algorithm.
@@ -73,7 +73,7 @@ public class StochasticGradientDescentClusteringAlgorithm<E> extends BaseCluster
    *   cluster to a power > 1 to penalize larger clusters.
    * - Volatility is unknown at this point, so assume it's the same for all clusters for now and leave it out of scope.
    */
-  private double costOf(DesignStructureMatrix.Dependency<E> dependency) {
+  private double costOf(Dependency<E> dependency) {
     var fromCuster = clusterOf(dependency.from());
     var toCluster = clusterOf(dependency.to());
     var distance = fromCuster.equals(toCluster) ? fromCuster.size() : getElements().size();
