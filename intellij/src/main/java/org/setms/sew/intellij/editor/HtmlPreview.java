@@ -148,9 +148,6 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     }
     var content = sink.matching(new Glob("", "**/*.html"));
     if (content.isEmpty()) {
-      content = sink.matching(new Glob("", "**/*.png"));
-    }
-    if (content.isEmpty()) {
       browser.loadURL("about:blank");
     } else {
       browser.loadURL(content.getFirst().toUri().toString());

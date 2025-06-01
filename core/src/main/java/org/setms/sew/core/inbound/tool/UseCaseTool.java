@@ -58,8 +58,6 @@ import org.setms.sew.core.inbound.format.sew.SewFormat;
 public class UseCaseTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/useCases";
-  private static final int ICON_SIZE = 40;
-  private static final int MAX_TEXT_LENGTH = 15;
   private static final List<String> ELEMENT_ORDER =
       List.of(
           "readModel",
@@ -99,7 +97,7 @@ public class UseCaseTool extends Tool {
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
-  private static final String NL = "\n";
+  private static final int ICON_SIZE = 40;
   private static final String VERTEX_STYLE =
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   private static final int LINE_HEIGHT = 16;
@@ -529,17 +527,6 @@ public class UseCaseTool extends Tool {
                   .forEach(reference -> result.put(reference, wrap(reference.getId())));
             });
     return result;
-  }
-
-  private String wrap(String text) {
-    if (text.length() <= MAX_TEXT_LENGTH) {
-      return text;
-    }
-    var index = MAX_TEXT_LENGTH - 1;
-    while (index > 0 && !Character.isUpperCase(text.charAt(index))) {
-      index--;
-    }
-    return text.substring(0, index) + NL + wrap(text.substring(index));
   }
 
   @SuppressWarnings("StringConcatenationInLoop")
