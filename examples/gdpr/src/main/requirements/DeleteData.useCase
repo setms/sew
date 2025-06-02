@@ -9,16 +9,16 @@ scenario InvalidUserRequestsDataDeletion {
     title       = "Non-user requests data deletion"
     description = "When someone who's not a user of our applications requests data deletion, customer support denies the request."
     steps       = [
-        user(User),
+        user(NonUser),
         command(RequestDataDeletion),
         aggregate(Requests),
-        event(DataDeletionRequested),
-        readModel(DataDeletionRequests),
+        event(RequestReceived),
+        readModel(Requests),
         user(CustomerSupport, reads=readModel(Users)),
-        command(DenyDataDeletionRequest),
+        command(DenyRequest),
         aggregate(Requests),
-        event(DataDeletionDenied),
-        readModel(DataDeletionRequests)
+        event(RequestDenied),
+        readModel(Requests)
     ]
 }
 
@@ -29,13 +29,12 @@ scenario UnknownUserRequestsDataDeletion {
         user(User),
         command(RequestDataDeletion),
         aggregate(Requests),
-        event(DataDeletionRequested),
-        readModel(DataDeletionRequests),
+        event(RequestReceived),
+        readModel(Requests),
         user(CustomerSupport, reads=readModel(Users)),
-        command(DeleteUserData),
+        command(StartRequest),
         aggregate(Requests),
-        event(DataDeletionStarted),
-        readModel(DataDeletionRequests)
+        event(RequestStarted)
     ]
 }
 
@@ -45,9 +44,9 @@ scenario LoggedInUserRequestsDataDeletion {
     steps       = [
         user(User),
         externalSystem(App),
-        command(DeleteUserData),
+        command(StartRequest),
         aggregate(Requests),
-        event(DataDeletionStarted)
+        event(RequestStarted)
     ]
 }
 
@@ -55,20 +54,20 @@ scenario InstructServicesToDeleteUserData {
     title       = "All services delete the user's data"
     description = "The system instructs all services to delete the user's data and waits for them to confirm they did."
     steps       = [
-        event(DataDeletionStarted, updates=readModel(DataDeletionRequests)),
-        policy(CheckRequests, reads=readModel(Services)),
-        command(StartDeletionByServices),
+        event(RequestStarted, updates=readModel(Requests)),
+        policy(FanOut, reads=readModel(Services)),
+        command(StartServiceRequest),
         aggregate(Services),
-        event(ServiceDeletionStarted, updates=readModel(RequestsInProgress)),
-        policy(CheckServices),
-        command(ServiceDeleteUserData),
+        event(ServiceRequestStarted, updates=readModel(ServiceRequests)),
+        policy(CallService),
+        command(HandleRequest),
         externalSystem(Service),
-        event(ServiceDeletedUserData),
-        policy(CheckProgress, reads=readModel(RequestsInProgress)),
-        command(CompleteDataDeletion),
+        event(ServiceRequestFinished, updates=readModel(ServiceRequests)),
+        policy(FanIn, reads=readModel(ServiceRequests)),
+        command(FinishRequest),
         aggregate(Requests),
-        event(UserDataDeleted, updates=readModel(RequestsInProgress)),
-        readModel(DataDeletionRequests)
+        event(RequestFinished),
+        readModel(Requests)
     ]
 }
 
@@ -77,8 +76,8 @@ scenario ServiceDoesntDeleteDataInTime {
     description = "A service doesn't confirm within the allotted time period that it has deleted the user's data. The system sends a reminder."
     steps       = [
         clockEvent(TimePassed),
-        policy(CheckServices, reads=readModel(RequestsInProgress)),
-        command(ServiceDeleteUserData),
+        policy(CallService, reads=readModel(ServiceRequests)),
+        command(HandleRequest),
         externalSystem(Service)
     ]
 }
@@ -86,8 +85,8 @@ scenario ServiceDoesntDeleteDataInTime {
 scenario InformUser {
     title = "Notify user that request is complete"
     steps = [
-         event(UserDataDeleted),
-         policy(CheckNotifications),
+         event(RequestFinished),
+         policy(NotifyUser),
          command(NotifyUser),
          aggregate(Notifications),
          event(UserNotified),

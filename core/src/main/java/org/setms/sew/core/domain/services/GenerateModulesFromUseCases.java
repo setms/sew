@@ -39,10 +39,12 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
   private static final String READ_MODEL = "readModel";
   private static final String EVENT = "event";
   private static final String COMMAND = "command";
+  private static final String EXTERNAL_SYSTEM = "externalSystem";
   private static final String ATTR_UPDATES = "updates";
   private static final String ATTR_READS = "reads";
   private static final List<String> ACTIVE_ELEMENT_TYPES = List.of(AGGREGATE, READ_MODEL, POLICY);
   private static final int AVAILABILITY_COUPLING = 10;
+  private static final int ANTI_CORRUPTION_COUPLING = 8;
   private static final int DATA_COUPLING = 4;
   private static final int CONTRACT_COUPLING = 1;
 
@@ -110,6 +112,7 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
     addDependenciesBetweenPoliciesAndAggregates(model, dsm);
     addDependenciesBetweenPoliciesAndReadModels(model, dsm);
     addDependenciesBetweenReadModelsAndAggregates(model, dsm);
+    addDependenciesBetweenPolicies(model, dsm);
   }
 
   private void addDependenciesBetweenPoliciesAndAggregates(
@@ -132,11 +135,12 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
         .limit(steps.size() - 1)
         .filter(isType(types[0]))
         .map(fromStep -> toSequence(steps, fromStep, types))
-        .filter(Objects::nonNull);
+        .filter(Objects::nonNull)
+        .distinct();
   }
 
   private Predicate<Pointer> isType(String type) {
-    return step -> type.equals(step.getType());
+    return step -> step.isType(type);
   }
 
   private Sequence toSequence(List<Pointer> steps, Pointer fromStep, String[] types) {
@@ -151,13 +155,6 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
     return new Sequence(fromStep, toStep);
   }
 
-  private void addDependenciesBetweenReadModelsAndAggregates(
-      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
-    model
-        .findSequences(AGGREGATE, EVENT, READ_MODEL)
-        .forEach(sequence -> dsm.addDependency(sequence.last(), sequence.first(), DATA_COUPLING));
-  }
-
   private void addDependenciesBetweenPoliciesAndReadModels(
       EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
     model
@@ -165,6 +162,24 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
         .forEach(
             sequence ->
                 dsm.addDependency(sequence.last(), sequence.first(), AVAILABILITY_COUPLING));
+  }
+
+  private void addDependenciesBetweenReadModelsAndAggregates(
+      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+    model
+        .findSequences(AGGREGATE, EVENT, READ_MODEL)
+        .forEach(sequence -> dsm.addDependency(sequence.last(), sequence.first(), DATA_COUPLING));
+  }
+
+  private void addDependenciesBetweenPolicies(
+      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+    model
+        .findSequences(POLICY, COMMAND, EXTERNAL_SYSTEM, EVENT, POLICY)
+        .forEach(
+            sequence -> {
+              dsm.addDependency(sequence.first(), sequence.last(), ANTI_CORRUPTION_COUPLING);
+              dsm.addDependency(sequence.last(), sequence.first(), ANTI_CORRUPTION_COUPLING);
+            });
   }
 
   private Set<Cluster<Pointer>> findClustersIn(DesignStructureMatrix<Pointer> dsm) {
@@ -256,14 +271,14 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
         .flatMap(UseCase.Scenario::steps)
         .filter(isType(EVENT))
         .distinct()
-        .forEach(event -> addEvent(useCases, clusters, contractsCluster, event));
+        .forEach(event -> addEvent(event, useCases, clusters, contractsCluster));
   }
 
   private void addEvent(
+      Pointer event,
       Collection<UseCase> useCases,
       Set<Cluster<Pointer>> clusters,
-      Set<Pointer> contractsCluster,
-      Pointer event) {
+      Set<Pointer> contractsCluster) {
     var emitting = clustersEmitting(event, useCases, clusters);
     if (emitting.size() == 1) {
       emitting.getFirst().add(event);
@@ -283,7 +298,7 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
         .flatMap(UseCase::scenarios)
         .map(UseCase.Scenario::getSteps)
         .flatMap(steps -> findSequences(steps, AGGREGATE, EVENT))
-        .filter(sequence -> event == sequence.last())
+        .filter(sequence -> event.equals(sequence.last()))
         .map(Sequence::first)
         .map(aggregate -> clusterOf(aggregate, allClusters))
         .distinct()
@@ -310,7 +325,7 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
             steps ->
                 Stream.concat(
                     findSequences(steps, EVENT, POLICY), findSequences(steps, EVENT, READ_MODEL)))
-        .filter(sequence -> event == sequence.first())
+        .filter(sequence -> event.equals(sequence.first()))
         .map(Sequence::last)
         .map(handler -> clusterOf(handler, allClusters))
         .filter(not(result::contains))

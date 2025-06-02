@@ -33,9 +33,6 @@ class EventStormingModel {
     if (types.size() < 2) {
       throw new IllegalArgumentException("Need at least 2 types to make a sequence");
     }
-    if (types.size() > 3) {
-      throw new UnsupportedOperationException("Can only find sequences up to 2 segments long");
-    }
     var found =
         follows.stream()
             .filter(f -> f.element().isType(types.getFirst()) && f.followedBy.isType(types.get(1)))
@@ -45,15 +42,22 @@ class EventStormingModel {
       return;
     }
     found.stream()
-        .flatMap(
-            segment1 ->
-                follows.stream()
-                    .filter(
-                        segment2 ->
-                            segment2.element.equals(segment1.followedBy)
-                                && segment2.followedBy.isType(types.get(2)))
-                    .map(segment2 -> new Sequence(segment1.element, segment2.followedBy)))
+        .flatMap(f -> findSequences(f.element(), f.followedBy(), types, 2))
         .forEach(sequences::add);
+  }
+
+  private Stream<Sequence> findSequences(
+      Pointer first, Pointer current, List<String> types, int typeIndex) {
+    var found =
+        follows.stream()
+            .filter(f -> f.element().equals(current) && f.followedBy().isType(types.get(typeIndex)))
+            .map(Follow::followedBy)
+            .toList();
+    if (typeIndex == types.size() - 1) {
+      return found.stream().map(last -> new Sequence(first, last));
+    }
+    return found.stream()
+        .flatMap(newCurrent -> findSequences(first, newCurrent, types, typeIndex + 1));
   }
 
   @Override

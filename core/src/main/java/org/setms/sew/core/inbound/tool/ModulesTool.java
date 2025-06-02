@@ -123,7 +123,7 @@ public class ModulesTool extends Tool {
   }
 
   private void layoutGraph(mxGraph graph) {
-    var layout = new mxHierarchicalLayout(graph, SwingConstants.WEST);
+    var layout = new mxHierarchicalLayout(graph, SwingConstants.NORTH);
     layout.execute(graph.getDefaultParent());
   }
 }
