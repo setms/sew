@@ -7,12 +7,6 @@ public class StochasticGradientDescentClusteringAlgorithm<E> extends BaseCluster
 
   private static final int MAX_SUBSET_SIZE = 5;
 
-  /*
-   * How heavy to penalize bigger clusters. It should be bigger than 1, or else a supercluster
-   * results containing all elements.
-   */
-  private static final double DISTANCE_POWER = 1.5;
-
   private Collection<Dependency<E>> dependencies;
 
   /*
@@ -69,15 +63,32 @@ public class StochasticGradientDescentClusteringAlgorithm<E> extends BaseCluster
    * Maintenance effort = strength * distance * volatility.
    *
    * - Strength is simply the weight of the dependency.
-   * - Distance depends on whether the two elements are in the same or in different clusters. We take the size of the
-   *   cluster to a power > 1 to penalize larger clusters.
+   * - Distance depends on whether the two elements are in the same or in different clusters.
+   *   We penalize larger clusters, but also miniscule ones.
    * - Volatility is unknown at this point, so assume it's the same for all clusters for now and leave it out of scope.
    */
   private double costOf(Dependency<E> dependency) {
     var fromCuster = clusterOf(dependency.from());
     var toCluster = clusterOf(dependency.to());
-    var distance = fromCuster.equals(toCluster) ? fromCuster.size() : getElements().size();
-    return dependency.weight() * Math.pow(distance, DISTANCE_POWER);
+    var numElements = getElements().size();
+    var distance =
+        fromCuster.equals(toCluster)
+            ? penalizeTinyOrLargeCluster(fromCuster, numElements)
+            : numElements;
+    return dependency.weight() * distance;
+  }
+
+  private double penalizeTinyOrLargeCluster(Cluster<E> fromCuster, int numElements) {
+    var desiredMinSize = 3;
+    var desiredMaxSize = Math.max(7, numElements / 10);
+    var actualSize = fromCuster.size();
+    if (actualSize < desiredMinSize) {
+      return Math.pow(desiredMinSize - actualSize, 2);
+    }
+    if (actualSize > desiredMaxSize) {
+      return Math.pow(actualSize - desiredMaxSize, 2);
+    }
+    return 1;
   }
 
   private record Move<E>(E element, Cluster<E> target, double cost) {

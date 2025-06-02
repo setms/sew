@@ -342,7 +342,10 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
     var result =
         cluster.stream().filter(isType(AGGREGATE)).map(Pointer::getId).collect(joining("And"));
     if (result.isEmpty()) {
-      return cluster.stream().map(Pointer::getId).collect(joining("And"));
+      result = cluster.stream().filter(isType(POLICY)).map(Pointer::getId).collect(joining("And"));
+    }
+    if (result.isEmpty()) {
+      result = cluster.stream().map(Pointer::getId).collect(joining("And"));
     }
     return result;
   }
