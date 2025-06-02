@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.InputSource;
@@ -24,18 +25,35 @@ public class VirtualFileInputSource implements InputSource {
 
   private final VirtualFile file;
   private final Map<VirtualFile, Document> documentsByFile;
+  private final Predicate<VirtualFile> fileFilter;
 
-  public VirtualFileInputSource(VirtualFile file, Map<VirtualFile, Document> documentsByFile) {
+  public VirtualFileInputSource(
+      VirtualFile file,
+      Map<VirtualFile, Document> documentsByFile,
+      Predicate<VirtualFile> fileFilter) {
     this.file = file;
     this.documentsByFile = documentsByFile;
+    this.fileFilter = fileFilter;
   }
 
   public VirtualFileInputSource(VirtualFile file, Tool tool) {
-    this(rootOf(file, tool), Collections.emptyMap());
+    this(
+        rootOf(file, tool),
+        Collections.emptyMap(),
+        f -> !extensionOf(f).equals(extensionOf(file)) || f.equals(file));
+  }
+
+  private static String extensionOf(VirtualFile file) {
+    var name = file.getName();
+    var index = name.lastIndexOf('.');
+    return index < 0 ? "" : name.substring(index);
   }
 
   public VirtualFileInputSource(PsiFile file, Tool tool) {
-    this(rootOf(file.getVirtualFile(), tool), Map.of(file.getVirtualFile(), toDocument(file)));
+    this(
+        rootOf(file.getVirtualFile(), tool),
+        Map.of(file.getVirtualFile(), toDocument(file)),
+        f -> true);
   }
 
   private static Document toDocument(PsiFile file) {
@@ -81,10 +99,11 @@ public class VirtualFileInputSource implements InputSource {
       VirtualFile file, Pattern pattern, Collection<VirtualFileInputSource> sources) {
     Optional.ofNullable(file.getChildren()).stream()
         .flatMap(Arrays::stream)
+        .filter(fileFilter)
         .forEach(
             child -> {
               if (pattern.matcher(child.getName()).matches()) {
-                sources.add(new VirtualFileInputSource(child, documentsByFile));
+                sources.add(new VirtualFileInputSource(child, documentsByFile, fileFilter));
               } else {
                 addChildren(child, pattern, sources);
               }
