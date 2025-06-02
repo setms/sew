@@ -1,0 +1,45 @@
+package gdpr
+
+useCase MaintainServices {
+    title       = "Maintain services"
+    description = "Administrators can maintain the services"
+}
+
+scenario AddService {
+    title       = "Add service"
+    description = "An administrator adds a service"
+    steps       = [
+        readModel(Services),
+        user(Administrator),
+        command(AddService),
+        aggregate(Services),
+        event(ServiceAdded),
+        readModel(Services)
+    ]
+}
+
+scenario UpdateService {
+    title       = "Update service"
+    description = "An administrator changes data for a service"
+    steps       = [
+        readModel(Services),
+        user(Administrator),
+        command(UpdateService),
+        aggregate(Services),
+        event(ServiceUpdated),
+        readModel(Services)
+    ]
+}
+
+scenario DeleteService {
+    title       = "Delete service"
+    description = "An administrator deletes a service"
+    steps       = [
+        readModel(Services),
+        user(Administrator),
+        command(DeleteService),
+        aggregate(Services),
+        event(ServiceDeleted),
+        readModel(Services)
+    ]
+}
