@@ -6,14 +6,14 @@ import com.intellij.psi.FileViewProvider;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.intellij.language.sew.SewLanguage;
 
-public class ModulesFile extends PsiFileBase {
+public class DomainsFile extends PsiFileBase {
 
-  public ModulesFile(@NotNull FileViewProvider viewProvider) {
+  public DomainsFile(@NotNull FileViewProvider viewProvider) {
     super(viewProvider, SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull FileType getFileType() {
-    return ModulesFileType.INSTANCE;
+    return DomainsFileType.INSTANCE;
   }
 }

@@ -32,9 +32,9 @@ import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.Command;
+import org.setms.sew.core.domain.model.sdlc.Domains;
 import org.setms.sew.core.domain.model.sdlc.Event;
 import org.setms.sew.core.domain.model.sdlc.ExternalSystem;
-import org.setms.sew.core.domain.model.sdlc.Modules;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.Policy;
@@ -52,7 +52,7 @@ import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.domain.model.tool.UnresolvedObject;
-import org.setms.sew.core.domain.services.GenerateModulesFromUseCases;
+import org.setms.sew.core.domain.services.GenerateDomainsFromUseCases;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class UseCaseTool extends Tool {
@@ -103,7 +103,7 @@ public class UseCaseTool extends Tool {
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   private static final int LINE_HEIGHT = 16;
   private static final String CREATE_MISSING_STEP = "step.missing.create";
-  private static final String CREATE_MODULES = "modules.create";
+  private static final String CREATE_DOMAINS = "domains.create";
   private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
 
   @Override
@@ -146,10 +146,10 @@ public class UseCaseTool extends Tool {
         new Input<>(
             "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class),
         new Input<>(
-            "modules",
-            new Glob("src/main/architecture", "**/*.modules"),
+            "domains",
+            new Glob("src/main/architecture", "**/*.domains"),
             new SewFormat(),
-            Modules.class));
+            Domains.class));
   }
 
   @Override
@@ -175,14 +175,14 @@ public class UseCaseTool extends Tool {
                             inputs,
                             diagnostics)));
     if (!useCases.isEmpty()) {
-      var modules = inputs.get("modules", Modules.class);
-      if (modules.isEmpty()) {
+      var domains = inputs.get("domains", Domains.class);
+      if (domains.isEmpty()) {
         diagnostics.add(
             new Diagnostic(
                 WARN,
-                "Missing modules",
+                "Missing domains",
                 null,
-                List.of(new Suggestion(CREATE_MODULES, "Group into modules"))));
+                List.of(new Suggestion(CREATE_DOMAINS, "Group into domains"))));
       }
     }
   }
@@ -289,8 +289,8 @@ public class UseCaseTool extends Tool {
       Collection<Diagnostic> diagnostics) {
     if (CREATE_MISSING_STEP.equals(suggestionCode)) {
       createMissingStep(inputs, location, sink, diagnostics);
-    } else if (CREATE_MODULES.equals(suggestionCode)) {
-      createModules(inputs, sink, diagnostics);
+    } else if (CREATE_DOMAINS.equals(suggestionCode)) {
+      createDomains(inputs, sink, diagnostics);
     } else {
       super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
@@ -425,16 +425,16 @@ public class UseCaseTool extends Tool {
     return result.toString();
   }
 
-  private void createModules(
+  private void createDomains(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
-      var modules = new GenerateModulesFromUseCases().apply(inputs.get("useCases", UseCase.class));
-      var modulesSink =
-          normalize(sink).select("src/main/architecture/%s.modules".formatted(modules.getName()));
-      try (var output = modulesSink.open()) {
-        new SewFormat().newBuilder().build(modules, output);
+      var domains = new GenerateDomainsFromUseCases().apply(inputs.get("useCases", UseCase.class));
+      var domainsSink =
+          normalize(sink).select("src/main/architecture/%s.domains".formatted(domains.getName()));
+      try (var output = domainsSink.open()) {
+        new SewFormat().newBuilder().build(domains, output);
       }
-      diagnostics.add(sinkCreated(modulesSink));
+      diagnostics.add(sinkCreated(domainsSink));
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }

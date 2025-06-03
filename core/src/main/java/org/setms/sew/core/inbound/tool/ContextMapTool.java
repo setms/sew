@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.SwingConstants;
-import org.setms.sew.core.domain.model.sdlc.Modules;
+import org.setms.sew.core.domain.model.sdlc.Domains;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
@@ -25,7 +25,7 @@ import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class ContextMapTool extends Tool {
 
-  private static final String OUTPUT_PATH = "build/reports/modules";
+  private static final String OUTPUT_PATH = "build/reports/domains";
   private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";
   private static final String EDGE_POINT_STYLE =
       """
@@ -39,10 +39,10 @@ public class ContextMapTool extends Tool {
   public List<Input<?>> getInputs() {
     return List.of(
         new Input<>(
-            "modules",
-            new Glob("src/main/architecture", "**/*.modules"),
+            "domains",
+            new Glob("src/main/architecture", "**/*.domains"),
             new SewFormat(),
-            Modules.class),
+            Domains.class),
         new Input<>(
             "useCases",
             new Glob("src/main/requirements", "**/*.useCase"),
@@ -57,16 +57,16 @@ public class ContextMapTool extends Tool {
 
   @Override
   protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var output = sink.select("reports/modules");
-    inputs.get("modules", Modules.class).forEach(modules -> build(modules, output, diagnostics));
+    var output = sink.select("reports/domains");
+    inputs.get("domains", Domains.class).forEach(domains -> build(domains, output, diagnostics));
   }
 
-  private void build(Modules modules, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var report = sink.select(modules.getName() + ".html");
+  private void build(Domains domains, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    var report = sink.select(domains.getName() + ".html");
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      var image = build(modules, toGraph(modules), sink, diagnostics);
+      var image = build(domains, toGraph(domains), sink, diagnostics);
       writer.printf(
           "    <img src=\"%s\" width=\"100%%\">%n",
           report.toUri().resolve(".").normalize().relativize(image.toUri()));
@@ -77,12 +77,12 @@ public class ContextMapTool extends Tool {
     }
   }
 
-  private mxGraph toGraph(Modules modules) {
+  private mxGraph toGraph(Domains domains) {
     var result = new mxGraph();
     var edgeLabelPositions = new HashMap<mxCell, EdgeLabelPlacement>();
     result.getModel().beginUpdate();
     try {
-      buildGraph(modules, edgeLabelPositions, result);
+      buildGraph(domains, edgeLabelPositions, result);
       layoutGraph(edgeLabelPositions, result);
     } finally {
       result.getModel().endUpdate();
@@ -91,11 +91,11 @@ public class ContextMapTool extends Tool {
   }
 
   private void buildGraph(
-      Modules modules, Map<mxCell, EdgeLabelPlacement> edgeLabelPositions, mxGraph graph) {
-    var verticesByModule = new HashMap<Modules.Module, Object>();
-    modules.getModules().forEach(module -> verticesByModule.put(module, addVertex(module, graph)));
-    modules
-        .getModules()
+      Domains domains, Map<mxCell, EdgeLabelPlacement> edgeLabelPositions, mxGraph graph) {
+    var verticesByDomain = new HashMap<Domains.Domain, Object>();
+    domains.getDomains().forEach(domain -> verticesByDomain.put(domain, addVertex(domain, graph)));
+    domains
+        .getDomains()
         .forEach(
             source ->
                 source
@@ -103,19 +103,19 @@ public class ContextMapTool extends Tool {
                     .forEach(
                         pointer ->
                             addEdge(
-                                modules,
+                                domains,
                                 source,
                                 pointer,
-                                verticesByModule,
+                                verticesByDomain,
                                 graph,
                                 edgeLabelPositions)));
   }
 
-  private Object addVertex(Modules.Module module, mxGraph graph) {
+  private Object addVertex(Domains.Domain domain, mxGraph graph) {
     return graph.insertVertex(
         graph.getDefaultParent(),
         null,
-        wrap(module.getName(), MAX_TEXT_LENGTH),
+        wrap(domain.getName(), MAX_TEXT_LENGTH),
         0,
         0,
         120,
@@ -124,18 +124,18 @@ public class ContextMapTool extends Tool {
   }
 
   private void addEdge(
-      Modules modules,
-      Modules.Module source,
+      Domains domains,
+      Domains.Domain source,
       Pointer pointer,
-      Map<Modules.Module, Object> verticesByModule,
+      Map<Domains.Domain, Object> verticesByDomain,
       mxGraph graph,
       Map<mxCell, EdgeLabelPlacement> edgeLabelPositions) {
     pointer
-        .resolveFrom(modules.getModules())
+        .resolveFrom(domains.getDomains())
         .ifPresent(
             target -> {
-              var from = verticesByModule.get(source);
-              var to = verticesByModule.get(target);
+              var from = verticesByDomain.get(source);
+              var to = verticesByDomain.get(target);
               var edge = graph.insertEdge(graph.getDefaultParent(), null, "", from, to, EDGE_STYLE);
               addEdgeLabels(edge, edgeLabelPositions, graph);
             });

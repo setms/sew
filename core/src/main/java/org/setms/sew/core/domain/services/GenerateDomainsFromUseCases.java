@@ -27,13 +27,13 @@ import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
 import org.setms.sew.core.domain.model.dsm.Dependency;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
 import org.setms.sew.core.domain.model.dsm.StochasticGradientDescentClusteringAlgorithm;
+import org.setms.sew.core.domain.model.sdlc.Domains;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
-import org.setms.sew.core.domain.model.sdlc.Modules;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 
 @RequiredArgsConstructor
-public class GenerateModulesFromUseCases implements Function<Collection<UseCase>, Modules> {
+public class GenerateDomainsFromUseCases implements Function<Collection<UseCase>, Domains> {
 
   private static final String AGGREGATE = "aggregate";
   private static final String POLICY = "policy";
@@ -51,18 +51,18 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
 
   private final ClusteringAlgorithm<Pointer> clusteringAlgorithm;
 
-  public GenerateModulesFromUseCases() {
+  public GenerateDomainsFromUseCases() {
     this(new StochasticGradientDescentClusteringAlgorithm<>());
   }
 
   @Override
-  public Modules apply(Collection<UseCase> useCases) {
+  public Domains apply(Collection<UseCase> useCases) {
     if (useCases.isEmpty()) {
       throw new IllegalArgumentException("Missing use cases");
     }
     var dsm = dsmFrom(useCases);
     var clusters = findClustersIn(dsm);
-    return modulesFrom(useCases, clusters, packageFrom(useCases));
+    return domainsFrom(useCases, clusters, packageFrom(useCases));
   }
 
   private DesignStructureMatrix<Pointer> dsmFrom(Collection<UseCase> useCases) {
@@ -215,46 +215,46 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
         .getFirst();
   }
 
-  private Modules modulesFrom(
+  private Domains domainsFrom(
       Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters, String packageName) {
-    return new Modules(toFullyQualifiedName(packageName))
-        .setModules(modulesFor(packageName, useCases, clusters));
+    return new Domains(toFullyQualifiedName(packageName))
+        .setDomains(domainsFor(packageName, useCases, clusters));
   }
 
   private FullyQualifiedName toFullyQualifiedName(String packageName) {
     return new FullyQualifiedName("%s.%s".formatted(packageName, initUpper(packageName)));
   }
 
-  private List<Modules.Module> modulesFor(
+  private List<Domains.Domain> domainsFor(
       String packageName, Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters) {
     var contracts = new TreeSet<Pointer>();
-    var clustersByModule = new HashMap<Cluster<Pointer>, Modules.Module>();
+    var clustersByDomain = new HashMap<Cluster<Pointer>, Domains.Domain>();
     var result =
         clusters.stream()
             .map(
                 cluster -> {
-                  var module = toModule(useCases, packageName, cluster);
-                  clustersByModule.put(cluster, module);
-                  return module;
+                  var domain = toDomain(useCases, packageName, cluster);
+                  clustersByDomain.put(cluster, domain);
+                  return domain;
                 })
             .collect(toList());
-    addDependencies(clustersByModule);
+    addDependencies(clustersByDomain);
     result = simplify(result);
     addEvents(useCases, clusters, contracts);
     if (!contracts.isEmpty()) {
       if (result.size() == 1) {
         result.getFirst().getContent().addAll(contracts);
       } else {
-        result.add(toContractsModule(packageName, contracts));
+        result.add(toContractsDomain(packageName, contracts));
       }
     }
     return result;
   }
 
-  private Modules.Module toModule(
+  private Domains.Domain toDomain(
       Collection<UseCase> useCases, String packageName, Cluster<Pointer> currentCluster) {
     addCommands(useCases, currentCluster);
-    return new Modules.Module(
+    return new Domains.Domain(
             new FullyQualifiedName("%s.%s".formatted(packageName, nameFor(currentCluster))))
         .setContent(currentCluster);
   }
@@ -339,8 +339,8 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
     return result;
   }
 
-  private Modules.Module toContractsModule(String packageName, Set<Pointer> content) {
-    return new Modules.Module(new FullyQualifiedName("%s.Contracts".formatted(packageName)))
+  private Domains.Domain toContractsDomain(String packageName, Set<Pointer> content) {
+    return new Domains.Domain(new FullyQualifiedName("%s.Contracts".formatted(packageName)))
         .setContent(content);
   }
 
@@ -356,56 +356,56 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
     return result;
   }
 
-  private void addDependencies(Map<Cluster<Pointer>, Modules.Module> clustersByModule) {
-    clustersByModule.forEach(
-        ((cluster, module) -> {
+  private void addDependencies(Map<Cluster<Pointer>, Domains.Domain> clustersByDomain) {
+    clustersByDomain.forEach(
+        ((cluster, domain) -> {
           var dependencies =
               cluster.getDependencies().stream()
-                  .map(clustersByModule::get)
-                  .map(bc -> new Pointer("module", bc.getName()))
+                  .map(clustersByDomain::get)
+                  .map(bc -> new Pointer("domain", bc.getName()))
                   .collect(toSet());
           if (!dependencies.isEmpty()) {
-            module.setDependsOn(dependencies);
+            domain.setDependsOn(dependencies);
           }
         }));
   }
 
-  private List<Modules.Module> simplify(List<Modules.Module> modules) {
+  private List<Domains.Domain> simplify(List<Domains.Domain> domains) {
     var candidatesForMerging =
-        modules.stream()
-            .filter(module -> !module.dependsOn().isEmpty() && module.dependsOn().size() <= 2)
-            .filter(module -> module.getContent().stream().noneMatch(c -> c.isType(AGGREGATE)))
+        domains.stream()
+            .filter(domain -> !domain.dependsOn().isEmpty() && domain.dependsOn().size() <= 2)
+            .filter(domain -> domain.getContent().stream().noneMatch(c -> c.isType(AGGREGATE)))
             .toList();
     candidatesForMerging.forEach(
-        module -> {
-          if (module.dependsOn().size() == 1) {
-            var dependsOn = module.dependsOn().iterator().next().resolveFrom(modules).orElseThrow();
-            merge(module, dependsOn, modules);
+        domain -> {
+          if (domain.dependsOn().size() == 1) {
+            var dependsOn = domain.dependsOn().iterator().next().resolveFrom(domains).orElseThrow();
+            merge(domain, dependsOn, domains);
           } else {
             var depends =
-                module.dependsOn().stream().map(p -> p.resolveFrom(modules).orElseThrow()).toList();
+                domain.dependsOn().stream().map(p -> p.resolveFrom(domains).orElseThrow()).toList();
             var d1 = depends.getFirst();
             var d2 = depends.getLast();
-            if (dependsOn(d1, d2, modules)) {
-              merge(module, d2, modules);
-            } else if (dependsOn(d2, d1, modules)) {
-              merge(module, d1, modules);
+            if (dependsOn(d1, d2, domains)) {
+              merge(domain, d2, domains);
+            } else if (dependsOn(d2, d1, domains)) {
+              merge(domain, d1, domains);
             }
           }
         });
-    Collections.sort(modules);
-    return modules;
+    Collections.sort(domains);
+    return domains;
   }
 
-  private void merge(Modules.Module module, Modules.Module into, List<Modules.Module> modules) {
-    into.getContent().addAll(module.getContent());
-    modules.remove(module);
+  private void merge(Domains.Domain domain, Domains.Domain into, List<Domains.Domain> domains) {
+    into.getContent().addAll(domain.getContent());
+    domains.remove(domain);
   }
 
   private boolean dependsOn(
-      Modules.Module module, Modules.Module candidate, List<Modules.Module> modules) {
-    return module.dependsOn().stream()
-        .map(p -> p.resolveFrom(modules).orElseThrow())
+      Domains.Domain domain, Domains.Domain candidate, List<Domains.Domain> domains) {
+    return domain.dependsOn().stream()
+        .map(p -> p.resolveFrom(domains).orElseThrow())
         .anyMatch(candidate::equals);
   }
 }

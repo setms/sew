@@ -7,32 +7,32 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.setms.sew.intellij.language.sew.SewLanguage;
 
-public class ModulesFileType extends LanguageFileType {
+public class DomainsFileType extends LanguageFileType {
 
-  public static final ModulesFileType INSTANCE = new ModulesFileType();
+  public static final DomainsFileType INSTANCE = new DomainsFileType();
 
-  private ModulesFileType() {
+  private DomainsFileType() {
     super(SewLanguage.INSTANCE);
   }
 
   @Override
   public @NotNull String getName() {
-    return "Modules";
+    return "Domains";
   }
 
   @Override
   public @Nls @NotNull String getDisplayName() {
-    return "modules";
+    return "Domains";
   }
 
   @Override
   public @NotNull String getDescription() {
-    return "Modules";
+    return "Domains";
   }
 
   @Override
   public @NotNull String getDefaultExtension() {
-    return "modules";
+    return "domains";
   }
 
   @Override

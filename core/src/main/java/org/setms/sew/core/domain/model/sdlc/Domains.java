@@ -16,11 +16,11 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Modules extends NamedObject {
+public class Domains extends NamedObject {
 
-  @NotEmpty private List<Module> modules;
+  @NotEmpty private List<Domain> domains;
 
-  public Modules(FullyQualifiedName fullyQualifiedName) {
+  public Domains(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 
@@ -29,12 +29,12 @@ public class Modules extends NamedObject {
   @Accessors(chain = true)
   @ToString(callSuper = true)
   @EqualsAndHashCode(callSuper = true)
-  public static class Module extends NamedObject {
+  public static class Domain extends NamedObject {
 
     @NotEmpty private Set<Pointer> content;
     private Set<Pointer> dependsOn;
 
-    public Module(FullyQualifiedName fullyQualifiedName) {
+    public Domain(FullyQualifiedName fullyQualifiedName) {
       super(fullyQualifiedName);
     }
 

@@ -136,7 +136,7 @@ class UseCaseToolTest {
 
   @Test
   void shouldBuildComplexUseCaseWithoutProblems() {
-    var testDir = new File(baseDir, "../modules/gdpr");
+    var testDir = new File(baseDir, "../domains/gdpr");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
 
@@ -146,7 +146,7 @@ class UseCaseToolTest {
   }
 
   @Test
-  void shouldCreateModules() {
+  void shouldCreateDomains() {
     var testDir = new File(baseDir, "valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
@@ -155,12 +155,12 @@ class UseCaseToolTest {
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
-        actual.stream().filter(d -> d.message().equals("Missing modules")).findFirst();
-    assertThat(maybeDiagnostic).as("Warning about missing modules").isPresent();
+        actual.stream().filter(d -> d.message().equals("Missing domains")).findFirst();
+    assertThat(maybeDiagnostic).as("Warning about missing domains").isPresent();
     var diagnostic = maybeDiagnostic.get();
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
-    assertThat(suggestion.message()).isEqualTo("Group into modules");
+    assertThat(suggestion.message()).isEqualTo("Group into domains");
     actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
     assertThat(actual).hasSize(1);
     diagnostic = actual.getFirst();

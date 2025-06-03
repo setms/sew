@@ -18,12 +18,12 @@ import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 @SuppressWarnings("unchecked")
-class GenerateModulesFromUseCasesTest {
+class GenerateDomainsFromUseCasesTest {
 
   private final ClusteringAlgorithm<Pointer> clusteringAlgorithm = mock(ClusteringAlgorithm.class);
 
   @Test
-  void shouldGenerateModules() throws IOException {
+  void shouldGenerateDomains() throws IOException {
     var useCase = loadUseCase();
     when(clusteringAlgorithm.apply(any(DesignStructureMatrix.class)))
         .thenAnswer(
@@ -32,9 +32,9 @@ class GenerateModulesFromUseCasesTest {
               return new Clusters<Pointer>(dsm.getElements()).all();
             });
 
-    var actual = new GenerateModulesFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
+    var actual = new GenerateDomainsFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
 
-    assertThat(actual.getModules()).hasSize(1);
+    assertThat(actual.getDomains()).hasSize(1);
     var dsmCaptor = ArgumentCaptor.forClass(DesignStructureMatrix.class);
     verify(clusteringAlgorithm).apply(dsmCaptor.capture());
     var dsm = dsmCaptor.getValue();
