@@ -10,6 +10,7 @@ import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -237,11 +238,16 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
                   return module;
                 })
             .collect(toList());
+    addDependencies(clustersByModule);
+    result = simplify(result);
     addEvents(useCases, clusters, contracts);
     if (!contracts.isEmpty()) {
-      result.add(toContractsModule(packageName, contracts));
+      if (result.size() == 1) {
+        result.getFirst().getContent().addAll(contracts);
+      } else {
+        result.add(toContractsModule(packageName, contracts));
+      }
     }
-    addDependencies(clustersByModule);
     return result;
   }
 
@@ -362,5 +368,44 @@ public class GenerateModulesFromUseCases implements Function<Collection<UseCase>
             module.setDependsOn(dependencies);
           }
         }));
+  }
+
+  private List<Modules.Module> simplify(List<Modules.Module> modules) {
+    var candidatesForMerging =
+        modules.stream()
+            .filter(module -> !module.dependsOn().isEmpty() && module.dependsOn().size() <= 2)
+            .filter(module -> module.getContent().stream().noneMatch(c -> c.isType(AGGREGATE)))
+            .toList();
+    candidatesForMerging.forEach(
+        module -> {
+          if (module.dependsOn().size() == 1) {
+            var dependsOn = module.dependsOn().iterator().next().resolveFrom(modules).orElseThrow();
+            merge(module, dependsOn, modules);
+          } else {
+            var depends =
+                module.dependsOn().stream().map(p -> p.resolveFrom(modules).orElseThrow()).toList();
+            var d1 = depends.getFirst();
+            var d2 = depends.getLast();
+            if (dependsOn(d1, d2, modules)) {
+              merge(module, d2, modules);
+            } else if (dependsOn(d2, d1, modules)) {
+              merge(module, d1, modules);
+            }
+          }
+        });
+    Collections.sort(modules);
+    return modules;
+  }
+
+  private void merge(Modules.Module module, Modules.Module into, List<Modules.Module> modules) {
+    into.getContent().addAll(module.getContent());
+    modules.remove(module);
+  }
+
+  private boolean dependsOn(
+      Modules.Module module, Modules.Module candidate, List<Modules.Module> modules) {
+    return module.dependsOn().stream()
+        .map(p -> p.resolveFrom(modules).orElseThrow())
+        .anyMatch(candidate::equals);
   }
 }

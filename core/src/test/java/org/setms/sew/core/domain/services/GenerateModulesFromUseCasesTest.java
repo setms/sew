@@ -3,11 +3,13 @@ package org.setms.sew.core.domain.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
 import org.setms.sew.core.domain.model.dsm.Clusters;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
@@ -32,15 +34,11 @@ class GenerateModulesFromUseCasesTest {
 
     var actual = new GenerateModulesFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
 
-    assertThat(actual.getPackage()).isEqualTo("valid");
-    assertThat(actual.getName()).isEqualTo("Valid");
-    assertThat(actual.getModules())
-        .hasSizeBetween(4, 5)
-        .allSatisfy(
-            context -> {
-              assertThat(context.getPackage()).isEqualTo("valid");
-              assertThat(context.getContent()).isNotEmpty();
-            });
+    assertThat(actual.getModules()).hasSize(1);
+    var dsmCaptor = ArgumentCaptor.forClass(DesignStructureMatrix.class);
+    verify(clusteringAlgorithm).apply(dsmCaptor.capture());
+    var dsm = dsmCaptor.getValue();
+    assertThat(dsm.getElements()).hasSize(4);
   }
 
   private UseCase loadUseCase() throws IOException {

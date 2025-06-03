@@ -155,12 +155,12 @@ class UseCaseToolTest {
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
-        actual.stream().filter(d -> d.message().equals("Missing context map")).findFirst();
-    assertThat(maybeDiagnostic).as("Warning about missing context map").isPresent();
+        actual.stream().filter(d -> d.message().equals("Missing modules")).findFirst();
+    assertThat(maybeDiagnostic).as("Warning about missing modules").isPresent();
     var diagnostic = maybeDiagnostic.get();
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
-    assertThat(suggestion.message()).isEqualTo("Create context map");
+    assertThat(suggestion.message()).isEqualTo("Group into modules");
     actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
     assertThat(actual).hasSize(1);
     diagnostic = actual.getFirst();
