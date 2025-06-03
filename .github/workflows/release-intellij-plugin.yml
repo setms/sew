@@ -23,7 +23,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Build IntelliJ plugin
-        run: ./gradlew :intellij:buildPlugin
+        run: ./gradlew check :intellij:buildPlugin
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
