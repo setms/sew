@@ -14,7 +14,7 @@ scenario InvalidUserRequestsDataDeletion {
         aggregate(Requests),
         event(RequestReceived),
         readModel(Requests),
-        user(CustomerSupport, reads=readModel(Users)),
+        user(CustomerSupportAgent, reads=readModel(Users)),
         command(DenyRequest),
         aggregate(Requests),
         event(RequestDenied),
@@ -31,7 +31,7 @@ scenario UnknownUserRequestsDataDeletion {
         aggregate(Requests),
         event(RequestReceived),
         readModel(Requests),
-        user(CustomerSupport, reads=readModel(Users)),
+        user(CustomerSupportAgent, reads=readModel(Users)),
         command(StartRequest),
         aggregate(Requests),
         event(RequestStarted)

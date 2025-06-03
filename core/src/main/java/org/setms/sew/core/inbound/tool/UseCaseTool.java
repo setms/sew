@@ -105,6 +105,7 @@ public class UseCaseTool extends Tool {
   private static final String CREATE_MISSING_STEP = "step.missing.create";
   private static final String CREATE_DOMAINS = "domains.create";
   private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
+  private JLanguageTool languageTool;
 
   @Override
   public List<Input<?>> getInputs() {
@@ -473,12 +474,16 @@ public class UseCaseTool extends Tool {
                     "    <img src=\"%s\"/>%n",
                     report.toUri().resolve(".").normalize().relativize(image.toUri()));
                 writer.println("    <ol>");
-                writer.print("      <li>");
-                writer.print(
-                    String.join(
-                        "</li>%s      <li>".formatted(System.lineSeparator()),
-                        describeSteps(scenario.getSteps(), inputs)));
-                writer.println("</li>");
+                describeSteps(scenario.getSteps(), inputs)
+                    .forEach(
+                        sentence -> {
+                          writer.print("      <li");
+                          if (!sentence.valid()) {
+                            writer.print(" style='color: #d32f2f;'");
+                          }
+                          writer.printf(">%s", sentence.text());
+                          writer.println("</li>");
+                        });
                 writer.println("    </ol>");
               });
       writer.println("  </body>");
@@ -607,8 +612,8 @@ public class UseCaseTool extends Tool {
         VERTEX_STYLE.formatted(url.toExternalForm()));
   }
 
-  private List<String> describeSteps(List<Pointer> steps, ResolvedInputs context) {
-    var result = new ArrayList<String>();
+  private List<Sentence> describeSteps(List<Pointer> steps, ResolvedInputs context) {
+    var result = new ArrayList<Sentence>();
     var inputs = new ArrayList<NamedObject>();
     Optional<Actor> actor = Optional.empty();
     var resolvedSteps = steps.stream().map(context::resolve).toList();
@@ -617,8 +622,7 @@ public class UseCaseTool extends Tool {
         var description = actor.get().getDescription(step);
         if (description.isPresent()) {
           var sentence = description.get();
-          validate(sentence);
-          result.add(sentence);
+          result.add(validate(sentence));
           inputs.clear();
           actor = Optional.empty();
         }
@@ -631,23 +635,45 @@ public class UseCaseTool extends Tool {
         }
       }
     }
-    actor.map(Actor::finishDescription).ifPresent(result::add);
+    actor.map(Actor::finishDescription).map(this::validate).ifPresent(result::add);
     return result;
   }
 
-  private void validate(String sentence) {
-    var langTool = new JLanguageTool(Languages.getLanguageForShortCode("en"));
+  private Sentence validate(String text) {
+    var sentence = text;
+    var valid = true;
+    var langTool = getLanguageTool();
     try {
       var matches = langTool.check(sentence);
       for (var match : matches) {
-        System.err.printf(
-            "Potential error in sentence '%s' at characters %d-%d: %s%n",
-            sentence, match.getFromPos(), match.getToPos(), match.getMessage());
-        System.err.println("- Suggested correction(s): " + match.getSuggestedReplacements());
+        var replacement = match.getSuggestedReplacements().getFirst();
+        if (replacement.equalsIgnoreCase(
+            sentence.substring(match.getFromPos(), match.getToPos()))) {
+          // Ignore changes in case only
+          continue;
+        }
+        var improvement =
+            validate(
+                sentence.substring(0, match.getFromPos())
+                    + replacement
+                    + sentence.substring(match.getToPos()));
+        if (improvement.valid()) {
+          sentence = improvement.text();
+        } else {
+          valid = false;
+        }
       }
     } catch (IOException e) {
       System.err.println("Error checking grammar: " + e.getMessage());
     }
+    return new Sentence(sentence, valid);
+  }
+
+  private JLanguageTool getLanguageTool() {
+    if (languageTool == null) {
+      languageTool = new JLanguageTool(Languages.getLanguageForShortCode("en-US"));
+    }
+    return languageTool;
   }
 
   @Getter(AccessLevel.PROTECTED)
@@ -794,4 +820,6 @@ public class UseCaseTool extends Tool {
       }
     }
   }
+
+  private record Sentence(String text, boolean valid) {}
 }
