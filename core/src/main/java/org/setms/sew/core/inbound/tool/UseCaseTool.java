@@ -32,7 +32,7 @@ import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.Command;
-import org.setms.sew.core.domain.model.sdlc.Domains;
+import org.setms.sew.core.domain.model.sdlc.Domain;
 import org.setms.sew.core.domain.model.sdlc.Event;
 import org.setms.sew.core.domain.model.sdlc.ExternalSystem;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
@@ -52,7 +52,7 @@ import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.domain.model.tool.UnresolvedObject;
-import org.setms.sew.core.domain.services.GenerateDomainsFromUseCases;
+import org.setms.sew.core.domain.services.GenerateDomainFromUseCases;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class UseCaseTool extends Tool {
@@ -103,7 +103,7 @@ public class UseCaseTool extends Tool {
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   private static final int LINE_HEIGHT = 16;
   private static final String CREATE_MISSING_STEP = "step.missing.create";
-  private static final String CREATE_DOMAINS = "domains.create";
+  private static final String CREATE_DOMAIN = "domain.create";
   private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
   private JLanguageTool languageTool;
 
@@ -148,9 +148,9 @@ public class UseCaseTool extends Tool {
             "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class),
         new Input<>(
             "domains",
-            new Glob("src/main/architecture", "**/*.domains"),
+            new Glob("src/main/architecture", "**/*.domain"),
             new SewFormat(),
-            Domains.class));
+            Domain.class));
   }
 
   @Override
@@ -176,14 +176,14 @@ public class UseCaseTool extends Tool {
                             inputs,
                             diagnostics)));
     if (!useCases.isEmpty()) {
-      var domains = inputs.get("domains", Domains.class);
+      var domains = inputs.get("domains", Domain.class);
       if (domains.isEmpty()) {
         diagnostics.add(
             new Diagnostic(
                 WARN,
-                "Missing domains",
+                "Missing domain",
                 null,
-                List.of(new Suggestion(CREATE_DOMAINS, "Group into domains"))));
+                List.of(new Suggestion(CREATE_DOMAIN, "Split domain into sub-domains"))));
       }
     }
   }
@@ -290,7 +290,7 @@ public class UseCaseTool extends Tool {
       Collection<Diagnostic> diagnostics) {
     if (CREATE_MISSING_STEP.equals(suggestionCode)) {
       createMissingStep(inputs, location, sink, diagnostics);
-    } else if (CREATE_DOMAINS.equals(suggestionCode)) {
+    } else if (CREATE_DOMAIN.equals(suggestionCode)) {
       createDomains(inputs, sink, diagnostics);
     } else {
       super.apply(suggestionCode, inputs, location, sink, diagnostics);
@@ -429,13 +429,13 @@ public class UseCaseTool extends Tool {
   private void createDomains(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
-      var domains = new GenerateDomainsFromUseCases().apply(inputs.get("useCases", UseCase.class));
-      var domainsSink =
-          normalize(sink).select("src/main/architecture/%s.domains".formatted(domains.getName()));
-      try (var output = domainsSink.open()) {
-        new SewFormat().newBuilder().build(domains, output);
+      var domain = new GenerateDomainFromUseCases().apply(inputs.get("useCases", UseCase.class));
+      var domainSink =
+          normalize(sink).select("src/main/architecture/%s.domain".formatted(domain.getName()));
+      try (var output = domainSink.open()) {
+        new SewFormat().newBuilder().build(domain, output);
       }
-      diagnostics.add(sinkCreated(domainsSink));
+      diagnostics.add(sinkCreated(domainSink));
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }

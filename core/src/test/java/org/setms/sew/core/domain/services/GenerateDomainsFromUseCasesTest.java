@@ -32,9 +32,9 @@ class GenerateDomainsFromUseCasesTest {
               return new Clusters<Pointer>(dsm.getElements()).all();
             });
 
-    var actual = new GenerateDomainsFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
+    var actual = new GenerateDomainFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
 
-    assertThat(actual.getDomains()).hasSize(1);
+    assertThat(actual.getSubDomains()).hasSize(1);
     var dsmCaptor = ArgumentCaptor.forClass(DesignStructureMatrix.class);
     verify(clusteringAlgorithm).apply(dsmCaptor.capture());
     var dsm = dsmCaptor.getValue();

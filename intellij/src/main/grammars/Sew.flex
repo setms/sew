@@ -18,7 +18,7 @@ import static org.setms.sew.intellij.SewElementTypes.*;
 COMMENT="#"[^\r\n]*[\r\n]+
 IDENTIFIER=[a-z][a-zA-Z]*
 STRING=\"([^\"\r\n]*)\"
-TYPE=(aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|decision|domain|domains|entity|event|externalSystem|field|hotspot|owner|policy|readModel|scenario|screen|scope|term|useCase|user|userRequirement|valueObject)
+TYPE=(aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|decision|domain|entity|event|externalSystem|field|hotspot|owner|policy|readModel|scenario|screen|scope|subDomain|term|useCase|user|userRequirement|valueObject)
 NAME=[A-Z][a-zA-Z0-9]*
 WHITE_SPACE=[ \t]+
 NEWLINE=[\r\n]+

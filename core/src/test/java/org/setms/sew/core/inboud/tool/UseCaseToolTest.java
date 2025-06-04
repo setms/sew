@@ -155,12 +155,12 @@ class UseCaseToolTest {
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
-        actual.stream().filter(d -> d.message().equals("Missing domains")).findFirst();
-    assertThat(maybeDiagnostic).as("Warning about missing domains").isPresent();
+        actual.stream().filter(d -> d.message().equals("Missing domain")).findFirst();
+    assertThat(maybeDiagnostic).as("Warning about missing domain").isPresent();
     var diagnostic = maybeDiagnostic.get();
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
-    assertThat(suggestion.message()).isEqualTo("Group into domains");
+    assertThat(suggestion.message()).isEqualTo("Split domain into sub-domains");
     actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
     assertThat(actual).hasSize(1);
     diagnostic = actual.getFirst();

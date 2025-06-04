@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.SwingConstants;
-import org.setms.sew.core.domain.model.sdlc.Domains;
+import org.setms.sew.core.domain.model.sdlc.Domain;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
@@ -32,9 +32,9 @@ public class DomainsTool extends Tool {
     return List.of(
         new Input<>(
             "domains",
-            new Glob("src/main/architecture", "**/*.domains"),
+            new Glob("src/main/architecture", "**/*.domain"),
             new SewFormat(),
-            Domains.class),
+            Domain.class),
         new Input<>(
             "useCases",
             new Glob("src/main/requirements", "**/*.useCase"),
@@ -50,15 +50,15 @@ public class DomainsTool extends Tool {
   @Override
   protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var output = sink.select("reports/domains");
-    inputs.get("domains", Domains.class).forEach(domains -> build(domains, output, diagnostics));
+    inputs.get("domains", Domain.class).forEach(domain -> build(domain, output, diagnostics));
   }
 
-  private void build(Domains domains, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var report = sink.select(domains.getName() + ".html");
+  private void build(Domain domain, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    var report = sink.select(domain.getName() + ".html");
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      var image = build(domains, toGraph(domains), sink, diagnostics);
+      var image = build(domain, toGraph(domain), sink, diagnostics);
       writer.printf(
           "    <img src=\"%s\" width=\"100%%\">%n",
           report.toUri().resolve(".").normalize().relativize(image.toUri()));
@@ -69,11 +69,11 @@ public class DomainsTool extends Tool {
     }
   }
 
-  private mxGraph toGraph(Domains domains) {
+  private mxGraph toGraph(Domain domain) {
     var result = new mxGraph();
     result.getModel().beginUpdate();
     try {
-      buildGraph(domains, result);
+      buildGraph(domain, result);
       layoutGraph(result);
     } finally {
       result.getModel().endUpdate();
@@ -81,20 +81,21 @@ public class DomainsTool extends Tool {
     return result;
   }
 
-  private void buildGraph(Domains domains, mxGraph graph) {
-    var verticesByDomain = new HashMap<Domains.Domain, Object>();
-    domains.getDomains().forEach(domain -> verticesByDomain.put(domain, addVertex(domain, graph)));
-    domains
-        .getDomains()
+  private void buildGraph(Domain domain, mxGraph graph) {
+    var verticesByDomain = new HashMap<Domain.SubDomain, Object>();
+    domain
+        .getSubDomains()
+        .forEach(subDomain -> verticesByDomain.put(subDomain, addVertex(subDomain, graph)));
+    domain
+        .getSubDomains()
         .forEach(
             source ->
                 source
                     .dependsOn()
-                    .forEach(
-                        pointer -> addEdge(domains, source, pointer, verticesByDomain, graph)));
+                    .forEach(pointer -> addEdge(domain, source, pointer, verticesByDomain, graph)));
   }
 
-  private Object addVertex(Domains.Domain domain, mxGraph graph) {
+  private Object addVertex(Domain.SubDomain domain, mxGraph graph) {
     return graph.insertVertex(
         graph.getDefaultParent(),
         null,
@@ -107,13 +108,13 @@ public class DomainsTool extends Tool {
   }
 
   private void addEdge(
-      Domains domains,
-      Domains.Domain source,
+      Domain domain,
+      Domain.SubDomain source,
       Pointer pointer,
-      Map<Domains.Domain, Object> verticesByDomain,
+      Map<Domain.SubDomain, Object> verticesByDomain,
       mxGraph graph) {
     pointer
-        .resolveFrom(domains.getDomains())
+        .resolveFrom(domain.getSubDomains())
         .ifPresent(
             target -> {
               var from = verticesByDomain.get(source);
