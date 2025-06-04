@@ -7,7 +7,7 @@ useCase UpdateUsers {
 
 scenario UpdateUsers {
     title       = "Apps notify about user updates"
-    description = "Our applications keep us up-to-date, so we can check user identities."
+    description = "Our applications inform us about user changes, so we can let customer support agents check user identities."
     steps       = [
         externalSystem(App),
         event(UserUpdated),

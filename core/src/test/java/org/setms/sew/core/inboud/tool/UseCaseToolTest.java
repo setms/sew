@@ -29,7 +29,7 @@ class UseCaseToolTest {
         <p>This is the happy path scenario, where everything goes according to plan.</p>
         <img src="HappyPath.png"/>
         <ol>
-          <li>The donald, looking at the info, does it.</li>
+          <li>A donald, looking at the info, does it.</li>
           <li>The system does it again.</li>
           <li>The system updates the info.</li>
         </ol>
@@ -160,7 +160,7 @@ class UseCaseToolTest {
     var diagnostic = maybeDiagnostic.get();
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
-    assertThat(suggestion.message()).isEqualTo("Split domain into sub-domains");
+    assertThat(suggestion.message()).isEqualTo("Discover subdomains");
     actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
     assertThat(actual).hasSize(1);
     diagnostic = actual.getFirst();

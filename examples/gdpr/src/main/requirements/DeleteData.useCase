@@ -6,10 +6,10 @@ useCase DeleteData {
 }
 
 scenario InvalidUserRequestsDataDeletion {
-    title       = "Non-user requests data deletion"
+    title       = "Nonuser requests data deletion"
     description = "When someone who's not a user of our applications requests data deletion, customer support denies the request."
     steps       = [
-        user(NonUser),
+        user(Nonuser),
         command(RequestDataDeletion),
         aggregate(Requests),
         event(RequestReceived),

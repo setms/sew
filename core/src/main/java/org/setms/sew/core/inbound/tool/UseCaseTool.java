@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ import lombok.Setter;
 import org.atteo.evo.inflector.English;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Languages;
+import org.setms.sew.core.domain.model.format.Strings;
 import org.setms.sew.core.domain.model.sdlc.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.Command;
@@ -183,7 +186,7 @@ public class UseCaseTool extends Tool {
                 WARN,
                 "Missing domain",
                 null,
-                List.of(new Suggestion(CREATE_DOMAIN, "Split domain into sub-domains"))));
+                List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
       }
     }
   }
@@ -621,13 +624,13 @@ public class UseCaseTool extends Tool {
       if (actor.isPresent()) {
         var description = actor.get().getDescription(step);
         if (description.isPresent()) {
-          var sentence = description.get();
-          result.add(validate(sentence));
+          var sentence = validate(description.get());
+          result.add(sentence);
           inputs.clear();
           actor = Optional.empty();
         }
       } else {
-        actor = Actor.from(step);
+        actor = Actor.from(step, false);
         if (actor.isEmpty()) {
           inputs.add(step);
         } else {
@@ -636,6 +639,15 @@ public class UseCaseTool extends Tool {
       }
     }
     actor.map(Actor::finishDescription).map(this::validate).ifPresent(result::add);
+    if (inputs.size() == 1) {
+      Actor.from(inputs.getFirst(), true)
+          .map(Actor::finishDescription)
+          .map(this::validate)
+          .ifPresentOrElse(
+              result::add, () -> System.err.printf("Unhandled final step %s%n", inputs.getFirst()));
+    } else if (!inputs.isEmpty()) {
+      System.err.printf("Additional unhandled steps: %s%n", inputs);
+    }
     return result;
   }
 
@@ -683,13 +695,22 @@ public class UseCaseTool extends Tool {
     private final String name;
     @Setter private List<NamedObject> input;
 
-    public static Optional<Actor> from(NamedObject step) {
+    public static Optional<Actor> from(NamedObject step, boolean atEnd) {
       if (isType(step, User.class)) {
         var userName = friendlyName(step, User.class, User::getDisplay);
         return Optional.of(new UserActor(userName));
       }
+      if (isType(step, ExternalSystem.class)) {
+        var externalSystemName =
+            friendlyName(step, ExternalSystem.class, ExternalSystem::getDisplay);
+        return Optional.of(new ExternalSystemActor(externalSystemName));
+      }
       if (isType(step, Aggregate.class) || isType(step, Policy.class)) {
         return Optional.of(new SystemActor());
+      }
+      if (atEnd && isType(step, ReadModel.class)) {
+        var readModelName = friendlyName(step, ReadModel.class, ReadModel::getDisplay);
+        return Optional.of(new ReadModelActor(readModelName));
       }
       return Optional.empty();
     }
@@ -706,7 +727,7 @@ public class UseCaseTool extends Tool {
       return friendlyName(result == null ? source.getName() : result);
     }
 
-    private static String friendlyName(String name) {
+    protected static String friendlyName(String name) {
       var result = new StringBuilder(name);
       for (var i = 1; i < result.length(); i++) {
         if (Character.isUpperCase(result.charAt(i))) {
@@ -740,8 +761,14 @@ public class UseCaseTool extends Tool {
       }
 
       private String userIssues(String command) {
-        return "The %s%s %s."
-            .formatted(initLower(getName()), describeInputs(), commandToText(command));
+        var user = initLower(getName());
+        return "%s %s%s %s."
+            .formatted(indefiniteArticleFor(user), user, describeInputs(), commandToText(command));
+      }
+
+      private String indefiniteArticleFor(String noun) {
+        // Not 100%, but sentence validation will correct exceptions
+        return Stream.of("a", "e", "i", "o").anyMatch(noun::startsWith) ? "An" : "A";
       }
 
       private String describeInputs() {
@@ -763,14 +790,26 @@ public class UseCaseTool extends Tool {
     }
 
     private static String commandToText(String command) {
-      var result = initLower(command);
-      var index = result.indexOf(' ');
-      if (index > 0 && result.charAt(index - 1) != 's') {
-        result = result.substring(0, index) + "s" + result.substring(index);
+      var words =
+          Arrays.stream(command.split("\\s"))
+              .map(Strings::initLower)
+              .map(word -> word.equals("my") ? "their" : word)
+              .collect(Collectors.toCollection(ArrayList::new));
+      words.set(0, inflect(words.getFirst()));
+      if (words.size() > 1 && !"the".equals(words.get(1)) && !"it".equals(words.get(1))) {
+        words.add(1, "the");
       }
-      index = result.indexOf(" my ");
-      if (index > 0) {
-        result = result.substring(0, index) + " their " + result.substring(index + 4);
+      return String.join(" ", words);
+    }
+
+    private static String inflect(String verb) {
+      var result = verb;
+      if (result.endsWith("y")) {
+        result = result.substring(0, result.length() - 1) + "ies";
+      } else if (result.endsWith("o") || result.endsWith("sh")) {
+        result = result + "es";
+      } else if (!result.endsWith("s")) {
+        result = result + "s";
       }
       return result;
     }
@@ -801,7 +840,7 @@ public class UseCaseTool extends Tool {
         var action = actions.getLast();
         if (isType(action, Event.class)) {
           var response = friendlyName(action, Event.class, event -> event.getPayload().getId());
-          return "%s responds with the %s.".formatted(getName(), initLower(response));
+          return "%s responds that the %s.".formatted(getName(), initLower(response));
         }
         return actions.isEmpty() ? null : "%s does nothing.".formatted(getName());
       }
@@ -817,6 +856,51 @@ public class UseCaseTool extends Tool {
           return "%s updates the %s.".formatted(getName(), initLower(readModelText));
         }
         throw new IllegalStateException("Unknown last action: " + last.getClass().getSimpleName());
+      }
+    }
+
+    private static class ExternalSystemActor extends Actor {
+
+      public ExternalSystemActor(String externalSystemName) {
+        super(externalSystemName);
+      }
+
+      @Override
+      public Optional<String> getDescription(NamedObject eventStormElement) {
+        if (isType(eventStormElement, Event.class)) {
+          var event = initLower(friendlyName(eventStormElement.getName()));
+          return Optional.of(
+              "The %s notifies the system that the %s."
+                  .formatted(initLower(getName()), eventToText(event)));
+        }
+        getInput().add(eventStormElement);
+        return Optional.empty();
+      }
+
+      private String eventToText(String event) {
+        var words =
+            Arrays.stream(event.split("\\s"))
+                .map(Strings::initLower)
+                .collect(Collectors.toCollection(ArrayList::new));
+        words.add(words.size() - 1, "is");
+        return String.join(" ", words);
+      }
+    }
+
+    private static class ReadModelActor extends Actor {
+
+      public ReadModelActor(String name) {
+        super(name);
+      }
+
+      @Override
+      public Optional<String> getDescription(NamedObject eventStormElement) {
+        return Optional.empty();
+      }
+
+      @Override
+      public String finishDescription() {
+        return "The system updates the %s.".formatted(initLower(getName()));
       }
     }
   }
