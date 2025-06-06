@@ -42,6 +42,7 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.Policy;
 import org.setms.sew.core.domain.model.sdlc.ReadModel;
+import org.setms.sew.core.domain.model.sdlc.Scenario;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.sdlc.User;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
@@ -366,7 +367,7 @@ public class UseCaseTool extends Tool {
 
   private void createMissingStep(
       UseCase useCase,
-      UseCase.Scenario scenario,
+      Scenario scenario,
       int stepIndex,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
@@ -496,12 +497,11 @@ public class UseCaseTool extends Tool {
     }
   }
 
-  private OutputSink build(
-      UseCase.Scenario scenario, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  private OutputSink build(Scenario scenario, OutputSink sink, Collection<Diagnostic> diagnostics) {
     return build(scenario, toGraph(scenario), sink, diagnostics);
   }
 
-  private mxGraph toGraph(UseCase.Scenario scenario) {
+  private mxGraph toGraph(Scenario scenario) {
     var stepTexts = wrappedStepTextsFor(scenario);
     var numLines = ensureSameNumberOfLinesFor(stepTexts);
     var height = ICON_SIZE + (numLines - 1) * LINE_HEIGHT;
@@ -522,7 +522,7 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
-  private Map<Pointer, String> wrappedStepTextsFor(UseCase.Scenario scenario) {
+  private Map<Pointer, String> wrappedStepTextsFor(Scenario scenario) {
     var result = new HashMap<Pointer, String>();
     scenario
         .getSteps()

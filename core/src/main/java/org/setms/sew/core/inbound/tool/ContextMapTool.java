@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.swing.SwingConstants;
 import org.setms.sew.core.domain.model.sdlc.Domain;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.Subdomain;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
@@ -23,6 +24,7 @@ import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
+@SuppressWarnings("unused") // At some point, we'll want a context map
 public class ContextMapTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/domains";
@@ -92,7 +94,7 @@ public class ContextMapTool extends Tool {
 
   private void buildGraph(
       Domain domain, Map<mxCell, EdgeLabelPlacement> edgeLabelPositions, mxGraph graph) {
-    var verticesBySubdomain = new HashMap<Domain.Subdomain, Object>();
+    var verticesBySubdomain = new HashMap<Subdomain, Object>();
     domain
         .getSubdomains()
         .forEach(subdomain -> verticesBySubdomain.put(subdomain, addVertex(subdomain, graph)));
@@ -113,7 +115,7 @@ public class ContextMapTool extends Tool {
                                 edgeLabelPositions)));
   }
 
-  private Object addVertex(Domain.Subdomain domain, mxGraph graph) {
+  private Object addVertex(Subdomain domain, mxGraph graph) {
     return graph.insertVertex(
         graph.getDefaultParent(),
         null,
@@ -127,9 +129,9 @@ public class ContextMapTool extends Tool {
 
   private void addEdge(
       Domain domain,
-      Domain.Subdomain source,
+      Subdomain source,
       Pointer pointer,
-      Map<Domain.Subdomain, Object> verticesBySubdomain,
+      Map<Subdomain, Object> verticesBySubdomain,
       mxGraph graph,
       Map<mxCell, EdgeLabelPlacement> edgeLabelPositions) {
     pointer

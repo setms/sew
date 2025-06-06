@@ -12,19 +12,17 @@ import lombok.ToString;
 @Setter
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class UseCase extends NamedObject {
+public class Scenario extends NamedObject {
 
   @NotEmpty private String title;
   private String description;
-  private List<Pointer> terms;
-  private List<Pointer> captures;
-  @NotEmpty private List<Scenario> scenarios;
+  @NotEmpty private List<Pointer> steps;
 
-  public UseCase(FullyQualifiedName fullyQualifiedName) {
+  public Scenario(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 
-  public Stream<Scenario> scenarios() {
-    return scenarios.stream();
+  public Stream<Pointer> steps() {
+    return steps.stream();
   }
 }

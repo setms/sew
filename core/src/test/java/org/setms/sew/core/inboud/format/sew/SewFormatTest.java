@@ -7,11 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Accessors;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.format.DataList;
 import org.setms.sew.core.domain.model.format.DataString;
@@ -20,7 +15,6 @@ import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
-import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
@@ -232,7 +226,7 @@ class SewFormatTest {
                 .setFox(List.of("giraffe"))
                 .setHyenas(
                     List.of(
-                        new Bear.Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
+                        new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
                 .setLeopard(new Pointer(null, "mule")));
   }
 
@@ -258,7 +252,7 @@ class SewFormatTest {
                 .setFox(List.of("giraffe"))
                 .setHyenas(
                     List.of(
-                        new Bear.Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
+                        new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
                 .setLeopard(new Pointer(null, "mule")));
   }
 
@@ -273,7 +267,7 @@ class SewFormatTest {
                     .setFox(List.of("giraffe"))
                     .setHyenas(
                         List.of(
-                            new Bear.Hyena(new FullyQualifiedName("hyena.iguana"))
+                            new Hyena(new FullyQualifiedName("hyena.iguana"))
                                 .setJaguar("koala")))
                     .setLeopard(new Pointer(null, "mule")));
 
@@ -289,34 +283,4 @@ class SewFormatTest {
                 .set("leopard", new Reference("mule")));
   }
 
-  @Getter
-  @Setter
-  @Accessors(chain = true)
-  @EqualsAndHashCode(callSuper = true)
-  @ToString(callSuper = true)
-  public static class Bear extends NamedObject {
-
-    private String dingo;
-    private List<String> fox;
-    private List<Hyena> hyenas;
-    private Pointer leopard;
-
-    public Bear(FullyQualifiedName fullyQualifiedName) {
-      super(fullyQualifiedName);
-    }
-
-    @Getter
-    @Setter
-    @Accessors(chain = true)
-    @EqualsAndHashCode(callSuper = true)
-    @ToString(callSuper = true)
-    public static class Hyena extends NamedObject {
-
-      private String jaguar;
-
-      public Hyena(FullyQualifiedName fullyQualifiedName) {
-        super(fullyQualifiedName);
-      }
-    }
-  }
 }

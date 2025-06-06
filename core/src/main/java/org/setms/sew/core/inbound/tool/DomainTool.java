@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.swing.SwingConstants;
 import org.setms.sew.core.domain.model.sdlc.Domain;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.Subdomain;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
@@ -21,7 +22,7 @@ import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
-public class DomainsTool extends Tool {
+public class DomainTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/domains";
   private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";
@@ -82,7 +83,7 @@ public class DomainsTool extends Tool {
   }
 
   private void buildGraph(Domain domain, mxGraph graph) {
-    var verticesBySubdomain = new HashMap<Domain.Subdomain, Object>();
+    var verticesBySubdomain = new HashMap<Subdomain, Object>();
     domain
         .getSubdomains()
         .forEach(subdomain -> verticesBySubdomain.put(subdomain, addVertex(subdomain, graph)));
@@ -96,7 +97,7 @@ public class DomainsTool extends Tool {
                         pointer -> addEdge(domain, source, pointer, verticesBySubdomain, graph)));
   }
 
-  private Object addVertex(Domain.Subdomain domain, mxGraph graph) {
+  private Object addVertex(Subdomain domain, mxGraph graph) {
     return graph.insertVertex(
         graph.getDefaultParent(),
         null,
@@ -110,9 +111,9 @@ public class DomainsTool extends Tool {
 
   private void addEdge(
       Domain domain,
-      Domain.Subdomain source,
+      Subdomain source,
       Pointer pointer,
-      Map<Domain.Subdomain, Object> verticesBySubdomain,
+      Map<Subdomain, Object> verticesBySubdomain,
       mxGraph graph) {
     pointer
         .resolveFrom(domain.getSubdomains())

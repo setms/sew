@@ -3,6 +3,8 @@ package org.setms.sew.core.domain.model.format;
 import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.format.Validation.validate;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -13,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
@@ -94,13 +97,24 @@ public interface Parser {
   @SuppressWarnings("unchecked")
   default NamedObject createObject(
       NestedObject source, String name, Object parent, boolean validate) {
-    return Arrays.stream(parent.getClass().getClasses())
+    return findClassNamed(initUpper(name), parent)
         .filter(NamedObject.class::isAssignableFrom)
-        .filter(c -> matchesName(name, c.getSimpleName()))
         .map(c -> (Class<NamedObject>) c)
-        .findFirst()
         .map(type -> parseNamedObject(source, type, name, source.getName(), validate))
         .orElse(null);
+  }
+
+  default Optional<? extends Class<?>> findClassNamed(String name, Object parent) {
+    try (var scanResult =
+        new ClassGraph()
+            .enableClassInfo()
+            .acceptPackages(parent.getClass().getPackageName())
+            .scan()) {
+      return scanResult.getAllClasses().stream()
+          .filter(c -> matchesName(c.getSimpleName(), name))
+          .map(ClassInfo::loadClass)
+          .findFirst();
+    }
   }
 
   default boolean matchesName(String name, String candidate) {

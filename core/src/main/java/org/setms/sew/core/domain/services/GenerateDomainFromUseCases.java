@@ -30,6 +30,8 @@ import org.setms.sew.core.domain.model.dsm.StochasticGradientDescentClusteringAl
 import org.setms.sew.core.domain.model.sdlc.Domain;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.Scenario;
+import org.setms.sew.core.domain.model.sdlc.Subdomain;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 
 @RequiredArgsConstructor
@@ -76,7 +78,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     var result = new EventStormingModel();
     useCases.stream()
         .flatMap(UseCase::scenarios)
-        .map(UseCase.Scenario::getSteps)
+        .map(Scenario::getSteps)
         .forEach(
             steps -> {
               for (var i = 0; i < steps.size() - 1; i++) {
@@ -225,10 +227,10 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return new FullyQualifiedName("%s.%s".formatted(packageName, initUpper(packageName)));
   }
 
-  private List<Domain.Subdomain> subdomainsFor(
+  private List<Subdomain> subdomainsFor(
       String packageName, Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters) {
     var contracts = new TreeSet<Pointer>();
-    var clustersBySubdomain = new HashMap<Cluster<Pointer>, Domain.Subdomain>();
+    var clustersBySubdomain = new HashMap<Cluster<Pointer>, Subdomain>();
     var result =
         clusters.stream()
             .map(
@@ -251,10 +253,10 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return result;
   }
 
-  private Domain.Subdomain toDomain(
+  private Subdomain toDomain(
       Collection<UseCase> useCases, String packageName, Cluster<Pointer> currentCluster) {
     addCommands(useCases, currentCluster);
-    return new Domain.Subdomain(
+    return new Subdomain(
             new FullyQualifiedName("%s.%s".formatted(packageName, nameFor(currentCluster))))
         .setContent(currentCluster);
   }
@@ -263,7 +265,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     useCases.stream()
         .map(UseCase::getScenarios)
         .flatMap(Collection::stream)
-        .map(UseCase.Scenario::getSteps)
+        .map(Scenario::getSteps)
         .flatMap(steps -> findSequences(steps, COMMAND, AGGREGATE))
         .filter(sequence -> elements.contains(sequence.last()))
         .map(Sequence::first)
@@ -274,7 +276,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
       Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters, Set<Pointer> contractsCluster) {
     useCases.stream()
         .flatMap(UseCase::scenarios)
-        .flatMap(UseCase.Scenario::steps)
+        .flatMap(Scenario::steps)
         .filter(isType(EVENT))
         .distinct()
         .forEach(event -> addEvent(event, useCases, clusters, contractsCluster));
@@ -302,7 +304,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
       Pointer event, Collection<UseCase> useCases, Set<Cluster<Pointer>> allClusters) {
     return useCases.stream()
         .flatMap(UseCase::scenarios)
-        .map(UseCase.Scenario::getSteps)
+        .map(Scenario::getSteps)
         .flatMap(steps -> findSequences(steps, AGGREGATE, EVENT))
         .filter(sequence -> event.equals(sequence.last()))
         .map(Sequence::first)
@@ -326,7 +328,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
         .forEach(result::add);
     useCases.stream()
         .flatMap(UseCase::scenarios)
-        .map(UseCase.Scenario::getSteps)
+        .map(Scenario::getSteps)
         .flatMap(
             steps ->
                 Stream.concat(
@@ -339,8 +341,8 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return result;
   }
 
-  private Domain.Subdomain toContractsDomain(String packageName, Set<Pointer> content) {
-    return new Domain.Subdomain(new FullyQualifiedName("%s.Contracts".formatted(packageName)))
+  private Subdomain toContractsDomain(String packageName, Set<Pointer> content) {
+    return new Subdomain(new FullyQualifiedName("%s.Contracts".formatted(packageName)))
         .setContent(content);
   }
 
@@ -356,7 +358,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return result;
   }
 
-  private void addDependencies(Map<Cluster<Pointer>, Domain.Subdomain> clustersBySubdomain) {
+  private void addDependencies(Map<Cluster<Pointer>, Subdomain> clustersBySubdomain) {
     clustersBySubdomain.forEach(
         ((cluster, domain) -> {
           var dependencies =
@@ -370,7 +372,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
         }));
   }
 
-  private List<Domain.Subdomain> simplify(List<Domain.Subdomain> subdomains) {
+  private List<Subdomain> simplify(List<Subdomain> subdomains) {
     var candidatesForMerging =
         subdomains.stream()
             .filter(
@@ -402,14 +404,12 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return subdomains;
   }
 
-  private void merge(
-      Domain.Subdomain subdomain, Domain.Subdomain into, List<Domain.Subdomain> subdomains) {
+  private void merge(Subdomain subdomain, Subdomain into, List<Subdomain> subdomains) {
     into.getContent().addAll(subdomain.getContent());
     subdomains.remove(subdomain);
   }
 
-  private boolean dependsOn(
-      Domain.Subdomain subdomain, Domain.Subdomain candidate, List<Domain.Subdomain> subdomains) {
+  private boolean dependsOn(Subdomain subdomain, Subdomain candidate, List<Subdomain> subdomains) {
     return subdomain.dependsOn().stream()
         .map(p -> p.resolveFrom(subdomains).orElseThrow())
         .anyMatch(candidate::equals);

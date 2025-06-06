@@ -9,7 +9,7 @@
         <fileType name="Command" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.CommandFileType"
                   extensions="command"/>
-        <fileType name="Domains" language="Sew" fieldName="INSTANCE"
+        <fileType name="Domain" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.DomainFileType"
                   extensions="domain"/>
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
