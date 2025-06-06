@@ -218,27 +218,27 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
   private Domain domainFrom(
       Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters, String packageName) {
     return new Domain(toFullyQualifiedName(packageName))
-        .setSubDomains(subDomainsFor(packageName, useCases, clusters));
+        .setSubdomains(subdomainsFor(packageName, useCases, clusters));
   }
 
   private FullyQualifiedName toFullyQualifiedName(String packageName) {
     return new FullyQualifiedName("%s.%s".formatted(packageName, initUpper(packageName)));
   }
 
-  private List<Domain.SubDomain> subDomainsFor(
+  private List<Domain.Subdomain> subdomainsFor(
       String packageName, Collection<UseCase> useCases, Set<Cluster<Pointer>> clusters) {
     var contracts = new TreeSet<Pointer>();
-    var clustersByDomain = new HashMap<Cluster<Pointer>, Domain.SubDomain>();
+    var clustersBySubdomain = new HashMap<Cluster<Pointer>, Domain.Subdomain>();
     var result =
         clusters.stream()
             .map(
                 cluster -> {
                   var domain = toDomain(useCases, packageName, cluster);
-                  clustersByDomain.put(cluster, domain);
+                  clustersBySubdomain.put(cluster, domain);
                   return domain;
                 })
             .collect(toList());
-    addDependencies(clustersByDomain);
+    addDependencies(clustersBySubdomain);
     result = simplify(result);
     addEvents(useCases, clusters, contracts);
     if (!contracts.isEmpty()) {
@@ -251,10 +251,10 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return result;
   }
 
-  private Domain.SubDomain toDomain(
+  private Domain.Subdomain toDomain(
       Collection<UseCase> useCases, String packageName, Cluster<Pointer> currentCluster) {
     addCommands(useCases, currentCluster);
-    return new Domain.SubDomain(
+    return new Domain.Subdomain(
             new FullyQualifiedName("%s.%s".formatted(packageName, nameFor(currentCluster))))
         .setContent(currentCluster);
   }
@@ -339,8 +339,8 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return result;
   }
 
-  private Domain.SubDomain toContractsDomain(String packageName, Set<Pointer> content) {
-    return new Domain.SubDomain(new FullyQualifiedName("%s.Contracts".formatted(packageName)))
+  private Domain.Subdomain toContractsDomain(String packageName, Set<Pointer> content) {
+    return new Domain.Subdomain(new FullyQualifiedName("%s.Contracts".formatted(packageName)))
         .setContent(content);
   }
 
@@ -356,12 +356,12 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return result;
   }
 
-  private void addDependencies(Map<Cluster<Pointer>, Domain.SubDomain> clustersByDomain) {
-    clustersByDomain.forEach(
+  private void addDependencies(Map<Cluster<Pointer>, Domain.Subdomain> clustersBySubdomain) {
+    clustersBySubdomain.forEach(
         ((cluster, domain) -> {
           var dependencies =
               cluster.getDependencies().stream()
-                  .map(clustersByDomain::get)
+                  .map(clustersBySubdomain::get)
                   .map(bc -> new Pointer("domain", bc.getName()))
                   .collect(toSet());
           if (!dependencies.isEmpty()) {
@@ -370,48 +370,48 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
         }));
   }
 
-  private List<Domain.SubDomain> simplify(List<Domain.SubDomain> subDomains) {
+  private List<Domain.Subdomain> simplify(List<Domain.Subdomain> subdomains) {
     var candidatesForMerging =
-        subDomains.stream()
+        subdomains.stream()
             .filter(
-                subDomain -> !subDomain.dependsOn().isEmpty() && subDomain.dependsOn().size() <= 2)
+                subdomain -> !subdomain.dependsOn().isEmpty() && subdomain.dependsOn().size() <= 2)
             .filter(
-                subDomain -> subDomain.getContent().stream().noneMatch(c -> c.isType(AGGREGATE)))
+                subdomain -> subdomain.getContent().stream().noneMatch(c -> c.isType(AGGREGATE)))
             .toList();
     candidatesForMerging.forEach(
-        subDomain -> {
-          if (subDomain.dependsOn().size() == 1) {
+        subdomain -> {
+          if (subdomain.dependsOn().size() == 1) {
             var dependsOn =
-                subDomain.dependsOn().iterator().next().resolveFrom(subDomains).orElseThrow();
-            merge(subDomain, dependsOn, subDomains);
+                subdomain.dependsOn().iterator().next().resolveFrom(subdomains).orElseThrow();
+            merge(subdomain, dependsOn, subdomains);
           } else {
             var depends =
-                subDomain.dependsOn().stream()
-                    .map(p -> p.resolveFrom(subDomains).orElseThrow())
+                subdomain.dependsOn().stream()
+                    .map(p -> p.resolveFrom(subdomains).orElseThrow())
                     .toList();
             var d1 = depends.getFirst();
             var d2 = depends.getLast();
-            if (dependsOn(d1, d2, subDomains)) {
-              merge(subDomain, d2, subDomains);
-            } else if (dependsOn(d2, d1, subDomains)) {
-              merge(subDomain, d1, subDomains);
+            if (dependsOn(d1, d2, subdomains)) {
+              merge(subdomain, d2, subdomains);
+            } else if (dependsOn(d2, d1, subdomains)) {
+              merge(subdomain, d1, subdomains);
             }
           }
         });
-    Collections.sort(subDomains);
-    return subDomains;
+    Collections.sort(subdomains);
+    return subdomains;
   }
 
   private void merge(
-      Domain.SubDomain subDomain, Domain.SubDomain into, List<Domain.SubDomain> subDomains) {
-    into.getContent().addAll(subDomain.getContent());
-    subDomains.remove(subDomain);
+      Domain.Subdomain subdomain, Domain.Subdomain into, List<Domain.Subdomain> subdomains) {
+    into.getContent().addAll(subdomain.getContent());
+    subdomains.remove(subdomain);
   }
 
   private boolean dependsOn(
-      Domain.SubDomain subDomain, Domain.SubDomain candidate, List<Domain.SubDomain> subDomains) {
-    return subDomain.dependsOn().stream()
-        .map(p -> p.resolveFrom(subDomains).orElseThrow())
+      Domain.Subdomain subdomain, Domain.Subdomain candidate, List<Domain.Subdomain> subdomains) {
+    return subdomain.dependsOn().stream()
+        .map(p -> p.resolveFrom(subdomains).orElseThrow())
         .anyMatch(candidate::equals);
   }
 }

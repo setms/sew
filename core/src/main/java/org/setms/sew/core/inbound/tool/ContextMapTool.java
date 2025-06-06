@@ -92,12 +92,12 @@ public class ContextMapTool extends Tool {
 
   private void buildGraph(
       Domain domain, Map<mxCell, EdgeLabelPlacement> edgeLabelPositions, mxGraph graph) {
-    var verticesByDomain = new HashMap<Domain.SubDomain, Object>();
+    var verticesBySubdomain = new HashMap<Domain.Subdomain, Object>();
     domain
-        .getSubDomains()
-        .forEach(subDomain -> verticesByDomain.put(subDomain, addVertex(subDomain, graph)));
+        .getSubdomains()
+        .forEach(subdomain -> verticesBySubdomain.put(subdomain, addVertex(subdomain, graph)));
     domain
-        .getSubDomains()
+        .getSubdomains()
         .forEach(
             source ->
                 source
@@ -108,12 +108,12 @@ public class ContextMapTool extends Tool {
                                 domain,
                                 source,
                                 pointer,
-                                verticesByDomain,
+                                verticesBySubdomain,
                                 graph,
                                 edgeLabelPositions)));
   }
 
-  private Object addVertex(Domain.SubDomain domain, mxGraph graph) {
+  private Object addVertex(Domain.Subdomain domain, mxGraph graph) {
     return graph.insertVertex(
         graph.getDefaultParent(),
         null,
@@ -127,17 +127,17 @@ public class ContextMapTool extends Tool {
 
   private void addEdge(
       Domain domain,
-      Domain.SubDomain source,
+      Domain.Subdomain source,
       Pointer pointer,
-      Map<Domain.SubDomain, Object> verticesByDomain,
+      Map<Domain.Subdomain, Object> verticesBySubdomain,
       mxGraph graph,
       Map<mxCell, EdgeLabelPlacement> edgeLabelPositions) {
     pointer
-        .resolveFrom(domain.getSubDomains())
+        .resolveFrom(domain.getSubdomains())
         .ifPresent(
             target -> {
-              var from = verticesByDomain.get(source);
-              var to = verticesByDomain.get(target);
+              var from = verticesBySubdomain.get(source);
+              var to = verticesBySubdomain.get(target);
               var edge = graph.insertEdge(graph.getDefaultParent(), null, "", from, to, EDGE_STYLE);
               addEdgeLabels(edge, edgeLabelPositions, graph);
             });

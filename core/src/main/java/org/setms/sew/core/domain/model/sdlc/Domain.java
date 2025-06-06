@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 public class Domain extends NamedObject {
 
-  @NotEmpty private List<SubDomain> subDomains;
+  @NotEmpty private List<Subdomain> subdomains;
 
   public Domain(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
@@ -29,12 +29,12 @@ public class Domain extends NamedObject {
   @Accessors(chain = true)
   @ToString(callSuper = true)
   @EqualsAndHashCode(callSuper = true)
-  public static class SubDomain extends NamedObject {
+  public static class Subdomain extends NamedObject {
 
     @NotEmpty private Set<Pointer> content;
     private Set<Pointer> dependsOn;
 
-    public SubDomain(FullyQualifiedName fullyQualifiedName) {
+    public Subdomain(FullyQualifiedName fullyQualifiedName) {
       super(fullyQualifiedName);
     }
 
