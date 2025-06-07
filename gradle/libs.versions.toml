@@ -3,6 +3,7 @@ antlr = "4.13.2"
 assertj = "3.27.3"
 classgraph = "4.8.179"
 evo-inflector = "1.3"
+jfreechart = "1.5.4"
 jgraphx = "4.2.2"
 junit5 = "5.13.0"
 junit5-launcher = "1.13.0"
@@ -22,6 +23,7 @@ antlr-runtime = { module = "org.antlr:antlr4-runtime", version.ref = "antlr" }
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 evo-inflector = { module = "org.atteo:evo-inflector", version.ref = "evo-inflector" }
+jfreechart = { module = "org.jfree:jfreechart", version.ref = "jfreechart" }
 jgraphx = { module = "com.github.vlsi.mxgraph:jgraphx", version.ref = "jgraphx" }
 junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
 junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5-launcher" }
@@ -43,7 +45,7 @@ antlr = ["antlr"]
 antlr-runtime = ["antlr-runtime"]
 classgraph = ["classgraph"]
 language = ["evo-inflector", "languagetool"]
-jgraphx = ["jgraphx"]
+visualization = ["jgraphx", "jfreechart"]
 junit = ["junit5", "junit5-params", "mockito", "assertj"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
 slf4f = ["slf4j-api"]
