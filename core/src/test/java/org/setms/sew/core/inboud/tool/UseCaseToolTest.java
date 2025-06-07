@@ -27,7 +27,7 @@ class UseCaseToolTest {
         <p>A sample use case for demonstration purposes.</p>
         <h2>All's well that ends well</h2>
         <p>This is the happy path scenario, where everything goes according to plan.</p>
-        <img src="HappyPath.png"/>
+        <img src="HappyPath-structure.png"/>
         <ol>
           <li>A donald, looking at the info, does it.</li>
           <li>The system does it again.</li>
