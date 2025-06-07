@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.setms.sew.core.domain.model.format.DataEnum;
 import org.setms.sew.core.domain.model.format.DataList;
 import org.setms.sew.core.domain.model.format.DataString;
 import org.setms.sew.core.domain.model.format.Format;
@@ -112,6 +113,19 @@ class SewFormatTest {
   }
 
   @Test
+  void shouldSerializeEnum() throws IOException {
+    assertSerialization(
+        new RootObject("lynx", "marmot", "otter").set("panther", new DataEnum("rhino")),
+        """
+        package lynx
+
+        marmot otter {
+          panther = rhino
+        }
+        """);
+  }
+
+  @Test
   void shouldParseObjectWithStringProperties() throws IOException {
     assertDeserialization(
         """
@@ -203,6 +217,19 @@ class SewFormatTest {
   }
 
   @Test
+  void shouldDeserializeEnum() throws IOException {
+    assertDeserialization(
+        """
+        package lynx
+
+        event Otter {
+          panther = rhino
+        }
+        """,
+        new RootObject("lynx", "event", "Otter").set("panther", new DataEnum("rhino")));
+  }
+
+  @Test
   void shouldParseDomainObject() {
     var actual =
         format
@@ -225,8 +252,7 @@ class SewFormatTest {
                 .setDingo("elephant")
                 .setFox(List.of("giraffe"))
                 .setHyenas(
-                    List.of(
-                        new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
+                    List.of(new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
                 .setLeopard(new Pointer(null, "mule")));
   }
 
@@ -241,7 +267,9 @@ class SewFormatTest {
                     .set("fox", new DataList().add(new DataString("giraffe")))
                     .set(
                         "hyenas", new NestedObject("iguana").set("jaguar", new DataString("koala")))
-                    .set("leopard", new Reference("mule")),
+                    .set("leopard", new Reference("mule"))
+                    .set("ok", new DataEnum("true"))
+                    .set("state", new DataEnum("sucks")),
                 Bear.class,
                 false);
 
@@ -251,9 +279,10 @@ class SewFormatTest {
                 .setDingo("elephant")
                 .setFox(List.of("giraffe"))
                 .setHyenas(
-                    List.of(
-                        new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
-                .setLeopard(new Pointer(null, "mule")));
+                    List.of(new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
+                .setLeopard(new Pointer(null, "mule"))
+                .setOk(true)
+                .setState(State.SUCKS));
   }
 
   @Test
@@ -267,9 +296,10 @@ class SewFormatTest {
                     .setFox(List.of("giraffe"))
                     .setHyenas(
                         List.of(
-                            new Hyena(new FullyQualifiedName("hyena.iguana"))
-                                .setJaguar("koala")))
-                    .setLeopard(new Pointer(null, "mule")));
+                            new Hyena(new FullyQualifiedName("hyena.iguana")).setJaguar("koala")))
+                    .setLeopard(new Pointer(null, "mule"))
+                    .setOk(true)
+                    .setState(State.SORTA_OK));
 
     assertThat(actual)
         .isEqualTo(
@@ -280,7 +310,8 @@ class SewFormatTest {
                     "hyenas",
                     new DataList()
                         .add(new NestedObject("iguana").set("jaguar", new DataString("koala"))))
-                .set("leopard", new Reference("mule")));
+                .set("leopard", new Reference("mule"))
+                .set("ok", new DataEnum("true"))
+                .set("state", new DataEnum("sorta_ok")));
   }
-
 }

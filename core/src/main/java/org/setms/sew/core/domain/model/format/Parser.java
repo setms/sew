@@ -72,6 +72,7 @@ public interface Parser {
     return switch (value) {
       case null -> null;
       case DataString string -> string.getValue();
+      case DataEnum dataEnum -> dataEnum.getName();
       case DataList list ->
           list.map(item -> convert(name, item, target, validate)).filter(Objects::nonNull).toList();
       case NestedObject object -> createObject(object, name, target, validate);
@@ -128,10 +129,23 @@ public interface Parser {
     try {
       var method = findSetter(setter, targetValue, target.getClass());
       if (method != null) {
-        if (Collection.class.isAssignableFrom(method.getParameters()[0].getType())
-            && targetValue != null
-            && !method.getParameters()[0].getType().isAssignableFrom(targetValue.getClass())) {
-          method.invoke(target, toCollection(targetValue, method.getParameters()[0].getType()));
+        var parameterType = method.getParameters()[0].getType();
+        if (targetValue != null
+            && Collection.class.isAssignableFrom(parameterType)
+            && !parameterType.isAssignableFrom(targetValue.getClass())) {
+          method.invoke(target, toCollection(targetValue, parameterType));
+        } else if (targetValue != null && parameterType.isEnum()) {
+          var enumValue =
+              Arrays.stream(parameterType.getEnumConstants())
+                  .map(Enum.class::cast)
+                  .filter(c -> c.name().equalsIgnoreCase(targetValue.toString()))
+                  .findFirst()
+                  .orElseThrow(() -> new IllegalArgumentException("Invalid value: " + targetValue));
+          method.invoke(target, enumValue);
+        } else if (targetValue != null && parameterType.equals(Boolean.class)
+            || parameterType.equals(boolean.class)) {
+          var booleanValue = Boolean.parseBoolean(targetValue.toString());
+          method.invoke(target, booleanValue);
         } else {
           method.invoke(target, targetValue);
         }

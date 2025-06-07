@@ -17,6 +17,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = true)
 public class Subdomain extends NamedObject {
 
+  private DomainClassification classification;
   @NotEmpty private Set<Pointer> content;
   private Set<Pointer> dependsOn;
 

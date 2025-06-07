@@ -43,9 +43,11 @@ property ::= propertyName EQ propertyValue NEWLINE
 
 propertyName ::= IDENTIFIER
 
-propertyValue ::= (singleValue | list)
+propertyValue ::= singleValue | list
 
-singleValue ::= scalar
+singleValue ::= scalar | enumValue
+
+enumValue ::= IDENTIFIER
 
 scalar ::= objectName | STRING | typedReference
 

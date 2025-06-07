@@ -14,6 +14,7 @@ list : LBRACK NEWLINE? (item (COMMA NEWLINE? item)*)? NEWLINE? RBRACK ;
 
 item : OBJECT_NAME
      | STRING
+     | IDENTIFIER
      | typedReference
      ;
 
@@ -52,7 +53,7 @@ TYPE         : 'aggregate'
              | 'valueObject';
 
 OBJECT_NAME  : [A-Z] [a-zA-Z0-9]*;
-IDENTIFIER   : [a-z] [a-zA-Z]*;
+IDENTIFIER   : [a-z] [a-zA-Z_]*;
 STRING       : '"' (~["\r\n])* '"';
 
 COMMENT      : '#' ~[\r\n]*[\r\n]+ -> skip;

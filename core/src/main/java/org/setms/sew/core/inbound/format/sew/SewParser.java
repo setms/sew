@@ -17,6 +17,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.setms.sew.core.domain.model.format.DataEnum;
 import org.setms.sew.core.domain.model.format.DataItem;
 import org.setms.sew.core.domain.model.format.DataList;
 import org.setms.sew.core.domain.model.format.DataObject;
@@ -100,6 +101,9 @@ class SewParser implements Parser {
     }
     if (item.STRING() != null) {
       return toStringItem(item.STRING());
+    }
+    if (item.IDENTIFIER() != null) {
+      return new DataEnum(item.IDENTIFIER().getText());
     }
     if (item.OBJECT_NAME() != null) {
       return new Reference(item.OBJECT_NAME().getText());

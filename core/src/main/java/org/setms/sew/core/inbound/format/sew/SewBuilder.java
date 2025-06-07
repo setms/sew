@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.format.Builder;
+import org.setms.sew.core.domain.model.format.DataEnum;
 import org.setms.sew.core.domain.model.format.DataItem;
 import org.setms.sew.core.domain.model.format.DataList;
 import org.setms.sew.core.domain.model.format.DataObject;
@@ -82,6 +83,7 @@ class SewBuilder implements Builder {
   private String convert(DataItem value, String indent) {
     return switch (value) {
       case DataString string -> convertString(string, indent);
+      case DataEnum enumValue -> enumValue.getName();
       case DataList list -> convertList(list, indent);
       case Reference reference ->
           reference.getType() == null

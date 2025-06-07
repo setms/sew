@@ -45,7 +45,7 @@ public interface Builder {
 
   default <T extends DataObject<T>> T setProperties(NamedObject source, T target) {
     Arrays.stream(source.getClass().getMethods())
-        .filter(m -> m.getName().startsWith("get"))
+        .filter(m -> m.getName().startsWith("get") || m.getName().startsWith("is"))
         .filter(m -> !IGNORABLE_GETTERS.contains(m.getName()))
         .forEach(m -> setProperty(source, m, target));
     return target;
@@ -58,21 +58,26 @@ public interface Builder {
   }
 
   default void setProperty(NamedObject source, Method getter, DataObject<?> target) {
+    var getterName = getter.getName();
     try {
-      var name = startLowerCase(getter.getName().substring(3));
+      var index = getterName.startsWith("get") ? 3 : 2;
+      var name = startLowerCase(getterName.substring(index));
       var value = convert(getter.invoke(source));
       if (value != null) {
         target.set(name, value);
       }
     } catch (ReflectiveOperationException e) {
-      throw new IllegalStateException("Failed to set property for " + getter.getName(), e);
+      throw new IllegalStateException("Failed to set property for " + getterName, e);
     }
   }
 
+  @SuppressWarnings("rawtypes")
   default DataItem convert(Object value) {
     return switch (value) {
       case null -> null;
       case String string -> new DataString(string);
+      case Boolean bool -> new DataEnum(Boolean.toString(bool));
+      case Enum enumValue -> new DataEnum(enumValue.name().toLowerCase());
       case Collection<?> collection ->
           new DataList().add(collection.stream().map(this::convert).toList());
       case Pointer pointer -> {
