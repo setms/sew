@@ -128,7 +128,7 @@ class UseCaseToolTest {
     var actual = tool.build(source, sink);
 
     assertThat(actual).isEmpty();
-    var output = sink.select("reports/useCases/HappyPath.png").getFile();
+    var output = sink.select("reports/useCases/HappyPath-structure.png").getFile();
     assertThat((output)).isFile();
     output = sink.select("reports/useCases/JustDoIt.html").getFile();
     assertThat((output)).isFile().hasContent(USE_CASE_HTML);
