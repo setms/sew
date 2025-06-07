@@ -75,16 +75,17 @@ public class DomainTool extends Tool {
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      //      var image = build(domain, toGraph(domain), sink, diagnostics);
-      //      writer.printf(
-      //          "    <img src=\"%s\" width=\"100%%\">%n",
-      //          report.toUri().resolve(".").normalize().relativize(image.toUri()));
-      buildCoreDomainChart(domain, sink, diagnostics)
-          .ifPresent(
-              coreDomainChart ->
-                  writer.printf(
-                      "    <img src=\"%s\" width=\"100%%\">%n",
-                      report.toUri().resolve(".").normalize().relativize(coreDomainChart.toUri())));
+      var image = build(domain, toGraph(domain), sink, diagnostics);
+      writer.printf(
+          "    <img src=\"%s\" width=\"100%%\">%n",
+          report.toUri().resolve(".").normalize().relativize(image.toUri()));
+      //      buildCoreDomainChart(domain, sink, diagnostics)
+      //          .ifPresent(
+      //              coreDomainChart ->
+      //                  writer.printf(
+      //                      "    <img src=\"%s\" width=\"100%%\">%n",
+      //
+      // report.toUri().resolve(".").normalize().relativize(coreDomainChart.toUri())));
       writer.println("  </body>");
       writer.println("</html>");
     } catch (IOException e) {
@@ -152,6 +153,7 @@ public class DomainTool extends Tool {
     return result;
   }
 
+  @SuppressWarnings("unused") // I'll come back to this at some point
   private Optional<OutputSink> buildCoreDomainChart(
       Domain domain, OutputSink sink, Collection<Diagnostic> diagnostics) {
     return Optional.of(domain.getSubdomains())
