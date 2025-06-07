@@ -1,5 +1,7 @@
 name: Build and Release IntelliJ Plugin
 
+concurrency: build
+
 on:
   push:
     branches:
