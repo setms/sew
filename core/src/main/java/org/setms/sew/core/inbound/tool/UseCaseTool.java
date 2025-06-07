@@ -46,9 +46,7 @@ import org.setms.sew.core.domain.model.sdlc.Scenario;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.sdlc.User;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
-import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
-import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
@@ -114,59 +112,26 @@ public class UseCaseTool extends Tool {
   @Override
   public List<Input<?>> getInputs() {
     return List.of(
-        new Input<>(
-            "useCases",
-            new Glob("src/main/requirements", "**/*.useCase"),
-            new SewFormat(),
-            UseCase.class),
-        new Input<>(
-            "aggregates",
-            new Glob("src/main/design", "**/*.aggregate"),
-            new SewFormat(),
-            Aggregate.class),
-        new Input<>(
-            "clockEvents",
-            new Glob("src/main/design", "**/*.clockEvent"),
-            new SewFormat(),
-            ClockEvent.class),
-        new Input<>(
-            "commands",
-            new Glob("src/main/design", "**/*.command"),
-            new SewFormat(),
-            Command.class),
-        new Input<>(
-            "events", new Glob("src/main/design", "**/*.event"), new SewFormat(), Event.class),
-        new Input<>(
-            "externalSystems",
-            new Glob("src/main/design", "**/*.externalSystem"),
-            new SewFormat(),
-            ExternalSystem.class),
-        new Input<>(
-            "policies", new Glob("src/main/design", "**/*.policy"), new SewFormat(), Policy.class),
-        new Input<>(
-            "readModels",
-            new Glob("src/main/design", "**/*.readModel"),
-            new SewFormat(),
-            ReadModel.class),
-        new Input<>(
-            "users", new Glob("src/main/stakeholders", "**/*.user"), new SewFormat(), User.class),
-        new Input<>(
-            "domains",
-            new Glob("src/main/architecture", "**/*.domain"),
-            new SewFormat(),
-            Domain.class));
+        new Input<>("src/main/requirements", UseCase.class),
+        new Input<>("src/main/design", Aggregate.class),
+        new Input<>("src/main/design", ClockEvent.class),
+        new Input<>("src/main/design", Command.class),
+        new Input<>("src/main/design", Event.class),
+        new Input<>("src/main/design", ExternalSystem.class),
+        new Input<>("src/main/design", Policy.class),
+        new Input<>("src/main/design", ReadModel.class),
+        new Input<>("src/main/stakeholders", User.class),
+        new Input<>("src/main/requirements", Domain.class));
   }
 
   @Override
   public List<Output> getOutputs() {
-    return List.of(
-        new Output(new Glob(OUTPUT_PATH, "*.html")), new Output(new Glob(OUTPUT_PATH, "*.png")));
+    return htmlWithImages(OUTPUT_PATH);
   }
 
   @Override
-  protected void validate(
-      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get("useCases", UseCase.class);
+  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var useCases = inputs.get(UseCase.class);
     useCases.forEach(
         useCase ->
             useCase
@@ -180,7 +145,7 @@ public class UseCaseTool extends Tool {
                             inputs,
                             diagnostics)));
     if (!useCases.isEmpty()) {
-      var domains = inputs.get("domains", Domain.class);
+      var domains = inputs.get(Domain.class);
       if (domains.isEmpty()) {
         diagnostics.add(
             new Diagnostic(
@@ -330,7 +295,7 @@ public class UseCaseTool extends Tool {
       int stepIndex,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
-    inputs.get("useCases", UseCase.class).stream()
+    inputs.get(UseCase.class).stream()
         .filter(useCase -> useCaseName.equals(useCase.getName()))
         .findFirst()
         .ifPresentOrElse(
@@ -433,9 +398,9 @@ public class UseCaseTool extends Tool {
   private void createDomains(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
-      var domain = new GenerateDomainFromUseCases().apply(inputs.get("useCases", UseCase.class));
+      var domain = new GenerateDomainFromUseCases().apply(inputs.get(UseCase.class));
       var domainSink =
-          normalize(sink).select("src/main/architecture/%s.domain".formatted(domain.getName()));
+          normalize(sink).select("src/main/requirements/%s.domain".formatted(domain.getName()));
       try (var output = domainSink.open()) {
         new SewFormat().newBuilder().build(domain, output);
       }
@@ -447,7 +412,7 @@ public class UseCaseTool extends Tool {
 
   @Override
   public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get("useCases", UseCase.class);
+    var useCases = inputs.get(UseCase.class);
     var reportSink = sink.select("reports/useCases");
     useCases.forEach(useCase -> build(useCase, inputs, reportSink, diagnostics));
   }

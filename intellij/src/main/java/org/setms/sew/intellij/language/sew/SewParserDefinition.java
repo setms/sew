@@ -15,17 +15,18 @@ import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.intellij.SewElementTypes;
+import org.setms.sew.intellij.domain.DomainFile;
 import org.setms.sew.intellij.filetype.AggregateFile;
 import org.setms.sew.intellij.filetype.ClockEventFile;
 import org.setms.sew.intellij.filetype.CommandFile;
 import org.setms.sew.intellij.filetype.DecisionFile;
-import org.setms.sew.intellij.filetype.DomainFile;
 import org.setms.sew.intellij.filetype.EventFile;
 import org.setms.sew.intellij.filetype.OwnerFile;
 import org.setms.sew.intellij.filetype.PolicyFile;
 import org.setms.sew.intellij.filetype.ReadModelFile;
-import org.setms.sew.intellij.filetype.UseCaseFile;
 import org.setms.sew.intellij.filetype.UserFile;
+import org.setms.sew.intellij.modules.ModulesFile;
+import org.setms.sew.intellij.usecase.UseCaseFile;
 
 public class SewParserDefinition implements ParserDefinition {
 
@@ -77,6 +78,7 @@ public class SewParserDefinition implements ParserDefinition {
       case "domain" -> new DomainFile(viewProvider);
       case "event" -> new EventFile(viewProvider);
       case "owner" -> new OwnerFile(viewProvider);
+      case "modules" -> new ModulesFile(viewProvider);
       case "policy" -> new PolicyFile(viewProvider);
       case "readModel" -> new ReadModelFile(viewProvider);
       case "useCase" -> new UseCaseFile(viewProvider);

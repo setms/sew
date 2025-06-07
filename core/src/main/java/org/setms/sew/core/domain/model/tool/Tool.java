@@ -49,7 +49,7 @@ public abstract class Tool {
    */
   public final SequencedSet<Diagnostic> validate(InputSource source) {
     var result = new LinkedHashSet<Diagnostic>();
-    validate(source, resolveInputs(source, result), result);
+    validate(resolveInputs(source, result), result);
     return result;
   }
 
@@ -90,8 +90,7 @@ public abstract class Tool {
         .toList();
   }
 
-  protected void validate(
-      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
+  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
 
   /**
    * Build the output from the input
@@ -108,6 +107,10 @@ public abstract class Tool {
 
   protected void addError(Collection<Diagnostic> diagnostics, String message, Object... args) {
     diagnostics.add(new Diagnostic(ERROR, message.formatted(args)));
+  }
+
+  public List<Output> htmlWithImages(String path) {
+    return List.of(new Output(new Glob(path, "*.html")), new Output(new Glob(path, "*.png")));
   }
 
   protected void build(

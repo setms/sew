@@ -42,7 +42,7 @@ public class ContextMapTool extends Tool {
     return List.of(
         new Input<>(
             "domains",
-            new Glob("src/main/architecture", "**/*.domain"),
+            new Glob("src/main/requirements", "**/*.domain"),
             new SewFormat(),
             Domain.class),
         new Input<>(
@@ -60,7 +60,7 @@ public class ContextMapTool extends Tool {
   @Override
   protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var output = sink.select("reports/domains");
-    inputs.get("domains", Domain.class).forEach(domain -> build(domain, output, diagnostics));
+    inputs.get(Domain.class).forEach(domain -> build(domain, output, diagnostics));
   }
 
   private void build(Domain domain, OutputSink sink, Collection<Diagnostic> diagnostics) {

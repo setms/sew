@@ -17,7 +17,6 @@ import org.setms.sew.core.domain.model.sdlc.User;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
-import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
@@ -50,12 +49,11 @@ public class StakeholdersTool extends Tool {
   }
 
   @Override
-  protected void validate(
-      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var owners = inputs.get("owners", Owner.class);
+  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var owners = inputs.get(Owner.class);
     validateOwner(owners, diagnostics);
-    var users = inputs.get("users", User.class);
-    var useCases = inputs.get("useCases", UseCase.class);
+    var users = inputs.get(User.class);
+    var useCases = inputs.get(UseCase.class);
     validateUseCaseUsers(useCases, users, owners, diagnostics);
   }
 

@@ -1,5 +1,8 @@
 package org.setms.sew.core.inbound.tool;
 
+import static java.util.stream.Collectors.toSet;
+import static org.setms.sew.core.domain.model.tool.Level.WARN;
+
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.view.mxGraph;
 import java.awt.Color;
@@ -14,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.swing.SwingConstants;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -26,15 +30,20 @@ import org.jfree.chart.ui.TextAnchor;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.setms.sew.core.domain.model.sdlc.Domain;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.Module;
+import org.setms.sew.core.domain.model.sdlc.Modules;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.Subdomain;
 import org.setms.sew.core.domain.model.sdlc.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
-import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
+import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
+import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
@@ -43,31 +52,25 @@ public class DomainTool extends Tool {
   private static final String OUTPUT_PATH = "build/reports/domains";
   private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
+  public static final String CREATE_MODULES = "modules.create";
 
   @Override
   public List<Input<?>> getInputs() {
     return List.of(
-        new Input<>(
-            "domains",
-            new Glob("src/main/architecture", "**/*.domain"),
-            new SewFormat(),
-            Domain.class),
-        new Input<>(
-            "useCases",
-            new Glob("src/main/requirements", "**/*.useCase"),
-            new SewFormat(),
-            UseCase.class));
+        new Input<>("src/main/requirements", Domain.class),
+        new Input<>("src/main/requirements", UseCase.class),
+        new Input<>("src/main/architecture", Modules.class));
   }
 
   @Override
   public List<Output> getOutputs() {
-    return List.of(new Output(new Glob(OUTPUT_PATH, "*.png")));
+    return htmlWithImages(OUTPUT_PATH);
   }
 
   @Override
   protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     var output = sink.select("reports/domains");
-    inputs.get("domains", Domain.class).forEach(domain -> build(domain, output, diagnostics));
+    inputs.get(Domain.class).forEach(domain -> build(domain, output, diagnostics));
   }
 
   private void build(Domain domain, OutputSink sink, Collection<Diagnostic> diagnostics) {
@@ -268,5 +271,97 @@ public class DomainTool extends Tool {
 
   private int count(Set<Pointer> content, String type) {
     return (int) content.stream().filter(p -> p.isType(type)).count();
+  }
+
+  @Override
+  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var modules = inputs.get(Modules.class);
+    inputs.get(Domain.class).forEach(domain -> validate(domain, modules, diagnostics));
+  }
+
+  private void validate(
+      Domain domain, Collection<Modules> modules, Collection<Diagnostic> diagnostics) {
+    if (modules.stream().noneMatch(containsModulesForAllSubdomainsIn(domain))) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Subdomains aren't mapped to modules",
+              new Location("domain", domain.getName()),
+              List.of(new Suggestion(CREATE_MODULES, "Map to modules"))));
+    }
+  }
+
+  private Predicate<? super Modules> containsModulesForAllSubdomainsIn(Domain domain) {
+    return modules ->
+        modules.getModules().stream()
+            .map(Module::getMappedTo)
+            .map(Pointer::getId)
+            .collect(toSet())
+            .equals(domain.getSubdomains().stream().map(Subdomain::getName).collect(toSet()));
+  }
+
+  @Override
+  protected void apply(
+      String suggestionCode,
+      ResolvedInputs inputs,
+      Location location,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    if (CREATE_MODULES.equals(suggestionCode)) {
+      createModules(inputs, location, sink, diagnostics);
+    } else {
+      super.apply(suggestionCode, inputs, location, sink, diagnostics);
+    }
+  }
+
+  private void createModules(
+      ResolvedInputs inputs,
+      Location location,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    mapDomainToModules(inputs.get(Domain.class), location)
+        .forEach(
+            modules -> {
+              var modulesSink =
+                  normalize(sink)
+                      .select("src/main/architecture/%s.modules".formatted(modules.getName()));
+              try (var output = modulesSink.open()) {
+                new SewFormat().newBuilder().build(modules, output);
+                diagnostics.add(sinkCreated(modulesSink));
+              } catch (Exception e) {
+                addError(diagnostics, e.getMessage());
+              }
+            });
+  }
+
+  private List<Modules> mapDomainToModules(List<Domain> domains, Location location) {
+    return domains.stream()
+        .filter(domain -> location == null || location.segments().get(1).equals(domain.getName()))
+        .map(this::mapDomainToModules)
+        .toList();
+  }
+
+  private Modules mapDomainToModules(Domain domain) {
+    var result = new Modules(getFullyQualifiedName(domain));
+    result.setMappedTo(new Pointer("domain", domain.getName()));
+    result.setModules(domain.getSubdomains().stream().map(this::subdmainToModule).toList());
+    return result;
+  }
+
+  private FullyQualifiedName getFullyQualifiedName(NamedObject object) {
+    return new FullyQualifiedName("%s.%s".formatted(object.getPackage(), object.getName()));
+  }
+
+  private Module subdmainToModule(Subdomain subdomain) {
+    var result = new Module(getFullyQualifiedName(subdomain));
+    result.setMappedTo(new Pointer("subdomain", subdomain.getName()));
+    return result;
+  }
+
+  private OutputSink normalize(OutputSink sink) {
+    if (sink.toUri().toString().endsWith(".domain")) {
+      return sink.select("../../../..");
+    }
+    return sink;
   }
 }

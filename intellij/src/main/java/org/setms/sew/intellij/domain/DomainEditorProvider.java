@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.inbound.tool.DomainTool;
 import org.setms.sew.intellij.editor.EditorWithPreviewProvider;
-import org.setms.sew.intellij.filetype.DomainFileType;
 
 public class DomainEditorProvider extends EditorWithPreviewProvider {
 

@@ -1,5 +1,7 @@
 package org.setms.sew.core.domain.model.tool;
 
+import static org.setms.sew.core.domain.model.format.Strings.initLower;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,10 @@ public class ResolvedInputs {
     values.put(name, resolved);
   }
 
+  public <T extends NamedObject> List<T> get(Class<T> type) {
+    return get(initLower(English.plural(type.getSimpleName())), type);
+  }
+  
   public <T extends NamedObject> List<T> get(String name, Class<T> type) {
     var namedObjects = Optional.ofNullable(values.get(name)).orElseGet(Collections::emptyList);
     return namedObjects.stream().map(type::cast).toList();

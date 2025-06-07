@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.inbound.tool.UseCaseTool;
 import org.setms.sew.intellij.editor.EditorWithPreviewProvider;
-import org.setms.sew.intellij.filetype.UseCaseFileType;
 
 public class UseCaseEditorProvider extends EditorWithPreviewProvider {
 

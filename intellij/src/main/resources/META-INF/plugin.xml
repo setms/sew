@@ -10,7 +10,7 @@
                   implementationClass="org.setms.sew.intellij.filetype.CommandFileType"
                   extensions="command"/>
         <fileType name="Domain" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.DomainFileType"
+                  implementationClass="org.setms.sew.intellij.domain.DomainFileType"
                   extensions="domain"/>
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
@@ -18,6 +18,9 @@
         <fileType name="Event" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.EventFileType"
                   extensions="event"/>
+        <fileType name="Modules" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.modules.ModulesFileType"
+                  extensions="modules"/>
         <fileType name="Owner" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.OwnerFileType"
                   extensions="owner"/>
@@ -28,7 +31,7 @@
                   implementationClass="org.setms.sew.intellij.filetype.ReadModelFileType"
                   extensions="readModel"/>
         <fileType name="Use case" language="Sew" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.UseCaseFileType"
+                  implementationClass="org.setms.sew.intellij.usecase.UseCaseFileType"
                   extensions="useCase"/>
         <fileType name="User" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.UserFileType"

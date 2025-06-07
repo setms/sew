@@ -19,18 +19,28 @@ import java.util.Set;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.inbound.tool.DomainTool;
+import org.setms.sew.core.inbound.tool.ModulesTool;
 import org.setms.sew.core.inbound.tool.UseCaseTool;
 import org.setms.sew.intellij.SewElementTypes;
+import org.setms.sew.intellij.domain.DomainFileType;
 import org.setms.sew.intellij.editor.VirtualFileInputSource;
-import org.setms.sew.intellij.filetype.UseCaseFileType;
 import org.setms.sew.intellij.language.LevelSeverity;
+import org.setms.sew.intellij.modules.ModulesFileType;
+import org.setms.sew.intellij.usecase.UseCaseFileType;
 
 public class SewAnnotator implements Annotator {
 
   private static final Collection<IElementType> PUNCTUATION =
       Set.of(COMMA, COMMENT, DOT, EQ, LBRACE, LBRACK, LPAREN, NEWLINE, RBRACE, RBRACK, RPAREN);
   private static final Map<String, Tool> TOOLS_BY_EXTENSION =
-      Map.of(UseCaseFileType.INSTANCE.getDefaultExtension(), new UseCaseTool());
+      Map.of(
+          UseCaseFileType.INSTANCE.getDefaultExtension(),
+          new UseCaseTool(),
+          DomainFileType.INSTANCE.getDefaultExtension(),
+          new DomainTool(),
+          ModulesFileType.INSTANCE.getDefaultExtension(),
+          new ModulesTool());
 
   @Override
   @SuppressWarnings("ResultOfMethodCallIgnored")

@@ -17,22 +17,18 @@ import org.setms.sew.core.domain.model.sdlc.Term;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
-import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 @Slf4j
 public class GlossaryTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(
-        new Input<>(
-            "terms", new Glob("src/main/glossary", "**/*.term"), new SewFormat(), Term.class));
+    return List.of(new Input<>("src/main/glossary", Term.class));
   }
 
   @Override
@@ -41,9 +37,8 @@ public class GlossaryTool extends Tool {
   }
 
   @Override
-  protected void validate(
-      InputSource source, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var terms = inputs.get("terms", Term.class);
+  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var terms = inputs.get(Term.class);
     terms.forEach(
         term ->
             Optional.ofNullable(term.getSeeAlso()).stream()
@@ -64,7 +59,7 @@ public class GlossaryTool extends Tool {
 
   @Override
   public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var terms = inputs.get("terms", Term.class);
+    var terms = inputs.get(Term.class);
     var termsByPackage = terms.stream().collect(groupingBy(Term::getPackage));
     termsByPackage.forEach(
         (glossary, glossaryTerms) ->
