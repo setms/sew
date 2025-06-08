@@ -14,6 +14,6 @@ public class HasTypeValidator implements ConstraintValidator<HasType, Pointer> {
 
   @Override
   public boolean isValid(Pointer value, ConstraintValidatorContext context) {
-    return value.isType(type);
+    return value != null && value.isType(type);
   }
 }

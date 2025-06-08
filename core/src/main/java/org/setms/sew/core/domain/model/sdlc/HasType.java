@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HasType {
-  String message() default "Wrong type";
+  String message() default "is missing or has wrong type";
 
   Class<?>[] groups() default {};
 
