@@ -364,7 +364,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
           var dependencies =
               cluster.getDependencies().stream()
                   .map(clustersBySubdomain::get)
-                  .map(bc -> new Pointer("domain", bc.getName()))
+                  .map(Subdomain::pointerTo)
                   .collect(toSet());
           if (!dependencies.isEmpty()) {
             domain.setDependsOn(dependencies);

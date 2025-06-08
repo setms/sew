@@ -50,7 +50,7 @@ import org.setms.sew.core.inbound.format.sew.SewFormat;
 public class DomainTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/domains";
-  private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";
+  private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
   public static final String CREATE_MODULES = "modules.create";
 
@@ -94,6 +94,18 @@ public class DomainTool extends Tool {
     } catch (IOException e) {
       addError(diagnostics, e.getMessage());
     }
+  }
+
+  private mxGraph toGraph(Domain domain) {
+    var result = new mxGraph();
+    result.getModel().beginUpdate();
+    try {
+      buildGraph(domain, result);
+      layoutGraph(result);
+    } finally {
+      result.getModel().endUpdate();
+    }
+    return result;
   }
 
   private void buildGraph(Domain domain, mxGraph graph) {
@@ -142,18 +154,6 @@ public class DomainTool extends Tool {
   private void layoutGraph(mxGraph graph) {
     var layout = new mxHierarchicalLayout(graph, SwingConstants.NORTH);
     layout.execute(graph.getDefaultParent());
-  }
-
-  private mxGraph toGraph(Domain domain) {
-    var result = new mxGraph();
-    result.getModel().beginUpdate();
-    try {
-      buildGraph(domain, result);
-      layoutGraph(result);
-    } finally {
-      result.getModel().endUpdate();
-    }
-    return result;
   }
 
   @SuppressWarnings("unused") // I'll come back to this at some point
@@ -343,7 +343,7 @@ public class DomainTool extends Tool {
 
   private Modules mapDomainToModules(Domain domain) {
     var result = new Modules(getFullyQualifiedName(domain));
-    result.setMappedTo(new Pointer("domain", domain.getName()));
+    result.setMappedTo(domain.pointerTo());
     result.setModules(domain.getSubdomains().stream().map(this::subdmainToModule).toList());
     return result;
   }
@@ -354,7 +354,7 @@ public class DomainTool extends Tool {
 
   private Module subdmainToModule(Subdomain subdomain) {
     var result = new Module(getFullyQualifiedName(subdomain));
-    result.setMappedTo(new Pointer("subdomain", subdomain.getName()));
+    result.setMappedTo(subdomain.pointerTo());
     return result;
   }
 

@@ -36,11 +36,14 @@
         <fileType name="User" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.UserFileType"
                   extensions="user"/>
+
         <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewSyntaxHighlighterFactory"/>
         <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewParserDefinition"/>
         <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
         <annotator language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewAnnotator"/>
-        <fileEditorProvider implementation="org.setms.sew.intellij.usecase.UseCaseEditorProvider"/>
+
         <fileEditorProvider implementation="org.setms.sew.intellij.domain.DomainEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.usecase.UseCaseEditorProvider"/>
     </extensions>
 </idea-plugin>

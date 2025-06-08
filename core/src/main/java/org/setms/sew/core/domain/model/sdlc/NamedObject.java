@@ -1,5 +1,7 @@
 package org.setms.sew.core.domain.model.sdlc;
 
+import static org.setms.sew.core.domain.model.format.Strings.initLower;
+
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +17,10 @@ public abstract class NamedObject implements Comparable<NamedObject> {
 
   public String getPackage() {
     return fullyQualifiedName.getPackage();
+  }
+
+  public Pointer pointerTo() {
+    return new Pointer(initLower(getClass().getSimpleName()), getName());
   }
 
   @Override
