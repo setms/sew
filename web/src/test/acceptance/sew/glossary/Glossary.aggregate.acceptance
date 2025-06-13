@@ -9,8 +9,38 @@ Given Glossary contains Term{ $Phrase, $Definition }
 When Glossary accepts AddTerm { $Phrase, $Definition }
 Then Glossary contains exactly once Term{ $Phrase, $Definition }
 
-Scenario Reject redefinition of existing term (needs update)
+Scenario Reject redefinition of existing term (should update instead)
 Given Glossary contains Term{ $Phrase, $Definition }
 When Glossary accepts AddTerm { $Phrase, $NewDefinition }
 Then Glossary contains exactly once Term{ $Phrase, $Definition }
-And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defined as $NewDefinition." }
+And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defined as $Definition." }
+
+
+---------
+
+
+package Glossary
+
+acceptanceTest Glossary {
+    type = "aggregate"
+}
+
+scenario {
+    title = "Add non-existing term"
+    data = [
+        - variable(Phrase, definition=type(Text), value=random(NonEmpty))
+        - variable(Definition, definition=type(Text), value=random(NonEmpty))
+        - variable(AddTerm, definition=command(AddTerm), field=variable(Phrase), field=Variable(Phrase))
+        - variable(Term, definition=entity(Term), field=variable(Phrase), field=Variable(Phrase))
+        - variable(TermAdded, definition=event(TermAdded), field=variable(Phrase), field=Variable(Phrase))
+    ]
+    given = [
+        - aggregate(Glossary, state=root(Empty))
+    ]
+    when = [
+        - aggregate(Glossary, accepts=command(AddTerm)
+    ]
+    then = [
+        - assert(Glossary, state=root(Term), emits=event(TermAdded))
+    ]
+}
