@@ -62,7 +62,7 @@ What are "operations" in the above?
 
 ## Service integrators and disintegrators
 
-_Software Architecture, the Hard Parts_ uses a similar approach to dark energy/matter.
+In _Software Architecture, the Hard Parts_, Ford et al use a similar approach to dark energy/matter.
 
 Service disintegrators == dark energy:
 
@@ -80,3 +80,10 @@ Service integrators == dark matter:
 - **Shared code**: easier to upgrade in monolith than in n µservices
 - **Data relationships**: separating data is a pain when you need it together, distributed calls to get it are
   expensive and fragile 
+
+
+## Synthesis
+
+Better names: attractive/repulsive forces.
+
+TODO: merge categories from the two sections above
