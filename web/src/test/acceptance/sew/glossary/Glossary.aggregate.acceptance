@@ -30,9 +30,9 @@ scenario {
     data = [
         - variable(Phrase, definition=type(Text), value=random(NonEmpty))
         - variable(Definition, definition=type(Text), value=random(NonEmpty))
-        - variable(AddTerm, definition=command(AddTerm), field=variable(Phrase), field=Variable(Phrase))
-        - variable(Term, definition=entity(Term), field=variable(Phrase), field=Variable(Phrase))
-        - variable(TermAdded, definition=event(TermAdded), field=variable(Phrase), field=Variable(Phrase))
+        - variable(AddTerm, definition=command(AddTerm), field=variable(Phrase), field=Variable(Definition))
+        - variable(Term, definition=entity(Term), field=variable(Phrase), field=Variable(Definition))
+        - variable(TermAdded, definition=event(TermAdded), field=variable(Phrase), field=Variable(Definition))
     ]
     given = [
         - aggregate(Glossary, state=root(Empty))
