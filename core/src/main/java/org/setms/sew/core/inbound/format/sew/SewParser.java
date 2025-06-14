@@ -54,13 +54,13 @@ class SewParser implements Parser {
     return result;
   }
 
-  private org.setms.sew.antlr.SewParser parseTreeFrom(InputStream input) throws IOException {
-    return new org.setms.sew.antlr.SewParser(
+  private org.setms.sew.lang.sew.SewParser parseTreeFrom(InputStream input) throws IOException {
+    return new org.setms.sew.lang.sew.SewParser(
         new CommonTokenStream(
-            (new org.setms.sew.antlr.SewLexer(CharStreams.fromStream(input, UTF_8)))));
+            (new org.setms.sew.lang.sew.SewLexer(CharStreams.fromStream(input, UTF_8)))));
   }
 
-  private RootObject parseRootObject(org.setms.sew.antlr.SewParser.SewContext sew) {
+  private RootObject parseRootObject(org.setms.sew.lang.sew.SewParser.SewContext sew) {
     if (sew.scope() == null
         || sew.scope().qualifiedName() == null
         || sew.scope().qualifiedName().IDENTIFIER() == null) {
@@ -75,7 +75,7 @@ class SewParser implements Parser {
   }
 
   private void parseProperties(
-      org.setms.sew.antlr.SewParser.ObjectContext object, DataObject<?> dataObject) {
+      org.setms.sew.lang.sew.SewParser.ObjectContext object, DataObject<?> dataObject) {
     object
         .property()
         .forEach(
@@ -89,13 +89,13 @@ class SewParser implements Parser {
             });
   }
 
-  private DataItem parseList(org.setms.sew.antlr.SewParser.ListContext list) {
+  private DataItem parseList(org.setms.sew.lang.sew.SewParser.ListContext list) {
     var result = new DataList();
     list.item().stream().map(this::parseItem).filter(Objects::nonNull).forEach(result::add);
     return result;
   }
 
-  private DataItem parseItem(org.setms.sew.antlr.SewParser.ItemContext item) {
+  private DataItem parseItem(org.setms.sew.lang.sew.SewParser.ItemContext item) {
     if (item == null) {
       return null;
     }

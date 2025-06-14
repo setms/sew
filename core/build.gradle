@@ -19,7 +19,39 @@ dependencies {
     testRuntimeOnly libs.bundles.junit.runtime
 }
 
-generateGrammarSource {
-    arguments = ['-package', 'org.setms.sew.antlr']
+def antlrDir = file("src/main/antlr")
+def langDir = layout.buildDirectory.dir("generated-src")
+def langPackageDir = langDir.map { it.dir("org/setms/sew/lang") }
+
+antlrDir.listFiles(new FilenameFilter() {
+    boolean accept(File dir, String name) {
+        return name.endsWith(".g4")
+    }
+})?.each { File grammarFile ->
+    def baseName = grammarFile.name[0..-4] // strip extension
+    def taskName = "generate${baseName}Parser".toString()
+    def subDir = baseName.toLowerCase()
+    def packageName = "org.setms.sew.lang.$subDir".toString()
+
+    tasks.register(taskName, AntlrTask) {
+        description = "Generates parser for ${grammarFile.name}"
+        group = "antlr"
+        source = fileTree(antlrDir) {
+            include grammarFile.name
+        }
+        outputDirectory = langPackageDir.map { it.dir(subDir) }.get().asFile
+        arguments += ['-package', packageName]
+    }
+
+    tasks.named("compileJava").configure {
+        dependsOn(taskName)
+    }
 }
-sourceSets.main.java.srcDirs += project.layout.buildDirectory.dir('generated-src/antlr/main')
+
+sourceSets {
+    main {
+        java {
+            srcDir langDir
+        }
+    }
+}
