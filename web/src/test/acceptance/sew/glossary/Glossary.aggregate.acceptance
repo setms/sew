@@ -1,3 +1,13 @@
+Test(Glossary)
+var Phrase                 = Text(1, 32)
+var Definition             = Text(1, 32)
+var NewDefinition          = Text(1, 32)
+command AddTerm            = AddTerm(Phrase=Phrase, Definition=Definition)
+entity Term                = Term(Phrase=Phrase, Definition=Definition)
+event TermAdded            = TermAdded(Phrase=Phrase, Definition=Definition)
+command AddExistingTerm    = AddTerm(Phrase=Phrase, Definition=NewDefinition)
+event TermAdditionRejected = TermAdditionRejected(Reason = "Term $Phrase is already defined as $Definition.")
+
 Scenario Add non-existing term
 Given Glossary is empty
 When Glossary accepts AddTerm{ $Phrase, $Definition }
@@ -12,7 +22,7 @@ Then Glossary contains exactly once Term{ $Phrase, $Definition }
 Scenario Reject redefinition of existing term (should update instead)
 Given Glossary contains Term{ $Phrase, $Definition }
 When Glossary accepts AddTerm { $Phrase, $NewDefinition }
-Then Glossary contains exactly once Term{ $Phrase, $Definition }
+Then Glossary contains Term{ $Phrase, $Definition }
 And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defined as $Definition." }
 
 
@@ -22,25 +32,92 @@ And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defin
 package Glossary
 
 acceptanceTest Glossary {
-    type = "aggregate"
+    target = aggregate(Glossary)
+}
+
+variable Phrase {
+    type        = Text
+    constraints = [ minSize(1), maxSize(32) ]
+}
+
+variable Definition {
+    type        = Text
+    constraints = [ minSize(1), maxSize(32) ]
+}
+
+variable NewDefinition {
+    type        = Text
+    constraints = [ minSize(1), maxSize(32) ]
+}
+
+variable AddTerm {
+    type   = command(AddTerm)
+    fields = [ Phrase = Phrase, Definition = Definition ]
+}
+
+variable Term {
+    type   = entity(Term)
+    fields = [ Phrase = Phrase, Definition = Definition ]
+}
+
+variable TermAdded {
+    type   = event(TermAdded) {
+    fields = [ Phrase = Phrase, Definition = Definition ]
+}
+
+variable AddExistingTerm {
+    type   = command(AddTerm)
+    fields = [ Phrase = Phrase, Definition = NewDefinition ]
+}
+
+variable TermAdditionRejected {
+    type = event(TermAdditionRejected)
+    fields = [ Reason = "Term $Phrase is already defined as $Definition." ]
 }
 
 scenario {
-    title = "Add non-existing term"
-    data = [
-        - variable(Phrase, definition=type(Text), value=random(NonEmpty))
-        - variable(Definition, definition=type(Text), value=random(NonEmpty))
-        - variable(AddTerm, definition=command(AddTerm), field=variable(Phrase), field=Variable(Definition))
-        - variable(Term, definition=entity(Term), field=variable(Phrase), field=Variable(Definition))
-        - variable(TermAdded, definition=event(TermAdded), field=variable(Phrase), field=Variable(Definition))
-    ]
-    given = [
-        - aggregate(Glossary, state=root(Empty))
-    ]
-    when = [
-        - aggregate(Glossary, accepts=command(AddTerm)
-    ]
-    then = [
-        - assert(Glossary, state=root(Term), emits=event(TermAdded))
-    ]
+    title   = "Add non-existing term"
+    command = AddTerm
+    state   = [ Term ]
+    emitted = [ TermAdded ]
 }
+
+scenario {
+    title   = "Add existing term"
+    init    = [ Term ]
+    command = AddTerm
+    state   = [ Term ]
+}
+
+scenario {
+    title   = "Add existing term"
+    init    = [ Term ]
+    command = AddNewTerm
+    state   = [ Term ]
+    emitted = [ TermAdditionRejected ]
+}
+
+
+----------
+
+
+| type      | name              |
+|-----------|-------------------|
+| aggregate | glossary.Glossary |
+
+| variable             | type                        | definition                                               |
+|----------------------|-----------------------------|----------------------------------------------------------|
+| phrase               | Text                        | nonempty                                                 |
+| definition           | Text                        | nonempty                                                 |
+| newDefinition        | Text                        | nonempty, differentFrom(definition)                      |
+| addTerm              | command(AddTerm)            | Phrase=phrase, Definition=definition                     |
+| addExistingTerm      | command(AddTerm)            | Phrase=phrase, Definition=newDefinition                  |
+| term                 | entity(Term)                | Phrase=phrase, Definition=definition                     |
+| termAdded            | event(TermAdded)            | Phrase=phrase, Definition=definition                     |
+| termAdditionRejected | event(TermAdditionRejected) | Reason="Term $Phrase is already defined as $Definition." |
+
+| scenario               | init | command         | state | emitted              |
+|------------------------|------|-----------------|-------|----------------------|
+| Add non-existing term  |      | addTerm         | term  | termAdded            |
+| Add existing term      | term | addTerm         | term  |                      |
+| Redefine existing term | term | addExistingTerm | term  | termAdditionRejected |
