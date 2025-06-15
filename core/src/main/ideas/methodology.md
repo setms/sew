@@ -5,47 +5,13 @@ capture the requirements, and then the tooling generates further artifacts and s
 At various points in the development lifecycle, there will be more than one possible next step.
 Also, multiple iterations through the lifecycle may happen concurrently.
 
-Typical steps in the lifecycle follow.
+The motivation behind this idea is that we want to enhance and speed up decision-making, which is the essence of
+software development.
+We also want to move decision-making from a craft to engineering.
 
-## Start a new project
+![Decision making](decision-making-wardley.jpg)
 
-Inputs:
+![Decision making as craft](decision-making-craft.jpg)
 
-- Name
+![Decision making as engineering](decision-making-engineering.jpg)
 
-Build:
-
-- Directory structure
-
-Suggest:
-
-- Create owner
-
-## Create owner
-
-Inputs:
-
-- Role
-- Persons (optional)
-
-Build:
-
-- Owner
-
-Suggest:
-
-- Create vision
-
-# Create vision
-
-Inputs:
-
-- Vision statement
-
-Build:
-
-- SRS
-
-Suggest:
-
-- Business requirement
