@@ -26,8 +26,10 @@ import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Parser;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
+import org.setms.sew.lang.sew.SewLexer;
+import org.setms.sew.lang.sew.SewParser;
 
-class SewParser implements Parser {
+class SewFormatParser implements Parser {
 
   @Override
   public RootObject parse(InputStream input) throws IOException {
@@ -54,13 +56,12 @@ class SewParser implements Parser {
     return result;
   }
 
-  private org.setms.sew.lang.sew.SewParser parseTreeFrom(InputStream input) throws IOException {
-    return new org.setms.sew.lang.sew.SewParser(
-        new CommonTokenStream(
-            (new org.setms.sew.lang.sew.SewLexer(CharStreams.fromStream(input, UTF_8)))));
+  private SewParser parseTreeFrom(InputStream input) throws IOException {
+    return new SewParser(
+        new CommonTokenStream((new SewLexer(CharStreams.fromStream(input, UTF_8)))));
   }
 
-  private RootObject parseRootObject(org.setms.sew.lang.sew.SewParser.SewContext sew) {
+  private RootObject parseRootObject(SewParser.SewContext sew) {
     if (sew.scope() == null
         || sew.scope().qualifiedName() == null
         || sew.scope().qualifiedName().IDENTIFIER() == null) {
@@ -74,8 +75,7 @@ class SewParser implements Parser {
     return new RootObject(scope, rootObject.TYPE().getText(), rootObject.OBJECT_NAME().getText());
   }
 
-  private void parseProperties(
-      org.setms.sew.lang.sew.SewParser.ObjectContext object, DataObject<?> dataObject) {
+  private void parseProperties(SewParser.ObjectContext object, DataObject<?> dataObject) {
     object
         .property()
         .forEach(
@@ -89,13 +89,13 @@ class SewParser implements Parser {
             });
   }
 
-  private DataItem parseList(org.setms.sew.lang.sew.SewParser.ListContext list) {
+  private DataItem parseList(SewParser.ListContext list) {
     var result = new DataList();
     list.item().stream().map(this::parseItem).filter(Objects::nonNull).forEach(result::add);
     return result;
   }
 
-  private DataItem parseItem(org.setms.sew.lang.sew.SewParser.ItemContext item) {
+  private DataItem parseItem(SewParser.ItemContext item) {
     if (item == null) {
       return null;
     }

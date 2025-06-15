@@ -55,3 +55,7 @@ sourceSets {
         }
     }
 }
+
+tasks.named('generateGrammarSource') {
+    enabled = false
+}

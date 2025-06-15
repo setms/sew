@@ -8,11 +8,11 @@ public class SewFormat implements Format {
 
   @Override
   public Parser newParser() {
-    return new SewParser();
+    return new SewFormatParser();
   }
 
   @Override
   public Builder newBuilder() {
-    return new SewBuilder();
+    return new SewFormatBuilder();
   }
 }

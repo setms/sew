@@ -18,6 +18,14 @@ public abstract class DataObject<T extends DataObject<T>> implements DataItem {
     return (T) this;
   }
 
+  public <V extends DataItem> V property(String key, Class<V> type) {
+    return type.cast(property(key));
+  }
+
+  public DataItem property(String key) {
+    return valuesByKey.get(key);
+  }
+
   public void properties(BiConsumer<String, DataItem> consumer) {
     valuesByKey.forEach(consumer);
   }

@@ -18,7 +18,7 @@ import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
 
-class SewBuilder implements Builder {
+class SewFormatBuilder implements Builder {
 
   private static final String INDENT = "  ";
 

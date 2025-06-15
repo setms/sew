@@ -1,6 +1,6 @@
 grammar Acceptance;
 
-test: sut variables scenarios EOF;
+test: sut NEWLINE+ variables NEWLINE+ scenarios NEWLINE* EOF;
 
 sut: table;
 
@@ -9,53 +9,93 @@ variables: table;
 scenarios: table;
 
 table
-    : header row+ NEWLINE*
+    : header row+
     ;
 
 header
-    : PIPE WHITE_SPACE? heading (PIPE heading)* PIPE NEWLINE separator
-    ;
-
-row
-    : PIPE WHITE_SPACE? cell (PIPE cell)* PIPE NEWLINE
+    : PIPE heading (PIPE heading)* PIPE NEWLINE separator
     ;
 
 heading
     : IDENTIFIER
-    ;
-
-cell
-    : expressionList
-    | STRING
-    | IDENTIFIER
-    ;
-
-expressionList
-    : expression (COMMA expression)*
-    ;
-
-expression
-    : IDENTIFIER EQ value
-    ;
-
-value
-    : STRING
-    | IDENTIFIER
+    | TYPE
     ;
 
 separator
-    : PIPE WHITE_SPACE? DASH+ (PIPE DASH+)* PIPE NEWLINE
+    : PIPE DASH+ (PIPE DASH+)* PIPE NEWLINE
     ;
 
+row
+    : PIPE cell? (PIPE cell?)* PIPE NEWLINE
+    ;
+
+cell
+    : typedReference
+    | qualifiedName
+    | fields
+    | OBJECT_NAME
+    | IDENTIFIER
+    | STRING
+    | TYPE
+    | sentence
+    ;
+
+typedReference : TYPE LPAREN OBJECT_NAME RPAREN ;
+
+qualifiedName : (IDENTIFIER DOT)+ OBJECT_NAME;
+
+fields : (field COMMA)* field;
+
+field: OBJECT_NAME EQ (IDENTIFIER | STRING);
+
+sentence: word+ DOT?;
+
+word: OBJECT_NAME | IDENTIFIER | TYPE;
 
 PIPE        : '|';
 DASH        : '-';
-COMMA       : ',';
-EQ          : '=';
-LPAREN      : '(';
-RPAREN      : ')';
 
-STRING      : '"' (~["\r\n])* '"';
-IDENTIFIER  : [a-zA-Z_][a-zA-Z_0-9.]*;
-WHITE_SPACE : [ \t]+ -> skip;
-NEWLINE     : '\r'? '\n';
+TYPE         : 'aggregate'
+             | 'alternative'
+             | 'businessRequirement'
+             | 'calendarEvent'
+             | 'clockEvent'
+             | 'command'
+             | 'decision'
+             | 'domain'
+             | 'entity'
+             | 'event'
+             | 'externalSystem'
+             | 'field'
+             | 'hotspot'
+             | 'module'
+             | 'modules'
+             | 'owner'
+             | 'policy'
+             | 'readModel'
+             | 'scenario'
+             | 'screen'
+             | 'scope'
+             | 'subdomain'
+             | 'term'
+             | 'useCase'
+             | 'user'
+             | 'userRequirement'
+             | 'valueObject';
+
+OBJECT_NAME  : [A-Z] [a-zA-Z0-9]*;
+IDENTIFIER   : [a-z] [a-zA-Z_]*;
+STRING       : '"' (~["\r\n])* '"';
+
+COMMA        : ',';
+DOT          : '.';
+EQ           : '=';
+LBRACE       : '{';
+RBRACE       : '}';
+LBRACK       : '[';
+RBRACK       : ']';
+LPAREN       : '(';
+RPAREN       : ')';
+
+WHITE_SPACE  : [ \t]+ -> skip;
+NEWLINE      : [\r\n];

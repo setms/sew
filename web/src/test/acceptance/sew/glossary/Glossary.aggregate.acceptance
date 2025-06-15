@@ -1,12 +1,4 @@
-Test(Glossary)
-var Phrase                 = Text(1, 32)
-var Definition             = Text(1, 32)
-var NewDefinition          = Text(1, 32)
-command AddTerm            = AddTerm(Phrase=Phrase, Definition=Definition)
-entity Term                = Term(Phrase=Phrase, Definition=Definition)
-event TermAdded            = TermAdded(Phrase=Phrase, Definition=Definition)
-command AddExistingTerm    = AddTerm(Phrase=Phrase, Definition=NewDefinition)
-event TermAdditionRejected = TermAdditionRejected(Reason = "Term $Phrase is already defined as $Definition.")
+Acceptant test for aggregate Glossary
 
 Scenario Add non-existing term
 Given Glossary is empty
@@ -24,78 +16,6 @@ Given Glossary contains Term{ $Phrase, $Definition }
 When Glossary accepts AddTerm { $Phrase, $NewDefinition }
 Then Glossary contains Term{ $Phrase, $Definition }
 And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defined as $Definition." }
-
-
----------
-
-
-package Glossary
-
-acceptanceTest Glossary {
-    target = aggregate(Glossary)
-}
-
-variable Phrase {
-    type        = Text
-    constraints = [ minSize(1), maxSize(32) ]
-}
-
-variable Definition {
-    type        = Text
-    constraints = [ minSize(1), maxSize(32) ]
-}
-
-variable NewDefinition {
-    type        = Text
-    constraints = [ minSize(1), maxSize(32) ]
-}
-
-variable AddTerm {
-    type   = command(AddTerm)
-    fields = [ Phrase = Phrase, Definition = Definition ]
-}
-
-variable Term {
-    type   = entity(Term)
-    fields = [ Phrase = Phrase, Definition = Definition ]
-}
-
-variable TermAdded {
-    type   = event(TermAdded) {
-    fields = [ Phrase = Phrase, Definition = Definition ]
-}
-
-variable AddExistingTerm {
-    type   = command(AddTerm)
-    fields = [ Phrase = Phrase, Definition = NewDefinition ]
-}
-
-variable TermAdditionRejected {
-    type = event(TermAdditionRejected)
-    fields = [ Reason = "Term $Phrase is already defined as $Definition." ]
-}
-
-scenario {
-    title   = "Add non-existing term"
-    command = AddTerm
-    state   = [ Term ]
-    emitted = [ TermAdded ]
-}
-
-scenario {
-    title   = "Add existing term"
-    init    = [ Term ]
-    command = AddTerm
-    state   = [ Term ]
-}
-
-scenario {
-    title   = "Add existing term"
-    init    = [ Term ]
-    command = AddNewTerm
-    state   = [ Term ]
-    emitted = [ TermAdditionRejected ]
-}
 
 
 ----------
