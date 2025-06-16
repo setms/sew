@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.sdlc;
+package org.setms.sew.core.domain.model.sdlc.eventstorm;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -7,6 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
 
 @Getter
 @Setter

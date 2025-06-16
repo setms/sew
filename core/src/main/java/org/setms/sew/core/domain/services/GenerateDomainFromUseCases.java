@@ -27,12 +27,12 @@ import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
 import org.setms.sew.core.domain.model.dsm.Dependency;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
 import org.setms.sew.core.domain.model.dsm.StochasticGradientDescentClusteringAlgorithm;
-import org.setms.sew.core.domain.model.sdlc.Domain;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
-import org.setms.sew.core.domain.model.sdlc.Scenario;
-import org.setms.sew.core.domain.model.sdlc.Subdomain;
-import org.setms.sew.core.domain.model.sdlc.UseCase;
+import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
+import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
+import org.setms.sew.core.domain.model.sdlc.requirements.Scenario;
+import org.setms.sew.core.domain.model.sdlc.requirements.UseCase;
 
 @RequiredArgsConstructor
 public class GenerateDomainFromUseCases implements Function<Collection<UseCase>, Domain> {

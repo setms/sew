@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.sdlc;
+package org.setms.sew.core.domain.model.sdlc.architecture;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -8,6 +8,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.HasType;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
 
 @Getter
 @Setter
@@ -15,8 +19,10 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 public class Modules extends NamedObject {
 
-  @NotNull @HasType(type = "domain")
+  @NotNull
+  @HasType("domain")
   private Pointer mappedTo;
+
   @NotEmpty @Valid private Collection<Module> modules;
 
   public Modules(FullyQualifiedName fullyQualifiedName) {

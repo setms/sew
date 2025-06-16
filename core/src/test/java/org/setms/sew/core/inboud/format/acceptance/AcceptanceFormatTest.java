@@ -13,6 +13,7 @@ import org.setms.sew.core.domain.model.format.Format;
 import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
+import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 
 class AcceptanceFormatTest {
@@ -83,5 +84,17 @@ class AcceptanceFormatTest {
     format.newBuilder().build(data, output);
 
     assertThat(output).hasToString(expected);
+  }
+
+  @Test
+  void shouldParseDomainObject() throws IOException {
+    output.write(SIMPLE_SCENARIO.getBytes(UTF_8));
+
+    var actual =
+        format
+            .newParser()
+            .parse(new ByteArrayInputStream(output.toByteArray()), AcceptanceTest.class, true);
+
+    assertThat(actual).isNotNull();
   }
 }

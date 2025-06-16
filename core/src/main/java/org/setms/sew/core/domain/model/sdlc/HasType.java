@@ -19,5 +19,5 @@ public @interface HasType {
 
   Class<? extends Payload>[] payload() default {};
 
-  String type();
+  String value();
 }

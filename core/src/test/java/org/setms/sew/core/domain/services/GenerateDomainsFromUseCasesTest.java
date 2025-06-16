@@ -14,7 +14,7 @@ import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
 import org.setms.sew.core.domain.model.dsm.Clusters;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
-import org.setms.sew.core.domain.model.sdlc.UseCase;
+import org.setms.sew.core.domain.model.sdlc.requirements.UseCase;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 @SuppressWarnings("unchecked")

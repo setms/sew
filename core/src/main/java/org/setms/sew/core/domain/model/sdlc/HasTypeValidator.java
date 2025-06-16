@@ -9,7 +9,7 @@ public class HasTypeValidator implements ConstraintValidator<HasType, Pointer> {
 
   @Override
   public void initialize(HasType constraintAnnotation) {
-    type = constraintAnnotation.type();
+    type = constraintAnnotation.value();
   }
 
   @Override

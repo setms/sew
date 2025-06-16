@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
-import org.setms.sew.core.domain.model.sdlc.Term;
+import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;

@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.sdlc;
+package org.setms.sew.core.domain.model.sdlc.eventstorm;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.Pointer;
 
 @Getter
 @Setter
@@ -20,5 +23,4 @@ public class Command extends NamedObject {
   public Command(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
-
 }
