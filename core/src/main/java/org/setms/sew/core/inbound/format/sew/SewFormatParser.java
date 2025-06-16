@@ -26,6 +26,7 @@ import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Parser;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
+import org.setms.sew.core.domain.model.format.Strings;
 import org.setms.sew.lang.sew.SewLexer;
 import org.setms.sew.lang.sew.SewParser;
 
@@ -136,10 +137,6 @@ class SewFormatParser implements Parser {
   }
 
   private DataItem toStringItem(TerminalNode string) {
-    return new DataString(stripQuotesFrom(string.getText()));
-  }
-
-  private String stripQuotesFrom(String quotedText) {
-    return quotedText.substring(1, quotedText.length() - 1);
+    return new DataString(Strings.stripQuotesFrom(string.getText()));
   }
 }

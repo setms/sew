@@ -37,7 +37,6 @@ cell
     | IDENTIFIER
     | STRING
     | TYPE
-    | sentence
     ;
 
 typedReference : TYPE LPAREN OBJECT_NAME RPAREN ;
@@ -47,10 +46,6 @@ qualifiedName : (IDENTIFIER DOT)+ OBJECT_NAME;
 fields : (field COMMA)* field;
 
 field: OBJECT_NAME EQ (IDENTIFIER | STRING);
-
-sentence: word+ DOT?;
-
-word: OBJECT_NAME | IDENTIFIER | TYPE;
 
 PIPE        : '|';
 DASH        : '-';

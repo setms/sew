@@ -17,4 +17,8 @@ public class Strings {
   public static boolean isNotBlank(String value) {
     return value != null && !value.isBlank();
   }
+
+  public static String stripQuotesFrom(String quotedText) {
+    return quotedText.substring(1, quotedText.length() - 1);
+  }
 }
