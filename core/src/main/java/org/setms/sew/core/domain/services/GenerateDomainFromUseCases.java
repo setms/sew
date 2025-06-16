@@ -31,8 +31,8 @@ import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
-import org.setms.sew.core.domain.model.sdlc.requirements.Scenario;
-import org.setms.sew.core.domain.model.sdlc.requirements.UseCase;
+import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
+import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
 @RequiredArgsConstructor
 public class GenerateDomainFromUseCases implements Function<Collection<UseCase>, Domain> {

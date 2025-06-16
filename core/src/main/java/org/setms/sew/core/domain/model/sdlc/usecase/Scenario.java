@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.sdlc.requirements;
+package org.setms.sew.core.domain.model.sdlc.usecase;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;

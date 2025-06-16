@@ -36,7 +36,7 @@ import org.setms.sew.core.domain.model.sdlc.architecture.Module;
 import org.setms.sew.core.domain.model.sdlc.architecture.Modules;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
-import org.setms.sew.core.domain.model.sdlc.requirements.UseCase;
+import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.Location;
