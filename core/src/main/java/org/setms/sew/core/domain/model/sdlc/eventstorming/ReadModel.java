@@ -1,26 +1,30 @@
-package org.setms.sew.core.domain.model.sdlc.eventstorm;
+package org.setms.sew.core.domain.model.sdlc.eventstorming;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 
 @Getter
 @Setter
-@Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Command extends NamedObject {
+public class ReadModel extends NamedObject {
 
   @NotEmpty private String display;
-  private Pointer payload;
+  @NotNull private Pointer content;
 
-  public Command(FullyQualifiedName fullyQualifiedName) {
+  public ReadModel(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
+  }
+
+  public String getDisplay() {
+    return Optional.ofNullable(display).orElse(getName());
   }
 }

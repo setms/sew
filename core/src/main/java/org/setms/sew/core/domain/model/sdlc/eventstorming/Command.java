@@ -1,6 +1,6 @@
-package org.setms.sew.core.domain.model.sdlc.eventstorm;
+package org.setms.sew.core.domain.model.sdlc.eventstorming;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,11 +15,12 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Event extends NamedObject {
+public class Command extends NamedObject {
 
-  @NotNull private Pointer payload;
+  @NotEmpty private String display;
+  private Pointer payload;
 
-  public Event(FullyQualifiedName fullyQualifiedName) {
+  public Command(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

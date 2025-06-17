@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.model.sdlc.eventstorm;
+package org.setms.sew.core.domain.model.sdlc.eventstorming;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

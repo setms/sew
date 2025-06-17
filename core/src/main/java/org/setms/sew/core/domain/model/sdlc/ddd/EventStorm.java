@@ -1,21 +1,48 @@
-package org.setms.sew.core.domain.services;
+package org.setms.sew.core.domain.model.sdlc.ddd;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+import static lombok.AccessLevel.PACKAGE;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import lombok.NoArgsConstructor;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
+import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
-class EventStormingModel {
+@NoArgsConstructor(access = PACKAGE)
+public class EventStorm {
+
+  private static final String ATTR_READS = "reads";
+  private static final String ATTR_UPDATES = "updates";
 
   private final Collection<Follow> follows = new HashSet<>();
 
-  public void add(Pointer element, Pointer followedBy) {
+  public EventStorm(Collection<UseCase> useCases) {
+    useCases.stream()
+        .flatMap(UseCase::scenarios)
+        .map(Scenario::getSteps)
+        .forEach(
+            steps -> {
+              for (var i = 0; i < steps.size() - 1; i++) {
+                addStep(steps.get(i));
+                add(steps.get(i), steps.get(i + 1));
+              }
+              addStep(steps.getLast());
+            });
+  }
+
+  private void addStep(Pointer step) {
+    step.optAttribute(ATTR_READS).forEach(readModel -> add(readModel, step));
+    step.optAttribute(ATTR_UPDATES).forEach(readModel -> add(step, readModel));
+  }
+
+  void add(Pointer element, Pointer followedBy) {
     follows.add(new Follow(element.withoutAttributes(), followedBy.withoutAttributes()));
   }
 

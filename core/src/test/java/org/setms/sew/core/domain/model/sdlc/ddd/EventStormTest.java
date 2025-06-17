@@ -1,13 +1,13 @@
-package org.setms.sew.core.domain.services;
+package org.setms.sew.core.domain.model.sdlc.ddd;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 
-class EventStormingModelTest {
+class EventStormTest {
 
-  private final EventStormingModel model = new EventStormingModel();
+  private final EventStorm model = new EventStorm();
 
   @Test
   void shouldFindSequence() {

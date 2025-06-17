@@ -1,4 +1,4 @@
-package org.setms.sew.core.domain.services;
+package org.setms.sew.core.domain.model.sdlc.ddd;
 
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 

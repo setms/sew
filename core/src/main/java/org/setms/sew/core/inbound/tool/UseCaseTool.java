@@ -32,16 +32,18 @@ import org.atteo.evo.inflector.English;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.format.Strings;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
-import org.setms.sew.core.domain.model.sdlc.eventstorm.Aggregate;
-import org.setms.sew.core.domain.model.sdlc.eventstorm.ClockEvent;
-import org.setms.sew.core.domain.model.sdlc.eventstorm.Command;
-import org.setms.sew.core.domain.model.sdlc.eventstorm.Event;
-import org.setms.sew.core.domain.model.sdlc.eventstorm.ExternalSystem;
-import org.setms.sew.core.domain.model.sdlc.eventstorm.Policy;
-import org.setms.sew.core.domain.model.sdlc.eventstorm.ReadModel;
+import org.setms.sew.core.domain.model.sdlc.eventstorming.Aggregate;
+import org.setms.sew.core.domain.model.sdlc.eventstorming.ClockEvent;
+import org.setms.sew.core.domain.model.sdlc.eventstorming.Command;
+import org.setms.sew.core.domain.model.sdlc.eventstorming.Event;
+import org.setms.sew.core.domain.model.sdlc.eventstorming.ExternalSystem;
+import org.setms.sew.core.domain.model.sdlc.eventstorming.Policy;
+import org.setms.sew.core.domain.model.sdlc.eventstorming.ReadModel;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
 import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
@@ -55,6 +57,7 @@ import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.domain.model.tool.UnresolvedObject;
 import org.setms.sew.core.domain.services.GenerateDomainFromUseCases;
+import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 public class UseCaseTool extends Tool {
@@ -106,7 +109,10 @@ public class UseCaseTool extends Tool {
   private static final int LINE_HEIGHT = 16;
   private static final String CREATE_MISSING_STEP = "step.missing.create";
   private static final String CREATE_DOMAIN = "domain.create";
+  private static final String CREATE_ACCEPTANCE_TEST = "acceptance.test.create";
   private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
+  private static final Collection<String> ACTIVE_ELEMENTS =
+      List.of("aggregate", "policy", "readModel");
   private JLanguageTool languageTool;
 
   @Override
@@ -121,7 +127,8 @@ public class UseCaseTool extends Tool {
         new Input<>("src/main/design", Policy.class),
         new Input<>("src/main/design", ReadModel.class),
         new Input<>("src/main/stakeholders", User.class),
-        new Input<>("src/main/requirements", Domain.class));
+        new Input<>("src/main/requirements", Domain.class),
+        new Input<>("src/test/acceptance", new AcceptanceFormat(), AcceptanceTest.class));
   }
 
   @Override
@@ -132,29 +139,24 @@ public class UseCaseTool extends Tool {
   @Override
   protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get(UseCase.class);
-    useCases.forEach(
-        useCase ->
-            useCase
-                .getScenarios()
-                .forEach(
-                    scenario ->
-                        validateScenario(
-                            new Location(
-                                "useCase", useCase.getName(), "scenario", scenario.getName()),
-                            scenario.getSteps(),
-                            inputs,
-                            diagnostics)));
+    useCases.forEach(useCase -> validateUseCase(useCase, inputs, diagnostics));
+    validateAcceptanceTests(useCases, inputs, diagnostics);
     if (!useCases.isEmpty()) {
-      var domains = inputs.get(Domain.class);
-      if (domains.isEmpty()) {
-        diagnostics.add(
-            new Diagnostic(
-                WARN,
-                "Missing domain",
-                null,
-                List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
-      }
+      validateDomain(inputs, diagnostics);
     }
+  }
+
+  private void validateUseCase(
+      UseCase useCase, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    useCase
+        .getScenarios()
+        .forEach(
+            scenario ->
+                validateScenario(
+                    new Location("useCase", useCase.getName(), "scenario", scenario.getName()),
+                    scenario.getSteps(),
+                    inputs,
+                    diagnostics));
   }
 
   private void validateScenario(
@@ -202,7 +204,11 @@ public class UseCaseTool extends Tool {
       Location stepLocation) {
     var types = English.plural(reference.getType());
     var candidates = inputs.get(types, NamedObject.class);
-    if (reference.resolveFrom(candidates).isEmpty()) {
+    if ("hotspot".equals(reference.getType())) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN, "Unresolved hotspot '%s'".formatted(reference.getId()), stepLocation));
+    } else if (reference.resolveFrom(candidates).isEmpty()) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -250,6 +256,53 @@ public class UseCaseTool extends Tool {
     }
   }
 
+  private void validateAcceptanceTests(
+      List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var acceptanceTests = inputs.get(AcceptanceTest.class);
+    useCases.forEach(
+        useCase -> {
+          var packageName = useCase.getPackage();
+          useCase.getScenarios().stream()
+              .flatMap(Scenario::steps)
+              .distinct()
+              .filter(step -> ACTIVE_ELEMENTS.contains(step.getType()))
+              .forEach(
+                  pointer ->
+                      validateAcceptanceTestFor(
+                          packageName, pointer, acceptanceTests, diagnostics));
+        });
+  }
+
+  private void validateAcceptanceTestFor(
+      String packageName,
+      Pointer pointer,
+      Collection<AcceptanceTest> acceptanceTests,
+      Collection<Diagnostic> diagnostics) {
+    if (diagnostics.isEmpty()
+        && acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(pointer::equals)) {
+      var acceptanceTest =
+          "acceptance test for %s %s".formatted(pointer.getType(), pointer.getId());
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing " + acceptanceTest,
+              new Location(packageName, pointer.getType(), pointer.getId()),
+              List.of(new Suggestion(CREATE_ACCEPTANCE_TEST, "Create " + acceptanceTest))));
+    }
+  }
+
+  private void validateDomain(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var domains = inputs.get(Domain.class);
+    if (domains.isEmpty()) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing domain",
+              null,
+              List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
+    }
+  }
+
   @Override
   protected void apply(
       String suggestionCode,
@@ -257,12 +310,11 @@ public class UseCaseTool extends Tool {
       Location location,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
-    if (CREATE_MISSING_STEP.equals(suggestionCode)) {
-      createMissingStep(inputs, location, sink, diagnostics);
-    } else if (CREATE_DOMAIN.equals(suggestionCode)) {
-      createDomains(inputs, sink, diagnostics);
-    } else {
-      super.apply(suggestionCode, inputs, location, sink, diagnostics);
+    switch (suggestionCode) {
+      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, sink, diagnostics);
+      case CREATE_DOMAIN -> createDomain(inputs, sink, diagnostics);
+      case CREATE_ACCEPTANCE_TEST -> createAcceptanceTest(inputs, location, sink, diagnostics);
+      case null, default -> super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
   }
 
@@ -395,7 +447,7 @@ public class UseCaseTool extends Tool {
     return result.toString();
   }
 
-  private void createDomains(
+  private void createDomain(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
       var domain = new GenerateDomainFromUseCases().apply(inputs.get(UseCase.class));
@@ -408,6 +460,33 @@ public class UseCaseTool extends Tool {
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }
+  }
+
+  private void createAcceptanceTest(
+      ResolvedInputs inputs,
+      Location location,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    try {
+      var acceptanceTest = createAcceptanceTestFor(inputs, location);
+      var acceptanceTestSink =
+          normalize(sink)
+              .select("src/test/acceptance/%s.acceptance".formatted(acceptanceTest.getName()));
+      try (var output = acceptanceTestSink.open()) {
+        new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
+      }
+      diagnostics.add(sinkCreated(acceptanceTestSink));
+    } catch (Exception e) {
+      addError(diagnostics, e.getMessage());
+    }
+  }
+
+  private AcceptanceTest createAcceptanceTestFor(ResolvedInputs inputs, Location location) {
+    var packageName = location.segments().get(0);
+    var type = location.segments().get(1);
+    var name = location.segments().get(2);
+    return new AcceptanceTest(new FullyQualifiedName("%s.%s".formatted(packageName, name)))
+        .setSut(new Pointer(type, name));
   }
 
   @Override

@@ -2,6 +2,7 @@ package org.setms.sew.core.inbound.format.acceptance;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.setms.sew.core.domain.model.format.Builder;
 import org.setms.sew.core.domain.model.format.DataEnum;
@@ -24,17 +25,22 @@ class AcceptanceFormatBuilder implements Builder {
 
   public void buildSut(RootObject root, PrintWriter writer) {
     var table = new Table("type", "name");
-    var sut = root.property("sut", Reference.class);
-    table.addRow(sut.getType(), "%s.%s".formatted(root.getScope(), sut.getId()));
+    Optional.ofNullable(root)
+        .map(object -> object.property("sut", Reference.class))
+        .ifPresentOrElse(
+            sut -> table.addRow(sut.getType(), "%s.%s".formatted(root.getScope(), sut.getId())),
+            () -> table.addRow("???", "???"));
     table.printTo(writer);
   }
 
   private void buildVariables(DataList variables, PrintWriter writer) {
     var table = new Table("variable", "type", "definition");
-    variables
-        .map(NestedObject.class::cast)
-        .forEach(
-            object -> table.addRow(object.getName(), buildType(object), buildDefinition(object)));
+    if (variables != null && variables.hasItems()) {
+      variables
+          .map(NestedObject.class::cast)
+          .forEach(
+              object -> table.addRow(object.getName(), buildType(object), buildDefinition(object)));
+    }
     table.printTo(writer);
   }
 
@@ -74,17 +80,19 @@ class AcceptanceFormatBuilder implements Builder {
 
   private void buildScenarios(DataList scenarios, PrintWriter writer) {
     var table = new Table("scenario", "init", "command", "state", "emitted");
-    scenarios
-        .map(NestedObject.class::cast)
-        .forEach(
-            object -> {
-              var name = '"' + object.getName() + '"';
-              var init = "";
-              var command = object.property("command", Reference.class).getId();
-              var state = "";
-              var emitted = object.property("emitted", Reference.class).getId();
-              table.addRow(name, init, command, state, emitted);
-            });
+    if (scenarios != null && scenarios.hasItems()) {
+      scenarios
+          .map(NestedObject.class::cast)
+          .forEach(
+              object -> {
+                var name = '"' + object.getName() + '"';
+                var init = "";
+                var command = object.property("command", Reference.class).getId();
+                var state = "";
+                var emitted = object.property("emitted", Reference.class).getId();
+                table.addRow(name, init, command, state, emitted);
+              });
+    }
     table.printTo(writer);
   }
 }

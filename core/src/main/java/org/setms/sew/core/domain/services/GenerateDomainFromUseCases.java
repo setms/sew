@@ -30,6 +30,8 @@ import org.setms.sew.core.domain.model.dsm.StochasticGradientDescentClusteringAl
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
+import org.setms.sew.core.domain.model.sdlc.ddd.EventStorm;
+import org.setms.sew.core.domain.model.sdlc.ddd.Sequence;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
@@ -44,7 +46,6 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
   private static final String COMMAND = "command";
   private static final String EXTERNAL_SYSTEM = "externalSystem";
   private static final String ATTR_UPDATES = "updates";
-  private static final String ATTR_READS = "reads";
   private static final List<String> ACTIVE_ELEMENT_TYPES = List.of(AGGREGATE, READ_MODEL, POLICY);
   private static final int AVAILABILITY_COUPLING = 10;
   private static final int ANTI_CORRUPTION_COUPLING = 8;
@@ -68,34 +69,13 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
   }
 
   private DesignStructureMatrix<Pointer> dsmFrom(Collection<UseCase> useCases) {
-    var completeEventStorm = combine(useCases);
+    var completeEventStorm = new EventStorm(useCases);
     var result = new DesignStructureMatrix<>(activeElementsIn(completeEventStorm));
     addDependencies(completeEventStorm, result);
     return result;
   }
 
-  private EventStormingModel combine(Collection<UseCase> useCases) {
-    var result = new EventStormingModel();
-    useCases.stream()
-        .flatMap(UseCase::scenarios)
-        .map(Scenario::getSteps)
-        .forEach(
-            steps -> {
-              for (var i = 0; i < steps.size() - 1; i++) {
-                addStep(steps.get(i), result);
-                result.add(steps.get(i), steps.get(i + 1));
-              }
-              addStep(steps.getLast(), result);
-            });
-    return result;
-  }
-
-  private void addStep(Pointer step, EventStormingModel model) {
-    step.optAttribute(ATTR_READS).forEach(readModel -> model.add(readModel, step));
-    step.optAttribute(ATTR_UPDATES).forEach(readModel -> model.add(step, readModel));
-  }
-
-  private Set<Pointer> activeElementsIn(EventStormingModel model) {
+  private Set<Pointer> activeElementsIn(EventStorm model) {
     return model.elements().stream()
         .filter(p -> ACTIVE_ELEMENT_TYPES.contains(p.getType()))
         .sorted(this::compareActiveElements)
@@ -111,7 +91,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
     return p1.getId().compareTo(p2.getId());
   }
 
-  private void addDependencies(EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+  private void addDependencies(EventStorm model, DesignStructureMatrix<Pointer> dsm) {
     addDependenciesBetweenPoliciesAndAggregates(model, dsm);
     addDependenciesBetweenPoliciesAndReadModels(model, dsm);
     addDependenciesBetweenReadModelsAndAggregates(model, dsm);
@@ -119,7 +99,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
   }
 
   private void addDependenciesBetweenPoliciesAndAggregates(
-      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+      EventStorm model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(POLICY, COMMAND, AGGREGATE)
         .forEach(
@@ -159,7 +139,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
   }
 
   private void addDependenciesBetweenPoliciesAndReadModels(
-      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+      EventStorm model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(READ_MODEL, POLICY)
         .forEach(
@@ -168,14 +148,14 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
   }
 
   private void addDependenciesBetweenReadModelsAndAggregates(
-      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+      EventStorm model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(AGGREGATE, EVENT, READ_MODEL)
         .forEach(sequence -> dsm.addDependency(sequence.last(), sequence.first(), DATA_COUPLING));
   }
 
   private void addDependenciesBetweenPolicies(
-      EventStormingModel model, DesignStructureMatrix<Pointer> dsm) {
+      EventStorm model, DesignStructureMatrix<Pointer> dsm) {
     model
         .findSequences(POLICY, COMMAND, EXTERNAL_SYSTEM, EVENT, POLICY)
         .forEach(

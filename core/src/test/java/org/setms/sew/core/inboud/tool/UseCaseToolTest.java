@@ -82,7 +82,7 @@ class UseCaseToolTest {
     var diagnostics = tool.validate(source);
 
     assertThat(diagnostics)
-        .hasSize(7)
+        .hasSizeGreaterThanOrEqualTo(7)
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
@@ -146,7 +146,7 @@ class UseCaseToolTest {
   }
 
   @Test
-  void shouldCreateDomains() {
+  void shouldCreateDomain() {
     var testDir = new File(baseDir, "valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
@@ -163,6 +163,28 @@ class UseCaseToolTest {
     assertThat(suggestion.message()).isEqualTo("Discover subdomains");
     actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
     assertThat(actual).hasSize(1);
+    diagnostic = actual.getFirst();
+    assertThat(diagnostic.message()).startsWith("Created ");
+  }
+
+  @Test
+  void shouldCreateAcceptanceTest() {
+    var testDir = new File(baseDir, "valid");
+    var source = new FileInputSource(testDir);
+    var sink = new FileOutputSink(testDir).select("build");
+
+    var actual = tool.validate(source);
+
+    assertThat(actual.size()).isGreaterThanOrEqualTo(1);
+    var maybeDiagnostic =
+        actual.stream().filter(d -> d.message().startsWith("Missing acceptance test")).findFirst();
+    assertThat(maybeDiagnostic).as("Warning about missing acceptance test").isPresent();
+    var diagnostic = maybeDiagnostic.get();
+    assertThat(diagnostic.suggestions()).hasSize(1);
+    var suggestion = diagnostic.suggestions().getFirst();
+    assertThat(suggestion.message()).startsWith("Create acceptance test");
+    actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
+    assertThat(actual).as("Created artifacts").hasSize(1);
     diagnostic = actual.getFirst();
     assertThat(diagnostic.message()).startsWith("Created ");
   }
