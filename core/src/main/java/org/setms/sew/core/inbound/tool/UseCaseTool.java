@@ -140,7 +140,9 @@ public class UseCaseTool extends Tool {
   protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get(UseCase.class);
     useCases.forEach(useCase -> validateUseCase(useCase, inputs, diagnostics));
-    validateAcceptanceTests(useCases, inputs, diagnostics);
+    if (diagnostics.isEmpty()) {
+      validateAcceptanceTests(useCases, inputs, diagnostics);
+    }
     if (!useCases.isEmpty()) {
       validateDomain(inputs, diagnostics);
     }
@@ -278,8 +280,7 @@ public class UseCaseTool extends Tool {
       Pointer pointer,
       Collection<AcceptanceTest> acceptanceTests,
       Collection<Diagnostic> diagnostics) {
-    if (diagnostics.isEmpty()
-        && acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(pointer::equals)) {
+    if (acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(pointer::equals)) {
       var acceptanceTest =
           "acceptance test for %s %s".formatted(pointer.getType(), pointer.getId());
       diagnostics.add(
@@ -473,7 +474,7 @@ public class UseCaseTool extends Tool {
           normalize(sink)
               .select(
                   "src/test/acceptance/%s-%s.acceptance"
-                      .formatted(acceptanceTest.getSut().getType(), acceptanceTest.getName()));
+                      .formatted(acceptanceTest.getName(), acceptanceTest.getSut().getType()));
       try (var output = acceptanceTestSink.open()) {
         new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
       }
