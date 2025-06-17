@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.language.sew;
+package org.setms.sew.intellij.lang.sew;
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
@@ -14,7 +14,6 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.SewElementTypes;
 import org.setms.sew.intellij.domain.DomainFile;
 import org.setms.sew.intellij.filetype.AggregateFile;
 import org.setms.sew.intellij.filetype.ClockEventFile;
@@ -39,7 +38,7 @@ public class SewParserDefinition implements ParserDefinition {
 
   @Override
   public @NotNull PsiParser createParser(Project project) {
-    return new org.setms.sew.intellij.SewParser();
+    return new SewParser();
   }
 
   @Override

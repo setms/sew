@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.language.sew;
+package org.setms.sew.intellij.lang.sew;
 
 import static org.setms.sew.core.domain.model.tool.Level.INFO;
 

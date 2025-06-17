@@ -1,12 +1,12 @@
-package org.setms.sew.intellij.language.sew;
+package org.setms.sew.intellij.lang.acceptance;
 
 import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.TokenType;
-import static org.setms.sew.intellij.SewElementTypes.*;
+import static org.setms.sew.intellij.lang.acceptance.AcceptanceElementTypes.*;
 %%
 
-%class SewLexer
+%class AcceptanceLexer
 %implements FlexLexer
 %unicode
 %function advance
@@ -15,34 +15,27 @@ import static org.setms.sew.intellij.SewElementTypes.*;
 %{
 %}
 
-COMMENT="#"[^\r\n]*[\r\n]+
 IDENTIFIER=[a-z][a-zA-Z_]*
 STRING=\"([^\"\r\n]*)\"
 TYPE=(aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|decision|domain|entity|event|externalSystem|field|hotspot|module|modules|owner|policy|readModel|scenario|screen|scope|subdomain|term|useCase|user|userRequirement|valueObject)
 NAME=[A-Z][a-zA-Z0-9]*
 WHITE_SPACE=[ \t]+
-NEWLINE=[\r\n]+
+NEWLINE=[\r\n]
 
 %%
 
-{WHITE_SPACE}               { return TokenType.WHITE_SPACE; }
-{COMMENT}                   { return COMMENT; }
+{WHITE_SPACE}                { return TokenType.WHITE_SPACE; }
 {NEWLINE}                   { return NEWLINE; }
-
-"package"                   { return PACKAGE; }
-
 {TYPE}                      { return TYPE; }
 {NAME}                      { return NAME; }
 
-"="                         { return EQ; }
-"."                         { return DOT; }
-","                         { return COMMA; }
-"{"                         { return LBRACE; }
-"}"                         { return RBRACE; }
-"["                         { return LBRACK; }
-"]"                         { return RBRACK; }
-"("                         { return LPAREN; }
-")"                         { return RPAREN; }
+"|"                          { return PIPE; }
+"-"                          { return DASH; }
+","                          { return COMMA; }
+"."                          { return DOT; }
+"="                          { return EQ; }
+"("                          { return LPAREN; }
+")"                          { return RPAREN; }
 
 {STRING}                    { return STRING; }
 {IDENTIFIER}                { return IDENTIFIER; }

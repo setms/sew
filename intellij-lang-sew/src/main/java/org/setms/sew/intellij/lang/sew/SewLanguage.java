@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.language.sew;
+package org.setms.sew.intellij.lang.sew;
 
 import com.intellij.lang.Language;
 

@@ -1,10 +1,6 @@
 plugins {
     id 'org.jetbrains.intellij.platform' version '2.6.0'
-    id "org.jetbrains.grammarkit" version "2022.3.2.2"
 }
-
-group = 'org.setms.sew'
-version = '0.1.0'
 
 repositories {
     intellijPlatform {
@@ -13,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':core')
+    implementation project(':core'), project(':intellij-lang-sew'), project(':intellij-lang-acceptance')
 
     testImplementation libs.bundles.junit
 
@@ -44,22 +40,3 @@ intellijPlatform {
         }
     }
 }
-
-generateLexer {
-    sourceFile = file('src/main/grammars/Sew.flex')
-    targetOutputDir = file('build/generated/sources/flex/org/setms/sew/intellij/language/sew')
-    purgeOldFiles = true
-}
-sourceSets.main.java.srcDir 'build/generated/sources/flex'
-
-generateParser {
-    sourceFile = file('src/main/grammars/Sew.bnf')
-    targetRootOutputDir = file('build/generated/sources/bnf')
-    // These are required, but seem to be unused if the .bnf provides the FQNs
-    pathToParser = 'parser'
-    pathToPsiRoot = 'psi'
-    purgeOldFiles = true
-}
-sourceSets.main.java.srcDir 'build/generated/sources/bnf'
-
-compileJava.dependsOn generateParser, generateLexer

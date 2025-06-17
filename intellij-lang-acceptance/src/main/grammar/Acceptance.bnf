@@ -1,0 +1,52 @@
+{
+  parserClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+  psiClassPrefix="Acceptance"
+  psiImplClassSuffix="Impl"
+  psiPackage="org.setms.sew.intellij.lang.acceptance"
+  psiImplPackage="org.setms.sew.intellij.lang.acceptance"
+  elementTypeHolderClass="org.setms.sew.intellij.lang.acceptance.AcceptanceElementTypes"
+  elementTypeClass="org.setms.sew.intellij.lang.acceptance.AcceptanceElementType"
+  tokenTypeClass="org.setms.sew.intellij.lang.acceptance.AcceptanceTokenType"
+  tokens=[
+    COMMA=","
+    DOT="."
+    EQ="="
+    IDENTIFIER="identifier"
+    LPAREN="("
+    NAME="name"
+    RPAREN=")"
+    TYPE="type name"
+    WHITE_SPACE="white space"
+  ]
+}
+
+test ::= sut NEWLINE+ variables NEWLINE+ scenarios NEWLINE*
+
+sut ::= table
+variables ::= table
+scenarios ::= table
+
+table ::= header row+
+
+header ::= PIPE heading (PIPE heading)* PIPE NEWLINE separator
+heading ::= IDENTIFIER | TYPE
+
+separator ::= PIPE DASH+ (PIPE DASH+)* PIPE NEWLINE
+
+row ::= PIPE cell? (PIPE cell?)* PIPE NEWLINE
+
+cell ::= typed_reference
+    | qualified_name
+    | fields
+    | OBJECT_NAME
+    | IDENTIFIER
+    | STRING
+    | TYPE
+
+typed_reference ::= TYPE LPAREN OBJECT_NAME RPAREN
+
+qualified_name ::= (IDENTIFIER DOT)+ OBJECT_NAME
+
+fields ::= (field COMMA)* field
+field ::= OBJECT_NAME EQ (IDENTIFIER | STRING)

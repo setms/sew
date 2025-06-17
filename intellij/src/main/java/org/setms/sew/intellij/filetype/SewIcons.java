@@ -5,6 +5,7 @@ import javax.swing.*;
 
 public class SewIcons {
 
+  public static final Icon ACCEPTANCE = IconLoader.getIcon("/icons/acceptance.png", SewIcons.class);
   public static final Icon AGGREGATE = IconLoader.getIcon("/icons/aggregate.png", SewIcons.class);
   public static final Icon CLOCK_EVENT =
       IconLoader.getIcon("/icons/clock_event.png", SewIcons.class);

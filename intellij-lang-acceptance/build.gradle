@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij.platform.module' version '2.6.0'
+    id 'org.jetbrains.grammarkit' version "2022.3.2.2"
+}
+
+repositories {
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity("2024.3.5")
+        instrumentationTools()
+        pluginVerifier()
+    }
+}
+
+generateLexer {
+    sourceFile = file('src/main/grammar/Acceptance.flex')
+    targetOutputDir = file('build/generated/sources/flex/org/setms/sew/intellij/lang/acceptance')
+    purgeOldFiles = true
+}
+sourceSets.main.java.srcDir 'build/generated/sources/flex'
+
+generateParser {
+    sourceFile = file('src/main/grammar/Acceptance.bnf')
+    targetRootOutputDir = file('build/generated/sources/bnf')
+    // These are required, but seem to be unused if the .bnf provides the FQNs
+    pathToParser = 'parser'
+    pathToPsiRoot = 'psi'
+    purgeOldFiles = true
+}
+sourceSets.main.java.srcDir 'build/generated/sources/bnf'
+
+compileJava.dependsOn generateParser, generateLexer

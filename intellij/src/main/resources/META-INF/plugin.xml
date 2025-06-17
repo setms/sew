@@ -1,5 +1,8 @@
 <idea-plugin>
     <extensions defaultExtensionNs="com.intellij">
+        <fileType name="AcceptanceTest" language="Acceptance" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.AcceptanceTestFileType"
+                  extensions="acceptance"/>
         <fileType name="Aggregate" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.AggregateFileType"
                   extensions="aggregate"/>
@@ -37,10 +40,10 @@
                   implementationClass="org.setms.sew.intellij.filetype.UserFileType"
                   extensions="user"/>
 
-        <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewSyntaxHighlighterFactory"/>
-        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewParserDefinition"/>
         <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
-        <annotator language="Sew" implementationClass="org.setms.sew.intellij.language.sew.SewAnnotator"/>
+        <annotator language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewAnnotator"/>
 
         <fileEditorProvider implementation="org.setms.sew.intellij.domain.DomainEditorProvider"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>

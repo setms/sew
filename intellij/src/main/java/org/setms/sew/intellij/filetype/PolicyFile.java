@@ -4,7 +4,7 @@ import com.intellij.extapi.psi.PsiFileBase;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.FileViewProvider;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.language.sew.SewLanguage;
+import org.setms.sew.intellij.lang.sew.SewLanguage;
 
 public class PolicyFile extends PsiFileBase {
 

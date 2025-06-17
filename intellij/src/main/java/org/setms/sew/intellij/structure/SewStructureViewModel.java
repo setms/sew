@@ -4,8 +4,8 @@ import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.structureView.TextEditorBasedStructureViewModel;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.SewObject;
-import org.setms.sew.intellij.SewProperty;
+import org.setms.sew.intellij.lang.sew.SewObject;
+import org.setms.sew.intellij.lang.sew.SewProperty;
 
 public class SewStructureViewModel extends TextEditorBasedStructureViewModel {
 

@@ -7,7 +7,7 @@ import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.sew.intellij.language.sew.SewLanguage;
+import org.setms.sew.intellij.lang.sew.SewLanguage;
 
 public class SewStartupActivity implements ProjectActivity {
 

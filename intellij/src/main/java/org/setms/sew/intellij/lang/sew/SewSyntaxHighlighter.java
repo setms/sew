@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.language.sew;
+package org.setms.sew.intellij.lang.sew;
 
 import com.intellij.lexer.FlexAdapter;
 import com.intellij.lexer.Lexer;
@@ -8,7 +8,6 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighterBase;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.SewElementTypes;
 
 public class SewSyntaxHighlighter extends SyntaxHighlighterBase {
 

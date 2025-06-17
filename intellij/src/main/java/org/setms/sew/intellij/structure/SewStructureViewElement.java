@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.sew.intellij.SewElementTypes;
+import org.setms.sew.intellij.lang.sew.SewElementTypes;
 
 public class SewStructureViewElement extends PsiTreeElementBase<PsiElement> {
 

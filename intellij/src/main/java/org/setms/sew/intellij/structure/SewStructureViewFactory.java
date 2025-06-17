@@ -5,7 +5,7 @@ import com.intellij.lang.PsiStructureViewFactory;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.sew.intellij.language.sew.SewLanguage;
+import org.setms.sew.intellij.lang.sew.SewLanguage;
 
 public class SewStructureViewFactory implements PsiStructureViewFactory {
 
