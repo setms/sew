@@ -1,0 +1,4 @@
+package gdpr
+
+event RequestStarted {
+}

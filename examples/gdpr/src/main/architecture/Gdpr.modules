@@ -1,0 +1,21 @@
+package gdpr
+
+modules Gdpr {
+  mappedTo = domain(Gdpr)
+}
+
+module Notifications {
+  mappedTo = subdomain(Notifications)
+}
+
+module Requests {
+  mappedTo = subdomain(Requests)
+}
+
+module Services {
+  mappedTo = subdomain(Services)
+}
+
+module Users {
+  mappedTo = subdomain(Users)
+}

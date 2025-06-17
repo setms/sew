@@ -1,0 +1,5 @@
+package gdpr
+
+readModel Requests {
+  display = "Requests"
+}

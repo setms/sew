@@ -80,6 +80,7 @@ public class SewAnnotator implements Annotator {
         .filter(
             diagnostic ->
                 diagnostic.location() == null
+                        || !"useCase".equals(diagnostic.location().segments().getFirst())
                     ? location.isEmpty()
                     : diagnostic.location().toString().equals(location))
         .forEach(
@@ -90,7 +91,8 @@ public class SewAnnotator implements Annotator {
                       .range(psiElement);
               for (var suggestion : diagnostic.suggestions()) {
                 builder
-                    .newFix(new ApplySuggestion(tool, suggestion, location, psiElement))
+                    .newFix(
+                        new ApplySuggestion(tool, suggestion, diagnostic.location(), psiElement))
                     .registerFix();
               }
               builder.create();

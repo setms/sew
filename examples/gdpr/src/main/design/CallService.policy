@@ -1,0 +1,5 @@
+package gdpr
+
+policy CallService {
+  title = "Call service"
+}

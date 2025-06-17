@@ -1,0 +1,58 @@
+package gdpr
+
+domain Gdpr {
+}
+
+subdomain Notifications {
+  content = [
+    aggregate(Notifications),
+    command(NotifyUser),
+    event(UserNotified),
+    readModel(Notifications)
+  ]
+}
+
+subdomain Requests {
+  content = [
+    aggregate(Requests),
+    command(DenyRequest),
+    command(FinishRequest),
+    command(RequestDataDeletion),
+    command(StartRequest),
+    event(RequestDenied),
+    event(RequestFinished),
+    event(RequestReceived),
+    event(RequestStarted),
+    event(ServiceRequestFinished),
+    policy(CallService),
+    policy(FanIn),
+    policy(NotifyUser),
+    readModel(Requests),
+    readModel(ServiceRequests)
+  ]
+  dependsOn = [ subdomain(Notifications) ]
+}
+
+subdomain Services {
+  content = [
+    aggregate(Services),
+    command(AddService),
+    command(DeleteService),
+    command(StartServiceRequest),
+    command(UpdateService),
+    event(ServiceAdded),
+    event(ServiceDeleted),
+    event(ServiceRequestStarted),
+    event(ServiceUpdated),
+    policy(FanOut),
+    readModel(Services)
+  ]
+  dependsOn = [ subdomain(Requests) ]
+}
+
+subdomain Users {
+  content = [
+    event(UserUpdated),
+    readModel(Users)
+  ]
+}

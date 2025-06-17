@@ -1,0 +1,5 @@
+package gdpr
+
+policy FanOut {
+  title = "Fan out"
+}

@@ -96,7 +96,7 @@ public class UseCaseTool extends Tool {
           "hotspot",
           ELEMENT_ORDER);
   private static final Collection<String> ALLOWED_ENDING =
-      List.of("event", "hotspot", "policy", "readModel", "externalSystem");
+      List.of("event", "hotspot", "policy", "readModel", "externalSystem", "user");
   private static final Map<String, String> VERBS =
       Map.of("event", "emit", "command", "issue", "readModel", "update");
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
@@ -471,7 +471,9 @@ public class UseCaseTool extends Tool {
       var acceptanceTest = createAcceptanceTestFor(inputs, location);
       var acceptanceTestSink =
           normalize(sink)
-              .select("src/test/acceptance/%s.acceptance".formatted(acceptanceTest.getName()));
+              .select(
+                  "src/test/acceptance/%s-%s.acceptance"
+                      .formatted(acceptanceTest.getSut().getType(), acceptanceTest.getName()));
       try (var output = acceptanceTestSink.open()) {
         new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
       }
@@ -702,6 +704,9 @@ public class UseCaseTool extends Tool {
     try {
       var matches = langTool.check(sentence);
       for (var match : matches) {
+        if (match.getSuggestedReplacements().isEmpty()) {
+          continue;
+        }
         var replacement = match.getSuggestedReplacements().getFirst();
         if (replacement.equalsIgnoreCase(
             sentence.substring(match.getFromPos(), match.getToPos()))) {
@@ -883,7 +888,11 @@ public class UseCaseTool extends Tool {
         }
         var action = actions.getLast();
         if (isType(action, Event.class)) {
-          var response = friendlyName(action, Event.class, event -> event.getPayload().getId());
+          var response =
+              friendlyName(
+                  action,
+                  Event.class,
+                  event -> Optional.ofNullable(event.getPayload()).map(Pointer::getId).orElse(""));
           return "%s responds that the %s.".formatted(getName(), initLower(response));
         }
         return actions.isEmpty() ? null : "%s does nothing.".formatted(getName());

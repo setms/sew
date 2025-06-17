@@ -1,0 +1,5 @@
+package gdpr
+
+policy NotifyUser {
+  title = "Notify user"
+}

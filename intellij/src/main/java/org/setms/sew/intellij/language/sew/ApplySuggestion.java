@@ -18,7 +18,6 @@ import com.intellij.util.IncorrectOperationException;
 import java.io.File;
 import java.net.URI;
 import java.util.Objects;
-import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Location;
@@ -29,17 +28,18 @@ import org.setms.sew.intellij.editor.VirtualFileInputSource;
 
 public class ApplySuggestion implements IntentionAction {
 
-  public static final String CREATED_PREFIX = "Created ";
+  private static final String CREATED_PREFIX = "Created ";
+
   private final Tool tool;
   private final Suggestion suggestion;
   private final Location location;
   private final PsiElement psiElement;
 
-  public ApplySuggestion(Tool tool, Suggestion suggestion, String location, PsiElement psiElement) {
+  public ApplySuggestion(
+      Tool tool, Suggestion suggestion, Location location, PsiElement psiElement) {
     this.tool = tool;
     this.suggestion = suggestion;
-    this.location =
-        Optional.ofNullable(location).map(text -> text.split("/")).map(Location::new).orElse(null);
+    this.location = location;
     this.psiElement = psiElement;
   }
 

@@ -1,0 +1,5 @@
+package gdpr
+
+externalSystem App {
+    display = "App"
+}

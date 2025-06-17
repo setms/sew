@@ -1,0 +1,5 @@
+package gdpr
+
+policy FanIn {
+  title = "Fan in"
+}

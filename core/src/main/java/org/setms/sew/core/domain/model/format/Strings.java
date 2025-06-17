@@ -7,10 +7,16 @@ import lombok.NoArgsConstructor;
 public class Strings {
 
   public static String initUpper(String value) {
+    if (value == null || value.isEmpty()) {
+      return value;
+    }
     return Character.toUpperCase(value.charAt(0)) + value.substring(1);
   }
 
   public static String initLower(String value) {
+    if (value == null || value.isEmpty()) {
+      return value;
+    }
     return Character.toLowerCase(value.charAt(0)) + value.substring(1);
   }
 
@@ -19,6 +25,9 @@ public class Strings {
   }
 
   public static String stripQuotesFrom(String quotedText) {
+    if (quotedText == null || quotedText.length() < 2) {
+      return quotedText;
+    }
     return quotedText.substring(1, quotedText.length() - 1);
   }
 }
