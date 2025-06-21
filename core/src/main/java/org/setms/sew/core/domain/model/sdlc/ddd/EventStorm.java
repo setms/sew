@@ -63,28 +63,28 @@ public class EventStorm {
     var found =
         follows.stream()
             .filter(f -> f.element().isType(types.getFirst()) && f.followedBy.isType(types.get(1)))
+            .map(f -> new Sequence(f.element(), f.followedBy()))
             .toList();
     if (types.size() == 2) {
-      found.stream().map(f -> new Sequence(f.element(), f.followedBy())).forEach(sequences::add);
+      sequences.addAll(found);
       return;
     }
-    found.stream()
-        .flatMap(f -> findSequences(f.element(), f.followedBy(), types, 2))
-        .forEach(sequences::add);
+    found.stream().flatMap(sequence -> findSequences(sequence, types, 2)).forEach(sequences::add);
   }
 
-  private Stream<Sequence> findSequences(
-      Pointer first, Pointer current, List<String> types, int typeIndex) {
+  private Stream<Sequence> findSequences(Sequence current, List<String> types, int typeIndex) {
     var found =
         follows.stream()
-            .filter(f -> f.element().equals(current) && f.followedBy().isType(types.get(typeIndex)))
+            .filter(
+                f ->
+                    f.element().equals(current.last())
+                        && f.followedBy().isType(types.get(typeIndex)))
             .map(Follow::followedBy)
-            .toList();
+            .map(current::append);
     if (typeIndex == types.size() - 1) {
-      return found.stream().map(last -> new Sequence(first, last));
+      return found;
     }
-    return found.stream()
-        .flatMap(newCurrent -> findSequences(first, newCurrent, types, typeIndex + 1));
+    return found.flatMap(sequence -> findSequences(sequence, types, typeIndex + 1));
   }
 
   @Override

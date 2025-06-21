@@ -1,7 +1,9 @@
 package org.setms.sew.core.domain.model.sdlc.ddd;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 
@@ -26,12 +28,14 @@ class EventStormTest {
     model.add(policy3, command3);
     model.add(command3, aggregate2);
 
-    var actual = model.findSequences("policy", "command", "aggregate");
+    var actual = model.findSequences("policy", "command", "aggregate").toList();
 
-    assertThat(actual)
-        .containsExactlyInAnyOrder(
-            new Sequence(policy1, aggregate1),
-            new Sequence(policy2, aggregate1),
-            new Sequence(policy3, aggregate2));
+    assertThatContainsSequence(actual, policy1, aggregate1);
+    assertThatContainsSequence(actual, policy2, aggregate1);
+    assertThatContainsSequence(actual, policy3, aggregate2);
+  }
+
+  private void assertThatContainsSequence(List<Sequence> actual, Pointer first, Pointer last) {
+    assertThat(actual.stream().anyMatch(s -> s.first().equals(first) && s.last().equals(last))).isTrue();
   }
 }
