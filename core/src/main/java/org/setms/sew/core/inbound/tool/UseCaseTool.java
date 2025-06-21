@@ -32,7 +32,6 @@ import org.atteo.evo.inflector.English;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.format.Strings;
-import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
@@ -56,7 +55,8 @@ import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.domain.model.tool.UnresolvedObject;
-import org.setms.sew.core.domain.services.GenerateDomainFromUseCases;
+import org.setms.sew.core.domain.services.CreateAcceptanceTest;
+import org.setms.sew.core.domain.services.DiscoverDomainFromUseCases;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
@@ -451,7 +451,7 @@ public class UseCaseTool extends Tool {
   private void createDomain(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
-      var domain = new GenerateDomainFromUseCases().apply(inputs.get(UseCase.class));
+      var domain = new DiscoverDomainFromUseCases().apply(inputs.get(UseCase.class));
       var domainSink =
           normalize(sink).select("src/main/requirements/%s.domain".formatted(domain.getName()));
       try (var output = domainSink.open()) {
@@ -486,10 +486,8 @@ public class UseCaseTool extends Tool {
 
   private AcceptanceTest createAcceptanceTestFor(ResolvedInputs inputs, Location location) {
     var packageName = location.segments().get(0);
-    var type = location.segments().get(1);
-    var name = location.segments().get(2);
-    return new AcceptanceTest(new FullyQualifiedName("%s.%s".formatted(packageName, name)))
-        .setSut(new Pointer(type, name));
+    var element = new Pointer(location.segments().get(1), location.segments().get(2));
+    return new CreateAcceptanceTest(packageName, inputs, inputs.get(UseCase.class)).apply(element);
   }
 
   @Override

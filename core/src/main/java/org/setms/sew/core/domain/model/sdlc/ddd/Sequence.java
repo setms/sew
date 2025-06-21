@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 import java.util.ArrayList;
 import java.util.List;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.PointerResolver;
 
 public record Sequence(List<Pointer> items) {
 
@@ -24,5 +25,9 @@ public record Sequence(List<Pointer> items) {
     var newItems = new ArrayList<>(items);
     newItems.add(item);
     return new Sequence(newItems);
+  }
+
+  public ResolvedSequence resolve(PointerResolver resolver) {
+    return new ResolvedSequence(items.stream().map(resolver::resolve).toList());
   }
 }

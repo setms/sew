@@ -11,8 +11,9 @@ import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.PointerResolver;
 
-public class ResolvedInputs {
+public class ResolvedInputs implements PointerResolver {
 
   private final Map<String, List<? extends NamedObject>> values = new HashMap<>();
 
@@ -23,12 +24,13 @@ public class ResolvedInputs {
   public <T extends NamedObject> List<T> get(Class<T> type) {
     return get(initLower(English.plural(type.getSimpleName())), type);
   }
-  
+
   public <T extends NamedObject> List<T> get(String name, Class<T> type) {
     var namedObjects = Optional.ofNullable(values.get(name)).orElseGet(Collections::emptyList);
     return namedObjects.stream().map(type::cast).toList();
   }
 
+  @Override
   public NamedObject resolve(Pointer pointer) {
     var type = pointer.getType();
     if (type == null) {

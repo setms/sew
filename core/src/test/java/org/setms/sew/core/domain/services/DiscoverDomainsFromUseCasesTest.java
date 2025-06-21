@@ -18,7 +18,7 @@ import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 @SuppressWarnings("unchecked")
-class GenerateDomainsFromUseCasesTest {
+class DiscoverDomainsFromUseCasesTest {
 
   private final ClusteringAlgorithm<Pointer> clusteringAlgorithm = mock(ClusteringAlgorithm.class);
 
@@ -32,7 +32,7 @@ class GenerateDomainsFromUseCasesTest {
               return new Clusters<Pointer>(dsm.getElements()).all();
             });
 
-    var actual = new GenerateDomainFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
+    var actual = new DiscoverDomainFromUseCases(clusteringAlgorithm).apply(List.of(useCase));
 
     assertThat(actual.getSubdomains()).hasSize(1);
     var dsmCaptor = ArgumentCaptor.forClass(DesignStructureMatrix.class);

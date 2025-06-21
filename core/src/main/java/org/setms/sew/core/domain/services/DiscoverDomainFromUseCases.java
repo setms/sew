@@ -37,7 +37,7 @@ import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
 @RequiredArgsConstructor
-public class GenerateDomainFromUseCases implements Function<Collection<UseCase>, Domain> {
+public class DiscoverDomainFromUseCases implements Function<Collection<UseCase>, Domain> {
 
   private static final String AGGREGATE = "aggregate";
   private static final String POLICY = "policy";
@@ -54,7 +54,7 @@ public class GenerateDomainFromUseCases implements Function<Collection<UseCase>,
 
   private final ClusteringAlgorithm<Pointer> clusteringAlgorithm;
 
-  public GenerateDomainFromUseCases() {
+  public DiscoverDomainFromUseCases() {
     this(new StochasticGradientDescentClusteringAlgorithm<>());
   }
 
