@@ -1,10 +1,11 @@
-package org.setms.sew.intellij.filetype;
+package org.setms.sew.intellij.acceptancetest;
 
 import com.intellij.openapi.fileTypes.LanguageFileType;
 import javax.swing.Icon;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.setms.sew.intellij.filetype.SewIcons;
 import org.setms.sew.intellij.lang.acceptance.AcceptanceLanguage;
 
 public class AcceptanceTestFileType extends LanguageFileType {

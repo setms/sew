@@ -30,9 +30,13 @@ public abstract class EditorWithPreviewProvider implements FileEditorProvider, D
 
   @Override
   public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
-    var textEditor = (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
+    var textEditor = editorFor(project, file);
     var htmlEditor = new HtmlPreview(project, file, tool);
     return new TextEditorWithPreview(textEditor, htmlEditor);
+  }
+
+  protected TextEditor editorFor(Project project, VirtualFile file) {
+    return (TextEditor) TextEditorProvider.getInstance().createEditor(project, file);
   }
 
   @Override

@@ -43,7 +43,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
       """
       <html>
         <body>
-          <h1>Oops!</h1>
+          <h1>Issues</h1>
           <ul>
             <li>%s</li>
           </ul>

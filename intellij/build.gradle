@@ -17,6 +17,7 @@ dependencies {
         intellijIdeaCommunity("2024.3.5")
         instrumentationTools()
         pluginVerifier()
+        intellijPlatform.bundledPlugin 'org.intellij.plugins.markdown'
     }
 }
 

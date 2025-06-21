@@ -1,7 +1,9 @@
 <idea-plugin>
+    <depends>org.intellij.plugins.markdown</depends>
+
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="AcceptanceTest" language="Acceptance" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.AcceptanceTestFileType"
+                  implementationClass="org.setms.sew.intellij.acceptancetest.AcceptanceTestFileType"
                   extensions="acceptance"/>
         <fileType name="Aggregate" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.AggregateFileType"
@@ -42,11 +44,13 @@
 
         <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewSyntaxHighlighterFactory"/>
         <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewParserDefinition"/>
+        <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
         <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
         <annotator language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewAnnotator"/>
 
         <fileEditorProvider implementation="org.setms.sew.intellij.domain.DomainEditorProvider"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.usecase.UseCaseEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.acceptancetest.AcceptanceTestEditorProvider"/>
     </extensions>
 </idea-plugin>

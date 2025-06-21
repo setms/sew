@@ -14,7 +14,7 @@ import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.filetype.AcceptanceTestFile;
+import org.setms.sew.intellij.acceptancetest.AcceptanceTestFile;
 
 public class AcceptanceParserDefinition implements ParserDefinition {
 
