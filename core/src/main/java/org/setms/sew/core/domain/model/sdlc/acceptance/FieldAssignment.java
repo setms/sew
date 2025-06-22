@@ -1,8 +1,6 @@
-package org.setms.sew.core.domain.model.sdlc.eventstorming;
+package org.setms.sew.core.domain.model.sdlc.acceptance;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,19 +16,15 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Aggregate extends NamedObject {
+public class FieldAssignment extends NamedObject {
 
-  @NotEmpty private String display;
+  @NotEmpty
+  private String fieldName;
 
-  @NotNull
-  @HasType("entity")
-  private Pointer root;
+  @HasType("variable")
+  private Pointer value;
 
-  public Aggregate(FullyQualifiedName fullyQualifiedName) {
+  public FieldAssignment(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
-  }
-
-  public String getDisplay() {
-    return Optional.ofNullable(display).orElse(getName());
   }
 }

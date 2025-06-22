@@ -9,6 +9,10 @@ public class FullyQualifiedName implements Comparable<FullyQualifiedName> {
 
   private final String value;
 
+  public FullyQualifiedName(String packageName, String name) {
+    this("%s.%s".formatted(packageName, name));
+  }
+
   public String getName() {
     var index = value.lastIndexOf('.');
     return value.substring(index + 1);

@@ -19,6 +19,7 @@ import org.setms.sew.intellij.filetype.AggregateFile;
 import org.setms.sew.intellij.filetype.ClockEventFile;
 import org.setms.sew.intellij.filetype.CommandFile;
 import org.setms.sew.intellij.filetype.DecisionFile;
+import org.setms.sew.intellij.filetype.EntityFile;
 import org.setms.sew.intellij.filetype.EventFile;
 import org.setms.sew.intellij.filetype.OwnerFile;
 import org.setms.sew.intellij.filetype.PolicyFile;
@@ -75,6 +76,7 @@ public class SewParserDefinition implements ParserDefinition {
       case "command" -> new CommandFile(viewProvider);
       case "decision" -> new DecisionFile(viewProvider);
       case "domain" -> new DomainFile(viewProvider);
+      case "entity" -> new EntityFile(viewProvider);
       case "event" -> new EventFile(viewProvider);
       case "owner" -> new OwnerFile(viewProvider);
       case "modules" -> new ModulesFile(viewProvider);

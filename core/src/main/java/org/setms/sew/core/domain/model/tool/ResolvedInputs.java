@@ -32,9 +32,12 @@ public class ResolvedInputs implements PointerResolver {
 
   @Override
   public NamedObject resolve(Pointer pointer) {
+    if (pointer == null) {
+      return new UnresolvedObject(null, null);
+    }
     var type = pointer.getType();
     if (type == null) {
-      throw new IllegalArgumentException("Can't resolve untyped pointer");
+      return new UnresolvedObject(new FullyQualifiedName(pointer.getId()), null);
     }
     var candidates = values.get(English.plural(type));
     var resolvedObject = pointer.resolveFrom(candidates);

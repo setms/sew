@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.HasType;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 
@@ -18,6 +19,8 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 public class Command extends NamedObject {
 
   @NotEmpty private String display;
+
+  @HasType("entity")
   private Pointer payload;
 
   public Command(FullyQualifiedName fullyQualifiedName) {

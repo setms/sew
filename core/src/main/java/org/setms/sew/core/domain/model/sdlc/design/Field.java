@@ -1,7 +1,7 @@
-package org.setms.sew.core.domain.model.sdlc.acceptance;
+package org.setms.sew.core.domain.model.sdlc.design;
 
-
-import java.util.List;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.Collection;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,12 +15,12 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public sealed class Variable<T, D> extends NamedObject permits ElementVariable, FieldVariable {
+public class Field extends NamedObject {
 
-  private T type;
-  private List<D> definitions;
+  @NotEmpty private FieldType type;
+  private Collection<FieldConstraint> constraints;
 
-  public Variable(FullyQualifiedName fullyQualifiedName) {
+  public Field(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

@@ -36,6 +36,7 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
+import org.setms.sew.core.domain.model.sdlc.design.Entity;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.Command;
@@ -127,6 +128,7 @@ public class UseCaseTool extends Tool {
         new Input<>("src/main/design", Policy.class),
         new Input<>("src/main/design", ReadModel.class),
         new Input<>("src/main/stakeholders", User.class),
+        new Input<>("src/main/design", Entity.class),
         new Input<>("src/main/requirements", Domain.class),
         new Input<>("src/test/acceptance", new AcceptanceFormat(), AcceptanceTest.class));
   }

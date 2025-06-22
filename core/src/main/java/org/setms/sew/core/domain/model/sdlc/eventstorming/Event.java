@@ -1,12 +1,12 @@
 package org.setms.sew.core.domain.model.sdlc.eventstorming;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.HasType;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 
@@ -17,7 +17,8 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 @EqualsAndHashCode(callSuper = true)
 public class Event extends NamedObject {
 
-  @NotNull private Pointer payload;
+  @HasType("entity")
+  private Pointer payload;
 
   public Event(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

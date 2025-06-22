@@ -20,6 +20,9 @@
         <fileType name="Decision" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
                   extensions="decision"/>
+        <fileType name="Entity" language="Sew" fieldName="INSTANCE"
+                  implementationClass="org.setms.sew.intellij.filetype.EntityFileType"
+                  extensions="entity"/>
         <fileType name="Event" language="Sew" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.EventFileType"
                   extensions="event"/>

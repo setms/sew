@@ -27,9 +27,9 @@ And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defin
 
 | variable             | type                        | definition                                               |
 |----------------------|-----------------------------|----------------------------------------------------------|
-| phrase               | Text                        | nonempty                                                 |
-| definition           | Text                        | nonempty                                                 |
-| newDefinition        | Text                        | nonempty, differentFrom(definition)                      |
+| phrase               | text                        | nonempty                                                 |
+| definition           | text                        | nonempty                                                 |
+| newDefinition        | text                        | nonempty, differentFrom(definition)                      |
 | addTerm              | command(AddTerm)            | Phrase=phrase, Definition=definition                     |
 | addExistingTerm      | command(AddTerm)            | Phrase=phrase, Definition=newDefinition                  |
 | term                 | entity(Term)                | Phrase=phrase, Definition=definition                     |

@@ -158,6 +158,9 @@ public interface Parser {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   default Collection<Object> toCollection(Object targetValue, Class<?> type) {
+    if (type == Collection.class) {
+      return targetValue instanceof Collection collection ? collection : List.of(targetValue);
+    }
     if (List.class.isAssignableFrom(type)) {
       return targetValue instanceof Collection collection
           ? new ArrayList<>(collection)
