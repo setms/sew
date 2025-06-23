@@ -3,18 +3,14 @@ package org.setms.sew.core.inboud.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 
-import java.io.File;
 import org.junit.jupiter.api.Test;
+import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
-import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Location;
-import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
 import org.setms.sew.core.inbound.tool.GlossaryTool;
-import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
-class GlossaryToolTest {
+class GlossaryToolTest extends ToolTestCase<Term> {
 
   private static final String GLOSSARY =
       """
@@ -35,22 +31,14 @@ class GlossaryToolTest {
       </body>
     </html>
     """;
-  private final Tool tool = new GlossaryTool();
-  private final File baseDir = new File("src/test/resources/glossary");
 
-  @Test
-  void shouldDefineInputs() {
-    var actual = tool.getInputs();
-
-    assertThat(actual).hasSize(1);
-    var input = actual.getFirst();
-    assertThat(input.glob()).hasToString("src/main/glossary/**/*.term");
-    assertThat(input.format()).isInstanceOf(SewFormat.class);
+  public GlossaryToolTest() {
+    super(new GlossaryTool(), Term.class, "main/glossary");
   }
 
   @Test
   void shouldDefineOutputs() {
-    var actual = tool.getOutputs();
+    var actual = getTool().getOutputs();
 
     assertThat(actual).hasSize(1);
     var output = actual.getFirst();
@@ -59,25 +47,21 @@ class GlossaryToolTest {
 
   @Test
   void shouldBuildReport() {
-    var source = inputSourceFor("report");
-    var sink = new FileOutputSink(new File(baseDir, "build"));
+    var source = inputSourceFor("valid");
+    var sink = new FileOutputSink(getTestDir("build"));
 
-    var actual = tool.build(source, sink);
+    var actual = getTool().build(source, sink);
 
     assertThat(actual).isEmpty();
     var output = sink.select("reports/glossary/report.html").getFile();
     assertThat(output).isFile().content().isEqualTo(GLOSSARY);
   }
 
-  private InputSource inputSourceFor(String path) {
-    return new FileInputSource(new File(baseDir, path));
-  }
-
   @Test
   void shouldRejectMissingDisplay() {
     var source = inputSourceFor("invalid/display");
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -92,7 +76,7 @@ class GlossaryToolTest {
   void shouldRejectInvalidSeeAlso() {
     var source = inputSourceFor("invalid/see");
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     assertThat(actual)
         .hasSize(1)

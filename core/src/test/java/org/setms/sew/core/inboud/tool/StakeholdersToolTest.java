@@ -5,8 +5,8 @@ import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.INFO;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.SequencedCollection;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
@@ -19,16 +19,13 @@ import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Suggestion;
-import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
 import org.setms.sew.core.inbound.tool.StakeholdersTool;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
-class StakeholdersToolTest {
+class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
-  private final Tool tool = new StakeholdersTool();
-  private final File baseDir = new File("src/test/resources/stakeholders");
   private static final String OWNER_SKELETON =
       """
       package owner
@@ -38,10 +35,12 @@ class StakeholdersToolTest {
       }
       """;
 
-  @Test
-  void shouldDefineInputs() {
-    var actual = tool.getInputs();
+  public StakeholdersToolTest() {
+    super(new StakeholdersTool(), Stakeholder.class, "main/stakeholders");
+  }
 
+  @Override
+  protected void assertInputs(List<Input<?>> actual) {
     assertThat(actual).hasSize(3);
     assertThat(actual)
         .allSatisfy(input -> assertThat(input.format()).isInstanceOf(SewFormat.class));
@@ -64,17 +63,13 @@ class StakeholdersToolTest {
 
   @Test
   void shouldRejectMissingOwner() throws IOException {
-    var testDir = new File(baseDir, "invalid/owner");
+    var testDir = getTestDir("invalid/owner");
     var source = new FileInputSource(testDir);
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     var suggestion = assertThatToolReportsDiagnosticWithSuggestionToFix(actual);
     assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, source, new FileOutputSink(testDir));
-  }
-
-  private FileInputSource inputSourceFor(String path) {
-    return new FileInputSource(new File(baseDir, path));
   }
 
   private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(
@@ -94,7 +89,7 @@ class StakeholdersToolTest {
       Suggestion suggestion, InputSource source, OutputSink sink) throws IOException {
     var owner = sink.select("src/main/stakeholders/Some.owner");
 
-    var actual = tool.apply(suggestion.code(), source, null, sink);
+    var actual = getTool().apply(suggestion.code(), source, null, sink);
 
     assertThat(actual).hasSize(1).contains(new Diagnostic(INFO, "Created " + owner.toUri()));
     try {
@@ -108,7 +103,7 @@ class StakeholdersToolTest {
   void shouldRejectUnknownSuggestion() {
     var source = inputSourceFor("invalid/suggestion");
 
-    var actual = tool.apply("unknown.suggestion", source, null, null);
+    var actual = getTool().apply("unknown.suggestion", source, null, null);
 
     assertThat(actual)
         .hasSize(1)
@@ -119,7 +114,7 @@ class StakeholdersToolTest {
   void shouldRejectMultipleOwners() {
     var source = inputSourceFor("invalid/owners");
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -130,7 +125,7 @@ class StakeholdersToolTest {
   void shouldRejectNonUserInUserCase() {
     var source = inputSourceFor("invalid/nonuser");
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -145,7 +140,7 @@ class StakeholdersToolTest {
   void shouldRejectUnknownUserInUserCase() {
     var source = inputSourceFor("invalid/missing");
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -154,14 +149,5 @@ class StakeholdersToolTest {
                 ERROR,
                 "Unknown user Micky",
                 new Location("useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
-  }
-
-  @Test
-  void shouldAcceptUserInUserCase() {
-    var source = inputSourceFor("valid");
-
-    var actual = tool.validate(source);
-
-    assertThat(actual).isEmpty();
   }
 }

@@ -43,7 +43,7 @@ class DiscoverDomainsFromUseCasesTest {
 
   private UseCase loadUseCase() throws IOException {
     try (var input =
-        getClass().getResourceAsStream("/use-cases/valid/src/main/requirements/JustDoIt.useCase")) {
+        getClass().getResourceAsStream("/useCase/valid/src/main/requirements/JustDoIt.useCase")) {
       return new SewFormat().newParser().parse(input, UseCase.class, false);
     }
   }

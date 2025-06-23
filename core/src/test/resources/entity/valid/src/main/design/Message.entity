@@ -1,0 +1,9 @@
+package gdpr
+
+entity Message {
+}
+
+field Message {
+    type        = text
+    constraints = [ nonempty ]
+}

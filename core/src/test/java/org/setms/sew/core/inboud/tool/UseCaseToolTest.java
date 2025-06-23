@@ -4,20 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
+import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Output;
-import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
 import org.setms.sew.core.inbound.tool.UseCaseTool;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
-class UseCaseToolTest {
+class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   private static final String USE_CASE_HTML =
       """
@@ -44,22 +42,14 @@ class UseCaseToolTest {
       display = "Duck"
     }
     """;
-  private final Tool tool = new UseCaseTool();
-  private final File baseDir = new File("src/test/resources/use-cases");
 
-  @Test
-  void shouldDefineInputs() {
-    var actual = tool.getInputs();
-
-    assertThat(actual).isNotEmpty();
-    var input = actual.getFirst();
-    assertThat(input.glob()).hasToString("src/main/requirements/**/*.useCase");
-    assertThat(input.format()).isInstanceOf(SewFormat.class);
+  public UseCaseToolTest() {
+    super(new UseCaseTool(), UseCase.class, "main/requirements");
   }
 
   @Test
   void shouldDefineOutputs() {
-    var actual = tool.getOutputs();
+    var actual = getTool().getOutputs();
 
     assertThat(actual)
         .hasSize(2)
@@ -76,10 +66,10 @@ class UseCaseToolTest {
 
   @Test
   void shouldWarnAboutMissingElementsAndCreateThem() throws IOException {
-    var testDir = new File(baseDir, "missing");
+    var testDir = getTestDir("missing");
     var source = new FileInputSource(testDir);
 
-    var diagnostics = tool.validate(source);
+    var diagnostics = getTool().validate(source);
 
     assertThat(diagnostics)
         .hasSizeGreaterThanOrEqualTo(7)
@@ -91,7 +81,8 @@ class UseCaseToolTest {
     var sink = new FileOutputSink(testDir);
     var diagnostic = diagnostics.getFirst();
     diagnostics =
-        tool.apply(diagnostic.suggestions().getFirst().code(), source, diagnostic.location(), sink);
+        getTool()
+            .apply(diagnostic.suggestions().getFirst().code(), source, diagnostic.location(), sink);
     assertThat(diagnostics).hasSize(1).allSatisfy(d -> assertThat(d.message()).contains("Created"));
     var file = sink.select("src/main/stakeholders/Duck.user").getFile();
     assertThat(file).isFile();
@@ -104,10 +95,9 @@ class UseCaseToolTest {
 
   @Test
   void shouldRejectGrammarViolation() {
-    var testDir = new File(baseDir, "grammar");
-    var source = new FileInputSource(testDir);
+    var source = inputSourceFor("grammar");
 
-    var diagnostics = tool.validate(source);
+    var diagnostics = getTool().validate(source);
 
     assertThat(diagnostics)
         .filteredOn(diagnostic -> diagnostic.level() == ERROR)
@@ -121,11 +111,11 @@ class UseCaseToolTest {
 
   @Test
   void shouldBuildReport() {
-    var testDir = new File(baseDir, "valid");
+    var testDir = getTestDir("valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
 
-    var actual = tool.build(source, sink);
+    var actual = getTool().build(source, sink);
 
     assertThat(actual).isEmpty();
     var output = sink.select("reports/useCases/HappyPath-structure.png").getFile();
@@ -136,22 +126,22 @@ class UseCaseToolTest {
 
   @Test
   void shouldBuildComplexUseCaseWithoutProblems() {
-    var testDir = new File(baseDir, "../domains/gdpr");
+    var testDir = getTestDir("../domains/gdpr");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
 
-    var actual = tool.build(source, sink);
+    var actual = getTool().build(source, sink);
 
     assertThat(actual).isEmpty();
   }
 
   @Test
   void shouldCreateDomain() {
-    var testDir = new File(baseDir, "valid");
+    var testDir = getTestDir( "valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
@@ -161,7 +151,7 @@ class UseCaseToolTest {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).isEqualTo("Discover subdomains");
-    actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
+    actual = getTool().apply(suggestion.code(), source, diagnostic.location(), sink);
     assertThat(actual).hasSize(1);
     diagnostic = actual.getFirst();
     assertThat(diagnostic.message()).startsWith("Created ");
@@ -169,11 +159,11 @@ class UseCaseToolTest {
 
   @Test
   void shouldCreateAcceptanceTest() {
-    var testDir = new File(baseDir, "valid");
+    var testDir = getTestDir( "valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
 
-    var actual = tool.validate(source);
+    var actual = getTool().validate(source);
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
@@ -183,7 +173,7 @@ class UseCaseToolTest {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).startsWith("Create acceptance test");
-    actual = tool.apply(suggestion.code(), source, diagnostic.location(), sink);
+    actual = getTool().apply(suggestion.code(), source, diagnostic.location(), sink);
     assertThat(actual).as("Created artifacts").hasSize(1);
     diagnostic = actual.getFirst();
     assertThat(diagnostic.message()).startsWith("Created ");
