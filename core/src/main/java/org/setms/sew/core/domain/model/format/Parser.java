@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.atteo.evo.inflector.English;
+import org.setms.sew.core.domain.model.sdlc.Enums;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
@@ -127,21 +128,15 @@ public interface Parser {
   default void setProperty(String name, Object targetValue, Object target) {
     var setter = "set%s".formatted(initUpper(name));
     try {
-      var method = findSetter(setter, targetValue, target.getClass());
+      var method = findMethod(setter, targetValue, target.getClass());
       if (method != null) {
         var parameterType = method.getParameters()[0].getType();
         if (targetValue != null
             && Collection.class.isAssignableFrom(parameterType)
             && !parameterType.isAssignableFrom(targetValue.getClass())) {
-          method.invoke(target, toCollection(targetValue, parameterType));
+          method.invoke(target, toCollection(targetValue, parameterType, target, name));
         } else if (targetValue != null && parameterType.isEnum()) {
-          var enumValue =
-              Arrays.stream(parameterType.getEnumConstants())
-                  .map(Enum.class::cast)
-                  .filter(c -> c.name().equalsIgnoreCase(targetValue.toString()))
-                  .findFirst()
-                  .orElseThrow(() -> new IllegalArgumentException("Invalid value: " + targetValue));
-          method.invoke(target, enumValue);
+          method.invoke(target, toEnum(targetValue, parameterType));
         } else if (targetValue != null && parameterType.equals(Boolean.class)
             || parameterType.equals(boolean.class)) {
           var booleanValue = Boolean.parseBoolean(targetValue.toString());
@@ -156,10 +151,34 @@ public interface Parser {
     }
   }
 
+  default Enum<?> toEnum(Object targetValue, Class<?> parameterType) {
+    return Arrays.stream(parameterType.getEnumConstants())
+        .map(Enum.class::cast)
+        .filter(c -> c.name().equalsIgnoreCase(targetValue.toString()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Invalid value: " + targetValue));
+  }
+
   @SuppressWarnings({"rawtypes", "unchecked"})
-  default Collection<Object> toCollection(Object targetValue, Class<?> type) {
+  default Collection<Object> toCollection(
+      Object targetValue, Class<?> type, Object target, String name) {
     if (type == Collection.class) {
       return targetValue instanceof Collection collection ? collection : List.of(targetValue);
+    }
+    if (Enums.class.isAssignableFrom(type)) {
+      var targetValues = (Collection) targetValue;
+      if (targetValues.isEmpty()) {
+        return null;
+      }
+      var getter = findMethod("get%s".formatted(initUpper(name)), null, target.getClass());
+      try {
+        var result = (Enums) getter.invoke(target);
+        var itemType = result.getType();
+        targetValues.stream().map(v -> toEnum(v, itemType)).forEach(result::add);
+        return result;
+      } catch (ReflectiveOperationException e) {
+        throw new IllegalArgumentException("Failed to determine enums type", e);
+      }
     }
     if (List.class.isAssignableFrom(type)) {
       return targetValue instanceof Collection collection
@@ -174,7 +193,7 @@ public interface Parser {
     throw new UnsupportedOperationException("Unsupported collection type " + type.getName());
   }
 
-  default Method findSetter(String name, Object targetValue, Class<?> type) {
+  default Method findMethod(String name, Object targetValue, Class<?> type) {
     var methods =
         Arrays.stream(type.getMethods()).filter(m -> matchesName(name, m.getName())).toList();
     if (methods.isEmpty()) {

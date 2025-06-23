@@ -59,4 +59,4 @@ attributeValue ::= TYPE LPAREN objectName RPAREN
 
 list ::= LBRACK NEWLINE? (listItem (COMMA NEWLINE? listItem)*)? NEWLINE? RBRACK
 
-listItem ::= scalar
+listItem ::= scalar | enumValue

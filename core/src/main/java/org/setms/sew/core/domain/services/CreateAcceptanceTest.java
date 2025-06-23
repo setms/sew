@@ -124,7 +124,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
   private Variable<?, ?> finalizeCommandVariable(
       ElementVariable variable, Command command, List<Variable<?, ?>> variables) {
     variable.setType(new Pointer(command));
-    if (resolver.resolve(command.getPayload()) instanceof Entity entity
+    if (resolver.resolve(command.getPayload(), "entity") instanceof Entity entity
         && !entity.getFields().isEmpty()) {
       setDefinition(variable, command, entity, variables);
     }
@@ -152,8 +152,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
     variable.setType(field.getType());
     if (field.getConstraints() != null && !field.getConstraints().isEmpty()) {
       variable.setDefinitions(
-          Stream.ofNullable(field.getConstraints())
-              .flatMap(Collection::stream)
+          field.getConstraints().stream()
               .map(this::toDefinition)
               .flatMap(Optional::stream)
               .toList());
@@ -172,7 +171,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
   private ElementVariable finalizeEventVariable(
       ElementVariable variable, Event event, @NotEmpty List<Variable<?, ?>> variables) {
     variable.setType(new Pointer(event));
-    if (resolver.resolve(event.getPayload()) instanceof Entity entity
+    if (resolver.resolve(event.getPayload(), "entity") instanceof Entity entity
         && !entity.getFields().isEmpty()) {
       setDefinition(variable, event, entity, variables);
     }

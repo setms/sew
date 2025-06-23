@@ -31,11 +31,11 @@ public class ResolvedInputs implements PointerResolver {
   }
 
   @Override
-  public NamedObject resolve(Pointer pointer) {
+  public NamedObject resolve(Pointer pointer, String defaultType) {
     if (pointer == null) {
       return new UnresolvedObject(null, null);
     }
-    var type = pointer.getType();
+    var type = Optional.ofNullable(pointer.getType()).orElse(defaultType);
     if (type == null) {
       return new UnresolvedObject(new FullyQualifiedName(pointer.getId()), null);
     }

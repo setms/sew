@@ -1,12 +1,12 @@
 package org.setms.sew.core.domain.model.sdlc.design;
 
 import jakarta.validation.constraints.NotEmpty;
-import java.util.Collection;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.setms.sew.core.domain.model.sdlc.Enums;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 
@@ -18,7 +18,7 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 public class Field extends NamedObject {
 
   @NotEmpty private FieldType type;
-  private Collection<FieldConstraint> constraints;
+  private Enums<FieldConstraint> constraints = Enums.of(FieldConstraint.class);
 
   public Field(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

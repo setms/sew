@@ -6,6 +6,7 @@ import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.format.Validation.validate;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
@@ -52,9 +53,9 @@ class CreateAcceptanceTestTest implements PointerResolver {
   }
 
   @Override
-  public NamedObject resolve(Pointer pointer) {
+  public NamedObject resolve(Pointer pointer, String defaultType) {
     var name = pointer.getId();
-    return switch (pointer.getType()) {
+    return switch ( Optional.ofNullable(pointer.getType()).orElse(defaultType)) {
       case "aggregate" -> aggregate;
       case "command" -> command;
       case "event" -> event;
