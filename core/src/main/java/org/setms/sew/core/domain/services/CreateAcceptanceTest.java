@@ -95,7 +95,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
 
   private FullyQualifiedName scenarioName(ResolvedSequence sequence, String packageName) {
     var names = sequence.items().stream().map(NamedObject::getName).toList();
-    var name = "%sAccepts%sAndEmits%s".formatted(names.get(1), names.get(0), names.get(2));
+    var name = "%s accepts %s and emits %s".formatted(names.get(1), names.get(0), names.get(2));
     return new FullyQualifiedName(packageName, name);
   }
 

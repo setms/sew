@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 import com.intellij.openapi.editor.Document;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 record Table(
@@ -33,7 +34,7 @@ record Table(
     while (result >= 0 && !getLine(document, result).isEmpty()) {
       result--;
     }
-    if (result > 0) {
+    if (result != 0) {
       result++;
     }
     return result;
@@ -94,7 +95,7 @@ record Table(
 
     padCurrentCellTo(columnWidth);
     var updatedLine = renderRow(row);
-    if (columnIndex == row.size() - 1) {
+    if (columnIndex == numColumns() - 1) {
       updatedLine += System.lineSeparator();
     }
     var lineNr = startLine + rowIndex;
@@ -125,6 +126,10 @@ record Table(
       result.append(padRight(cells.get(i), maxWidth(i))).append(" | ");
     }
     return result.toString().trim();
+  }
+
+  private int numColumns() {
+    return cells.stream().mapToInt(Collection::size).max().orElse(0);
   }
 
   @Override

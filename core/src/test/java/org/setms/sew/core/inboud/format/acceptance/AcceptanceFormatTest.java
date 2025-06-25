@@ -21,17 +21,17 @@ class AcceptanceFormatTest {
   private static final String SIMPLE_SCENARIO =
 """
 | type      | name     |
-|-----------|----------|
+| --------- | -------- |
 | aggregate | ape.Bear |
 
 | variable | type             | definition |
-|----------|------------------|------------|
+| -------- | ---------------- | ---------- |
 | how      | Text             | Nonempty   |
 | command  | command(DoIt)    |            |
 | event    | event(ItWasDone) | How=how    |
 
 | scenario     | init | command | state | emitted |
-|--------------|------|---------|-------|---------|
+| ------------ | ---- | ------- | ----- | ------- |
 | "Happy path" |      | command |       | event   |
 """;
   private static final RootObject SIMPLE_SCENARIO_OBJECT =

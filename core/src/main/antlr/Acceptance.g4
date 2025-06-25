@@ -85,10 +85,6 @@ STRING       : '"' (~["\r\n])* '"';
 COMMA        : ',';
 DOT          : '.';
 EQ           : '=';
-LBRACE       : '{';
-RBRACE       : '}';
-LBRACK       : '[';
-RBRACK       : ']';
 LPAREN       : '(';
 RPAREN       : ')';
 

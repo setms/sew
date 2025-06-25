@@ -58,8 +58,9 @@ class Table {
   private void printSeparatorRow(PrintWriter writer, int[] columnWidths) {
     writer.print("|");
     for (var width : columnWidths) {
-      writer.print("-".repeat(width + 2));
-      writer.print("|");
+      writer.print(" ");
+      writer.print("-".repeat(width));
+      writer.print(" |");
     }
     writer.println();
   }
