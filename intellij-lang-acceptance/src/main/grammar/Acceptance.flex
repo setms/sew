@@ -16,28 +16,29 @@ import static org.setms.sew.intellij.lang.acceptance.AcceptanceElementTypes.*;
 %}
 
 IDENTIFIER=[a-z][a-zA-Z_]*
+OBJECT_NAME=[A-Z][a-zA-Z0-9]*
 STRING=\"([^\"\r\n]*)\"
 TYPE=(aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|decision|domain|entity|event|externalSystem|field|hotspot|module|modules|owner|policy|readModel|scenario|screen|scope|subdomain|term|useCase|user|userRequirement|valueObject)
-NAME=[A-Z][a-zA-Z0-9]*
+
 WHITE_SPACE=[ \t]+
 NEWLINE=[\r\n]
 
 %%
 
-{WHITE_SPACE}                { return TokenType.WHITE_SPACE; }
-{NEWLINE}                   { return NEWLINE; }
-{TYPE}                      { return TYPE; }
-{NAME}                      { return NAME; }
+{WHITE_SPACE}     { return TokenType.WHITE_SPACE; }
+{NEWLINE}         { return NEWLINE; }
 
-"|"                          { return PIPE; }
-"-"                          { return DASH; }
-","                          { return COMMA; }
-"."                          { return DOT; }
-"="                          { return EQ; }
-"("                          { return LPAREN; }
-")"                          { return RPAREN; }
+{TYPE}            { return TYPE; }
+{OBJECT_NAME}     { return OBJECT_NAME; }
+{STRING}          { return STRING; }
+{IDENTIFIER}      { return IDENTIFIER; }
 
-{STRING}                    { return STRING; }
-{IDENTIFIER}                { return IDENTIFIER; }
+"|"               { return PIPE; }
+"-"               { return DASH; }
+","               { return COMMA; }
+"."               { return DOT; }
+"="               { return EQ; }
+"("               { return LPAREN; }
+")"               { return RPAREN; }
 
-.                           { return TokenType.BAD_CHARACTER; }
+.                 { return TokenType.BAD_CHARACTER; }

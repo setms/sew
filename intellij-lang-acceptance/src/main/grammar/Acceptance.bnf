@@ -8,18 +8,28 @@
   elementTypeHolderClass="org.setms.sew.intellij.lang.acceptance.AcceptanceElementTypes"
   elementTypeClass="org.setms.sew.intellij.lang.acceptance.AcceptanceElementType"
   tokenTypeClass="org.setms.sew.intellij.lang.acceptance.AcceptanceTokenType"
-  tokens=[
-    COMMA=","
-    DOT="."
-    EQ="="
-    IDENTIFIER="identifier"
-    LPAREN="("
-    NAME="name"
-    RPAREN=")"
-    TYPE="type name"
-    WHITE_SPACE="white space"
+  tokens = [
+    PIPE
+    DASH
+    COMMA
+    DOT
+    EQ
+    LPAREN
+    RPAREN
+    IDENTIFIER
+    OBJECT_NAME
+    TYPE
+    STRING
+    NEWLINE
+    WHITE_SPACE
   ]
+
+  spaces = [ WHITE_SPACE ]
+
 }
+
+
+file ::= test
 
 test ::= sut NEWLINE+ variables NEWLINE+ scenarios NEWLINE*
 
@@ -30,23 +40,25 @@ scenarios ::= table
 table ::= header row+
 
 header ::= PIPE heading (PIPE heading)* PIPE NEWLINE separator
+
 heading ::= IDENTIFIER | TYPE
 
 separator ::= PIPE DASH+ (PIPE DASH+)* PIPE NEWLINE
 
-row ::= PIPE cell? (PIPE cell?)* PIPE NEWLINE
+row ::= PIPE (cell? PIPE)+ NEWLINE
 
 cell ::= typed_reference
     | qualified_name
     | fields
-    | OBJECT_NAME
-    | IDENTIFIER
     | STRING
     | TYPE
+    | IDENTIFIER
+    | OBJECT_NAME
 
-typed_reference ::= TYPE LPAREN OBJECT_NAME RPAREN
+qualified_name ::= IDENTIFIER DOT OBJECT_NAME  { pin=2 }
 
-qualified_name ::= (IDENTIFIER DOT)+ OBJECT_NAME
+typed_reference ::= TYPE LPAREN OBJECT_NAME RPAREN  { pin=2 }
 
 fields ::= (field COMMA)* field
+
 field ::= OBJECT_NAME EQ (IDENTIFIER | STRING)
