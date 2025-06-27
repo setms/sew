@@ -95,7 +95,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
 
   private FullyQualifiedName scenarioName(ResolvedSequence sequence, String packageName) {
     var names = sequence.items().stream().map(NamedObject::getName).toList();
-    var name = "%s accepts %s and emits %s".formatted(names.get(1), names.get(0), names.get(2));
+    var name = "Accept %s and emit %s".formatted(names.getFirst(), names.getLast());
     return new FullyQualifiedName(packageName, name);
   }
 
@@ -164,7 +164,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
   private Optional<String> toDefinition(FieldConstraint fieldConstraint) {
     return Optional.ofNullable(
         switch (fieldConstraint) {
-          case NONEMPTY -> "nonempty";
+          case NONEMPTY -> fieldConstraint.name().toLowerCase();
           case UNIQUE -> null;
         });
   }

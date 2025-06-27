@@ -2,12 +2,12 @@
 | --------- | ------------------ |
 | aggregate | gdpr.Notifications |
 
-| variable     | type                | definition |
-| ------------ | ------------------- | ---------- |
-| message      | Text                |            |
-| notifyUser   | command(NotifyUser) |            |
-| userNotified | event(UserNotified) |            |
+| variable     | type                | definition      |
+| ------------ | ------------------- | --------------- |
+| message      | text                | nonempty        |
+| notifyUser   | command(NotifyUser) | Message=message |
+| userNotified | event(UserNotified) | Message=message |
 
-| scenario                                                  | init | command    | state | emitted      |
-| --------------------------------------------------------- | ---- | ---------- | ----- | ------------ |
-| "Notifications accepts NotifyUser and emits UserNotified" |      | notifyUser |       | userNotified |
+| scenario                                  | init | command    | state | emitted      |
+| ----------------------------------------- | ---- | ---------- | ----- | ------------ |
+| "Accept NotifyUser and emit UserNotified" |      | notifyUser |       | userNotified |

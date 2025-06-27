@@ -33,7 +33,7 @@ item:
     IDENTIFIER | TYPE;
 
 type:
-    OBJECT_NAME | typedReference;
+    IDENTIFIER | typedReference;
 
 typedReference:
     TYPE LPAREN OBJECT_NAME RPAREN;
@@ -45,7 +45,7 @@ constraints:
     (constraint COMMA)* constraint;
 
 constraint:
-    OBJECT_NAME;
+    IDENTIFIER;
 
 fields:
     (field COMMA)* field;

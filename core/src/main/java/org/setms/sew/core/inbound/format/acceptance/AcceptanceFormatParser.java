@@ -80,9 +80,9 @@ class AcceptanceFormatParser implements Parser {
   }
 
   private DataItem parseVariableType(AcceptanceParser.TypeContext type) {
-    var objectName = type.OBJECT_NAME();
-    if (objectName != null) {
-      return new DataEnum(objectName.getText());
+    var identifier = type.IDENTIFIER();
+    if (identifier != null) {
+      return new DataEnum(identifier.getText());
     }
     var typedReference = type.typedReference();
     if (typedReference != null) {
