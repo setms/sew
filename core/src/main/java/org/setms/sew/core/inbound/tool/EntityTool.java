@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.inbound.tool;
 
 import java.util.List;
 import org.setms.sew.core.domain.model.sdlc.design.Entity;

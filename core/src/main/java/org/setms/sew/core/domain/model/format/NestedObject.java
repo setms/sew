@@ -1,9 +1,11 @@
 package org.setms.sew.core.domain.model.format;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
+@EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 public class NestedObject extends DataObject<NestedObject> {
 

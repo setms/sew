@@ -28,6 +28,10 @@ public class Reference implements DataItem {
 
   @Override
   public String toString() {
-    return id;
+    var result = new StringBuilder(id);
+    if (type != null) {
+      result.insert(0, '(').insert(0, type).append(')');
+    }
+    return result.toString();
   }
 }

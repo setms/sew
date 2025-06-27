@@ -1,10 +1,13 @@
 package org.setms.sew.intellij.lang.sew;
 
+import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.INFO;
 
 import com.intellij.codeInsight.intention.IntentionAction;
 import com.intellij.codeInspection.util.IntentionFamilyName;
 import com.intellij.codeInspection.util.IntentionName;
+import com.intellij.notification.NotificationGroupManager;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -82,6 +85,14 @@ public class ApplySuggestion implements IntentionAction {
             new VirtualFileInputSource(psiFile, tool),
             location,
             new FileOutputSink(new File(psiFile.getVirtualFile().getPath())));
+    diagnostics.stream()
+        .filter(d -> d.level() == ERROR)
+        .forEach(
+            diagnostic ->
+                NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Sew")
+                    .createNotification(diagnostic.message(), NotificationType.ERROR)
+                    .notify(project));
     diagnostics.stream()
         .filter(d -> d.level() == INFO)
         .map(Diagnostic::message)

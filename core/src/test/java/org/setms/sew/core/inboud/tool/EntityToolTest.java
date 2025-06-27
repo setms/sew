@@ -5,6 +5,7 @@ import static org.setms.sew.core.domain.model.sdlc.design.FieldConstraint.NONEMP
 import static org.setms.sew.core.domain.model.sdlc.design.FieldType.TEXT;
 
 import org.setms.sew.core.domain.model.sdlc.design.Entity;
+import org.setms.sew.core.inbound.tool.EntityTool;
 
 class EntityToolTest extends ToolTestCase<Entity> {
 

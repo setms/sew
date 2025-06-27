@@ -144,6 +144,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
                 definitions.add(
                     new FieldAssignment(
                             new FullyQualifiedName(entityContainer.getPackage(), field.getName()))
+                        .setFieldName(field.getName())
                         .setValue(pointerToVariable(ensureVariableFor(variables, field)))));
     variable.setDefinitions(definitions);
   }

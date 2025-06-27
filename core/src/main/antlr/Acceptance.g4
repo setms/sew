@@ -33,11 +33,14 @@ cell
     : typedReference
     | qualifiedName
     | fields
+    | identifiers
     | OBJECT_NAME
     | IDENTIFIER
     | STRING
     | TYPE
     ;
+
+identifiers: IDENTIFIER (COMMA IDENTIFIER)+;
 
 typedReference : TYPE LPAREN OBJECT_NAME RPAREN ;
 

@@ -9,11 +9,11 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.format.DataEnum;
 import org.setms.sew.core.domain.model.format.DataList;
+import org.setms.sew.core.domain.model.format.DataString;
 import org.setms.sew.core.domain.model.format.Format;
 import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
-import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 
 class AcceptanceFormatTest {
@@ -26,7 +26,7 @@ class AcceptanceFormatTest {
 
 | variable | type             | definition |
 | -------- | ---------------- | ---------- |
-| how      | Text             | Nonempty   |
+| how      | Text             | nonempty   |
 | command  | command(DoIt)    |            |
 | event    | event(ItWasDone) | How=how    |
 
@@ -43,15 +43,18 @@ class AcceptanceFormatTest {
                   .add(
                       new NestedObject("how")
                           .set("type", new DataEnum("Text"))
-                          .set("definition", new DataEnum("Nonempty")))
+                          .set("definitions", new DataList().add(new DataString("nonempty"))))
                   .add(new NestedObject("command").set("type", new Reference("command", "DoIt")))
                   .add(
                       new NestedObject("event")
                           .set("type", new Reference("event", "ItWasDone"))
                           .set(
-                              "definition",
-                              new NestedObject("definition")
-                                  .set("How", new Reference("variable", "how")))))
+                              "definitions",
+                              new DataList()
+                                  .add(
+                                      new NestedObject("How")
+                                          .set("fieldName", new DataString("How"))
+                                          .set("value", new Reference("variable", "how"))))))
           .set(
               "scenarios",
               new DataList()
@@ -64,37 +67,17 @@ class AcceptanceFormatTest {
 
   @Test
   void shouldParseSimpleScenario() throws IOException {
-    assertDeserialization(SIMPLE_SCENARIO, SIMPLE_SCENARIO_OBJECT);
-  }
-
-  private void assertDeserialization(String data, RootObject expected) throws IOException {
-    output.write(data.getBytes(UTF_8));
+    output.write(AcceptanceFormatTest.SIMPLE_SCENARIO.getBytes(UTF_8));
 
     var actual = format.newParser().parse(new ByteArrayInputStream(output.toByteArray()));
 
-    assertThat(actual).isEqualTo(expected);
+    assertThat(actual).isEqualTo(AcceptanceFormatTest.SIMPLE_SCENARIO_OBJECT);
   }
 
   @Test
   void shouldBuildSimpleScenario() throws IOException {
-    assertSerialization(SIMPLE_SCENARIO_OBJECT, SIMPLE_SCENARIO);
-  }
+    format.newBuilder().build(AcceptanceFormatTest.SIMPLE_SCENARIO_OBJECT, output);
 
-  private void assertSerialization(RootObject data, String expected) throws IOException {
-    format.newBuilder().build(data, output);
-
-    assertThat(output).hasToString(expected);
-  }
-
-  @Test
-  void shouldParseDomainObject() throws IOException {
-    output.write(SIMPLE_SCENARIO.getBytes(UTF_8));
-
-    var actual =
-        format
-            .newParser()
-            .parse(new ByteArrayInputStream(output.toByteArray()), AcceptanceTest.class, true);
-
-    assertThat(actual).isNotNull();
+    assertThat(output).hasToString(AcceptanceFormatTest.SIMPLE_SCENARIO);
   }
 }

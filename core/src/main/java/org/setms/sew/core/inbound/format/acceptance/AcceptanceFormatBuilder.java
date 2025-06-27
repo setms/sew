@@ -1,11 +1,13 @@
 package org.setms.sew.core.inbound.format.acceptance;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import org.setms.sew.core.domain.model.format.Builder;
 import org.setms.sew.core.domain.model.format.DataEnum;
+import org.setms.sew.core.domain.model.format.DataItem;
 import org.setms.sew.core.domain.model.format.DataList;
 import org.setms.sew.core.domain.model.format.DataString;
 import org.setms.sew.core.domain.model.format.NestedObject;
@@ -48,7 +50,6 @@ class AcceptanceFormatBuilder implements Builder {
     var type = object.property("type");
     return switch (type) {
       case Reference reference -> "%s(%s)".formatted(reference.getType(), reference.getId());
-      case DataString string -> string.getValue();
       case DataEnum value -> value.getName();
       default ->
           throw new UnsupportedOperationException(
@@ -57,25 +58,32 @@ class AcceptanceFormatBuilder implements Builder {
   }
 
   private String buildDefinition(NestedObject object) {
-    var definition = object.property("definition");
+    return buildDefinitionPart(object.property("definitions"));
+  }
+
+  private String buildDefinitionPart(DataItem definition) {
     return switch (definition) {
       case null -> "";
       case DataString string -> string.getValue();
       case DataEnum value -> value.getName();
-      case NestedObject nested -> buildNestedDefinition(nested);
+      case Reference reference -> reference.getId();
+      case DataList list -> buildDefinitions(list);
+      case NestedObject object -> buildNestedDefinition(object);
       default ->
           throw new UnsupportedOperationException(
               "Unsupported definition: " + definition.getClass().getSimpleName());
     };
   }
 
+  private String buildDefinitions(DataList list) {
+    return list.map(this::buildDefinitionPart).collect(joining(", "));
+  }
+
   private String buildNestedDefinition(NestedObject nested) {
-    var result = new StringBuilder();
-    var prefix = new AtomicReference<>("");
-    nested.properties(
-        (key, value) ->
-            result.append(prefix.getAndSet(", ")).append(key).append('=').append(value));
-    return result.toString();
+    return "%s=%s"
+        .formatted(
+            buildDefinitionPart(nested.property("fieldName")),
+            buildDefinitionPart(nested.property("value")));
   }
 
   private void buildScenarios(DataList scenarios, PrintWriter writer) {

@@ -5,9 +5,9 @@ import static org.setms.sew.core.domain.model.format.Strings.stripQuotesFrom;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.setms.sew.core.domain.model.format.DataEnum;
 import org.setms.sew.core.domain.model.format.DataItem;
 import org.setms.sew.core.domain.model.format.DataList;
@@ -74,8 +74,10 @@ class AcceptanceFormatParser implements Parser {
     }
     var variable = new NestedObject(row.cell(0).getText()).set("type", type);
     if (numCells == 3) {
-      parseVariableDefinition(row.cell(2))
-          .ifPresent(definition -> variable.set("definition", definition));
+      var definitions = parseVariableDefinitions(row.cell(2));
+      if (definitions.hasItems()) {
+        variable.set("definitions", definitions);
+      }
     }
     variables.add(variable);
   }
@@ -92,35 +94,47 @@ class AcceptanceFormatParser implements Parser {
     return null;
   }
 
-  private Optional<DataItem> parseVariableDefinition(AcceptanceParser.CellContext cell) {
-    var objectName = cell.OBJECT_NAME();
-    if (objectName != null) {
-      return Optional.of(new DataEnum(objectName.getText()));
+  private DataList parseVariableDefinitions(AcceptanceParser.CellContext cell) {
+    var result = new DataList();
+    var identifier = cell.IDENTIFIER();
+    if (identifier != null) {
+      result.add(new DataString(identifier.getText()));
+      return result;
+    }
+    var identifiers = cell.identifiers();
+    if (identifiers != null) {
+      identifiers.IDENTIFIER().stream()
+          .map(TerminalNode::getText)
+          .map(DataEnum::new)
+          .forEach(result::add);
+      return result;
     }
     var fields = cell.fields();
-    if (fields != null) {
-      var result = new NestedObject("definition");
-      fields
-          .field()
-          .forEach(
-              field -> {
-                if (field.OBJECT_NAME() == null) {
-                  return;
-                }
-                var name = field.OBJECT_NAME().getText();
-                var string = field.STRING();
-                if (string != null) {
-                  result.set(name, new DataString(string.getText()));
-                  return;
-                }
-                var identifier = field.IDENTIFIER();
-                if (identifier != null) {
-                  result.set(name, new Reference("variable", identifier.getText()));
-                }
-              });
-      return Optional.of(result);
+    if (fields == null) {
+      return result;
     }
-    return Optional.empty();
+    fields
+        .field()
+        .forEach(
+            field -> {
+              if (field.OBJECT_NAME() == null) {
+                return;
+              }
+              var name = field.OBJECT_NAME().getText();
+              var assignment = new NestedObject(name).set("fieldName", new DataString(name));
+              var string = field.STRING();
+              if (string != null) {
+                assignment.set("value", new DataString(string.getText()));
+              } else {
+                var value = field.IDENTIFIER();
+                if (value == null) {
+                  return;
+                }
+                assignment.set("value", new Reference("variable", value.getText()));
+              }
+              result.add(assignment);
+            });
+    return result;
   }
 
   private DataList parseScenarios(AcceptanceParser.ScenariosContext scenarios, DataList variables) {

@@ -50,6 +50,11 @@
         <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
         <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
         <annotator language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewAnnotator"/>
+        <notificationGroup
+                id="Sew"
+                displayType="BALLOON"
+                isLogByDefault="true"
+                toolWindowId="Event Log"/>
 
         <fileEditorProvider implementation="org.setms.sew.intellij.domain.DomainEditorProvider"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>
