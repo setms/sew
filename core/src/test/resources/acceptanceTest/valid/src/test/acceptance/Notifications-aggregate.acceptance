@@ -4,7 +4,7 @@
 
 | variable     | type                | definition |
 | ------------ | ------------------- | ---------- |
-| message      | text                |            |
+| message      | Text                |            |
 | notifyUser   | command(NotifyUser) |            |
 | userNotified | event(UserNotified) |            |
 

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.setms.sew.core.domain.model.format.DataEnum;
 import org.setms.sew.core.domain.model.format.DataItem;
 import org.setms.sew.core.domain.model.format.DataList;
@@ -33,24 +32,23 @@ class AcceptanceFormatParser implements Parser {
 
   private RootObject parseUsing(AcceptanceParser parser) {
     var test = parser.test();
-    var result = parseRootObject(test);
+    var result = parseSut(test);
     var variables = parseVariables(test.variables());
     result.set("variables", variables);
     result.set("scenarios", parseScenarios(test.scenarios(), variables));
     return result;
   }
 
-  private RootObject parseRootObject(AcceptanceParser.TestContext test) {
-    if (test.sut() == null || test.sut().table() == null || test.sut().table().row() == null) {
+  private RootObject parseSut(AcceptanceParser.TestContext test) {
+    if (test.sut() == null || test.sut().sut_row() == null) {
       return null;
     }
-    var rows = test.sut().table().row();
-    if (rows.size() != 1) {
-      throw new IllegalArgumentException("Must have one row to define System Under Test");
+    var sut = test.sut().sut_row();
+    if (sut.TYPE() == null || sut.qualifiedName() == null) {
+      return null;
     }
-    var sut = rows.getFirst();
-    var type = sut.cell(0).getText();
-    var fqn = sut.cell(1).getText();
+    var type = sut.TYPE().getText();
+    var fqn = sut.qualifiedName().getText();
     var nameParts = fqn.split("\\.");
     var name = nameParts[nameParts.length - 1];
     return new RootObject(nameParts[0], "acceptanceTest", type + "." + name)
@@ -59,22 +57,21 @@ class AcceptanceFormatParser implements Parser {
 
   private DataList parseVariables(AcceptanceParser.VariablesContext variables) {
     var result = new DataList();
-    variables.table().row().forEach(row -> addVariable(row, result));
+    variables.variables_row().forEach(row -> addVariable(row, result));
     return result;
   }
 
-  private void addVariable(AcceptanceParser.RowContext row, DataList variables) {
-    var numCells = row.cell().size();
-    if (numCells < 2 || numCells > 3) {
+  private void addVariable(AcceptanceParser.Variables_rowContext row, DataList variables) {
+    if (row.item() == null || row.type() == null) {
       return;
     }
-    var type = parseVariableType(row.cell(1));
+    var type = parseVariableType(row.type());
     if (type == null) {
       return;
     }
-    var variable = new NestedObject(row.cell(0).getText()).set("type", type);
-    if (numCells == 3) {
-      var definitions = parseVariableDefinitions(row.cell(2));
+    var variable = new NestedObject(row.item().getText()).set("type", type);
+    if (row.definition() != null) {
+      var definitions = parseVariableDefinitions(row.definition());
       if (definitions.hasItems()) {
         variable.set("definitions", definitions);
       }
@@ -82,7 +79,7 @@ class AcceptanceFormatParser implements Parser {
     variables.add(variable);
   }
 
-  private DataItem parseVariableType(AcceptanceParser.CellContext type) {
+  private DataItem parseVariableType(AcceptanceParser.TypeContext type) {
     var objectName = type.OBJECT_NAME();
     if (objectName != null) {
       return new DataEnum(objectName.getText());
@@ -94,26 +91,21 @@ class AcceptanceFormatParser implements Parser {
     return null;
   }
 
-  private DataList parseVariableDefinitions(AcceptanceParser.CellContext cell) {
+  private DataList parseVariableDefinitions(AcceptanceParser.DefinitionContext definition) {
     var result = new DataList();
-    var identifier = cell.IDENTIFIER();
-    if (identifier != null) {
-      result.add(new DataString(identifier.getText()));
+    if (definition.constraints() == null && definition.fields() == null) {
       return result;
     }
-    var identifiers = cell.identifiers();
-    if (identifiers != null) {
-      identifiers.IDENTIFIER().stream()
-          .map(TerminalNode::getText)
+    var constraints = definition.constraints();
+    if (constraints != null) {
+      constraints.constraint().stream()
+          .map(AcceptanceParser.ConstraintContext::getText)
           .map(DataEnum::new)
           .forEach(result::add);
       return result;
     }
-    var fields = cell.fields();
-    if (fields == null) {
-      return result;
-    }
-    fields
+    definition
+        .fields()
         .field()
         .forEach(
             field -> {
@@ -139,24 +131,21 @@ class AcceptanceFormatParser implements Parser {
 
   private DataList parseScenarios(AcceptanceParser.ScenariosContext scenarios, DataList variables) {
     var result = new DataList();
-    scenarios.table().row().forEach(row -> addScenario(row, variables, result));
+    scenarios.scenario_row().forEach(row -> addScenario(row, variables, result));
     return result;
   }
 
   private void addScenario(
-      AcceptanceParser.RowContext row, DataList variables, DataList scenarios) {
-    var numCells = row.cell().size();
-    if (numCells < 3 || numCells > 5) {
+      AcceptanceParser.Scenario_rowContext row, DataList variables, DataList scenarios) {
+    if (row.STRING() == null || row.item() == null || row.item().size() < 2) {
       return;
     }
-    var name = row.cell(0);
-    if (name.STRING() == null) {
-      return;
-    }
-    var scenario = new NestedObject(stripQuotesFrom(name.STRING().getText()));
+    var name = stripQuotesFrom(row.STRING().getText());
+    var scenario = new NestedObject(name);
+    var numCells = row.item().size();
     var initialized = false;
-    for (var index = 1; index < numCells; index++) {
-      var variableName = row.cell(index).getText();
+    for (var index = 0; index < numCells; index++) {
+      var variableName = row.item(index).getText();
       var reference = new Reference("variable", variableName);
       var property =
           switch (variableTypeOf(variableName, variables)) {

@@ -26,7 +26,7 @@ class AcceptanceFormatTest {
 
 | variable | type             | definition |
 | -------- | ---------------- | ---------- |
-| how      | Text             | nonempty   |
+| how      | Text             | Nonempty   |
 | command  | command(DoIt)    |            |
 | event    | event(ItWasDone) | How=how    |
 
@@ -43,7 +43,7 @@ class AcceptanceFormatTest {
                   .add(
                       new NestedObject("how")
                           .set("type", new DataEnum("Text"))
-                          .set("definitions", new DataList().add(new DataString("nonempty"))))
+                          .set("definitions", new DataList().add(new DataEnum("Nonempty"))))
                   .add(new NestedObject("command").set("type", new Reference("command", "DoIt")))
                   .add(
                       new NestedObject("event")

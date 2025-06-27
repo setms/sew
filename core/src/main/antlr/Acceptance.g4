@@ -1,54 +1,68 @@
 grammar Acceptance;
 
-test: sut NEWLINE+ variables NEWLINE+ scenarios NEWLINE* EOF;
+test:
+    sut NEWLINE+ variables NEWLINE+ scenarios NEWLINE* EOF;
 
-sut: table;
 
-variables: table;
+sut:
+    sut_header separator sut_row;
 
-scenarios: table;
+sut_header:
+    PIPE 'type' PIPE 'name' PIPE NEWLINE;
 
-table
-    : header row+
-    ;
+separator:
+    PIPE DASH+ (PIPE DASH+)* PIPE NEWLINE;
 
-header
-    : PIPE heading (PIPE heading)* PIPE NEWLINE separator
-    ;
+sut_row:
+    PIPE TYPE PIPE qualifiedName PIPE NEWLINE;
 
-heading
-    : IDENTIFIER
-    | TYPE
-    ;
+qualifiedName:
+    (IDENTIFIER DOT)+ OBJECT_NAME;
 
-separator
-    : PIPE DASH+ (PIPE DASH+)* PIPE NEWLINE
-    ;
 
-row
-    : PIPE cell? (PIPE cell?)* PIPE NEWLINE
-    ;
+variables:
+    variables_header separator variables_row+;
 
-cell
-    : typedReference
-    | qualifiedName
-    | fields
-    | identifiers
-    | OBJECT_NAME
-    | IDENTIFIER
-    | STRING
-    | TYPE
-    ;
+variables_header:
+    PIPE 'variable' PIPE 'type' PIPE 'definition' PIPE NEWLINE;
 
-identifiers: IDENTIFIER (COMMA IDENTIFIER)+;
+variables_row:
+    PIPE item PIPE type PIPE definition? PIPE NEWLINE;
 
-typedReference : TYPE LPAREN OBJECT_NAME RPAREN ;
+item:
+    IDENTIFIER | TYPE;
 
-qualifiedName : (IDENTIFIER DOT)+ OBJECT_NAME;
+type:
+    OBJECT_NAME | typedReference;
 
-fields : (field COMMA)* field;
+typedReference:
+    TYPE LPAREN OBJECT_NAME RPAREN;
 
-field: OBJECT_NAME EQ (IDENTIFIER | STRING);
+definition:
+    constraints | fields;
+
+constraints:
+    (constraint COMMA)* constraint;
+
+constraint:
+    OBJECT_NAME;
+
+fields:
+    (field COMMA)* field;
+
+field:
+    OBJECT_NAME EQ (IDENTIFIER | STRING);
+
+
+scenarios:
+    scenario_header separator scenario_row+;
+
+scenario_header:
+    (PIPE item)+ PIPE NEWLINE;
+
+scenario_row:
+    PIPE STRING PIPE (item? PIPE)* NEWLINE;
+
 
 PIPE        : '|';
 DASH        : '-';
