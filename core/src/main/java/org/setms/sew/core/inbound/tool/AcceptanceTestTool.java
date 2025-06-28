@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.acceptance.ElementVariable;
@@ -92,11 +94,15 @@ public class AcceptanceTestTool extends Tool {
 
   private String format(ElementVariable variable) {
     var result = new StringBuilder("%s{".formatted(variable.getType().getId()));
-    var prefix = "";
-    for (var definition : variable.getDefinitions()) {
-      result.append(prefix).append(" $").append(definition.getFieldName());
-      prefix = ", ";
-    }
+    var prefix = new AtomicReference<>("");
+    Stream.ofNullable(variable.getDefinitions())
+        .flatMap(Collection::stream)
+        .forEach(
+            definition ->
+                result
+                    .append(prefix.getAndSet(", "))
+                    .append(" $")
+                    .append(definition.getFieldName()));
     return result.append(" }").toString();
   }
 }
