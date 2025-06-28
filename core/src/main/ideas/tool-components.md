@@ -90,7 +90,8 @@ Barry O'Reilly introduces Residuality Theory (RT), where stressors are applied t
 Some of these stressors are already accounted for by the above attractive and repulsive forces.
 These affect how modules are grouped into components.
 Let's call these _structural stressors_.
-TODO: merge categories from the two sections above to name structural stressors.
+
+_TODO: merge categories from the two sections above to identify and properly name structural stressors._
 
 Other stressors require new features for the system to survive.
 Let's call these _behavioral stressors_.
@@ -101,13 +102,14 @@ and finally from subdomains to event storms that use elements from the subdomain
 We would then have to re-run the process from modified event storm to subdomains to modules to components.
 We do that for a number of stressors and observe the resulting components for each.
 Then we somehow merge all these component sets into one that we're going to implement.
-TODO: Figure this part out. How does the inciden 
+
+_TODO: Figure this part out. How does the [incidence matrix](https://en.wikipedia.org/wiki/Incidence_matrix) fit in?_
 
 Note that we can limit ourselves to components that contain modules that implement _core_ subdomains.
 Supporting and generic subdomains aren't critical to the business, so the impact of changes to them is likely not
 threatening the company's survival and therefore don't require the additional analysis.
 
-TODO: Figure out how to determine behavioral stressors.
+_TODO: Figure out how to determine behavioral stressors._
 
 This cycle from requirements -> architecture -> requirements poses the question of how the architect can influence
 requirements, in particular where they result in different business processes.
