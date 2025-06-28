@@ -82,8 +82,37 @@ Service integrators == dark matter:
   expensive and fragile 
 
 
-## Synthesis
+## Residuality
 
-Better names: attractive/repulsive forces.
+Barry O'Reilly introduces Residuality Theory (RT), where stressors are applied to a system to see what survives
+(residues).
 
-TODO: merge categories from the two sections above
+Some of these stressors are already accounted for by the above attractive and repulsive forces.
+These affect how modules are grouped into components.
+Let's call these _structural stressors_.
+TODO: merge categories from the two sections above to name structural stressors.
+
+Other stressors require new features for the system to survive.
+Let's call these _behavioral stressors_.
+This requires going back to the requirements.
+We can do that by navigating from components to the modules they contain, from modules to the subdomains they implement,
+and finally from subdomains to event storms that use elements from the subdomains.
+
+We would then have to re-run the process from modified event storm to subdomains to modules to components.
+We do that for a number of stressors and observe the resulting components for each.
+Then we somehow merge all these component sets into one that we're going to implement.
+TODO: Figure this part out. How does the inciden 
+
+Note that we can limit ourselves to components that contain modules that implement _core_ subdomains.
+Supporting and generic subdomains aren't critical to the business, so the impact of changes to them is likely not
+threatening the company's survival and therefore don't require the additional analysis.
+
+TODO: Figure out how to determine behavioral stressors.
+
+This cycle from requirements -> architecture -> requirements poses the question of how the architect can influence
+requirements, in particular where they result in different business processes.
+For example, the license plate scanning feature O'Reilly introduces in his EV charging example would lead to a new
+business process for procuring access to a license plate database.
+Also, the SMEs that usually drive requirements are unlikely to want to go off in a bunch of different directions to
+work through scenarios to deal with stressors they see as unlikely.
+One way out of this would be to add the stressors to a risk registry if that's a thing in the organization.
