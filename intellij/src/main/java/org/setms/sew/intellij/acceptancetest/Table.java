@@ -1,5 +1,6 @@
 package org.setms.sew.intellij.acceptancetest;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import com.intellij.openapi.editor.Document;
@@ -59,6 +60,9 @@ record Table(
 
   private static List<String> parseRow(String line) {
     var content = line.trim();
+    if (line.isEmpty()) {
+      return emptyList();
+    }
     if (content.startsWith("|")) {
       content = content.substring(1);
     }
@@ -79,7 +83,7 @@ record Table(
   }
 
   public Delta addText(String text) {
-    if (text.equals("|")) {
+    if (text.equals("|") && columnIndex >= 0) {
       return autoSizeCell();
     }
     return null;
