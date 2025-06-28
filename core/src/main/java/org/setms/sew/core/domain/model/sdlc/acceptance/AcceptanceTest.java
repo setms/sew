@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,5 +27,16 @@ public class AcceptanceTest extends NamedObject {
 
   public AcceptanceTest(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
+  }
+
+  public Optional<Variable<?, ?>> findVariable(Pointer variable) {
+    return Optional.ofNullable(variable)
+        .filter(p -> p.isType("variable"))
+        .map(Pointer::getId)
+        .flatMap(this::findVariable);
+  }
+
+  public Optional<Variable<?, ?>> findVariable(String name) {
+    return variables.stream().filter(v -> name.equals(v.getName())).findFirst();
   }
 }

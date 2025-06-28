@@ -15,6 +15,7 @@ import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Parser;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.lang.acceptance.AcceptanceLexer;
 import org.setms.sew.lang.acceptance.AcceptanceParser;
 
@@ -173,5 +174,17 @@ class AcceptanceFormatParser implements Parser {
         .map(Reference.class::cast)
         .map(Reference::getType)
         .orElse(null);
+  }
+
+  @Override
+  public NamedObject createObject(
+      NestedObject source, String name, Object parent, boolean validate) {
+    var type = name;
+    if ("variables".equals(name)) {
+      type = source.property("type") instanceof DataEnum ? "fieldVariable" : "elementVariable";
+    } else if ("definitions".equals(name)) {
+      type = "fieldAssignment";
+    }
+    return Parser.super.createObject(source, type, parent, validate);
   }
 }
