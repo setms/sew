@@ -1,0 +1,13 @@
+| type      | name               |
+| --------- | ------------------ |
+| aggregate | gdpr.Notifications |
+
+| variable     | type                | definition      |
+| ------------ | ------------------- | --------------- |
+| message      | text                | nonempty        |
+| notifyUser   | command(NotifyUser) | Message=message |
+| userNotified | event(UserNotified) | Message=message |
+
+| scenario      | init | command    | state | emitted      |
+| ------------- | ---- | ---------- | ----- | ------------ |
+| "Notify user" |      | notifyUser |       | userNotified |
