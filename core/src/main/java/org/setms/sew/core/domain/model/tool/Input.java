@@ -14,9 +14,13 @@ public record Input<T extends NamedObject>(String name, Glob glob, Format format
   }
 
   public Input(String path, Format format, Class<T> type) {
+    this(path, format, type, initLower(type.getSimpleName()));
+  }
+
+  public Input(String path, Format format, Class<T> type, String extension) {
     this(
         initLower(English.plural(type.getSimpleName())),
-        new Glob(path, "**/*.%s".formatted(initLower(type.getSimpleName()))),
+        new Glob(path, "**/*.%s".formatted(extension)),
         format,
         type);
   }

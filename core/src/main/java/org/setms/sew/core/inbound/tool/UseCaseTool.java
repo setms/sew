@@ -130,7 +130,8 @@ public class UseCaseTool extends Tool {
         new Input<>("src/main/stakeholders", User.class),
         new Input<>("src/main/design", Entity.class),
         new Input<>("src/main/requirements", Domain.class),
-        new Input<>("src/test/acceptance", new AcceptanceFormat(), AcceptanceTest.class));
+        new Input<>(
+            "src/test/acceptance", new AcceptanceFormat(), AcceptanceTest.class, "acceptance"));
   }
 
   @Override
