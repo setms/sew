@@ -22,8 +22,8 @@ scenario InvalidUserRequestsDataDeletion {
     ]
 }
 
-scenario UnknownUserRequestsDataDeletion {
-    title       = "Unknown user requests data deletion"
+scenario LoggedOutUserRequestsDataDeletion {
+    title       = "Logged out user requests data deletion"
     description = "A user who isn't logged in to one of our apps requests deletion of their data."
     steps       = [
         user(User),
@@ -34,7 +34,8 @@ scenario UnknownUserRequestsDataDeletion {
         user(CustomerSupportAgent, reads=readModel(Users)),
         command(StartRequest),
         aggregate(Requests),
-        event(RequestStarted)
+        event(RequestStarted),
+        readModel(Requests)
     ]
 }
 
@@ -46,7 +47,8 @@ scenario LoggedInUserRequestsDataDeletion {
         externalSystem(App),
         command(StartRequest),
         aggregate(Requests),
-        event(RequestStarted)
+        event(RequestStarted),
+        readModel(Requests)
     ]
 }
 
