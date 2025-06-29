@@ -1,41 +1,75 @@
 package org.setms.sew.core.domain.model.sdlc.ddd;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.setms.sew.core.domain.model.format.Parser;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
+import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 class EventStormTest {
 
-  private final EventStorm model = new EventStorm();
+  public static final String POLICY_PREFIX = "Policy";
+  private final Parser parser = new SewFormat().newParser();
 
-  @Test
-  void shouldFindSequence() {
-    var policy1 = new Pointer("policy", "WheneverIFeelLikeIt1");
-    var command1 = new Pointer("command", "DoIt1");
-    var policy2 = new Pointer("policy", "WheneverIFeelLikeIt2");
-    var command2 = new Pointer("command", "DoIt2");
-    var aggregate1 = new Pointer("aggregate", "SpiderInTheWeb1");
-    var policy3 = new Pointer("policy", "WheneverIFeelLikeIt3");
-    var command3 = new Pointer("command", "DoIt3");
-    var aggregate2 = new Pointer("aggregate", "SpiderInTheWeb2");
-    model.add(policy1, command1);
-    model.add(command1, aggregate1);
-    model.add(policy2, command2);
-    model.add(command2, aggregate1);
-    model.add(policy3, command3);
-    model.add(command3, aggregate2);
+  @ParameterizedTest
+  @MethodSource("scenarios")
+  void shouldAddSequencesFromUseCase(
+      String name, int numSequences, List<Integer> sizes, int numUniqueElements)
+      throws IOException {
+    var model = new EventStorm(List.of(parseUseCase(name)));
 
-    var actual = model.findSequences("policy", "command", "aggregate").toList();
-
-    assertThatContainsSequence(actual, policy1, aggregate1);
-    assertThatContainsSequence(actual, policy2, aggregate1);
-    assertThatContainsSequence(actual, policy3, aggregate2);
+    assertThat(model.getSequences()).hasSize(numSequences);
+    var index = 0;
+    for (var sequence : model.getSequences()) {
+      assertThat(sequence.items()).hasSize(sizes.get(index++));
+    }
+    assertThat(model.elements()).hasSize(numUniqueElements);
   }
 
-  private void assertThatContainsSequence(List<Sequence> actual, Pointer first, Pointer last) {
-    assertThat(actual.stream().anyMatch(s -> s.first().equals(first) && s.last().equals(last))).isTrue();
+  public static Stream<Arguments> scenarios() {
+    return Stream.of(
+        Arguments.of("simple", 1, List.of(4), 4),
+        Arguments.of("split-policy-reads-from-readmodel", 2, List.of(5, 4), 5),
+        Arguments.of("split-event-updates-readmodel", 2, List.of(6, 5), 7),
+        Arguments.of("split-scenario-on-ending-event", 2, List.of(7, 8), 9),
+        Arguments.of("split-scenario-on-intermediate-event", 3, List.of(5, 7, 8), 10));
+  }
+
+  private UseCase parseUseCase(String name) throws IOException {
+    return parser.parse(
+        new FileInputStream("src/test/resources/eventstorm/%s.useCase".formatted(name)),
+        UseCase.class,
+        false);
+  }
+
+  @Test
+  void shouldFindSequences() throws IOException {
+    var model = new EventStorm(List.of(parseUseCase("split-scenario-on-intermediate-event")));
+
+    var actual =
+        model
+            .findSequences(
+                List.of(
+                    Pointer.testType("aggregate"),
+                    new Pointer("event", "Done")::equals,
+                    Pointer.testType("policy")))
+            .toList();
+
+    assertThat(actual)
+        .hasSize(2)
+        .map(Sequence::last)
+        .map(Pointer::getId)
+        .allSatisfy(id -> assertThat(id).startsWith(POLICY_PREFIX))
+        .map(id -> id.substring(POLICY_PREFIX.length()))
+        .containsExactlyInAnyOrder("1", "2");
   }
 }

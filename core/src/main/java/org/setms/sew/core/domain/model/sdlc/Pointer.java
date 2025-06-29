@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
@@ -52,16 +53,25 @@ public class Pointer implements Comparable<Pointer> {
         .findFirst();
   }
 
-  public Pointer withoutAttributes() {
-    return attributes.isEmpty() ? this : new Pointer(type, id);
-  }
-
   public boolean isType(String type) {
     return this.type.equals(type);
   }
 
+  public static Predicate<Pointer> testType(String type) {
+    return pointer -> pointer.isType(type);
+  }
+
   @Override
   public int compareTo(Pointer that) {
+    if (this.type == null && that.type != null) {
+      return -1;
+    }
+    if (this.type != null && that.type == null) {
+      return 1;
+    }
+    if (this.type == null) {
+      return this.id.compareTo(that.id);
+    }
     var result = this.type.compareTo(that.type);
     if (result == 0) {
       result = this.id.compareTo(that.id);

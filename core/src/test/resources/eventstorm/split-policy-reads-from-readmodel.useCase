@@ -1,0 +1,14 @@
+package split
+
+useCase UseCase {
+}
+
+scenario Scenario {
+    steps = [
+        aggregate(Something),
+        event(Happened),
+        policy(Check, reads=readModel(Context)),
+        command(Does),
+        aggregate(Something)
+    ]
+}

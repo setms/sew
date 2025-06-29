@@ -1,0 +1,33 @@
+package split
+
+useCase UseCase {
+}
+
+scenario Scenario1 {
+    steps = [
+        user(SomeOne),
+        command(Does),
+        aggregate(Something),
+        event(Done),
+        readModel(Completed)
+    ]
+}
+
+scenario Scenario2 {
+    steps = [
+        event(Done),
+        policy(Policy1),
+        command(Option1),
+        aggregate(Something)
+    ]
+}
+
+scenario Scenario3 {
+    steps = [
+        event(Done),
+        policy(Policy2),
+        command(Option2),
+        aggregate(Something),
+        event(AllDone)
+    ]
+}

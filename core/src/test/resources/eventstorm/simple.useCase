@@ -1,0 +1,13 @@
+package simple
+
+useCase Case {
+}
+
+scenario Scenario {
+    steps = [
+        user(SomeOne),
+        command(Does),
+        aggregate(Something),
+        event(Done)
+    ]
+}
