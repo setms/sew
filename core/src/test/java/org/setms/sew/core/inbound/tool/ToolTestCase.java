@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import lombok.Getter;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.setms.sew.core.domain.model.format.Files;
 import org.setms.sew.core.domain.model.format.Format;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.tool.Input;
@@ -38,6 +40,11 @@ abstract class ToolTestCase<T extends NamedObject> {
     this.sourceLocation = sourceLocation;
     this.extension = initLower(type.getSimpleName());
     this.baseDir = new File("src/test/resources/" + extension);
+  }
+
+  @AfterEach
+  void done() {
+    Files.childrenOf(baseDir).map(dir -> new File(dir, "src/todo")).forEach(Files::delete);
   }
 
   @Test

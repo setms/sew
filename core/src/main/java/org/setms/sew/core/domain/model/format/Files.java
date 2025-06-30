@@ -12,8 +12,12 @@ public class Files {
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public static void delete(File file) {
     if (file.isDirectory()) {
-      Stream.ofNullable(file.listFiles()).flatMap(Arrays::stream).forEach(Files::delete);
+      childrenOf(file).forEach(Files::delete);
     }
     file.delete();
+  }
+
+  public static Stream<File> childrenOf(File file) {
+    return Stream.ofNullable(file.listFiles()).flatMap(Arrays::stream);
   }
 }

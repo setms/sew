@@ -1,10 +1,14 @@
 package org.setms.sew.core.domain.model.format;
 
+import java.util.Collection;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Strings {
+
+  private static final Collection<Character> FORBIDDEN = List.of('\'', '[', ']');
 
   public static String initUpper(String value) {
     if (value == null || value.isEmpty()) {
@@ -41,6 +45,9 @@ public class Strings {
       if (Character.isWhitespace(result.charAt(i))) {
         result.delete(i, i + 1);
         result.setCharAt(i, Character.toUpperCase(result.charAt(i)));
+      } else if (FORBIDDEN.contains(result.charAt(i))) {
+        result.delete(i, i + 1);
+        i--;
       }
     }
     return result.toString();
