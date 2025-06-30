@@ -1,0 +1,29 @@
+package gdpr
+
+entity Request {
+}
+
+field Id {
+    type        = Id
+    constraints = [ Nonempty, Unique ]
+}
+
+field EmailAddress {
+    type        = Text
+    constraints = [ Nonempty, Email ]
+}
+
+field UserId {
+    type = Id
+}
+
+field Status {
+    type        = Selection
+    constraints = [
+        requested,
+        denied,
+        approved,
+        in_progress,
+        finished
+    ]
+}

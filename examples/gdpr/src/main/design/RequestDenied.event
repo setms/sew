@@ -1,4 +1,5 @@
 package gdpr
 
 event RequestDenied {
+    payload = RequestDecision
 }

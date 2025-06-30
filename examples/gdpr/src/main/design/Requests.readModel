@@ -2,4 +2,5 @@ package gdpr
 
 readModel Requests {
   display = "Requests"
+  content = Request
 }

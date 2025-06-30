@@ -1,0 +1,14 @@
+package gdpr
+
+entity User {
+}
+
+field Id {
+    type        = Id
+    constraints = [ Nonempty, Unique ]
+}
+
+field EmailAddress {
+    type        = Text
+    constraints = [ Nonempty, Email ]
+}

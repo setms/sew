@@ -1,0 +1,9 @@
+package gdpr
+
+entity UserRequest {
+}
+
+field EmailAddress {
+    type        = Text
+    constraints = [ Nonempty, Email ]
+}

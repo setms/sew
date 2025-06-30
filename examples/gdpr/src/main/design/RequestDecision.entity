@@ -1,0 +1,23 @@
+package gdpr
+
+entity RequestDecision {
+}
+
+field RequestId {
+    type        = Id
+    constraints = [ Nonempty ]
+}
+
+field UserId {
+    type = Id
+}
+
+field Decision {
+    type        = Selection
+    constraints = [ approved, denied ]
+}
+
+field Reason {
+    type        = Text
+    constraints = [ Nonempty ]
+}
