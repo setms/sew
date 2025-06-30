@@ -30,4 +30,19 @@ public class Strings {
     }
     return quotedText.substring(1, quotedText.length() - 1);
   }
+
+  public static String toObjectName(String value) {
+    if (value == null || value.isEmpty()) {
+      return value;
+    }
+    var result = new StringBuilder(value);
+    result.insert(0, ' ');
+    for (var i = 0; i < result.length(); i++) {
+      if (Character.isWhitespace(result.charAt(i))) {
+        result.delete(i, i + 1);
+        result.setCharAt(i, Character.toUpperCase(result.charAt(i)));
+      }
+    }
+    return result.toString();
+  }
 }

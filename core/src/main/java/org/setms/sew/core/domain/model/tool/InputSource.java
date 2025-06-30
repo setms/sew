@@ -11,4 +11,6 @@ public interface InputSource {
   String name();
 
   InputStream open() throws IOException;
+
+  OutputSink toSink();
 }

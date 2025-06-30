@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.inbound.tool;
 
 import static lombok.AccessLevel.PROTECTED;
 import static org.assertj.core.api.Assertions.assertThat;

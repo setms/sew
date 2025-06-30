@@ -1,11 +1,10 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.sew.core.domain.model.sdlc.design.FieldConstraint.NONEMPTY;
 import static org.setms.sew.core.domain.model.sdlc.design.FieldType.TEXT;
 
 import org.setms.sew.core.domain.model.sdlc.design.Entity;
-import org.setms.sew.core.inbound.tool.EntityTool;
 
 class EntityToolTest extends ToolTestCase<Entity> {
 

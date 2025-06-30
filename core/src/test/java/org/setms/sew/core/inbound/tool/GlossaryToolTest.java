@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Location;
-import org.setms.sew.core.inbound.tool.GlossaryTool;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
 class GlossaryToolTest extends ToolTestCase<Term> {

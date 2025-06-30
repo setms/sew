@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
-import org.setms.sew.core.inbound.tool.AcceptanceTestTool;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 

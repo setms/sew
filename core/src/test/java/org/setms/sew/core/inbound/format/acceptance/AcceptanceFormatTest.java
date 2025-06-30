@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.format.acceptance;
+package org.setms.sew.core.inbound.format.acceptance;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -14,7 +14,6 @@ import org.setms.sew.core.domain.model.format.Format;
 import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
-import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 
 class AcceptanceFormatTest {
 

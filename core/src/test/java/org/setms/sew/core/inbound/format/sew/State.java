@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.format.sew;
+package org.setms.sew.core.inbound.format.sew;
 
 public enum State {
   OK,

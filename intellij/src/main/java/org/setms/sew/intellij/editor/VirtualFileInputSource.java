@@ -7,6 +7,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -19,7 +20,9 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
 public class VirtualFileInputSource implements InputSource {
 
@@ -117,5 +120,10 @@ public class VirtualFileInputSource implements InputSource {
       return new ByteArrayInputStream(document.getText().getBytes(UTF_8));
     }
     return file.getInputStream();
+  }
+
+  @Override
+  public OutputSink toSink() {
+    return new FileOutputSink(new File(file.getPath()));
   }
 }

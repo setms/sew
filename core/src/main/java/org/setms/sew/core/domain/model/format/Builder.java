@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.tool.OutputSink;
 
 public interface Builder {
 
@@ -32,6 +33,12 @@ public interface Builder {
 
   default void build(NamedObject object, File file) throws IOException {
     build(toRootObject(object), file);
+  }
+
+  default void build(NamedObject object, OutputSink sink) throws IOException {
+    try (var output = sink.open()) {
+      build(toRootObject(object), output);
+    }
   }
 
   default RootObject toRootObject(NamedObject object) {

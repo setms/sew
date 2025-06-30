@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
@@ -20,7 +20,6 @@ import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
-import org.setms.sew.core.inbound.tool.StakeholdersTool;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 

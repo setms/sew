@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.tool;
+package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
@@ -11,7 +11,6 @@ import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Output;
-import org.setms.sew.core.inbound.tool.UseCaseTool;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
@@ -137,7 +136,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateDomain() {
-    var testDir = getTestDir( "valid");
+    var testDir = getTestDir("valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
 
@@ -159,7 +158,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateAcceptanceTest() {
-    var testDir = getTestDir( "valid");
+    var testDir = getTestDir("valid");
     var source = new FileInputSource(testDir);
     var sink = new FileOutputSink(testDir).select("build");
 

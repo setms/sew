@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.OutputSink;
 
 @Getter
 @RequiredArgsConstructor
@@ -29,6 +30,11 @@ public class FileInputSource implements InputSource {
   @Override
   public InputStream open() throws IOException {
     return new FileInputStream(file);
+  }
+
+  @Override
+  public OutputSink toSink() {
+    return new FileOutputSink(file);
   }
 
   @Override

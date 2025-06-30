@@ -1,4 +1,4 @@
-package org.setms.sew.core.inboud.format.sew;
+package org.setms.sew.core.inbound.format.sew;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,6 @@ import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 class SewFormatTest {
 

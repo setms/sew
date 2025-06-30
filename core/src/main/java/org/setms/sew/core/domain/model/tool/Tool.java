@@ -17,7 +17,11 @@ import java.util.Optional;
 import java.util.SequencedSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
+import org.setms.sew.core.domain.model.format.Strings;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.sdlc.process.Todo;
+import org.setms.sew.core.inbound.format.sew.SewFormat;
 
 /**
  * Something that validates input, builds output from input, and provides and applies suggestions
@@ -50,6 +54,7 @@ public abstract class Tool {
   public final SequencedSet<Diagnostic> validate(InputSource source) {
     var result = new LinkedHashSet<Diagnostic>();
     validate(resolveInputs(source, result), result);
+    createTodosFor(source.toSink(), result);
     return result;
   }
 
@@ -62,6 +67,34 @@ public abstract class Tool {
                 result.put(
                     input.name(), parse(source, input, validate.getAndSet(false), diagnostics)));
     return result;
+  }
+
+  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
+
+  private void createTodosFor(OutputSink sink, Collection<Diagnostic> diagnostics) {
+    diagnostics.stream()
+        .filter(d -> d.level() != INFO)
+        .filter(d -> d.location() != null)
+        .filter(d -> !d.suggestions().isEmpty())
+        .forEach(diagnostic -> createTodoFor(diagnostic, sink));
+  }
+
+  private void createTodoFor(Diagnostic diagnostic, OutputSink sink) {
+    var suggestion = diagnostic.suggestions().getFirst();
+    var name = Strings.toObjectName(diagnostic.message());
+    var todo =
+        new Todo(new FullyQualifiedName("todos", name))
+            .setTool(getClass().getName())
+            .setLocation(diagnostic.location().toString())
+            .setMessage(diagnostic.message())
+            .setCode(suggestion.code())
+            .setAction(suggestion.message());
+    var todoSink = sink.select("src/todo/" + diagnostic.location() + "/" + name + ".todo");
+    try {
+      new SewFormat().newBuilder().build(todo, todoSink);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private <T extends NamedObject> List<T> parse(
@@ -89,8 +122,6 @@ public abstract class Tool {
         .filter(Objects::nonNull)
         .toList();
   }
-
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
 
   /**
    * Build the output from the input
