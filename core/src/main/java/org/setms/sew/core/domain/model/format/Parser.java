@@ -2,6 +2,7 @@ package org.setms.sew.core.domain.model.format;
 
 import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.format.Validation.validate;
+import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -17,11 +18,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.sdlc.Enums;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.tool.Diagnostic;
+import org.setms.sew.core.domain.model.tool.Glob;
+import org.setms.sew.core.domain.model.tool.InputSource;
+import org.setms.sew.core.domain.model.tool.Location;
 
 public interface Parser {
 
@@ -211,5 +217,33 @@ public interface Parser {
                     || m.getParameters()[0].getType().isAssignableFrom(targetValue.getClass()))
         .findFirst()
         .orElse(null);
+  }
+
+  default <T extends NamedObject> Stream<T> parseMatching(
+      InputSource source,
+      Glob glob,
+      Class<T> type,
+      boolean validate,
+      Collection<Diagnostic> diagnostics) {
+    return source.matching(glob).stream()
+        .map(
+            inputSource -> {
+              try (var inputStream = inputSource.open()) {
+                return parse(inputStream, type, validate);
+              } catch (Exception e) {
+                diagnostics.add(
+                    new Diagnostic(
+                        ERROR,
+                        e.getMessage(),
+                        Optional.ofNullable(inputSource.name())
+                            .map(n -> n.split("\\."))
+                            .filter(a -> a.length == 2)
+                            .map(a -> new String[] {a[1], a[0]})
+                            .map(Location::new)
+                            .orElse(null)));
+                return null;
+              }
+            })
+        .filter(Objects::nonNull);
   }
 }

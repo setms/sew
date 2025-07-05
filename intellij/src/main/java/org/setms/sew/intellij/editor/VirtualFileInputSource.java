@@ -1,6 +1,7 @@
 package org.setms.sew.intellij.editor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.function.Predicate.not;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -83,12 +84,13 @@ public class VirtualFileInputSource implements InputSource {
   @Override
   public Collection<? extends InputSource> matching(Glob glob) {
     var result = new ArrayList<VirtualFileInputSource>();
-    Optional.ofNullable(file.findFileByRelativePath(glob.path()))
-        .ifPresent(
-            ancestor -> {
-              var pattern = Pattern.compile(glob.pattern().replace("**/*.", ".+\\."));
-              addChildren(ancestor, pattern, result);
-            });
+    var ancestor =
+        Optional.ofNullable(glob.path())
+            .filter(not(String::isBlank))
+            .map(file::findFileByRelativePath)
+            .orElse(file);
+    var pattern = Pattern.compile(glob.pattern().replace("**/*.", ".+\\."));
+    addChildren(ancestor, pattern, result);
     return result;
   }
 

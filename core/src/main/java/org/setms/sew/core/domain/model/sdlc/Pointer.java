@@ -61,6 +61,10 @@ public class Pointer implements Comparable<Pointer> {
     return pointer -> pointer.isType(type);
   }
 
+  public Predicate<Pointer> testEqual() {
+    return this::equals;
+  }
+
   @Override
   public int compareTo(Pointer that) {
     if (this.type == null && that.type != null) {

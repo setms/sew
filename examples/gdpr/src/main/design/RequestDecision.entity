@@ -13,8 +13,8 @@ field UserId {
 }
 
 field Decision {
-    type        = Selection
-    constraints = [ approved, denied ]
+    type   = Selection
+    values = [ approved, denied ]
 }
 
 field Reason {

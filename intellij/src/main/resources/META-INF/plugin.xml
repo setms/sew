@@ -55,6 +55,13 @@
                 displayType="BALLOON"
                 isLogByDefault="true"
                 toolWindowId="Event Log"/>
+        <!-- TODO as title is already taken -->
+        <toolWindow
+                id="Tasks"
+                anchor="left"
+                secondary="true"
+                icon="/icons/todos.svg"
+                factoryClass="org.setms.sew.intellij.toolwindow.TodoWindowFactory"/>
 
         <fileEditorProvider implementation="org.setms.sew.intellij.domain.DomainEditorProvider"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>

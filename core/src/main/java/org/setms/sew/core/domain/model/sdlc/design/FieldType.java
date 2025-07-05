@@ -4,5 +4,7 @@ public enum FieldType {
   TEXT,
   NUMBER,
   BOOLEAN,
-  DATETIME
+  DATETIME,
+  ID,
+  SELECTION
 }

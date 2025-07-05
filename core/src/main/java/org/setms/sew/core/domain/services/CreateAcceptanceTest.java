@@ -1,6 +1,7 @@
 package org.setms.sew.core.domain.services;
 
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
+import static org.setms.sew.core.domain.model.sdlc.Pointer.testType;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
@@ -51,13 +53,25 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
             .setScenarios(new ArrayList<>());
     switch (element.getType()) {
       case "aggregate" ->
-          addScenariosTo(result, this::addAggregateScenarioTo, "command", "aggregate", "event");
+          addScenariosTo(
+              result,
+              this::addAggregateScenarioTo,
+              List.of(testType("command"), element.testEqual(), testType("event")));
       case "policy" -> {
-        addScenariosTo(result, this::addPolicyScenarioTo, "event", "policy", "command");
-        addScenariosTo(result, this::addPolicyScenarioTo, "clockEvent", "policy", "command");
+        addScenariosTo(
+            result,
+            this::addPolicyScenarioTo,
+            List.of(testType("event"), element.testEqual(), testType("command")));
+        addScenariosTo(
+            result,
+            this::addPolicyScenarioTo,
+            List.of(testType("clockEvent"), element.testEqual(), testType("command")));
       }
       case "readModel" ->
-          addScenariosTo(result, this::addReadModelScenarioTo, "event", "readModel");
+          addScenariosTo(
+              result,
+              this::addReadModelScenarioTo,
+              List.of(testType("event"), element.testEqual()));
     }
     return result;
   }
@@ -65,19 +79,16 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
   private void addScenariosTo(
       AcceptanceTest test,
       BiConsumer<ResolvedSequence, AcceptanceTest> addScenario,
-      String... types) {
-    findSequences(types).forEach(sequence -> addScenario.accept(sequence, test));
+      List<Predicate<Pointer>> tests) {
+    findSequences(tests).forEach(sequence -> addScenario.accept(sequence, test));
   }
 
-  public Stream<ResolvedSequence> findSequences(String... types) {
-    return eventStorm.findSequences(types).map(s -> s.resolve(resolver));
+  public Stream<ResolvedSequence> findSequences(List<Predicate<Pointer>> tests) {
+    return eventStorm.findSequences(tests).map(s -> s.resolve(resolver));
   }
 
   private void addAggregateScenarioTo(ResolvedSequence sequence, AcceptanceTest test) {
     var commandAggregateEvent = sequence.items();
-    if (!test.getSut().pointsTo(commandAggregateEvent.get(1))) {
-      return;
-    }
     var scenario =
         new Scenario(scenarioName(sequence, test.getPackage()))
             .setCommand(
@@ -164,7 +175,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
   private Optional<String> toDefinition(FieldConstraint fieldConstraint) {
     return Optional.ofNullable(
         switch (fieldConstraint) {
-          case NONEMPTY -> fieldConstraint.name().toLowerCase();
+          case NONEMPTY, EMAIL -> fieldConstraint.name().toLowerCase();
           case UNIQUE -> null;
         });
   }

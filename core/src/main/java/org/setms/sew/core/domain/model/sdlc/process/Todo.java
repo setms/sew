@@ -1,6 +1,7 @@
 package org.setms.sew.core.domain.model.sdlc.process;
 
 import jakarta.validation.constraints.NotEmpty;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,6 +9,8 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.tool.Location;
+import org.setms.sew.core.domain.model.tool.Tool;
 
 @Getter
 @Setter
@@ -17,12 +20,24 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 public class Todo extends NamedObject {
 
   @NotEmpty private String tool;
-  @NotEmpty private String location;
+  private String location;
   @NotEmpty private String message;
   @NotEmpty private String code;
   @NotEmpty private String action;
 
   public Todo(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
+  }
+
+  public Tool toTool() {
+    try {
+      return (Tool) Class.forName(this.tool).getDeclaredConstructor().newInstance();
+    } catch (ReflectiveOperationException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public Location toLocation() {
+    return Optional.ofNullable(location).map(s -> s.split("/")).map(Location::new).orElse(null);
   }
 }

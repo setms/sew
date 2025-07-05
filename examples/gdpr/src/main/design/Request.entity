@@ -18,8 +18,8 @@ field UserId {
 }
 
 field Status {
-    type        = Selection
-    constraints = [
+    type   = Selection
+    values = [
         requested,
         denied,
         approved,

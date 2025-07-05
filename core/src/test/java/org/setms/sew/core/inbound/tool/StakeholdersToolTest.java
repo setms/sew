@@ -106,7 +106,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
     assertThat(actual)
         .hasSize(1)
-        .contains(new Diagnostic(WARN, "Unknown suggestion: unknown.suggestion"));
+        .contains(new Diagnostic(ERROR, "Unknown suggestion: unknown.suggestion"));
   }
 
   @Test

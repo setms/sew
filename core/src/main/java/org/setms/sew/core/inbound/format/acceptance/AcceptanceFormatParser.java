@@ -34,9 +34,11 @@ class AcceptanceFormatParser implements Parser {
   private RootObject parseUsing(AcceptanceParser parser) {
     var test = parser.test();
     var result = parseSut(test);
-    var variables = parseVariables(test.variables());
-    result.set("variables", variables);
-    result.set("scenarios", parseScenarios(test.scenarios(), variables));
+    if (result != null) {
+      var variables = parseVariables(test.variables());
+      result.set("variables", variables);
+      result.set("scenarios", parseScenarios(test.scenarios(), variables));
+    }
     return result;
   }
 
@@ -58,7 +60,9 @@ class AcceptanceFormatParser implements Parser {
 
   private DataList parseVariables(AcceptanceParser.VariablesContext variables) {
     var result = new DataList();
-    variables.variables_row().forEach(row -> addVariable(row, result));
+    if (variables != null && variables.variables_row() != null) {
+      variables.variables_row().forEach(row -> addVariable(row, result));
+    }
     return result;
   }
 
@@ -86,7 +90,9 @@ class AcceptanceFormatParser implements Parser {
       return new DataEnum(identifier.getText());
     }
     var typedReference = type.typedReference();
-    if (typedReference != null) {
+    if (typedReference != null
+        && typedReference.TYPE() != null
+        && typedReference.OBJECT_NAME() != null) {
       return new Reference(typedReference.TYPE().getText(), typedReference.OBJECT_NAME().getText());
     }
     return null;

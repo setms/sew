@@ -2,7 +2,6 @@ package org.setms.sew.core.domain.model.tool;
 
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.INFO;
-import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
@@ -74,7 +73,6 @@ public abstract class Tool {
   private void createTodosFor(OutputSink sink, Collection<Diagnostic> diagnostics) {
     diagnostics.stream()
         .filter(d -> d.level() != INFO)
-        .filter(d -> d.location() != null)
         .filter(d -> !d.suggestions().isEmpty())
         .forEach(diagnostic -> createTodoFor(diagnostic, sink));
   }
@@ -85,7 +83,8 @@ public abstract class Tool {
     var todo =
         new Todo(new FullyQualifiedName("todos", name))
             .setTool(getClass().getName())
-            .setLocation(diagnostic.location().toString())
+            .setLocation(
+                Optional.ofNullable(diagnostic.location()).map(Objects::toString).orElse(null))
             .setMessage(diagnostic.message())
             .setCode(suggestion.code())
             .setAction(suggestion.message());
@@ -99,28 +98,10 @@ public abstract class Tool {
 
   private <T extends NamedObject> List<T> parse(
       InputSource source, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
-    var parser = input.format().newParser();
-    return source.matching(input.glob()).stream()
-        .map(
-            inputSource -> {
-              try (var inputStream = inputSource.open()) {
-                return parser.parse(inputStream, input.type(), validate);
-              } catch (Exception e) {
-                diagnostics.add(
-                    new Diagnostic(
-                        ERROR,
-                        e.getMessage(),
-                        Optional.ofNullable(inputSource.name())
-                            .map(n -> n.split("\\."))
-                            .filter(a -> a.length == 2)
-                            .map(a -> new String[] {a[1], a[0]})
-                            .map(Location::new)
-                            .orElse(null)));
-                return null;
-              }
-            })
-        .filter(Objects::nonNull)
-        .toList();
+    return input
+        .format()
+        .newParser()
+        .parseMatching(source, input.glob(), input.type(), validate, diagnostics).toList();
   }
 
   /**
@@ -170,7 +151,7 @@ public abstract class Tool {
       Location location,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
-    diagnostics.add(new Diagnostic(WARN, "Unknown suggestion: " + suggestionCode));
+    diagnostics.add(new Diagnostic(ERROR, "Unknown suggestion: " + suggestionCode));
   }
 
   protected final Diagnostic sinkCreated(OutputSink sink) {

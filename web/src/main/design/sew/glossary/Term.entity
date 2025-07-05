@@ -5,10 +5,10 @@ entity Term {
 
 field Phrase {
     type        = Text
-    constraints = [ required, unique ]
+    constraints = [ Nonempty, Unique ]
 }
 
 field Definition {
     type        = Text
-    constraints = [ required ]
+    constraints = [ NonEmpty ]
 }
