@@ -1,4 +1,4 @@
-package nonuser
+package missing
 
 owner Duck {
     display = "Dagobert"

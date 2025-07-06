@@ -1,6 +1,6 @@
 package org.setms.sew.core.domain.model.sdlc.design;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,7 +18,8 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 @EqualsAndHashCode(callSuper = true)
 public class Field extends NamedObject {
 
-  @NotEmpty private FieldType type;
+  @NotNull
+  private FieldType type;
   private Enums<FieldConstraint> constraints = Enums.of(FieldConstraint.class);
   private List<String> values;
 

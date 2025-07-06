@@ -93,12 +93,9 @@ public class StakeholdersTool extends Tool {
                     .forEach(
                         step ->
                             validateStepUsers(
-                                new Location(
-                                    "useCase",
-                                    useCase.getName(),
-                                    "scenario",
-                                    scenario.getName(),
-                                    "steps[%d]".formatted(scenario.getSteps().indexOf(step))),
+                                new Location(useCase)
+                                    .plus(scenario)
+                                    .plus("steps", scenario.getSteps(), step),
                                 step,
                                 users,
                                 owners,

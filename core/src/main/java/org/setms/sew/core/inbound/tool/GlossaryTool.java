@@ -53,7 +53,7 @@ public class GlossaryTool extends Tool {
           new Diagnostic(
               ERROR,
               "Term '%s' refers to unknown term '%s'".formatted(term.getName(), pointer.getId()),
-              new Location("term", term.getName())));
+              new Location(term)));
     }
   }
 

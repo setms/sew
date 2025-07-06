@@ -132,7 +132,8 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
             new Diagnostic(
                 ERROR,
                 "Only users can appear in use case scenarios, found owner Duck",
-                new Location("useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
+                new Location(
+                    "nonuser", "useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
   }
 
   @Test
@@ -147,6 +148,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
             new Diagnostic(
                 ERROR,
                 "Unknown user Micky",
-                new Location("useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
+                new Location(
+                    "missing", "useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
   }
 }

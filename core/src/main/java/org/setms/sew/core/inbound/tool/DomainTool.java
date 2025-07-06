@@ -286,7 +286,7 @@ public class DomainTool extends Tool {
           new Diagnostic(
               WARN,
               "Subdomains aren't mapped to modules",
-              new Location("domain", domain.getName()),
+              new Location(domain),
               List.of(new Suggestion(CREATE_MODULES, "Map to modules"))));
     }
   }
@@ -335,10 +335,7 @@ public class DomainTool extends Tool {
   }
 
   private List<Modules> mapDomainToModules(List<Domain> domains, Location location) {
-    return domains.stream()
-        .filter(domain -> location == null || location.segments().get(1).equals(domain.getName()))
-        .map(this::mapDomainToModules)
-        .toList();
+    return domains.stream().filter(location::isInside).map(this::mapDomainToModules).toList();
   }
 
   private Modules mapDomainToModules(Domain domain) {

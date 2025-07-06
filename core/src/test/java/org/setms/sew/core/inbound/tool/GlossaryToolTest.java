@@ -83,6 +83,6 @@ class GlossaryToolTest extends ToolTestCase<Term> {
             new Diagnostic(
                 ERROR,
                 "Term 'InvalidSeeAlso' refers to unknown term 'NonExistent'",
-                new Location("term", "InvalidSeeAlso")));
+                new Location("invalid", "term", "InvalidSeeAlso")));
   }
 }

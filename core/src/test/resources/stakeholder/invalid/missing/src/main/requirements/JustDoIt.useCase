@@ -1,4 +1,4 @@
-package nonuser
+package missing
 
 useCase JustDoIt {
     title = "Just do it"

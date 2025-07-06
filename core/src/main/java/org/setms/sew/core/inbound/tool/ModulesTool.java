@@ -52,10 +52,9 @@ public class ModulesTool extends Tool {
         .get(Modules.class)
         .forEach(
             modules -> {
+              var location = new Location(modules);
               if (modules.getMappedTo() == null) {
-                diagnostics.add(
-                    new Diagnostic(
-                        ERROR, "Must map to domain", new Location("modules", modules.getName())));
+                diagnostics.add(new Diagnostic(ERROR, "Must map to domain", location));
               } else {
                 modules
                     .getMappedTo()
@@ -67,7 +66,7 @@ public class ModulesTool extends Tool {
                                 new Diagnostic(
                                     ERROR,
                                     "Unknown domain %s".formatted(modules.getMappedTo().getId()),
-                                    new Location("modules", modules.getName()))));
+                                    location)));
               }
             });
   }
@@ -80,15 +79,13 @@ public class ModulesTool extends Tool {
               if (module.getMappedTo() == null) {
                 diagnostics.add(
                     new Diagnostic(
-                        ERROR,
-                        "Must map to subdomain",
-                        new Location("modules", modules.getName(), "module", module.getName())));
+                        ERROR, "Must map to subdomain", new Location(modules).plus(module)));
               } else if (module.getMappedTo().resolveFrom(domain.getSubdomains()).isEmpty()) {
                 diagnostics.add(
                     new Diagnostic(
                         ERROR,
                         "Unknown subdomain %s".formatted(module.getMappedTo().getId()),
-                        new Location("modules", modules.getName(), "module", module.getName())));
+                        new Location(modules).plus(module)));
               }
             });
   }
