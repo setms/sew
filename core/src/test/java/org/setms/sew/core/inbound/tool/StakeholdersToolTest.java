@@ -27,7 +27,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   private static final String OWNER_SKELETON =
       """
-      package owner
+      package noowner
 
       owner Some {
         display = "<Some role>"
@@ -62,7 +62,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   @Test
   void shouldRejectMissingOwner() throws IOException {
-    var testDir = getTestDir("invalid/owner");
+    var testDir = getTestDir("invalid/noowner");
     var source = new FileInputSource(testDir);
 
     var actual = getTool().validate(source);

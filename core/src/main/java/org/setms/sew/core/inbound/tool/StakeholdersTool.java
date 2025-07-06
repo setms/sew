@@ -2,13 +2,16 @@ package org.setms.sew.core.inbound.tool;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
+import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
@@ -145,12 +148,15 @@ public class StakeholdersTool extends Tool {
   }
 
   private void createOwner(
-      OutputSink sink, ResolvedInputs ignored, Collection<Diagnostic> diagnostics) {
-    var stakeholders = sink.select(STAKEHOLDERS_PATH);
+      OutputSink sink, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var packages =
+        inputs.get(User.class).stream().map(NamedObject::getPackage).collect(Collectors.toSet());
+    var stakeholdersSink = toBase(sink).select(STAKEHOLDERS_PATH);
     try {
-      var scope = scopeOf(sink, stakeholders);
+      var scope =
+          packages.size() == 1 ? packages.iterator().next() : scopeOf(sink, stakeholdersSink);
       var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
-      var ownerSink = stakeholders.select(owner.getName() + ".owner");
+      var ownerSink = stakeholdersSink.select(owner.getName() + ".owner");
       try (var output = ownerSink.open()) {
         new SewFormat().newBuilder().build(owner, output);
       }
@@ -163,8 +169,15 @@ public class StakeholdersTool extends Tool {
   private String scopeOf(OutputSink sink, OutputSink stakeholders) {
     var containers = stakeholders.containers();
     var uri = containers.isEmpty() ? sink.toUri() : containers.getFirst().toUri();
-    var path = uri.getPath();
-    path = path.substring(0, path.length() - 1);
-    return path.substring(1 + path.lastIndexOf('/'));
+    var result = uri.getPath();
+    if (result.endsWith("/")) {
+      result = result.substring(0, result.length() - 1);
+    }
+    result = result.substring(1 + result.lastIndexOf('/'));
+    var index = result.lastIndexOf('.');
+    if (index > 0) {
+      result = result.substring(0, index);
+    }
+    return initLower(result);
   }
 }

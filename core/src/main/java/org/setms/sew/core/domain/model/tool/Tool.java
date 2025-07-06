@@ -135,6 +135,14 @@ public abstract class Tool {
     return List.of(new Output(new Glob(path, "*.html")), new Output(new Glob(path, "*.png")));
   }
 
+  protected OutputSink toBase(OutputSink sink) {
+    var glob = getInputs().getFirst().glob();
+    if (sink.toUri().toString().endsWith(glob.extension())) {
+      return sink.select(glob.path().replaceAll("[^/]+", "..")).select("..");
+    }
+    return sink;
+  }
+
   protected void build(
       ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {}
 

@@ -334,16 +334,9 @@ public class UseCaseTool extends Tool {
                 createMissingStep(
                     stepReference.useCase().getPackage(),
                     stepReference.getStep().orElseThrow(),
-                    normalize(sink),
+                    toBase(sink),
                     diagnostics),
             () -> addError(diagnostics, "Unknown step reference %s", location));
-  }
-
-  private OutputSink normalize(OutputSink sink) {
-    if (sink.toUri().toString().endsWith(".useCase")) {
-      return sink.select("../../../..");
-    }
-    return sink;
   }
 
   private void createMissingStep(
@@ -405,7 +398,7 @@ public class UseCaseTool extends Tool {
                       .filter(uc -> packageName.equals(uc.getPackage()))
                       .toList());
       var domainSink =
-          normalize(sink).select("src/main/requirements/%s.domain".formatted(domain.getName()));
+          toBase(sink).select("src/main/requirements/%s.domain".formatted(domain.getName()));
       try (var output = domainSink.open()) {
         new SewFormat().newBuilder().build(domain, output);
       }
@@ -423,7 +416,7 @@ public class UseCaseTool extends Tool {
     try {
       var acceptanceTest = createAcceptanceTestFor(inputs, location);
       var acceptanceTestSink =
-          normalize(sink)
+          toBase(sink)
               .select(
                   "src/test/acceptance/%s-%s.acceptance"
                       .formatted(acceptanceTest.getName(), acceptanceTest.getSut().getType()));

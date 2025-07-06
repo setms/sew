@@ -323,7 +323,7 @@ public class DomainTool extends Tool {
         .forEach(
             modules -> {
               var modulesSink =
-                  normalize(sink)
+                  toBase(sink)
                       .select("src/main/architecture/%s.modules".formatted(modules.getName()));
               try (var output = modulesSink.open()) {
                 new SewFormat().newBuilder().build(modules, output);
@@ -353,12 +353,5 @@ public class DomainTool extends Tool {
     var result = new Module(getFullyQualifiedName(subdomain));
     result.setMappedTo(subdomain.pointerTo());
     return result;
-  }
-
-  private OutputSink normalize(OutputSink sink) {
-    if (sink.toUri().toString().endsWith(".domain")) {
-      return sink.select("../../../..");
-    }
-    return sink;
   }
 }
