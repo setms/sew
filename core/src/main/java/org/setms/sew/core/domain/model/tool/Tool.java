@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.SequencedSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
@@ -80,15 +78,26 @@ public abstract class Tool {
   private void createTodoFor(Diagnostic diagnostic, OutputSink sink) {
     var suggestion = diagnostic.suggestions().getFirst();
     var name = Strings.toObjectName(diagnostic.message());
+    String packageName;
+    String location;
+    String path;
+    if (diagnostic.location() == null) {
+      packageName = "todos";
+      location = null;
+      path = "";
+    } else {
+      packageName = diagnostic.location().segments().getFirst();
+      location = diagnostic.location().toString();
+      path = location + "/";
+    }
     var todo =
-        new Todo(new FullyQualifiedName("todos", name))
+        new Todo(new FullyQualifiedName(packageName, name))
             .setTool(getClass().getName())
-            .setLocation(
-                Optional.ofNullable(diagnostic.location()).map(Objects::toString).orElse(null))
+            .setLocation(location)
             .setMessage(diagnostic.message())
             .setCode(suggestion.code())
             .setAction(suggestion.message());
-    var todoSink = sink.select("src/todo/" + diagnostic.location() + "/" + name + ".todo");
+    var todoSink = sink.select("src/todo/%s%s.todo".formatted(path, name));
     try {
       new SewFormat().newBuilder().build(todo, todoSink);
     } catch (IOException e) {
@@ -101,7 +110,8 @@ public abstract class Tool {
     return input
         .format()
         .newParser()
-        .parseMatching(source, input.glob(), input.type(), validate, diagnostics).toList();
+        .parseMatching(source, input.glob(), input.type(), validate, diagnostics)
+        .toList();
   }
 
   /**

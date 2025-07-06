@@ -1,10 +1,12 @@
 package org.setms.sew.intellij.lang.sew;
 
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
 import static org.setms.sew.intellij.lang.sew.SewElementTypes.*;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -14,8 +16,8 @@ import com.intellij.psi.tree.IElementType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Tool;
@@ -41,6 +43,10 @@ public class SewAnnotator implements Annotator {
           ModulesFileType.INSTANCE.getDefaultExtension(),
           new ModulesTool());
 
+  private static String previousDocumentText;
+  private static Set<Diagnostic> diagnostics = emptySet();
+  private static Tool tool;
+
   @Override
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public void annotate(@NotNull PsiElement psiElement, @NotNull AnnotationHolder holder) {
@@ -50,6 +56,10 @@ public class SewAnnotator implements Annotator {
     }
     var file = psiElement.getContainingFile();
     if (file == null || !file.isValid()) {
+      return;
+    }
+    if (!(file.getFileType() instanceof LanguageFileType languageFileType)
+        || !SewLanguage.INSTANCE.equals(languageFileType.getLanguage())) {
       return;
     }
 
@@ -64,13 +74,11 @@ public class SewAnnotator implements Annotator {
       return;
     }
 
-    var maybeTool =
-        Optional.ofNullable(TOOLS_BY_EXTENSION.get(file.getVirtualFile().getExtension()));
-    if (maybeTool.isEmpty()) {
-      return;
+    if (!document.getText().equals(previousDocumentText)) {
+      previousDocumentText = document.getText();
+      tool = TOOLS_BY_EXTENSION.get(file.getVirtualFile().getExtension());
+      diagnostics = tool == null ? emptySet() : validateFile(tool, file);
     }
-    var tool = maybeTool.get();
-    var diagnostics = validateFile(tool, file);
     if (diagnostics.isEmpty()) {
       return;
     }
@@ -79,7 +87,6 @@ public class SewAnnotator implements Annotator {
         .filter(
             diagnostic ->
                 diagnostic.location() == null
-                        || !"useCase".equals(diagnostic.location().segments().getFirst())
                     ? location.isEmpty()
                     : diagnostic.location().toString().equals(location))
         .forEach(
@@ -127,7 +134,9 @@ public class SewAnnotator implements Annotator {
   }
 
   private String toLocation(PsiElement... elements) {
-    return Arrays.stream(elements)
+    return Stream.concat(
+            Stream.of(elements[0].getParent().getParent().getChildren()[0].getChildren()[0]),
+            Arrays.stream(elements))
         .distinct()
         .map(element -> element.getText().replace(' ', '/'))
         .collect(joining("/"));

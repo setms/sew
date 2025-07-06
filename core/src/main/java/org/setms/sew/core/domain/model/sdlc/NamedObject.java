@@ -11,6 +11,10 @@ public abstract class NamedObject implements Comparable<NamedObject> {
 
   private final FullyQualifiedName fullyQualifiedName;
 
+  public String type() {
+    return initLower(getClass().getSimpleName());
+  }
+
   public String getName() {
     return fullyQualifiedName.getName();
   }

@@ -22,7 +22,7 @@ public class ToolRunner {
 
   private static final String CREATED_PREFIX = "Created ";
 
-  public static void applySuggestion(
+  public static boolean applySuggestion(
       Tool tool,
       String code,
       Location location,
@@ -31,14 +31,13 @@ public class ToolRunner {
       FileOutputSink sink) {
     PsiDocumentManager.getInstance(project).commitAllDocuments();
     var diagnostics = tool.apply(code, source, location, sink);
-    diagnostics.stream()
-        .filter(d -> d.level() == ERROR)
-        .forEach(
-            diagnostic ->
-                NotificationGroupManager.getInstance()
-                    .getNotificationGroup("Sew")
-                    .createNotification(diagnostic.message(), NotificationType.ERROR)
-                    .notify(project));
+    var errors = diagnostics.stream().filter(d -> d.level() == ERROR).toList();
+    errors.forEach(
+        diagnostic ->
+            NotificationGroupManager.getInstance()
+                .getNotificationGroup("Sew")
+                .createNotification(diagnostic.message(), NotificationType.ERROR)
+                .notify(project));
     diagnostics.stream()
         .filter(d -> d.level() == INFO)
         .map(Diagnostic::message)
@@ -50,5 +49,6 @@ public class ToolRunner {
         .map(LocalFileSystem.getInstance()::refreshAndFindFileByIoFile)
         .filter(Objects::nonNull)
         .forEach(file -> FileEditorManager.getInstance(project).openFile(file, true));
+    return errors.isEmpty();
   }
 }

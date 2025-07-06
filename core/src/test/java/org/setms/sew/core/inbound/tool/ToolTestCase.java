@@ -44,7 +44,16 @@ abstract class ToolTestCase<T extends NamedObject> {
 
   @AfterEach
   void done() {
-    Files.childrenOf(baseDir).map(dir -> new File(dir, "src/todo")).forEach(Files::delete);
+    Files.childrenOf(baseDir).forEach(this::deleteTodos);
+  }
+
+  private void deleteTodos(File dir) {
+    var todoDir = new File(dir, "src/todo");
+    if (todoDir.exists()) {
+      Files.delete(todoDir);
+    } else {
+      Files.childrenOf(dir).forEach(this::deleteTodos);
+    }
   }
 
   @Test

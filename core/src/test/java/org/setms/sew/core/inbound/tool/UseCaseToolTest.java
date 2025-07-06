@@ -144,8 +144,8 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
-        actual.stream().filter(d -> d.message().equals("Missing domain")).findFirst();
-    assertThat(maybeDiagnostic).as("Warning about missing domain").isPresent();
+        actual.stream().filter(d -> d.message().equals("Missing subdomains")).findFirst();
+    assertThat(maybeDiagnostic).as("Warning about missing subdomains").isPresent();
     var diagnostic = maybeDiagnostic.get();
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();

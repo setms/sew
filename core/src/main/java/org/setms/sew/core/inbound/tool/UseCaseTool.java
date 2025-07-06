@@ -111,7 +111,6 @@ public class UseCaseTool extends Tool {
   private static final String CREATE_MISSING_STEP = "step.missing.create";
   private static final String CREATE_DOMAIN = "domain.create";
   private static final String CREATE_ACCEPTANCE_TEST = "acceptance.test.create";
-  private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
   private static final Collection<String> ACTIVE_ELEMENTS =
       List.of("aggregate", "policy", "readModel");
   private JLanguageTool languageTool;
@@ -147,21 +146,19 @@ public class UseCaseTool extends Tool {
       validateAcceptanceTests(useCases, inputs, diagnostics);
     }
     if (!useCases.isEmpty()) {
-      validateDomain(inputs, diagnostics);
+      validateDomain(useCases, inputs, diagnostics);
     }
   }
 
   private void validateUseCase(
       UseCase useCase, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var location = new Location(useCase);
     useCase
         .getScenarios()
         .forEach(
             scenario ->
                 validateScenario(
-                    new Location("useCase", useCase.getName(), "scenario", scenario.getName()),
-                    scenario.getSteps(),
-                    inputs,
-                    diagnostics));
+                    location.plus(scenario), scenario.getSteps(), inputs, diagnostics));
   }
 
   private void validateScenario(
@@ -183,7 +180,7 @@ public class UseCaseTool extends Tool {
       Collection<Diagnostic> diagnostics) {
     steps.forEach(
         step -> {
-          var stepLocation = location.plus("steps[%d]".formatted(steps.indexOf(step)));
+          var stepLocation = location.plus("steps", steps, step);
           validateStepReference(step, inputs, diagnostics, stepLocation);
           step.getAttributes()
               .forEach(
@@ -247,7 +244,7 @@ public class UseCaseTool extends Tool {
                                 initUpper(English.plural(previous.getType())),
                                 VERBS.getOrDefault(step.getType(), "precede"),
                                 English.plural(step.getType())),
-                        location.plus("steps[%d]".formatted(steps.indexOf(step)))));
+                        location.plus("steps", steps, step)));
               }
               prev.set(step);
             });
@@ -265,46 +262,50 @@ public class UseCaseTool extends Tool {
       List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var acceptanceTests = inputs.get(AcceptanceTest.class);
     useCases.forEach(
-        useCase -> {
-          var packageName = useCase.getPackage();
-          useCase.getScenarios().stream()
-              .flatMap(Scenario::steps)
-              .distinct()
-              .filter(step -> ACTIVE_ELEMENTS.contains(step.getType()))
-              .forEach(
-                  pointer ->
-                      validateAcceptanceTestFor(
-                          packageName, pointer, acceptanceTests, diagnostics));
-        });
+        useCase ->
+            useCase.getScenarios().stream()
+                .flatMap(Scenario::steps)
+                .distinct()
+                .filter(step -> ACTIVE_ELEMENTS.contains(step.getType()))
+                .forEach(
+                    step ->
+                        validateAcceptanceTestFor(useCase, step, acceptanceTests, diagnostics)));
   }
 
   private void validateAcceptanceTestFor(
-      String packageName,
-      Pointer pointer,
+      UseCase useCase,
+      Pointer step,
       Collection<AcceptanceTest> acceptanceTests,
       Collection<Diagnostic> diagnostics) {
-    if (acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(pointer::equals)) {
-      var acceptanceTest =
-          "acceptance test for %s %s".formatted(pointer.getType(), pointer.getId());
+    if (acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(step::equals)) {
+      var scenario =
+          useCase.scenarios().filter(s -> s.getSteps().contains(step)).findFirst().orElseThrow();
       diagnostics.add(
           new Diagnostic(
               WARN,
-              "Missing " + acceptanceTest,
-              new Location(packageName, pointer.getType(), pointer.getId()),
-              List.of(new Suggestion(CREATE_ACCEPTANCE_TEST, "Create " + acceptanceTest))));
+              "Missing acceptance test for %s %s".formatted(step.getType(), step.getId()),
+              new Location(useCase).plus(scenario).plus("steps", scenario.getSteps(), step),
+              List.of(new Suggestion(CREATE_ACCEPTANCE_TEST, "Create acceptance test"))));
     }
   }
 
-  private void validateDomain(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  private void validateDomain(
+      List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var domains = inputs.get(Domain.class);
-    if (domains.isEmpty()) {
-      diagnostics.add(
-          new Diagnostic(
-              WARN,
-              "Missing domain",
-              null,
-              List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
-    }
+    useCases.stream()
+        .map(UseCase::getPackage)
+        .distinct()
+        .forEach(
+            packageName -> {
+              if (domains.stream().noneMatch(d -> packageName.equals(d.getPackage()))) {
+                diagnostics.add(
+                    new Diagnostic(
+                        WARN,
+                        "Missing subdomains",
+                        new Location(packageName),
+                        List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
+              }
+            });
   }
 
   @Override
@@ -316,7 +317,7 @@ public class UseCaseTool extends Tool {
       Collection<Diagnostic> diagnostics) {
     switch (suggestionCode) {
       case CREATE_MISSING_STEP -> createMissingStep(inputs, location, sink, diagnostics);
-      case CREATE_DOMAIN -> createDomain(inputs, sink, diagnostics);
+      case CREATE_DOMAIN -> createDomain(location.segments().getLast(), inputs, sink, diagnostics);
       case CREATE_ACCEPTANCE_TEST -> createAcceptanceTest(inputs, location, sink, diagnostics);
       case null, default -> super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
@@ -327,56 +328,15 @@ public class UseCaseTool extends Tool {
       Location location,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
-    var useCaseName = location.segments().get(1);
-    var scenarioName = location.segments().get(3);
-    var stepRef = location.segments().get(4);
-    var matcher = PATTERN_STEP.matcher(stepRef);
-    if (matcher.matches()) {
-      var stepIndex = Integer.parseInt(matcher.group("index"));
-      createMissingStep(inputs, useCaseName, scenarioName, stepIndex, sink, diagnostics);
-    } else {
-      addError(
-          diagnostics,
-          "Unknown step reference %s in scenario %s of use case %s",
-          stepRef,
-          scenarioName,
-          useCaseName);
-    }
-  }
-
-  private void createMissingStep(
-      ResolvedInputs inputs,
-      String useCaseName,
-      String scenarioName,
-      int stepIndex,
-      OutputSink sink,
-      Collection<Diagnostic> diagnostics) {
-    inputs.get(UseCase.class).stream()
-        .filter(useCase -> useCaseName.equals(useCase.getName()))
-        .findFirst()
+    StepReference.find(location, inputs.get(UseCase.class))
         .ifPresentOrElse(
-            useCase -> createMissingStep(useCase, scenarioName, stepIndex, sink, diagnostics),
-            () -> addError(diagnostics, "Unknown use case %s", useCaseName));
-  }
-
-  private void createMissingStep(
-      UseCase useCase,
-      String scenarioName,
-      int stepIndex,
-      OutputSink sink,
-      Collection<Diagnostic> diagnostics) {
-    useCase.getScenarios().stream()
-        .filter(scenario -> scenarioName.equals(scenario.getName()))
-        .findFirst()
-        .ifPresentOrElse(
-            scenario ->
-                createMissingStep(useCase, scenario, stepIndex, normalize(sink), diagnostics),
-            () ->
-                addError(
-                    diagnostics,
-                    "Unknown scenario %s in use case %s",
-                    scenarioName,
-                    useCase.getName()));
+            stepReference ->
+                createMissingStep(
+                    stepReference.useCase().getPackage(),
+                    stepReference.getStep().orElseThrow(),
+                    normalize(sink),
+                    diagnostics),
+            () -> addError(diagnostics, "Unknown step reference %s", location));
   }
 
   private OutputSink normalize(OutputSink sink) {
@@ -384,25 +344,6 @@ public class UseCaseTool extends Tool {
       return sink.select("../../../..");
     }
     return sink;
-  }
-
-  private void createMissingStep(
-      UseCase useCase,
-      Scenario scenario,
-      int stepIndex,
-      OutputSink sink,
-      Collection<Diagnostic> diagnostics) {
-    if (0 <= stepIndex && stepIndex < scenario.getSteps().size()) {
-      createMissingStep(
-          useCase.getPackage(), scenario.getSteps().get(stepIndex), sink, diagnostics);
-    } else {
-      addError(
-          diagnostics,
-          "Invalid step %d for scenario %s in use case %s",
-          stepIndex + 1,
-          scenario.getName(),
-          useCase.getName());
-    }
   }
 
   private void createMissingStep(
@@ -452,9 +393,17 @@ public class UseCaseTool extends Tool {
   }
 
   private void createDomain(
-      ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+      String packageName,
+      ResolvedInputs inputs,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
     try {
-      var domain = new DiscoverDomainFromUseCases().apply(inputs.get(UseCase.class));
+      var domain =
+          new DiscoverDomainFromUseCases()
+              .apply(
+                  inputs.get(UseCase.class).stream()
+                      .filter(uc -> packageName.equals(uc.getPackage()))
+                      .toList());
       var domainSink =
           normalize(sink).select("src/main/requirements/%s.domain".formatted(domain.getName()));
       try (var output = domainSink.open()) {
@@ -488,9 +437,10 @@ public class UseCaseTool extends Tool {
   }
 
   private AcceptanceTest createAcceptanceTestFor(ResolvedInputs inputs, Location location) {
-    var packageName = location.segments().get(0);
-    var element = new Pointer(location.segments().get(1), location.segments().get(2));
-    return new CreateAcceptanceTest(packageName, inputs, inputs.get(UseCase.class)).apply(element);
+    var useCases = inputs.get(UseCase.class);
+    var step = StepReference.find(location, useCases).orElseThrow();
+    return new CreateAcceptanceTest(step.getPackage(), inputs, useCases)
+        .apply(step.getStep().orElseThrow());
   }
 
   @Override
@@ -769,7 +719,7 @@ public class UseCaseTool extends Tool {
     protected static <T extends NamedObject> boolean isType(NamedObject object, Class<T> type) {
       return type.isInstance(object)
           || (object instanceof UnresolvedObject unresolvedObject
-              && type.getSimpleName().equals(initUpper(unresolvedObject.getType())));
+              && type.getSimpleName().equals(initUpper(unresolvedObject.type())));
     }
 
     protected static <T extends NamedObject> String friendlyName(
@@ -961,4 +911,40 @@ public class UseCaseTool extends Tool {
   }
 
   private record Sentence(String text, boolean valid) {}
+
+  private record StepReference(UseCase useCase, String scenarioName, int stepIndex) {
+
+    private static final Pattern PATTERN_STEP = Pattern.compile("steps\\[(?<index>\\d+)]");
+
+    static Optional<StepReference> find(Location location, List<UseCase> useCases) {
+      if (location.segments().size() < 5) {
+        return Optional.empty();
+      }
+      var useCase = useCases.stream().filter(location::isInside).findFirst();
+      if (useCase.isEmpty()) {
+        return Optional.empty();
+      }
+      var scenarioName = location.segments().get(4);
+      var stepIndex = toStepIndex(location.segments().get(5));
+      return Optional.of(new StepReference(useCase.get(), scenarioName, stepIndex));
+    }
+
+    private static int toStepIndex(String stepRef) {
+      var matcher = PATTERN_STEP.matcher(stepRef);
+      return matcher.matches() ? Integer.parseInt(matcher.group("index")) : -1;
+    }
+
+    Optional<Pointer> getStep() {
+      return useCase()
+          .scenarios()
+          .filter(scenario -> scenarioName().equals(scenario.getName()))
+          .map(Scenario::getSteps)
+          .map(steps -> steps.get(stepIndex()))
+          .findAny();
+    }
+
+    String getPackage() {
+      return useCase().getPackage();
+    }
+  }
 }

@@ -50,7 +50,7 @@ public class ApplySuggestion implements IntentionAction {
 
   @Override
   public boolean startInWriteAction() {
-    return false;
+    return true;
   }
 
   @Override

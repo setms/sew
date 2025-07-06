@@ -32,6 +32,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import org.jetbrains.annotations.NotNull;
+import org.setms.sew.core.domain.model.format.Files;
 import org.setms.sew.core.domain.model.sdlc.process.Todo;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.inbound.format.sew.SewFormat;
@@ -79,8 +80,8 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
               try (var input = source.open()) {
                 var todo = parser.parse(input, Todo.class, false);
                 result.put(todo, uri);
-              } catch (IOException ignored) {
-                // Ignore
+              } catch (IOException e) {
+                System.err.println(e.getMessage());
               }
             });
     return result;
@@ -112,14 +113,26 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
     if (row < 0 || row >= table.getRowCount()) {
       return;
     }
-    var todo = ((TodoTableModel) table.getModel()).getItemAt(row);
+    var tableModel = (TodoTableModel) table.getModel();
+    var todo = tableModel.getItemAt(row);
     ApplicationManager.getApplication()
-        .invokeLater(() -> WriteAction.run(() -> perform(todo, project, urisByTodo)));
+        .invokeLater(
+            () ->
+                WriteAction.run(
+                    () -> {
+                      if (perform(todo, project, urisByTodo)) {
+                        Files.delete(toFile(urisByTodo.get(todo)));
+                        urisByTodo.remove(todo);
+                        // TODO: This doesn't delete the row from the view
+                        tableModel.fireTableRowsDeleted(row, row);
+                      }
+                    }));
   }
 
-  private void perform(Todo todo, Project project, Map<Todo, URI> urisByTodo) {
-    var baseDir = toBaseDir(urisByTodo.get(todo));
-    ToolRunner.applySuggestion(
+  private boolean perform(Todo todo, Project project, Map<Todo, URI> urisByTodo) {
+    var todoUri = urisByTodo.get(todo);
+    var baseDir = toBaseDir(todoUri);
+    return ToolRunner.applySuggestion(
         todo.toTool(),
         todo.getCode(),
         todo.toLocation(),
@@ -129,15 +142,19 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
   }
 
   private File toBaseDir(URI uri) {
-    var path = uri.toString();
-    if (path.startsWith(FILE_URI_SCHEME)) {
-      path = path.substring(FILE_URI_SCHEME.length());
-    }
-    var result = new File(path);
+    var result = toFile(uri);
     while (!"todo".equals(result.getName())) {
       result = result.getParentFile();
     }
     return result.getParentFile().getParentFile();
+  }
+
+  private File toFile(URI uri) {
+    var path = uri.toString();
+    if (path.startsWith(FILE_URI_SCHEME)) {
+      path = path.substring(FILE_URI_SCHEME.length());
+    }
+    return new File(path);
   }
 
   private void performTodoOnAltEnter(

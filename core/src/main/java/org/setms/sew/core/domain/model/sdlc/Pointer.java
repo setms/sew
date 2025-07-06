@@ -2,7 +2,6 @@ package org.setms.sew.core.domain.model.sdlc;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.setms.sew.core.domain.model.format.Strings.initLower;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.Collection;
@@ -31,15 +30,7 @@ public class Pointer implements Comparable<Pointer> {
   }
 
   public Pointer(NamedObject object) {
-    this(typeOf(object), object.getName());
-  }
-
-  public static String typeOf(NamedObject object) {
-    return initLower(object.getClass().getSimpleName());
-  }
-
-  public boolean pointsTo(NamedObject object) {
-    return getType().equals(typeOf(object)) && getId().equals(object.getName());
+    this(object.type(), object.getName());
   }
 
   public List<Pointer> optAttribute(String name) {
