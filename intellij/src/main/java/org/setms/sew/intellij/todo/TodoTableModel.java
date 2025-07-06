@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.toolwindow;
+package org.setms.sew.intellij.todo;
 
 import java.util.ArrayList;
 import java.util.Collection;

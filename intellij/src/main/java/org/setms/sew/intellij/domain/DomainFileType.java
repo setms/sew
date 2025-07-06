@@ -1,43 +1,14 @@
 package org.setms.sew.intellij.domain;
 
-import com.intellij.openapi.fileTypes.LanguageFileType;
-import javax.swing.*;
-import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.setms.sew.core.inbound.tool.DomainTool;
 import org.setms.sew.intellij.filetype.SewIcons;
-import org.setms.sew.intellij.lang.sew.SewLanguage;
+import org.setms.sew.intellij.filetype.SewLanguageFileType;
 
-public class DomainFileType extends LanguageFileType {
+public class DomainFileType extends SewLanguageFileType {
 
   public static final DomainFileType INSTANCE = new DomainFileType();
 
   private DomainFileType() {
-    super(SewLanguage.INSTANCE);
-  }
-
-  @Override
-  public @NotNull String getName() {
-    return "Domain";
-  }
-
-  @Override
-  public @Nls @NotNull String getDisplayName() {
-    return "Domain";
-  }
-
-  @Override
-  public @NotNull String getDescription() {
-    return "Domain";
-  }
-
-  @Override
-  public @NotNull String getDefaultExtension() {
-    return "domain";
-  }
-
-  @Override
-  public @Nullable Icon getIcon() {
-    return SewIcons.DOMAIN;
+    super("Domain", SewIcons.DOMAIN, new DomainTool());
   }
 }

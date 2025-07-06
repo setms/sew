@@ -61,7 +61,7 @@
                 anchor="left"
                 secondary="true"
                 icon="/icons/todos.svg"
-                factoryClass="org.setms.sew.intellij.toolwindow.TodoWindowFactory"/>
+                factoryClass="org.setms.sew.intellij.todo.TodoWindowFactory"/>
 
         <fileEditorProvider implementation="org.setms.sew.intellij.domain.DomainEditorProvider"/>
         <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>

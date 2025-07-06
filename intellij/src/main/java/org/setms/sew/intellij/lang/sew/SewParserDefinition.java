@@ -13,24 +13,20 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
+import java.util.ArrayList;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.domain.DomainFile;
-import org.setms.sew.intellij.filetype.AggregateFile;
-import org.setms.sew.intellij.filetype.ClockEventFile;
-import org.setms.sew.intellij.filetype.CommandFile;
-import org.setms.sew.intellij.filetype.DecisionFile;
-import org.setms.sew.intellij.filetype.EntityFile;
-import org.setms.sew.intellij.filetype.EventFile;
-import org.setms.sew.intellij.filetype.OwnerFile;
-import org.setms.sew.intellij.filetype.PolicyFile;
-import org.setms.sew.intellij.filetype.ReadModelFile;
-import org.setms.sew.intellij.filetype.UserFile;
-import org.setms.sew.intellij.modules.ModulesFile;
-import org.setms.sew.intellij.usecase.UseCaseFile;
+import org.setms.sew.intellij.filetype.SewLanguageFileType;
 
 public class SewParserDefinition implements ParserDefinition {
 
   private static final IFileElementType FILE = new IFileElementType(SewLanguage.INSTANCE);
+
+  private static final List<SewLanguageFileType> fileTypes = new ArrayList<>();
+
+  public static void addFileType(SewLanguageFileType fileType) {
+    fileTypes.add(fileType);
+  }
 
   @Override
   public @NotNull Lexer createLexer(Project project) {
@@ -70,22 +66,12 @@ public class SewParserDefinition implements ParserDefinition {
   @Override
   public @NotNull PsiFile createFile(@NotNull FileViewProvider viewProvider) {
     String extension = viewProvider.getFileType().getDefaultExtension();
-    return switch (extension) {
-      case "aggregate" -> new AggregateFile(viewProvider);
-      case "clockEvent" -> new ClockEventFile(viewProvider);
-      case "command" -> new CommandFile(viewProvider);
-      case "decision" -> new DecisionFile(viewProvider);
-      case "domain" -> new DomainFile(viewProvider);
-      case "entity" -> new EntityFile(viewProvider);
-      case "event" -> new EventFile(viewProvider);
-      case "owner" -> new OwnerFile(viewProvider);
-      case "modules" -> new ModulesFile(viewProvider);
-      case "policy" -> new PolicyFile(viewProvider);
-      case "readModel" -> new ReadModelFile(viewProvider);
-      case "useCase" -> new UseCaseFile(viewProvider);
-      case "user" -> new UserFile(viewProvider);
-      default -> throw new UnsupportedOperationException("Unknown file extension: " + extension);
-    };
+    return fileTypes.stream()
+        .filter(type -> type.getDefaultExtension().equals(extension))
+        .findFirst()
+        .map(fileType -> fileType.createFile(viewProvider))
+        .orElseThrow(
+            () -> new UnsupportedOperationException("Unknown file extension: " + extension));
   }
 
   @Override

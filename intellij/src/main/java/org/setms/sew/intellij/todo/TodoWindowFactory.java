@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.toolwindow;
+package org.setms.sew.intellij.todo;
 
 import static java.util.Collections.emptyMap;
 import static javax.swing.SwingUtilities.isLeftMouseButton;

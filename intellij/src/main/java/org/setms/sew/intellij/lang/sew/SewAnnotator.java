@@ -6,7 +6,6 @@ import static org.setms.sew.intellij.lang.sew.SewElementTypes.*;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -15,33 +14,19 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.tool.DomainTool;
-import org.setms.sew.core.inbound.tool.ModulesTool;
-import org.setms.sew.core.inbound.tool.UseCaseTool;
-import org.setms.sew.intellij.domain.DomainFileType;
 import org.setms.sew.intellij.editor.VirtualFileInputSource;
+import org.setms.sew.intellij.filetype.SewLanguageFileType;
 import org.setms.sew.intellij.lang.LevelSeverity;
-import org.setms.sew.intellij.modules.ModulesFileType;
-import org.setms.sew.intellij.usecase.UseCaseFileType;
 
 public class SewAnnotator implements Annotator {
 
   private static final Collection<IElementType> PUNCTUATION =
       Set.of(COMMA, COMMENT, DOT, EQ, LBRACE, LBRACK, LPAREN, NEWLINE, RBRACE, RBRACK, RPAREN);
-  private static final Map<String, Tool> TOOLS_BY_EXTENSION =
-      Map.of(
-          UseCaseFileType.INSTANCE.getDefaultExtension(),
-          new UseCaseTool(),
-          DomainFileType.INSTANCE.getDefaultExtension(),
-          new DomainTool(),
-          ModulesFileType.INSTANCE.getDefaultExtension(),
-          new ModulesTool());
 
   private static String previousDocumentText;
   private static Set<Diagnostic> diagnostics = emptySet();
@@ -58,8 +43,7 @@ public class SewAnnotator implements Annotator {
     if (file == null || !file.isValid()) {
       return;
     }
-    if (!(file.getFileType() instanceof LanguageFileType languageFileType)
-        || !SewLanguage.INSTANCE.equals(languageFileType.getLanguage())) {
+    if (!(file.getFileType() instanceof SewLanguageFileType)) {
       return;
     }
 
@@ -76,7 +60,7 @@ public class SewAnnotator implements Annotator {
 
     if (!document.getText().equals(previousDocumentText)) {
       previousDocumentText = document.getText();
-      tool = TOOLS_BY_EXTENSION.get(file.getVirtualFile().getExtension());
+      tool = ((SewLanguageFileType) file.getFileType()).getTool();
       diagnostics = tool == null ? emptySet() : validateFile(tool, file);
     }
     if (diagnostics.isEmpty()) {
