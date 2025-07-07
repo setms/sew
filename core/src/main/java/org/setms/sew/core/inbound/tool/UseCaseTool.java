@@ -417,9 +417,7 @@ public class UseCaseTool extends Tool {
       var acceptanceTest = createAcceptanceTestFor(inputs, location);
       var acceptanceTestSink =
           toBase(sink)
-              .select(
-                  "src/test/acceptance/%s-%s.acceptance"
-                      .formatted(acceptanceTest.getName(), acceptanceTest.getSut().getType()));
+              .select("src/test/acceptance/%s.acceptance".formatted(acceptanceTest.getName()));
       try (var output = acceptanceTestSink.open()) {
         new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
       }

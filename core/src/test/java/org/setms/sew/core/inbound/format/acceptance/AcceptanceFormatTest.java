@@ -34,7 +34,7 @@ class AcceptanceFormatTest {
 | "Happy path" |      | command |       | event   |
 """;
   private static final RootObject SIMPLE_SCENARIO_OBJECT =
-      new RootObject("ape", "acceptanceTest", "aggregate.Bear")
+      new RootObject("ape", "acceptanceTest", "BearAggregate")
           .set("sut", new Reference("aggregate", "Bear"))
           .set(
               "variables",

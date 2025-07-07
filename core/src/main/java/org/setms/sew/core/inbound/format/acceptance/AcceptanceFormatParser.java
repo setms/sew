@@ -1,6 +1,7 @@
 package org.setms.sew.core.inbound.format.acceptance;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.format.Strings.stripQuotesFrom;
 
 import java.io.IOException;
@@ -54,7 +55,7 @@ class AcceptanceFormatParser implements Parser {
     var fqn = sut.qualifiedName().getText();
     var nameParts = fqn.split("\\.");
     var name = nameParts[nameParts.length - 1];
-    return new RootObject(nameParts[0], "acceptanceTest", type + "." + name)
+    return new RootObject(nameParts[0], "acceptanceTest", name + initUpper(type))
         .set("sut", new Reference(type, name));
   }
 

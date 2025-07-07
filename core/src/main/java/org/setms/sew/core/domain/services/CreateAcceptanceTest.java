@@ -1,6 +1,7 @@
 package org.setms.sew.core.domain.services;
 
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.sdlc.Pointer.testType;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -47,7 +48,10 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
   @Override
   public AcceptanceTest apply(Pointer element) {
     var result =
-        new AcceptanceTest(new FullyQualifiedName("%s.%s".formatted(packageName, element.getId())))
+        new AcceptanceTest(
+                new FullyQualifiedName(
+                    "%s.%s%s"
+                        .formatted(packageName, element.getId(), initUpper(element.getType()))))
             .setSut(element)
             .setVariables(new ArrayList<>())
             .setScenarios(new ArrayList<>());
