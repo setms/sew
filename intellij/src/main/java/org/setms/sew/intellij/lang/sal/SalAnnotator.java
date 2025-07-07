@@ -19,9 +19,9 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.intellij.editor.VirtualFileInputSource;
 import org.setms.sew.intellij.filetype.SalLanguageFileType;
 import org.setms.sew.intellij.lang.LevelSeverity;
+import org.setms.sew.intellij.tool.VirtualFileInputSource;
 
 public class SalAnnotator implements Annotator {
 
@@ -96,7 +96,7 @@ public class SalAnnotator implements Annotator {
   private String locationOf(PsiElement psiElement) {
     if (psiElement instanceof LeafPsiElement leaf
         && leaf.getParent().getNode().getElementType() == SalElementTypes.QUALIFIED_NAME) {
-      return "";
+      return psiElement.getText();
     }
     if (psiElement.getNode().getElementType() == SalElementTypes.OBJECT_START) {
       var rootObject = rootObjectOf(psiElement);

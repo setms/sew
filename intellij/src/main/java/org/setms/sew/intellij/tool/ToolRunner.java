@@ -8,6 +8,8 @@ import com.intellij.notification.NotificationType;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import java.io.File;
 import java.net.URI;
@@ -16,7 +18,6 @@ import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
-import org.setms.sew.intellij.editor.VirtualFileInputSource;
 
 public class ToolRunner {
 
@@ -46,9 +47,14 @@ public class ToolRunner {
         .map(URI::create)
         .map(File::new)
         .filter(File::isFile)
-        .map(LocalFileSystem.getInstance()::refreshAndFindFileByIoFile)
+        .map(ToolRunner::toVirtualFile)
         .filter(Objects::nonNull)
         .forEach(file -> FileEditorManager.getInstance(project).openFile(file, true));
     return errors.isEmpty();
+  }
+
+  private static VirtualFile toVirtualFile(File file) {
+    VfsUtil.markDirtyAndRefresh(true, false, false, file);
+    return LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
   }
 }

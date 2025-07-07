@@ -37,12 +37,12 @@ import org.setms.sew.core.domain.model.sdlc.process.Todo;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
-import org.setms.sew.intellij.editor.VirtualFileInputSource;
 import org.setms.sew.intellij.tool.ToolRunner;
+import org.setms.sew.intellij.tool.VirtualFileInputSource;
 
 public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
 
-  public static final String FILE_URI_SCHEME = "file:";
+  private static final String FILE_URI_SCHEME = "file:";
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {

@@ -16,8 +16,8 @@ import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
-import org.setms.sew.intellij.editor.VirtualFileInputSource;
 import org.setms.sew.intellij.tool.ToolRunner;
+import org.setms.sew.intellij.tool.VirtualFileInputSource;
 
 public class ApplySuggestion implements IntentionAction {
 

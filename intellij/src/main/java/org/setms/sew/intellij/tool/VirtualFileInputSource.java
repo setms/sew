@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.editor;
+package org.setms.sew.intellij.tool;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.function.Predicate.not;
