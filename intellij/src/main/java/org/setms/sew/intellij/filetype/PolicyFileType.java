@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-public class PolicyFileType extends SewLanguageFileType {
+public class PolicyFileType extends SalLanguageFileType {
 
   public static final PolicyFileType INSTANCE = new PolicyFileType();
 

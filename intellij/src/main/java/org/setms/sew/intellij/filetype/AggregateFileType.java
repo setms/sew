@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-public class AggregateFileType extends SewLanguageFileType {
+public class AggregateFileType extends SalLanguageFileType {
 
   public static final AggregateFileType INSTANCE = new AggregateFileType();
 

@@ -5,51 +5,51 @@
         <fileType name="AcceptanceTest" language="Acceptance" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.acceptancetest.AcceptanceTestFileType"
                   extensions="acceptance"/>
-        <fileType name="Aggregate" language="Sew" fieldName="INSTANCE"
+        <fileType name="Aggregate" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.AggregateFileType"
                   extensions="aggregate"/>
-        <fileType name="ClockEvent" language="Sew" fieldName="INSTANCE"
+        <fileType name="ClockEvent" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.ClockEventFileType"
                   extensions="clockEvent"/>
-        <fileType name="Command" language="Sew" fieldName="INSTANCE"
+        <fileType name="Command" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.CommandFileType"
                   extensions="command"/>
-        <fileType name="Domain" language="Sew" fieldName="INSTANCE"
+        <fileType name="Domain" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.domain.DomainFileType"
                   extensions="domain"/>
-        <fileType name="Decision" language="Sew" fieldName="INSTANCE"
+        <fileType name="Decision" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
                   extensions="decision"/>
-        <fileType name="Entity" language="Sew" fieldName="INSTANCE"
+        <fileType name="Entity" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.EntityFileType"
                   extensions="entity"/>
-        <fileType name="Event" language="Sew" fieldName="INSTANCE"
+        <fileType name="Event" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.EventFileType"
                   extensions="event"/>
-        <fileType name="Modules" language="Sew" fieldName="INSTANCE"
+        <fileType name="Modules" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.modules.ModulesFileType"
                   extensions="modules"/>
-        <fileType name="Owner" language="Sew" fieldName="INSTANCE"
+        <fileType name="Owner" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.OwnerFileType"
                   extensions="owner"/>
-        <fileType name="Policy" language="Sew" fieldName="INSTANCE"
+        <fileType name="Policy" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.PolicyFileType"
                   extensions="policy"/>
-        <fileType name="ReadModel" language="Sew" fieldName="INSTANCE"
+        <fileType name="ReadModel" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.ReadModelFileType"
                   extensions="readModel"/>
-        <fileType name="Use case" language="Sew" fieldName="INSTANCE"
+        <fileType name="Use case" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.usecase.UseCaseFileType"
                   extensions="useCase"/>
-        <fileType name="User" language="Sew" fieldName="INSTANCE"
+        <fileType name="User" language="Sal" fieldName="INSTANCE"
                   implementationClass="org.setms.sew.intellij.filetype.UserFileType"
                   extensions="user"/>
 
-        <lang.syntaxHighlighterFactory language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewSyntaxHighlighterFactory"/>
-        <lang.parserDefinition language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewParserDefinition"/>
+        <lang.syntaxHighlighterFactory language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalSyntaxHighlighterFactory"/>
+        <lang.parserDefinition language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalParserDefinition"/>
         <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
-        <postStartupActivity implementation="org.setms.sew.intellij.structure.SewStartupActivity"/>
-        <annotator language="Sew" implementationClass="org.setms.sew.intellij.lang.sew.SewAnnotator"/>
+        <postStartupActivity implementation="org.setms.sew.intellij.structure.SalStartupActivity"/>
+        <annotator language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalAnnotator"/>
         <notificationGroup
                 id="Sew"
                 displayType="BALLOON"

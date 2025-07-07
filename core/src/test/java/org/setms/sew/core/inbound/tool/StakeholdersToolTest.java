@@ -19,7 +19,7 @@ import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Suggestion;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
@@ -42,7 +42,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
   protected void assertInputs(List<Input<?>> actual) {
     assertThat(actual).hasSize(3);
     assertThat(actual)
-        .allSatisfy(input -> assertThat(input.format()).isInstanceOf(SewFormat.class));
+        .allSatisfy(input -> assertThat(input.format()).isInstanceOf(SalFormat.class));
     assertStakeholder(actual.get(0), User.class);
     assertStakeholder(actual.get(1), Owner.class);
     assertUseCase(actual.get(2));

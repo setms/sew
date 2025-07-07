@@ -2,7 +2,7 @@ package org.setms.sew.intellij.filetype;
 
 import org.setms.sew.core.inbound.tool.StakeholdersTool;
 
-public class OwnerFileType extends SewLanguageFileType {
+public class OwnerFileType extends SalLanguageFileType {
 
   public static final OwnerFileType INSTANCE = new OwnerFileType();
 

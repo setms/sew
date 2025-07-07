@@ -26,7 +26,7 @@ import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class StakeholdersTool extends Tool {
 
@@ -36,13 +36,13 @@ public class StakeholdersTool extends Tool {
   @Override
   public List<Input<?>> getInputs() {
     return List.of(
-        new Input<>("users", new Glob(STAKEHOLDERS_PATH, "**/*.user"), new SewFormat(), User.class),
+        new Input<>("users", new Glob(STAKEHOLDERS_PATH, "**/*.user"), new SalFormat(), User.class),
         new Input<>(
-            "owners", new Glob(STAKEHOLDERS_PATH, "**/*.owner"), new SewFormat(), Owner.class),
+            "owners", new Glob(STAKEHOLDERS_PATH, "**/*.owner"), new SalFormat(), Owner.class),
         new Input<>(
             "useCases",
             new Glob("src/main/requirements", "**/*.useCase"),
-            new SewFormat(),
+            new SalFormat(),
             UseCase.class));
   }
 
@@ -158,7 +158,7 @@ public class StakeholdersTool extends Tool {
       var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
       var ownerSink = stakeholdersSink.select(owner.getName() + ".owner");
       try (var output = ownerSink.open()) {
-        new SewFormat().newBuilder().build(owner, output);
+        new SalFormat().newBuilder().build(owner, output);
       }
       diagnostics.add(sinkCreated(ownerSink));
     } catch (Exception e) {

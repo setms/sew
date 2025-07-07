@@ -15,7 +15,7 @@ import org.setms.sew.core.domain.model.dsm.Clusters;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 @SuppressWarnings("unchecked")
 class DiscoverDomainsFromUseCasesTest {
@@ -44,7 +44,7 @@ class DiscoverDomainsFromUseCasesTest {
   private UseCase loadUseCase() throws IOException {
     try (var input =
         getClass().getResourceAsStream("/useCase/valid/src/main/requirements/JustDoIt.useCase")) {
-      return new SewFormat().newParser().parse(input, UseCase.class, false);
+      return new SalFormat().newParser().parse(input, UseCase.class, false);
     }
   }
 }

@@ -1,0 +1,62 @@
+{
+  parserClass="org.setms.sew.intellij.lang.sal.SalParser"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+  psiClassPrefix="Sal"
+  psiImplClassSuffix="Impl"
+  psiPackage="org.setms.sew.intellij.lang.sal"
+  psiImplPackage="org.setms.sew.intellij.lang.sal"
+  elementTypeHolderClass="org.setms.sew.intellij.lang.sal.SalElementTypes"
+  elementTypeClass="org.setms.sew.intellij.lang.sal.SalElementType"
+  tokenTypeClass="org.setms.sew.intellij.lang.sal.SalTokenType"
+  tokens=[
+    COMMA=","
+    COMMENT="comment"
+    DOT="."
+    EQ="="
+    IDENTIFIER="identifier"
+    LBRACE="{"
+    LBRACK="["
+    LPAREN="("
+    NAME="name"
+    PACKAGE="package"
+    RBRACE="}"
+    RBRACK="]"
+    RPAREN=")"
+    TYPE="type name"
+    WHITE_SPACE="white space"
+  ]
+}
+
+salFile ::= scope? object+
+
+scope ::= PACKAGE qualifiedName NEWLINE
+
+qualifiedName ::= IDENTIFIER (DOT IDENTIFIER)*
+
+object ::= objectStart LBRACE NEWLINE property* RBRACE NEWLINE
+
+objectStart ::= TYPE objectName
+
+objectName ::= NAME
+
+property ::= propertyName EQ propertyValue NEWLINE
+
+propertyName ::= IDENTIFIER
+
+propertyValue ::= singleValue | list
+
+singleValue ::= scalar | enumValue
+
+enumValue ::= IDENTIFIER
+
+scalar ::= objectName | STRING | typedReference
+
+typedReference ::= TYPE LPAREN objectName (COMMA attribute)* RPAREN
+
+attribute ::= IDENTIFIER EQ attributeValue
+
+attributeValue ::= TYPE LPAREN objectName RPAREN
+
+list ::= LBRACK NEWLINE? (listItem (COMMA NEWLINE? listItem)*)? NEWLINE? RBRACK
+
+listItem ::= scalar | enumValue

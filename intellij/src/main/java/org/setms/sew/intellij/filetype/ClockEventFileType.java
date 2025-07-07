@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-public class ClockEventFileType extends SewLanguageFileType {
+public class ClockEventFileType extends SalLanguageFileType {
 
   public static final ClockEventFileType INSTANCE = new ClockEventFileType();
 

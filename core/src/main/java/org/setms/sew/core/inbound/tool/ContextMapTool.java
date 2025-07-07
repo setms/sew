@@ -22,7 +22,7 @@ import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 @SuppressWarnings("unused") // At some point, we'll want a context map
 public class ContextMapTool extends Tool {
@@ -43,12 +43,12 @@ public class ContextMapTool extends Tool {
         new Input<>(
             "domains",
             new Glob("src/main/requirements", "**/*.domain"),
-            new SewFormat(),
+            new SalFormat(),
             Domain.class),
         new Input<>(
             "useCases",
             new Glob("src/main/requirements", "**/*.useCase"),
-            new SewFormat(),
+            new SalFormat(),
             UseCase.class));
   }
 

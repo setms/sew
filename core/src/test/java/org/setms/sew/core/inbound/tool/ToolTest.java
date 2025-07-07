@@ -29,7 +29,7 @@ import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 
 class ToolTest {
@@ -55,7 +55,7 @@ class ToolTest {
     assertThat(todoFile).isFile();
     try {
       var todo =
-          new SewFormat().newParser().parse(new FileInputStream(todoFile), Todo.class, false);
+          new SalFormat().newParser().parse(new FileInputStream(todoFile), Todo.class, false);
       assertThat(todo).as("Invalid todo").isNotNull();
       assertThat(todo.getLocation()).as("Location").isEqualTo(diagnostic.location().toString());
       assertThat(todo.getMessage()).as("Message").isEqualTo(diagnostic.message());

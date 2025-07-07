@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-public class ReadModelFileType extends SewLanguageFileType {
+public class ReadModelFileType extends SalLanguageFileType {
 
   public static final ReadModelFileType INSTANCE = new ReadModelFileType();
 

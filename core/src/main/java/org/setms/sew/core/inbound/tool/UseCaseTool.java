@@ -59,7 +59,7 @@ import org.setms.sew.core.domain.model.tool.UnresolvedObject;
 import org.setms.sew.core.domain.services.CreateAcceptanceTest;
 import org.setms.sew.core.domain.services.DiscoverDomainFromUseCases;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class UseCaseTool extends Tool {
 
@@ -400,7 +400,7 @@ public class UseCaseTool extends Tool {
       var domainSink =
           toBase(sink).select("src/main/requirements/%s.domain".formatted(domain.getName()));
       try (var output = domainSink.open()) {
-        new SewFormat().newBuilder().build(domain, output);
+        new SalFormat().newBuilder().build(domain, output);
       }
       diagnostics.add(sinkCreated(domainSink));
     } catch (Exception e) {

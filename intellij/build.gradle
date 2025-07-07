@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation project(':core'), project(':intellij-lang-sew'), project(':intellij-lang-acceptance')
+    implementation project(':core'), project(':intellij-lang-sal'), project(':intellij-lang-acceptance')
 
     testImplementation libs.bundles.junit
 

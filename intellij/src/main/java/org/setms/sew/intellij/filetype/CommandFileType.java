@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-public class CommandFileType extends SewLanguageFileType {
+public class CommandFileType extends SalLanguageFileType {
 
   public static final CommandFileType INSTANCE = new CommandFileType();
 

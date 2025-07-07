@@ -35,7 +35,7 @@ import org.jetbrains.annotations.NotNull;
 import org.setms.sew.core.domain.model.format.Files;
 import org.setms.sew.core.domain.model.sdlc.process.Todo;
 import org.setms.sew.core.domain.model.tool.Glob;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 import org.setms.sew.intellij.editor.VirtualFileInputSource;
 import org.setms.sew.intellij.tool.ToolRunner;
@@ -71,7 +71,7 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
 
   private Map<Todo, URI> loadTodos(Project project) {
     var result = new TreeMap<Todo, URI>();
-    var parser = new SewFormat().newParser();
+    var parser = new SalFormat().newParser();
     toInputSource(project)
         .matching(new Glob("", "**/*.todo"))
         .forEach(

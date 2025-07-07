@@ -16,7 +16,7 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 
 abstract class ToolTestCase<T extends NamedObject> {
@@ -30,7 +30,7 @@ abstract class ToolTestCase<T extends NamedObject> {
   private final File baseDir;
 
   protected ToolTestCase(Tool tool, Class<T> type, String sourceLocation) {
-    this(tool, type, SewFormat.class, sourceLocation);
+    this(tool, type, SalFormat.class, sourceLocation);
   }
 
   protected ToolTestCase(

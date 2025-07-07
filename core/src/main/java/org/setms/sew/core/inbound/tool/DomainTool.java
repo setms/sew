@@ -45,7 +45,7 @@ import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class DomainTool extends Tool {
 
@@ -326,7 +326,7 @@ public class DomainTool extends Tool {
                   toBase(sink)
                       .select("src/main/architecture/%s.modules".formatted(modules.getName()));
               try (var output = modulesSink.open()) {
-                new SewFormat().newBuilder().build(modules, output);
+                new SalFormat().newBuilder().build(modules, output);
                 diagnostics.add(sinkCreated(modulesSink));
               } catch (Exception e) {
                 addError(diagnostics, e.getMessage());

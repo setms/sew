@@ -13,12 +13,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.setms.sew.core.domain.model.format.Parser;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 class EventStormTest {
 
   public static final String POLICY_PREFIX = "Policy";
-  private final Parser parser = new SewFormat().newParser();
+  private final Parser parser = new SalFormat().newParser();
 
   @ParameterizedTest
   @MethodSource("scenarios")

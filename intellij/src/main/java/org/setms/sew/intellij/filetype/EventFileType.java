@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-public class EventFileType extends SewLanguageFileType {
+public class EventFileType extends SalLanguageFileType {
 
   public static final EventFileType INSTANCE = new EventFileType();
 

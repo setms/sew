@@ -18,7 +18,7 @@ import org.setms.sew.core.domain.model.format.Strings;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.process.Todo;
-import org.setms.sew.core.inbound.format.sew.SewFormat;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 /**
  * Something that validates input, builds output from input, and provides and applies suggestions
@@ -99,7 +99,7 @@ public abstract class Tool {
             .setAction(suggestion.message());
     var todoSink = sink.select("src/todo/%s%s.todo".formatted(path, name));
     try {
-      new SewFormat().newBuilder().build(todo, todoSink);
+      new SalFormat().newBuilder().build(todo, todoSink);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

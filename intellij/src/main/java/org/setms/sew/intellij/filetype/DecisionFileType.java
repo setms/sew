@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-public class DecisionFileType extends SewLanguageFileType {
+public class DecisionFileType extends SalLanguageFileType {
 
   public static final DecisionFileType INSTANCE = new DecisionFileType();
 
