@@ -1,0 +1,5 @@
+package gdpr
+
+owner Legal {
+  display = "The Legal department"
+}
