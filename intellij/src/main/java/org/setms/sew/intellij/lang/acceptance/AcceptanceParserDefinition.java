@@ -1,22 +1,16 @@
 package org.setms.sew.intellij.lang.acceptance;
 
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
-import com.intellij.lang.ASTNode;
-import com.intellij.lang.ParserDefinition;
 import com.intellij.lang.PsiParser;
 import com.intellij.lexer.FlexAdapter;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.FileViewProvider;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.intellij.acceptancetest.AcceptanceTestFile;
+import org.setms.sew.intellij.lang.BaseParserDefinition;
 
-public class AcceptanceParserDefinition implements ParserDefinition {
+public class AcceptanceParserDefinition extends BaseParserDefinition {
 
   private static final IFileElementType FILE = new IFileElementType(AcceptanceLanguage.INSTANCE);
 
@@ -50,22 +44,4 @@ public class AcceptanceParserDefinition implements ParserDefinition {
     return TokenSet.create(AcceptanceElementTypes.STRING);
   }
 
-  @Override
-  public @NotNull PsiElement createElement(ASTNode node) {
-    return new ASTWrapperPsiElement(node);
-  }
-
-  @Override
-  public @NotNull PsiFile createFile(@NotNull FileViewProvider viewProvider) {
-    String extension = viewProvider.getFileType().getDefaultExtension();
-    return switch (extension) {
-      case "acceptance" -> new AcceptanceTestFile(viewProvider);
-      default -> throw new UnsupportedOperationException("Unknown file extension: " + extension);
-    };
-  }
-
-  @Override
-  public @NotNull SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode left, ASTNode right) {
-    return SpaceRequirements.MAY;
-  }
 }
