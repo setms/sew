@@ -178,7 +178,7 @@ public abstract class Tool {
 
   protected OutputSink build(
       NamedObject object, mxGraph graph, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var result = sink.select(object.getName() + "-structure.png");
+    var result = sink.select(object.getName() + ".png");
     try {
       var image = renderGraph(graph);
       try (var output = result.open()) {

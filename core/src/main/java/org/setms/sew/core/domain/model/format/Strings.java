@@ -52,4 +52,15 @@ public class Strings {
     }
     return result.toString();
   }
+
+  public static String toFriendlyName(String name) {
+    var result = new StringBuilder(name);
+    for (var i = 1; i < result.length(); i++) {
+      if (Character.isUpperCase(result.charAt(i))) {
+        result.setCharAt(i, Character.toLowerCase(result.charAt(i)));
+        result.insert(i, ' ');
+      }
+    }
+    return result.toString();
+  }
 }

@@ -117,7 +117,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     var actual = getTool().build(source, sink);
 
     assertThat(actual).isEmpty();
-    var output = sink.select("reports/useCases/HappyPath-structure.png").getFile();
+    var output = sink.select("reports/useCases/HappyPath.png").getFile();
     assertThat((output)).isFile();
     output = sink.select("reports/useCases/JustDoIt.html").getFile();
     assertThat((output)).isFile().hasContent(USE_CASE_HTML);

@@ -1,9 +1,7 @@
 package org.setms.sew.core.inbound.tool;
 
 import static java.util.Collections.emptyList;
-import static org.setms.sew.core.domain.model.format.Strings.initLower;
-import static org.setms.sew.core.domain.model.format.Strings.initUpper;
-import static org.setms.sew.core.domain.model.format.Strings.isNotBlank;
+import static org.setms.sew.core.domain.model.format.Strings.*;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
 
@@ -372,17 +370,6 @@ public class UseCaseTool extends Tool {
       return;
     }
     writer.printf("  %s = \"%s\"%n", nameProperty, toFriendlyName(name));
-  }
-
-  private String toFriendlyName(String name) {
-    var result = new StringBuilder(name);
-    for (var i = 1; i < result.length(); i++) {
-      if (Character.isUpperCase(result.charAt(i))) {
-        result.setCharAt(i, Character.toLowerCase(result.charAt(i)));
-        result.insert(i, ' ');
-      }
-    }
-    return result.toString();
   }
 
   private void createDomain(
