@@ -178,7 +178,7 @@ public class DomainStoryTool extends Tool {
 
   private void layoutGraph(mxGraph graph, int height) {
     var layout = new mxHierarchicalLayout(graph, 7);
-    layout.setInterRankCellSpacing(2.0 * ICON_SIZE / 3);
+    layout.setInterRankCellSpacing(2.0 * ICON_SIZE);
     layout.setIntraCellSpacing(height - ICON_SIZE + LINE_HEIGHT);
     layout.execute(graph.getDefaultParent());
   }
