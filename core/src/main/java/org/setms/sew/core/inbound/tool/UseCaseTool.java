@@ -4,19 +4,14 @@ import static java.util.Collections.emptyList;
 import static org.setms.sew.core.domain.model.format.Strings.*;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
+import static org.setms.sew.core.inbound.tool.Inputs.*;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -30,13 +25,13 @@ import org.atteo.evo.inflector.English;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.format.Strings;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
-import org.setms.sew.core.domain.model.sdlc.design.Entity;
+import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.Aggregate;
-import org.setms.sew.core.domain.model.sdlc.eventstorming.ClockEvent;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.Command;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.Event;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.ExternalSystem;
@@ -111,24 +106,25 @@ public class UseCaseTool extends Tool {
   private static final String CREATE_ACCEPTANCE_TEST = "acceptance.test.create";
   private static final Collection<String> ACTIVE_ELEMENTS =
       List.of("aggregate", "policy", "readModel");
+  private static final String CREATE_DOMAIN_STORY = "domainstory.create";
   private JLanguageTool languageTool;
 
   @Override
   public List<Input<?>> getInputs() {
     return List.of(
-        new Input<>("src/main/requirements", UseCase.class),
-        new Input<>("src/main/design", Aggregate.class),
-        new Input<>("src/main/design", ClockEvent.class),
-        new Input<>("src/main/design", Command.class),
-        new Input<>("src/main/design", Event.class),
-        new Input<>("src/main/design", ExternalSystem.class),
-        new Input<>("src/main/design", Policy.class),
-        new Input<>("src/main/design", ReadModel.class),
-        new Input<>("src/main/stakeholders", User.class),
-        new Input<>("src/main/design", Entity.class),
-        new Input<>("src/main/requirements", Domain.class),
-        new Input<>(
-            "src/test/acceptance", new AcceptanceFormat(), AcceptanceTest.class, "acceptance"));
+        useCases(),
+        domainStories(),
+        aggregates(),
+        clockEvents(),
+        commands(),
+        events(),
+        externalSystems(),
+        policies(),
+        readModels(),
+        users(),
+        entities(),
+        domains(),
+        acceptanceTests());
   }
 
   @Override
@@ -154,21 +150,41 @@ public class UseCaseTool extends Tool {
     useCase
         .getScenarios()
         .forEach(
-            scenario ->
-                validateScenario(
-                    location.plus(scenario), scenario.getSteps(), inputs, diagnostics));
+            scenario -> validateScenario(location.plus(scenario), scenario, inputs, diagnostics));
   }
 
   private void validateScenario(
       Location location,
-      List<Pointer> steps,
+      Scenario scenario,
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics) {
+    validateDomainStory(location, scenario, inputs, diagnostics);
+    var steps = scenario.getSteps();
     if (steps == null) {
       return;
     }
     validateStepReferences(location, steps, inputs, diagnostics);
     validateGrammar(location, steps, diagnostics);
+  }
+
+  private void validateDomainStory(
+      Location location,
+      Scenario scenario,
+      ResolvedInputs inputs,
+      Collection<Diagnostic> diagnostics) {
+    if (scenario.getElaborates() == null) {
+      diagnostics.add(new Diagnostic(WARN, "Must elaborate domain story", location));
+      return;
+    }
+    var resolved = inputs.resolve(scenario.getElaborates());
+    if (resolved instanceof UnresolvedObject) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Unknown domain story",
+              location,
+              new Suggestion(CREATE_DOMAIN_STORY, "Create domain story")));
+    }
   }
 
   private void validateStepReferences(
@@ -314,11 +330,57 @@ public class UseCaseTool extends Tool {
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
     switch (suggestionCode) {
+      case CREATE_DOMAIN_STORY -> createDomainStory(inputs, location, sink, diagnostics);
       case CREATE_MISSING_STEP -> createMissingStep(inputs, location, sink, diagnostics);
       case CREATE_DOMAIN -> createDomain(location.segments().getLast(), inputs, sink, diagnostics);
       case CREATE_ACCEPTANCE_TEST -> createAcceptanceTest(inputs, location, sink, diagnostics);
       case null, default -> super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
+  }
+
+  private void createDomainStory(
+      ResolvedInputs inputs,
+      Location location,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    inputs.get(UseCase.class).stream()
+        .filter(location::isInside)
+        .flatMap(UseCase::scenarios)
+        .filter(scenario -> scenario.getName().equals(location.segments().get(4)))
+        .map(Scenario::getElaborates)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .ifPresentOrElse(
+            scenario -> createDomainStoryFor(scenario, location, sink, diagnostics),
+            () ->
+                diagnostics.add(new Diagnostic(ERROR, "Unknown scenario %s".formatted(location))));
+  }
+
+  private void createDomainStoryFor(
+      Pointer reference, Location location, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    try {
+      var packageName = location.segments().getFirst();
+      var domainStory =
+          new DomainStory(new FullyQualifiedName(packageName, reference.getId()))
+              .setDescription("TODO: Add description and sentences.")
+              .setSentences(List.of(dummySentence(packageName)));
+      var domainStorySink =
+          toBase(sink)
+              .select("%s/%s.domainStory".formatted(PATH_REQUIREMENTS, domainStory.getName()));
+      try (var output = domainStorySink.open()) {
+        new SalFormat().newBuilder().build(domainStory, output);
+      }
+      diagnostics.add(sinkCreated(domainStorySink));
+    } catch (Exception e) {
+      addError(diagnostics, e.getMessage());
+    }
+  }
+
+  private org.setms.sew.core.domain.model.sdlc.domainstory.Sentence dummySentence(
+      String packageName) {
+    return new org.setms.sew.core.domain.model.sdlc.domainstory.Sentence(
+            new FullyQualifiedName(packageName, "Sentence1"))
+        .setParts(emptyList());
   }
 
   private void createMissingStep(
@@ -385,7 +447,7 @@ public class UseCaseTool extends Tool {
                       .filter(uc -> packageName.equals(uc.getPackage()))
                       .toList());
       var domainSink =
-          toBase(sink).select("src/main/requirements/%s.domain".formatted(domain.getName()));
+          toBase(sink).select("%s/%s.domain".formatted(PATH_ANALYSIS, domain.getName()));
       try (var output = domainSink.open()) {
         new SalFormat().newBuilder().build(domain, output);
       }
@@ -404,7 +466,8 @@ public class UseCaseTool extends Tool {
       var acceptanceTest = createAcceptanceTestFor(inputs, location);
       var acceptanceTestSink =
           toBase(sink)
-              .select("src/test/acceptance/%s.acceptance".formatted(acceptanceTest.getName()));
+              .select(
+                  "%s/%s.acceptance".formatted(PATH_ACCEPTANCE_TESTS, acceptanceTest.getName()));
       try (var output = acceptanceTestSink.open()) {
         new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
       }
@@ -439,20 +502,27 @@ public class UseCaseTool extends Tool {
         writer.printf("    <p>%s</p>%n", useCase.getDescription());
       }
       useCase
-          .getScenarios()
+          .scenarios()
           .forEach(
               scenario -> {
-                writer.printf("    <h2>%s</h2>%n", scenario.getTitle());
-                if (isNotBlank(scenario.getDescription())) {
-                  writer.printf("    <p>%s</p>%n", scenario.getDescription());
+                var resolved = inputs.resolve(scenario.getElaborates());
+                if (resolved instanceof DomainStory domainStory) {
+                  writer.printf("    <h2>%s</h2>%n", resolved.friendlyName());
+                  if (isNotBlank(domainStory.getDescription())) {
+                    writer.printf("    <p>%s</p>%n", domainStory.getDescription());
+                  }
+                } else {
+                  writer.printf("    <h2>%s</h2>%n", scenario.friendlyName());
                 }
                 if (scenario.getSteps() == null || scenario.getSteps().isEmpty()) {
                   return;
                 }
-                var image = build(scenario, sink, diagnostics);
-                writer.printf(
-                    "    <img src=\"%s\"/>%n",
-                    report.toUri().resolve(".").normalize().relativize(image.toUri()));
+                build(scenario, sink, diagnostics)
+                    .ifPresent(
+                        image ->
+                            writer.printf(
+                                "    <img src=\"%s\"/>%n",
+                                report.toUri().resolve(".").normalize().relativize(image.toUri())));
                 writer.println("    <ol>");
                 describeSteps(scenario.getSteps(), inputs)
                     .forEach(
@@ -473,7 +543,8 @@ public class UseCaseTool extends Tool {
     }
   }
 
-  private OutputSink build(Scenario scenario, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  private Optional<OutputSink> build(
+      Scenario scenario, OutputSink sink, Collection<Diagnostic> diagnostics) {
     return build(scenario, toGraph(scenario), sink, diagnostics);
   }
 
@@ -912,13 +983,15 @@ public class UseCaseTool extends Tool {
       return matcher.matches() ? Integer.parseInt(matcher.group("index")) : -1;
     }
 
-    Optional<Pointer> getStep() {
+    Optional<Scenario> getScenario() {
       return useCase()
           .scenarios()
           .filter(scenario -> scenarioName().equals(scenario.getName()))
-          .map(Scenario::getSteps)
-          .map(steps -> steps.get(stepIndex()))
-          .findAny();
+          .findFirst();
+    }
+
+    Optional<Pointer> getStep() {
+      return getScenario().map(Scenario::getSteps).map(steps -> steps.get(stepIndex()));
     }
 
     String getPackage() {

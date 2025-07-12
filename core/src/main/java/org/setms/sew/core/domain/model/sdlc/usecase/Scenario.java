@@ -1,6 +1,7 @@
 package org.setms.sew.core.domain.model.sdlc.usecase;
 
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
@@ -9,6 +10,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.HasType;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 
@@ -19,8 +21,10 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 @EqualsAndHashCode(callSuper = true)
 public class Scenario extends NamedObject {
 
-  @NotEmpty private String title;
-  private String description;
+  @NotNull
+  @HasType("domainStory")
+  private Pointer elaborates;
+
   @NotEmpty private List<Pointer> steps;
 
   public Scenario(FullyQualifiedName fullyQualifiedName) {

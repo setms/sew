@@ -22,9 +22,9 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       <body>
         <h1>Just do it</h1>
         <p>A sample use case for demonstration purposes.</p>
-        <h2>All's well that ends well</h2>
+        <h2>Just do it</h2>
         <p>This is the happy path scenario, where everything goes according to plan.</p>
-        <img src="HappyPath-structure.png"/>
+        <img src="HappyPath.png"/>
         <ol>
           <li>A donald, looking at the info, does it.</li>
           <li>The system does it again.</li>
@@ -39,6 +39,21 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
     user Duck {
       display = "Duck"
+    }
+    """;
+  private static final String DOMAIN_STORY =
+      """
+    package missing
+
+    domainStory HappyPath {
+      description = "TODO: Add description and sentences."
+      granularity = fine
+      pointInTime = tobe
+      purity = pure
+    }
+
+    sentence Sentence1 {
+      parts = [ ]
     }
     """;
 
@@ -83,10 +98,10 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
         getTool()
             .apply(diagnostic.suggestions().getFirst().code(), source, diagnostic.location(), sink);
     assertThat(diagnostics).hasSize(1).allSatisfy(d -> assertThat(d.message()).contains("Created"));
-    var file = sink.select("src/main/stakeholders/Duck.user").getFile();
+    var file = sink.select("src/main/requirements/HappyPath.domainStory").getFile();
     assertThat(file).isFile();
     try {
-      assertThat(file).hasContent(DUCK_USER);
+      assertThat(file).hasContent(DOMAIN_STORY);
     } finally {
       Files.delete(file.toPath());
     }
@@ -108,15 +123,8 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
             "Commands can't precede policies");
   }
 
-  @Test
-  void shouldBuildReport() {
-    var testDir = getTestDir("valid");
-    var source = new FileInputSource(testDir);
-    var sink = new FileOutputSink(testDir).select("build");
-
-    var actual = getTool().build(source, sink);
-
-    assertThat(actual).isEmpty();
+  @Override
+  protected void assertBuild(FileOutputSink sink) {
     var output = sink.select("reports/useCases/HappyPath.png").getFile();
     assertThat((output)).isFile();
     output = sink.select("reports/useCases/JustDoIt.html").getFile();

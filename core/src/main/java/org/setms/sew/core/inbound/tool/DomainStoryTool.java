@@ -2,6 +2,7 @@ package org.setms.sew.core.inbound.tool;
 
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.format.Strings.toFriendlyName;
+import static org.setms.sew.core.inbound.tool.Inputs.domainStories;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.view.mxGraph;
@@ -25,7 +26,7 @@ public class DomainStoryTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(new Input<>("src/main/requirements", DomainStory.class));
+    return List.of(domainStories());
   }
 
   @Override
@@ -46,11 +47,13 @@ public class DomainStoryTool extends Tool {
       writer.println("<html>");
       writer.println("  <body>");
       writer.printf("    <h1>%s</h1>%n", toFriendlyName(domainStory.getName()));
-      writer.printf("    <p>%s</p>%n", domainStory.getTitle());
-      var image = build(domainStory, toGraph(domainStory.getSentences()), sink, diagnostics);
-      writer.printf(
-          "    <img src=\"%s\"/>%n",
-          report.toUri().resolve(".").normalize().relativize(image.toUri()));
+      writer.printf("    <p>%s</p>%n", domainStory.getDescription());
+      build(domainStory, toGraph(domainStory.getSentences()), sink, diagnostics)
+          .ifPresent(
+              image ->
+                  writer.printf(
+                      "    <img src=\"%s\"/>%n",
+                      report.toUri().resolve(".").normalize().relativize(image.toUri())));
       writer.println("  </body>");
       writer.println("</html>");
     } catch (IOException e) {
@@ -89,7 +92,7 @@ public class DomainStoryTool extends Tool {
 
   @SuppressWarnings("StringConcatenationInLoop")
   private int ensureSameNumberOfLinesFor(Map<Pointer, String> textsByPointer) {
-    var result = textsByPointer.values().stream().mapToInt(this::numLinesIn).max().orElseThrow();
+    var result = textsByPointer.values().stream().mapToInt(this::numLinesIn).max().orElse(1);
     textsByPointer.forEach(
         (pointer, text) -> {
           var addLines = result - numLinesIn(text);

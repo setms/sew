@@ -2,6 +2,8 @@ package org.setms.sew.core.domain.model.format;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +11,8 @@ import lombok.NoArgsConstructor;
 public class Strings {
 
   private static final Collection<Character> FORBIDDEN = List.of('\'', '[', ']');
+  private static final Map<String, String> REPLACEMENTS =
+      Map.of("cant", "can't", "doesnt", "doesn't", "isnt", "isn't");
 
   public static String initUpper(String value) {
     if (value == null || value.isEmpty()) {
@@ -54,13 +58,16 @@ public class Strings {
   }
 
   public static String toFriendlyName(String name) {
-    var result = new StringBuilder(name);
-    for (var i = 1; i < result.length(); i++) {
-      if (Character.isUpperCase(result.charAt(i))) {
-        result.setCharAt(i, Character.toLowerCase(result.charAt(i)));
-        result.insert(i, ' ');
+    var builder = new StringBuilder(name);
+    for (var i = 1; i < builder.length(); i++) {
+      if (Character.isUpperCase(builder.charAt(i))) {
+        builder.setCharAt(i, Character.toLowerCase(builder.charAt(i)));
+        builder.insert(i, ' ');
       }
     }
-    return result.toString();
+    var result = new AtomicReference<>(builder.toString());
+    REPLACEMENTS.forEach(
+        (text, replacement) -> result.set(result.get().replace(text, replacement)));
+    return result.get();
   }
 }

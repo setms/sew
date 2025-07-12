@@ -18,7 +18,7 @@ import org.setms.sew.core.domain.model.sdlc.NamedObject;
 @EqualsAndHashCode(callSuper = true)
 public class DomainStory extends NamedObject {
 
-  @NotEmpty private String title;
+  @NotEmpty private String description;
   @NotNull private Granularity granularity = Granularity.FINE;
   @NotNull private PointInTime pointInTime = PointInTime.TOBE;
   @NotNull private Purity purity = Purity.PURE;

@@ -1,7 +1,7 @@
 package gdpr
 
 domainStory NonuserCantDeleteData {
-    title = "Somebody who isn't a user can't delete data"
+    description = "A person who isn't a user can't delete data."
 }
 
 sentence Sentence1 {
