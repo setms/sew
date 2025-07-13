@@ -1,6 +1,7 @@
 package org.setms.sew.core.domain.model.sdlc.usecase;
 
 import jakarta.validation.constraints.NotEmpty;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
@@ -11,6 +12,8 @@ import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 
 @Getter
 @Setter
@@ -31,5 +34,10 @@ public class UseCase extends NamedObject {
 
   public Stream<Scenario> scenarios() {
     return scenarios.stream();
+  }
+
+  @Override
+  public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    scenarios.forEach(scenario -> scenario.validate(location.plus(scenario), diagnostics));
   }
 }

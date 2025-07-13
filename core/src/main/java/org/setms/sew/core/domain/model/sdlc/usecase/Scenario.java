@@ -1,18 +1,28 @@
 package org.setms.sew.core.domain.model.sdlc.usecase;
 
+import static java.util.Collections.emptyList;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.HasType;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 
 @Getter
 @Setter
@@ -20,6 +30,43 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class Scenario extends NamedObject {
+
+  private static final List<String> ELEMENT_ORDER =
+      List.of(
+          "readModel",
+          "user",
+          "command",
+          "aggregate",
+          "event",
+          "policy",
+          "externalSystem",
+          "hotspot");
+  private static final Map<String, Collection<String>> ALLOWED_FOLLOWING =
+      Map.of(
+          "readModel",
+          List.of("user", "policy", "event", "hotspot"),
+          "user",
+          List.of("command", "policy", "externalSystem", "hotspot"),
+          "externalSystem",
+          List.of("command", "event", "hotspot"),
+          "command",
+          List.of("aggregate", "externalSystem", "hotspot"),
+          "aggregate",
+          List.of("event", "hotspot"),
+          "event",
+          List.of("policy", "externalSystem", "readModel", "hotspot"),
+          "clockEvent",
+          List.of("policy", "externalSystem", "readModel", "hotspot"),
+          "calendarEvent",
+          List.of("policy", "externalSystem", "readModel", "hotspot"),
+          "policy",
+          List.of("command", "hotspot"),
+          "hotspot",
+          ELEMENT_ORDER);
+  private static final Collection<String> ALLOWED_ENDING =
+      List.of("event", "hotspot", "policy", "readModel", "externalSystem", "user");
+  private static final Map<String, String> VERBS =
+      Map.of("event", "emit", "command", "issue", "readModel", "update");
 
   @NotNull
   @HasType("domainStory")
@@ -33,5 +80,37 @@ public class Scenario extends NamedObject {
 
   public Stream<Pointer> steps() {
     return steps.stream();
+  }
+
+  @Override
+  public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    var prev = new AtomicReference<>(steps.getFirst());
+    steps.stream()
+        .skip(1)
+        .forEach(
+            step -> {
+              var previous = prev.get();
+              var allowed = ALLOWED_FOLLOWING.getOrDefault(previous.getType(), emptyList());
+              if (!allowed.contains(step.getType())) {
+                diagnostics.add(
+                    new Diagnostic(
+                        ERROR,
+                        "%s can't %s %s"
+                            .formatted(
+                                initUpper(English.plural(previous.getType())),
+                                VERBS.getOrDefault(step.getType(), "precede"),
+                                English.plural(step.getType())),
+                        location.plus("steps", steps, step)));
+              }
+              prev.set(step);
+            });
+    var last = steps.getLast();
+    if (!ALLOWED_ENDING.contains(last.getType())) {
+      diagnostics.add(
+          new Diagnostic(
+              ERROR,
+              "Can't end with %s".formatted(last.getType()),
+              location.plus(last.getType(), last.getId())));
+    }
   }
 }

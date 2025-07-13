@@ -67,32 +67,6 @@ public class UseCaseTool extends Tool {
           "policy",
           "externalSystem",
           "hotspot");
-  private static final Map<String, Collection<String>> ALLOWED_FOLLOWING =
-      Map.of(
-          "readModel",
-          List.of("user", "policy", "event", "hotspot"),
-          "user",
-          List.of("command", "policy", "externalSystem", "hotspot"),
-          "externalSystem",
-          List.of("command", "event", "hotspot"),
-          "command",
-          List.of("aggregate", "externalSystem", "hotspot"),
-          "aggregate",
-          List.of("event", "hotspot"),
-          "event",
-          List.of("policy", "externalSystem", "readModel", "hotspot"),
-          "clockEvent",
-          List.of("policy", "externalSystem", "readModel", "hotspot"),
-          "calendarEvent",
-          List.of("policy", "externalSystem", "readModel", "hotspot"),
-          "policy",
-          List.of("command", "hotspot"),
-          "hotspot",
-          ELEMENT_ORDER);
-  private static final Collection<String> ALLOWED_ENDING =
-      List.of("event", "hotspot", "policy", "readModel", "externalSystem", "user");
-  private static final Map<String, String> VERBS =
-      Map.of("event", "emit", "command", "issue", "readModel", "update");
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
@@ -164,7 +138,6 @@ public class UseCaseTool extends Tool {
       return;
     }
     validateStepReferences(location, steps, inputs, diagnostics);
-    validateGrammar(location, steps, diagnostics);
   }
 
   private void validateDomainStory(
@@ -234,41 +207,6 @@ public class UseCaseTool extends Tool {
                   new Suggestion(
                       CREATE_MISSING_STEP,
                       "Create %s '%s'".formatted(reference.getType(), reference.getId())))));
-    }
-  }
-
-  private void validateGrammar(
-      Location location, List<Pointer> steps, Collection<Diagnostic> diagnostics) {
-    if (steps.isEmpty()) {
-      return;
-    }
-    var prev = new AtomicReference<>(steps.getFirst());
-    steps.stream()
-        .skip(1)
-        .forEach(
-            step -> {
-              var previous = prev.get();
-              var allowed = ALLOWED_FOLLOWING.getOrDefault(previous.getType(), emptyList());
-              if (!allowed.contains(step.getType())) {
-                diagnostics.add(
-                    new Diagnostic(
-                        ERROR,
-                        "%s can't %s %s"
-                            .formatted(
-                                initUpper(English.plural(previous.getType())),
-                                VERBS.getOrDefault(step.getType(), "precede"),
-                                English.plural(step.getType())),
-                        location.plus("steps", steps, step)));
-              }
-              prev.set(step);
-            });
-    var last = steps.getLast();
-    if (!ALLOWED_ENDING.contains(last.getType())) {
-      diagnostics.add(
-          new Diagnostic(
-              ERROR,
-              "Can't end with %s".formatted(last.getType()),
-              location.plus(last.getType(), last.getId())));
     }
   }
 

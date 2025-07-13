@@ -10,6 +10,8 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 
 @Getter
 @Setter
@@ -22,5 +24,10 @@ public class Entity extends NamedObject {
 
   public Entity(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
+  }
+
+  @Override
+  public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    fields.forEach(field -> field.validate(location.plus(field), diagnostics));
   }
 }
