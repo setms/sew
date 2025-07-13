@@ -1,0 +1,28 @@
+package gdpr
+
+domainStory LoggedInUserRequestsDataDeletion {
+  description = "A user who is logged in to one of our apps requests deletion of their data."
+  granularity = fine
+  pointInTime = tobe
+  purity = pure
+}
+
+sentence Sentence1 {
+  parts = [
+    user(User),
+    activity(Requests),
+    workObject(DataDeletion, icon=material(Delete)),
+    activity(Via),
+    externalSystem(App)
+  ]
+}
+
+sentence Sentence2 {
+  parts = [
+    externalSystem(App),
+    activity(Starts),
+    workObject(Request, icon=material(Delete)),
+    activity(In),
+    externalSystem(GdprMiddleware)
+  ]
+}

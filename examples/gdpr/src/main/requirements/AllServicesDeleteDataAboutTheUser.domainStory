@@ -1,0 +1,36 @@
+package gdpr
+
+domainStory AllServicesDeleteDataAboutTheUser {
+  description = "The system instructs all services to delete the user's data and waits for them to confirm they did."
+  granularity = fine
+  pointInTime = tobe
+  purity = pure
+}
+
+sentence Sentence1 {
+  parts = [
+    externalSystem(GdprMiddleware),
+    activity(Reads),
+    workObject(Services)
+  ]
+}
+
+sentence Sentence2 {
+  parts = [
+    externalSystem(GdprMiddleware),
+    activity(Sends),
+    workObject(Request),
+    activity(To),
+    externalSystem(Service)
+  ]
+}
+
+sentence Sentence3 {
+  parts = [
+    externalSystem(Service),
+    activity(Sends),
+    workObject(RequestCompletion),
+    activity(To),
+    externalSystem(GdprMiddleware)
+  ]
+}

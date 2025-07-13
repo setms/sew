@@ -1,0 +1,34 @@
+package gdpr
+
+domainStory LoggedOutUserDeletesData {
+  description = "A user who isn't logged in to one of our apps requests deletion of their data."
+  granularity = fine
+  pointInTime = tobe
+  purity = pure
+}
+
+sentence Sentence1 {
+  parts = [
+        user(User),
+        activity(Requests),
+        workObject(DataDeletion, icon=material(Delete))
+    ]
+}
+
+sentence Sentence2 {
+    parts = [
+        user(CustomerSupportAgent),
+        activity(Checks),
+        workObject(Request, icon=material(Delete)),
+        activity(Against),
+        workObject(Users, icon=material(People))
+    ]
+}
+
+sentence Sentence3 {
+    parts = [
+        user(CustomerSupportAgent),
+        activity(Approves),
+        workObject(Request, icon=material(Delete))
+    ]
+}

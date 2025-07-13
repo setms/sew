@@ -5,7 +5,7 @@ useCase DeleteData {
     description = "A user requests to delete their data."
 }
 
-scenario InvalidUserRequestsDataDeletion {
+scenario NonUserRequestsDataDeletion {
     elaborates = domainStory(NonuserCantDeleteData)
     steps       = [
         user(Nonuser),
@@ -23,8 +23,6 @@ scenario InvalidUserRequestsDataDeletion {
 
 scenario LoggedOutUserRequestsDataDeletion {
     elaborates = domainStory(LoggedOutUserDeletesData)
-    title       = "Logged out user requests data deletion"
-    description = "A user who isn't logged in to one of our apps requests deletion of their data."
     steps       = [
         user(User),
         command(RequestDataDeletion),
@@ -40,9 +38,8 @@ scenario LoggedOutUserRequestsDataDeletion {
 }
 
 scenario LoggedInUserRequestsDataDeletion {
-    title       = "Logged in user requests data deletion"
-    description = "A user who is logged in to one of our apps requests deletion of their data."
-    steps       = [
+    elaborates = domainStory(LoggedInUserRequestsDataDeletion)
+    steps      = [
         user(User),
         externalSystem(App),
         command(StartRequest),
@@ -53,9 +50,8 @@ scenario LoggedInUserRequestsDataDeletion {
 }
 
 scenario InstructServicesToDeleteUserData {
-    title       = "All services delete the user's data"
-    description = "The system instructs all services to delete the user's data and waits for them to confirm they did."
-    steps       = [
+    elaborates = domainStory(AllServicesDeleteDataAboutTheUser)
+    steps      = [
         event(RequestStarted, updates=readModel(Requests)),
         policy(FanOut, reads=readModel(Services)),
         command(StartServiceRequest),
