@@ -44,7 +44,10 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
       """
       <html>
         <body>
-          <h1>Issues</h1>
+          <h1>Unable to show object</h1>
+          <p>
+            Please fix the following issues to show the object:
+          </p>
           <ul>
             <li>%s</li>
           </ul>
