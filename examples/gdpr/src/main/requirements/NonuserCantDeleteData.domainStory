@@ -16,7 +16,7 @@ sentence Sentence2 {
     parts = [
         user(CustomerSupportAgent),
         activity(Checks),
-        workObject(Request, icon=material(Delete)),
+        workObject(Request, icon=material(Draft)),
         activity(Against),
         workObject(Users, icon=material(People))
     ]
@@ -25,7 +25,9 @@ sentence Sentence2 {
 sentence Sentence3 {
     parts = [
         user(CustomerSupportAgent),
-        activity(Rejects),
-        workObject(Request, icon=material(Delete))
+        activity(Sends),
+        workObject(DeniedRequest, icon=material(Draft)),
+        activity(To),
+        externalSystem(GdprMiddleware)
     ]
 }

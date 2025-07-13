@@ -22,6 +22,7 @@ public class DomainStory extends NamedObject {
   @NotNull private Granularity granularity = Granularity.FINE;
   @NotNull private PointInTime pointInTime = PointInTime.TOBE;
   @NotNull private Purity purity = Purity.PURE;
+  private String annotation;
   @NotEmpty private List<Sentence> sentences;
 
   public DomainStory(FullyQualifiedName fullyQualifiedName) {

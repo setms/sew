@@ -21,7 +21,7 @@ sentence Sentence2 {
   parts = [
     externalSystem(App),
     activity(Starts),
-    workObject(Request, icon=material(Delete)),
+    workObject(Request, icon=material(Work)),
     activity(In),
     externalSystem(GdprMiddleware)
   ]

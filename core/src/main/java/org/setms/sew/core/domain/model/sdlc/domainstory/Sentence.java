@@ -1,6 +1,7 @@
 package org.setms.sew.core.domain.model.sdlc.domainstory;
 
 import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,8 +11,6 @@ import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 
-import java.util.List;
-
 @Getter
 @Setter
 @Accessors(chain = true)
@@ -20,6 +19,7 @@ import java.util.List;
 public class Sentence extends NamedObject {
 
   @NotEmpty private List<Pointer> parts;
+  private String annotation;
 
   public Sentence(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

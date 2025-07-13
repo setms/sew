@@ -9,6 +9,7 @@ import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.view.mxGraph;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -200,9 +201,9 @@ public class DomainStoryTool extends Tool {
   }
 
   private Object addVertex(String type, String name, int height, mxGraph graph) {
-    var url = getClass().getClassLoader().getResource("domainStory/" + type + ".png");
+    var url = loadIcon(type);
     if (url == null) {
-      throw new IllegalArgumentException("Icon not found for " + type);
+      url = loadIcon("material/questionMark");
     }
     return graph.insertVertex(
         graph.getDefaultParent(),
@@ -213,6 +214,10 @@ public class DomainStoryTool extends Tool {
         ICON_SIZE,
         height,
         VERTEX_STYLE.formatted(url.toExternalForm()));
+  }
+
+  private URL loadIcon(String type) {
+    return getClass().getClassLoader().getResource("domainStory/" + type + ".png");
   }
 
   private void addEdge(

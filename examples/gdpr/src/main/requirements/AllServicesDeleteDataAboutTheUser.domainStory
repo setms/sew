@@ -11,7 +11,9 @@ sentence Sentence1 {
   parts = [
     externalSystem(GdprMiddleware),
     activity(Reads),
-    workObject(Services)
+    workObject(Services, icon=material(AutoAwesomeMotion)),
+    activity(And),
+    workObject(Requests, icon=material(Cases))
   ]
 }
 
@@ -19,7 +21,7 @@ sentence Sentence2 {
   parts = [
     externalSystem(GdprMiddleware),
     activity(Sends),
-    workObject(Request),
+    workObject(Request, icon=material(Work)),
     activity(To),
     externalSystem(Service)
   ]
@@ -29,7 +31,7 @@ sentence Sentence3 {
   parts = [
     externalSystem(Service),
     activity(Sends),
-    workObject(RequestCompletion),
+    workObject(RequestCompletion, icon=material(WorkUpdate)),
     activity(To),
     externalSystem(GdprMiddleware)
   ]

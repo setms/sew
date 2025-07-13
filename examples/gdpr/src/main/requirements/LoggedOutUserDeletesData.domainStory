@@ -19,7 +19,7 @@ sentence Sentence2 {
     parts = [
         user(CustomerSupportAgent),
         activity(Checks),
-        workObject(Request, icon=material(Delete)),
+        workObject(Request, icon=material(Work)),
         activity(Against),
         workObject(Users, icon=material(People))
     ]
@@ -29,6 +29,10 @@ sentence Sentence3 {
     parts = [
         user(CustomerSupportAgent),
         activity(Approves),
-        workObject(Request, icon=material(Delete))
+        workObject(Request, icon=material(Work)),
+        activity(In),
+        workObject(Requests, icon=material(Cases)),
+        activity(Using),
+        externalSystem(GdprMiddleware)
     ]
 }
