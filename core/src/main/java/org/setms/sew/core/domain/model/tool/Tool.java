@@ -7,11 +7,7 @@ import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.SequencedSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
 import org.setms.sew.core.domain.model.format.Strings;
@@ -176,22 +172,29 @@ public abstract class Tool {
     return new Diagnostic(INFO, "Created " + sink.toUri());
   }
 
-  protected OutputSink build(
+  protected Optional<OutputSink> build(
       NamedObject object, mxGraph graph, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var result = sink.select(object.getName() + "-structure.png");
     try {
       var image = renderGraph(graph);
+      if (image == null) {
+        return Optional.empty();
+      }
+      var result = sink.select(object.getName() + ".png");
       try (var output = result.open()) {
         ImageIO.write(image, "PNG", output);
       }
+      return Optional.of(result);
     } catch (IOException e) {
       addError(diagnostics, e.getMessage());
     }
-    return result;
+    return Optional.empty();
   }
 
   private BufferedImage renderGraph(mxGraph graph) {
     var image = mxCellRenderer.createBufferedImage(graph, null, 1, null, true, null);
+    if (image == null) {
+      return null;
+    }
     clear(graph);
     var result =
         new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);

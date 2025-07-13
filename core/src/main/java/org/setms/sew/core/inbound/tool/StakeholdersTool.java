@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
+import static org.setms.sew.core.inbound.tool.Inputs.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +19,6 @@ import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
-import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
@@ -30,20 +30,11 @@ import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class StakeholdersTool extends Tool {
 
-  private static final String STAKEHOLDERS_PATH = "src/main/stakeholders";
   private static final String SUGGESTION_CREATE_OWNER = "stakeholders.createOwner";
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(
-        new Input<>("users", new Glob(STAKEHOLDERS_PATH, "**/*.user"), new SalFormat(), User.class),
-        new Input<>(
-            "owners", new Glob(STAKEHOLDERS_PATH, "**/*.owner"), new SalFormat(), Owner.class),
-        new Input<>(
-            "useCases",
-            new Glob("src/main/requirements", "**/*.useCase"),
-            new SalFormat(),
-            UseCase.class));
+    return List.of(users(), owners(), useCases());
   }
 
   @Override
@@ -151,7 +142,7 @@ public class StakeholdersTool extends Tool {
       OutputSink sink, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var packages =
         inputs.get(User.class).stream().map(NamedObject::getPackage).collect(Collectors.toSet());
-    var stakeholdersSink = toBase(sink).select(STAKEHOLDERS_PATH);
+    var stakeholdersSink = toBase(sink).select(Inputs.PATH_STAKEHOLDERS);
     try {
       var scope =
           packages.size() == 1 ? packages.iterator().next() : scopeOf(sink, stakeholdersSink);

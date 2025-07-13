@@ -6,8 +6,7 @@ useCase DeleteData {
 }
 
 scenario InvalidUserRequestsDataDeletion {
-    title       = "Nonuser requests data deletion"
-    description = "When someone who's not a user of our applications requests data deletion, customer support denies the request."
+    elaborates = domainStory(NonuserCantDeleteData)
     steps       = [
         user(Nonuser),
         command(RequestDataDeletion),
@@ -23,6 +22,7 @@ scenario InvalidUserRequestsDataDeletion {
 }
 
 scenario LoggedOutUserRequestsDataDeletion {
+    elaborates = domainStory(LoggedOutUserDeletesData)
     title       = "Logged out user requests data deletion"
     description = "A user who isn't logged in to one of our apps requests deletion of their data."
     steps       = [

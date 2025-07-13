@@ -1,24 +1,27 @@
 package org.setms.sew.intellij.todo;
 
+import static com.intellij.openapi.application.ApplicationManager.getApplication;
+import static com.intellij.ui.JBColor.GRAY;
+import static java.awt.BorderLayout.CENTER;
+import static java.awt.BorderLayout.NORTH;
+import static java.awt.Font.ITALIC;
+import static java.awt.event.InputEvent.ALT_DOWN_MASK;
+import static java.awt.event.KeyEvent.VK_ENTER;
 import static java.util.Collections.emptyMap;
+import static javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
 import static javax.swing.SwingUtilities.isLeftMouseButton;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.table.JBTable;
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -27,7 +30,6 @@ import java.net.URI;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.swing.AbstractAction;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -43,12 +45,13 @@ import org.setms.sew.intellij.tool.VirtualFileInputSource;
 public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
 
   private static final String FILE_URI_SCHEME = "file:";
+  private static final String DO_TASK_KEYMAPPING = "do-task";
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     var hint = new JLabel("Double-click or press Alt+Enter to start a task.");
-    hint.setFont(hint.getFont().deriveFont(Font.ITALIC, 10f));
-    hint.setForeground(JBColor.GRAY);
+    hint.setFont(hint.getFont().deriveFont(ITALIC, 10f));
+    hint.setForeground(GRAY);
 
     var urisByTodo = loadTodos(project);
     var tableModel = new TodoTableModel(urisByTodo.keySet());
@@ -59,8 +62,8 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
     var scrollPane = new JBScrollPane(table);
 
     var panel = new JPanel(new BorderLayout());
-    panel.add(hint, BorderLayout.NORTH);
-    panel.add(scrollPane, BorderLayout.CENTER);
+    panel.add(hint, NORTH);
+    panel.add(scrollPane, CENTER);
 
     var content = ContentFactory.getInstance().createContent(panel, "", false);
     toolWindow.getContentManager().addContent(content);
@@ -115,7 +118,7 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
     }
     var tableModel = (TodoTableModel) table.getModel();
     var todo = tableModel.getItemAt(row);
-    ApplicationManager.getApplication()
+    getApplication()
         .invokeLater(
             () ->
                 WriteAction.run(
@@ -159,17 +162,16 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
 
   private void performTodoOnAltEnter(
       @NotNull Project project, JBTable table, Map<Todo, URI> urisByTodo) {
-    var inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    var inputMap = table.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
     var actionMap = table.getActionMap();
-    var altEnterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
-    inputMap.put(altEnterKey, "do-task");
+    var altEnterKey = KeyStroke.getKeyStroke(VK_ENTER, ALT_DOWN_MASK);
+    inputMap.put(altEnterKey, DO_TASK_KEYMAPPING);
     actionMap.put(
-        "do-task",
+        DO_TASK_KEYMAPPING,
         new AbstractAction() {
           @Override
           public void actionPerformed(ActionEvent e) {
-            var row = table.getSelectedRow();
-            perform(table, row, project, urisByTodo);
+            perform(table, table.getSelectedRow(), project, urisByTodo);
           }
         });
   }

@@ -18,6 +18,7 @@ import org.setms.sew.core.domain.model.tool.InputSource;
 import org.setms.sew.core.domain.model.tool.Tool;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
+import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 
 abstract class ToolTestCase<T extends NamedObject> {
 
@@ -92,10 +93,23 @@ abstract class ToolTestCase<T extends NamedObject> {
   }
 
   protected void assertThatParsedObjectMatchesExpectations(T parsed) {
-    // Override to add additional assertions
+    // Override to add assertions
   }
 
   protected InputSource inputSourceFor(String path) {
     return new FileInputSource(getTestDir(path));
+  }
+
+  @Test
+  void shouldBuild() throws IOException {
+    var testDir = getTestDir("valid");
+    var sink = new FileOutputSink(new File(testDir, "build"));
+    var diagnostics = tool.build(new FileInputSource(testDir), sink);
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
+    assertBuild(sink);
+  }
+
+  protected void assertBuild(FileOutputSink sink) {
+    // Override to add assertions
   }
 }

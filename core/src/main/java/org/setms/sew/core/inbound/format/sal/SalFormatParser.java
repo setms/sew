@@ -62,17 +62,21 @@ class SalFormatParser implements Parser {
         new CommonTokenStream((new SalLexer(CharStreams.fromStream(input, UTF_8)))));
   }
 
-  private RootObject parseRootObject(SalParser.SalContext sew) {
-    if (sew.scope() == null
-        || sew.scope().qualifiedName() == null
-        || sew.scope().qualifiedName().IDENTIFIER() == null) {
+  private RootObject parseRootObject(SalParser.SalContext sal) {
+    if (sal.scope() == null
+        || sal.scope().qualifiedName() == null
+        || sal.scope().qualifiedName().IDENTIFIER() == null
+        || sal.object() == null
+        || sal.object().isEmpty()
+        || sal.object(0).TYPE() == null
+        || sal.object(0).OBJECT_NAME() == null) {
       return null;
     }
     var scope =
-        sew.scope().qualifiedName().IDENTIFIER().stream()
+        sal.scope().qualifiedName().IDENTIFIER().stream()
             .map(ParseTree::getText)
             .collect(joining("."));
-    var rootObject = sew.object(0);
+    var rootObject = sal.object(0);
     return new RootObject(scope, rootObject.TYPE().getText(), rootObject.OBJECT_NAME().getText());
   }
 

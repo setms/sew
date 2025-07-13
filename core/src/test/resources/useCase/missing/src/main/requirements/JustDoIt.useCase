@@ -6,9 +6,8 @@ useCase JustDoIt {
 }
 
 scenario HappyPath {
-    title       = "All's well that ends well"
-    description = "This is the happy path scenario, where everything goes according to plan."
-    steps       = [
+    elaborates = domainStory(HappyPath)
+    steps      = [
         user(Duck),
         command(DoIt),
         aggregate(System),

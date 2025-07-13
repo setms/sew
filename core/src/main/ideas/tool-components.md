@@ -58,6 +58,7 @@ What are "operations" in the above?
 - Is a scenario description list a list of operations translated into natural language?
   - Probably not, since an actor doing something and the system responding should be different lines
   - But maybe an operation is always exactly: an actor doing something and the system responding?
+- Is an operation a sentence without the initial actor in a domain story?
 
 
 ## Service integrators and disintegrators

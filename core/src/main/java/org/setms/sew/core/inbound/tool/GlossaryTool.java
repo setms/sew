@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.inbound.tool.Inputs.terms;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,7 +29,7 @@ public class GlossaryTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(new Input<>("src/main/glossary", Term.class));
+    return List.of(terms());
   }
 
   @Override

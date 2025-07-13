@@ -1,6 +1,8 @@
 package org.setms.sew.core.inbound.tool;
 
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.inbound.tool.Inputs.domains;
+import static org.setms.sew.core.inbound.tool.Inputs.modules;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.view.mxGraph;
@@ -35,9 +37,7 @@ public class ModulesTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(
-        new Input<>("src/main/architecture", Modules.class),
-        new Input<>("src/main/requirements", Domain.class));
+    return List.of(modules(), domains());
   }
 
   @Override
@@ -102,10 +102,12 @@ public class ModulesTool extends Tool {
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      var image = build(modules, toGraph(modules, domains), sink, diagnostics);
-      writer.printf(
-          "    <img src=\"%s\" width=\"100%%\">%n",
-          report.toUri().resolve(".").normalize().relativize(image.toUri()));
+      build(modules, toGraph(modules, domains), sink, diagnostics)
+          .ifPresent(
+              image ->
+                  writer.printf(
+                      "    <img src=\"%s\" width=\"100%%\">%n",
+                      report.toUri().resolve(".").normalize().relativize(image.toUri())));
       writer.println("  </body>");
       writer.println("</html>");
     } catch (IOException e) {

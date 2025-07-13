@@ -1,37 +1,27 @@
-package org.setms.sew.core.domain.model.sdlc.usecase;
+package org.setms.sew.core.domain.model.sdlc.domainstory;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import java.util.List;
-import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
-import org.setms.sew.core.domain.model.sdlc.HasType;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
+
+import java.util.List;
 
 @Getter
 @Setter
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Scenario extends NamedObject {
+public class Sentence extends NamedObject {
 
-  @NotNull
-  @HasType("domainStory")
-  private Pointer elaborates;
+  @NotEmpty private List<Pointer> parts;
 
-  @NotEmpty private List<Pointer> steps;
-
-  public Scenario(FullyQualifiedName fullyQualifiedName) {
+  public Sentence(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
-  }
-
-  public Stream<Pointer> steps() {
-    return steps.stream();
   }
 }

@@ -1,0 +1,31 @@
+package gdpr
+
+domainStory NonuserCantDeleteData {
+    description = "When someone who's not a user of our applications requests data deletion, customer support denies the request."
+}
+
+sentence Sentence1 {
+    parts = [
+        user(Nonuser),
+        activity(Requests),
+        workObject(DataDeletion, icon=material(Delete))
+    ]
+}
+
+sentence Sentence2 {
+    parts = [
+        user(CustomerSupportAgent),
+        activity(Checks),
+        workObject(Request, icon=material(Delete)),
+        activity(Against),
+        workObject(Users, icon=material(People))
+    ]
+}
+
+sentence Sentence3 {
+    parts = [
+        user(CustomerSupportAgent),
+        activity(Rejects),
+        workObject(Request, icon=material(Delete))
+    ]
+}

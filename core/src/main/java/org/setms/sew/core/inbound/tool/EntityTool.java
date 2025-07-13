@@ -1,6 +1,7 @@
 package org.setms.sew.core.inbound.tool;
 
 import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.inbound.tool.Inputs.entities;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +20,7 @@ public class EntityTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(new Input<>("src/main/design", Entity.class));
+    return List.of(entities());
   }
 
   @Override

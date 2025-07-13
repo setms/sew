@@ -2,6 +2,7 @@ package org.setms.sew.core.inbound.tool;
 
 import static java.util.stream.Collectors.toSet;
 import static org.setms.sew.core.domain.model.tool.Level.WARN;
+import static org.setms.sew.core.inbound.tool.Inputs.*;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.view.mxGraph;
@@ -36,7 +37,6 @@ import org.setms.sew.core.domain.model.sdlc.architecture.Module;
 import org.setms.sew.core.domain.model.sdlc.architecture.Modules;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
-import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.Location;
@@ -56,10 +56,7 @@ public class DomainTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(
-        new Input<>("src/main/requirements", Domain.class),
-        new Input<>("src/main/requirements", UseCase.class),
-        new Input<>("src/main/architecture", Modules.class));
+    return List.of(domains(), useCases(), modules());
   }
 
   @Override
@@ -78,10 +75,12 @@ public class DomainTool extends Tool {
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      var image = build(domain, toGraph(domain), sink, diagnostics);
-      writer.printf(
-          "    <img src=\"%s\" width=\"100%%\">%n",
-          report.toUri().resolve(".").normalize().relativize(image.toUri()));
+      build(domain, toGraph(domain), sink, diagnostics)
+          .ifPresent(
+              image ->
+                  writer.printf(
+                      "    <img src=\"%s\" width=\"100%%\">%n",
+                      report.toUri().resolve(".").normalize().relativize(image.toUri())));
       //      buildCoreDomainChart(domain, sink, diagnostics)
       //          .ifPresent(
       //              coreDomainChart ->
@@ -324,7 +323,7 @@ public class DomainTool extends Tool {
             modules -> {
               var modulesSink =
                   toBase(sink)
-                      .select("src/main/architecture/%s.modules".formatted(modules.getName()));
+                      .select("%s/%s.modules".formatted(PATH_ARCHITECTURE, modules.getName()));
               try (var output = modulesSink.open()) {
                 new SalFormat().newBuilder().build(modules, output);
                 diagnostics.add(sinkCreated(modulesSink));

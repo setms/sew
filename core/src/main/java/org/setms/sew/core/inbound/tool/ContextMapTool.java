@@ -1,5 +1,8 @@
 package org.setms.sew.core.inbound.tool;
 
+import static org.setms.sew.core.inbound.tool.Inputs.domains;
+import static org.setms.sew.core.inbound.tool.Inputs.useCases;
+
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
@@ -14,7 +17,6 @@ import javax.swing.SwingConstants;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
-import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
@@ -22,7 +24,6 @@ import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 @SuppressWarnings("unused") // At some point, we'll want a context map
 public class ContextMapTool extends Tool {
@@ -39,17 +40,7 @@ public class ContextMapTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(
-        new Input<>(
-            "domains",
-            new Glob("src/main/requirements", "**/*.domain"),
-            new SalFormat(),
-            Domain.class),
-        new Input<>(
-            "useCases",
-            new Glob("src/main/requirements", "**/*.useCase"),
-            new SalFormat(),
-            UseCase.class));
+    return List.of(domains(), useCases());
   }
 
   @Override
@@ -68,10 +59,12 @@ public class ContextMapTool extends Tool {
     try (var writer = new PrintWriter(report.open())) {
       writer.println("<html>");
       writer.println("  <body>");
-      var image = build(domain, toGraph(domain), sink, diagnostics);
-      writer.printf(
-          "    <img src=\"%s\" width=\"100%%\">%n",
-          report.toUri().resolve(".").normalize().relativize(image.toUri()));
+      build(domain, toGraph(domain), sink, diagnostics)
+          .ifPresent(
+              image ->
+                  writer.printf(
+                      "    <img src=\"%s\" width=\"100%%\">%n",
+                      report.toUri().resolve(".").normalize().relativize(image.toUri())));
       writer.println("  </body>");
       writer.println("</html>");
     } catch (IOException e) {

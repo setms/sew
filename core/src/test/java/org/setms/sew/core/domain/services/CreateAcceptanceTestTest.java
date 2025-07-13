@@ -41,7 +41,6 @@ class CreateAcceptanceTestTest implements PointerResolver {
           .setScenarios(
               List.of(
                   new Scenario(fqn("Mule"))
-                      .setTitle("Nightingale")
                       .setSteps(
                           List.of(
                               new Pointer(command), new Pointer(aggregate), new Pointer(event)))));
@@ -55,7 +54,7 @@ class CreateAcceptanceTestTest implements PointerResolver {
   @Override
   public NamedObject resolve(Pointer pointer, String defaultType) {
     var name = pointer.getId();
-    return switch ( Optional.ofNullable(pointer.getType()).orElse(defaultType)) {
+    return switch (Optional.ofNullable(pointer.getType()).orElse(defaultType)) {
       case "aggregate" -> aggregate;
       case "command" -> command;
       case "event" -> event;

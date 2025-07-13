@@ -26,7 +26,8 @@ attributeValue : TYPE LPAREN OBJECT_NAME RPAREN ;
 
 
 PACKAGE      : 'package';
-TYPE         : 'aggregate'
+TYPE         : 'activity'
+             | 'aggregate'
              | 'alternative'
              | 'businessRequirement'
              | 'calendarEvent'
@@ -34,11 +35,13 @@ TYPE         : 'aggregate'
              | 'command'
              | 'decision'
              | 'domain'
+             | 'domainStory'
              | 'entity'
              | 'event'
              | 'externalSystem'
              | 'field'
              | 'hotspot'
+             | 'material'
              | 'module'
              | 'modules'
              | 'owner'
@@ -47,13 +50,16 @@ TYPE         : 'aggregate'
              | 'scenario'
              | 'screen'
              | 'scope'
+             | 'sentence'
              | 'subdomain'
              | 'term'
              | 'todo'
              | 'useCase'
              | 'user'
              | 'userRequirement'
-             | 'valueObject';
+             | 'valueObject'
+             | 'workObject'
+             ;
 
 OBJECT_NAME  : [A-Z] [a-zA-Z0-9]*;
 IDENTIFIER   : [a-z] [a-zA-Z_]*;
