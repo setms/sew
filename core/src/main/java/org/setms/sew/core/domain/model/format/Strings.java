@@ -58,6 +58,9 @@ public class Strings {
   }
 
   public static String toFriendlyName(String name) {
+    if (name == null || name.isBlank()) {
+      return "";
+    }
     var builder = new StringBuilder(name);
     for (var i = 1; i < builder.length(); i++) {
       if (Character.isUpperCase(builder.charAt(i))) {
