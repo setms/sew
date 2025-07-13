@@ -123,23 +123,20 @@ public class SalAnnotator implements Annotator {
             Stream.of(elements[0].getParent().getParent().getChildren()[0].getChildren()[0]),
             Arrays.stream(elements))
         .distinct()
-        .map(element -> toPath(element))
+        .map(this::toPath)
         .collect(joining("/"));
   }
 
   private String toPath(PsiElement element) {
     if (element.getNode().getElementType() == OBJECT_START && !element.getText().contains(" ")) {
-      var siblings = element.getParent().getChildren();
-      var index = -1;
-      for (var i = 0; i < siblings.length; i++) {
-        if (siblings[i] == element) {
-          index = i + 1;
-          break;
-        }
-      }
+      var index = indexOf(element.getParent(), element.getParent().getParent().getChildren()) - 1;
       return "%s/%s%d".formatted(element.getText(), initUpper(element.getText()), index);
     }
     return element.getText().replace(' ', '/');
+  }
+
+  private int indexOf(PsiElement item, PsiElement[] items) {
+    return Arrays.asList(items).indexOf(item);
   }
 
   private PsiElement propertyNameOf(PsiElement psiElement) {
@@ -161,6 +158,6 @@ public class SalAnnotator implements Annotator {
   private int itemIndexOf(PsiElement listItem) {
     var property = ancestorOfType(listItem, SalElementTypes.PROPERTY);
     var values = property.getChildren()[1].getFirstChild().getChildren();
-    return Arrays.asList(values).indexOf(listItem);
+    return indexOf(listItem, values);
   }
 }
