@@ -1,7 +1,7 @@
 package org.setms.sew.core.domain.model.tool;
 
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
-import static org.setms.sew.core.domain.model.tool.Level.INFO;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Level.INFO;
 
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
@@ -14,6 +14,8 @@ import org.setms.sew.core.domain.model.format.Strings;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.process.Todo;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 /**

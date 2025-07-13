@@ -1,7 +1,7 @@
 package org.setms.sew.intellij.lang;
 
 import com.intellij.lang.annotation.HighlightSeverity;
-import org.setms.sew.core.domain.model.tool.Level;
+import org.setms.sew.core.domain.model.validation.Level;
 
 public class LevelSeverity {
 

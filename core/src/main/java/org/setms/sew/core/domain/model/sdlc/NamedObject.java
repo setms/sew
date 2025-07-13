@@ -3,14 +3,18 @@ package org.setms.sew.core.domain.model.sdlc;
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.format.Strings.toFriendlyName;
 
+import jakarta.validation.Valid;
+import java.util.Collection;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
 public abstract class NamedObject implements Comparable<NamedObject> {
 
-  private final FullyQualifiedName fullyQualifiedName;
+  @Valid private final FullyQualifiedName fullyQualifiedName;
 
   public String type() {
     return initLower(getClass().getSimpleName());
@@ -40,5 +44,9 @@ public abstract class NamedObject implements Comparable<NamedObject> {
   @Override
   public int compareTo(NamedObject that) {
     return this.fullyQualifiedName.compareTo(that.fullyQualifiedName);
+  }
+
+  public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    // Base classes can add additional validation here
   }
 }

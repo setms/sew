@@ -1,11 +1,13 @@
-package org.setms.sew.core.domain.model.format;
+package org.setms.sew.core.domain.model.validation;
 
 import static java.lang.System.lineSeparator;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PRIVATE;
 
 import jakarta.validation.Validator;
+import java.util.ArrayList;
 import lombok.NoArgsConstructor;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
 
 @NoArgsConstructor(access = PRIVATE)
 public class Validation {
@@ -26,6 +28,13 @@ public class Validation {
             .collect(joining(lineSeparator()));
     if (!violations.isEmpty()) {
       throw new IllegalArgumentException(violations);
+    }
+    if (instance instanceof NamedObject namedObject) {
+      var diagnostics = new ArrayList<Diagnostic>();
+      namedObject.validate(new Location(namedObject), diagnostics);
+      if (!diagnostics.isEmpty()) {
+        throw new ValidationException(diagnostics);
+      }
     }
     return instance;
   }

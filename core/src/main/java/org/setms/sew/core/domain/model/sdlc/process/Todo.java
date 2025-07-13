@@ -9,8 +9,8 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
-import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.validation.Location;
 
 @Getter
 @Setter

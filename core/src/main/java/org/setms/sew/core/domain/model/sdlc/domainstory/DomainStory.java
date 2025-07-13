@@ -1,7 +1,9 @@
 package org.setms.sew.core.domain.model.sdlc.domainstory;
 
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import java.util.Collection;
 import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -10,6 +12,8 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 
 @Getter
 @Setter
@@ -27,5 +31,10 @@ public class DomainStory extends NamedObject {
 
   public DomainStory(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
+  }
+
+  @Override
+  public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    sentences.forEach(sentence -> sentence.validate(location.plus(sentence), diagnostics));
   }
 }

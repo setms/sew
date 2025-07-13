@@ -3,7 +3,7 @@ package org.setms.sew.core.domain.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
-import static org.setms.sew.core.domain.model.format.Validation.validate;
+import static org.setms.sew.core.domain.model.validation.Validation.validate;
 
 import java.util.List;
 import java.util.Optional;

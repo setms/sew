@@ -1,7 +1,7 @@
 package org.setms.sew.intellij.editor;
 
 import static java.util.stream.Collectors.joining;
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
 
 import com.intellij.ide.ui.LafManagerListener;
 import com.intellij.openapi.application.ApplicationManager;

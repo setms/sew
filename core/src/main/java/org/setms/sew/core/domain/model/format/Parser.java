@@ -1,8 +1,8 @@
 package org.setms.sew.core.domain.model.format;
 
 import static org.setms.sew.core.domain.model.format.Strings.initUpper;
-import static org.setms.sew.core.domain.model.format.Validation.validate;
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Validation.validate;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -20,14 +20,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.atteo.evo.inflector.English;
-import org.setms.sew.core.domain.model.sdlc.Enums;
-import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
-import org.setms.sew.core.domain.model.sdlc.NamedObject;
-import org.setms.sew.core.domain.model.sdlc.Pointer;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
+import org.setms.sew.core.domain.model.sdlc.*;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.InputSource;
-import org.setms.sew.core.domain.model.tool.Location;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
+import org.setms.sew.core.domain.model.validation.ValidationException;
 
 public interface Parser {
 
@@ -50,6 +48,8 @@ public interface Parser {
     if (validate) {
       try {
         validate(result);
+      } catch (ValidationException e) {
+        throw e;
       } catch (IllegalArgumentException e) {
         throw new IllegalArgumentException("%s: %s".formatted(result.getName(), e.getMessage()), e);
       }
@@ -230,6 +230,9 @@ public interface Parser {
             inputSource -> {
               try (var inputStream = inputSource.open()) {
                 return parse(inputStream, type, validate);
+              } catch (ValidationException e) {
+                diagnostics.addAll(e.getDiagnostics());
+                return null;
               } catch (Exception e) {
                 diagnostics.add(
                     new Diagnostic(

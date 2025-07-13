@@ -1,5 +1,6 @@
 package org.setms.sew.core.domain.model.sdlc;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
@@ -7,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode
 public class FullyQualifiedName implements Comparable<FullyQualifiedName> {
 
-  private final String value;
+  @NotEmpty private final String value;
 
   public FullyQualifiedName(String packageName, String name) {
     this("%s.%s".formatted(packageName, name));

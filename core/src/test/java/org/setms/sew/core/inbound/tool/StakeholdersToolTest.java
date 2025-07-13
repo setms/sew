@@ -1,9 +1,9 @@
 package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
-import static org.setms.sew.core.domain.model.tool.Level.INFO;
-import static org.setms.sew.core.domain.model.tool.Level.WARN;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Level.INFO;
+import static org.setms.sew.core.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,12 +13,12 @@ import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.InputSource;
-import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.Suggestion;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;

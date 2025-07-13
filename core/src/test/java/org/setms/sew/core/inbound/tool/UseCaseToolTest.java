@@ -1,16 +1,16 @@
 package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
-import static org.setms.sew.core.domain.model.tool.Level.WARN;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Output;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 

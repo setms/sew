@@ -1,8 +1,8 @@
 package org.setms.sew.core.inbound.tool;
 
 import java.io.File;
-import org.setms.sew.core.domain.model.tool.Level;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.validation.Level;
 import org.setms.sew.core.outbound.tool.file.FileInputSource;
 import org.setms.sew.core.outbound.tool.file.FileOutputSink;
 

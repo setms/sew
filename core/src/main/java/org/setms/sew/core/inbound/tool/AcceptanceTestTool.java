@@ -13,12 +13,12 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.sew.core.domain.model.sdlc.acceptance.Scenario;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
 
 public class AcceptanceTestTool extends Tool {
 

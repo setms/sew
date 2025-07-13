@@ -3,7 +3,7 @@ package org.setms.sew.core.inbound.tool;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
 import static org.setms.sew.core.domain.model.format.Strings.initUpper;
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
 import static org.setms.sew.core.inbound.tool.Inputs.terms;
 
 import java.io.IOException;
@@ -15,14 +15,14 @@ import java.util.TreeSet;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
-import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 
 @Slf4j
 public class GlossaryTool extends Tool {

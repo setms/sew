@@ -17,13 +17,13 @@ import javax.swing.SwingConstants;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
 
 @SuppressWarnings("unused") // At some point, we'll want a context map
 public class ContextMapTool extends Tool {

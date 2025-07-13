@@ -2,7 +2,6 @@ package org.setms.sew.core.inbound.tool;
 
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.format.Strings.toFriendlyName;
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
 import static org.setms.sew.core.inbound.tool.Inputs.domainStories;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
@@ -17,6 +16,7 @@ import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.domainstory.Sentence;
 import org.setms.sew.core.domain.model.tool.*;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
 
 public class DomainStoryTool extends Tool {
 
@@ -236,56 +236,4 @@ public class DomainStoryTool extends Tool {
     layout.execute(graph.getDefaultParent());
   }
 
-  @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    inputs.get(DomainStory.class).forEach(domainStory -> validate(domainStory, diagnostics));
-  }
-
-  private void validate(DomainStory domainStory, Collection<Diagnostic> diagnostics) {
-    var location = new Location(domainStory);
-    var sentences = domainStory.getSentences();
-    if (sentences == null || sentences.isEmpty()) {
-      diagnostics.add(new Diagnostic(ERROR, "Missing sentences", location));
-      return;
-    }
-    sentences.forEach(sentence -> validate(sentence, location.plus(sentence), diagnostics));
-  }
-
-  private void validate(Sentence sentence, Location location, Collection<Diagnostic> diagnostics) {
-    var parts = sentence.getParts();
-    if (parts == null || parts.isEmpty()) {
-      diagnostics.add(new Diagnostic(ERROR, "Missing parts", location));
-      return;
-    }
-    if (parts.size() < 3) {
-      diagnostics.add(
-          new Diagnostic(
-              ERROR, "Need at least 3 parts: actor, activity, and work object", location));
-    }
-    if (!isActor(parts.getFirst())) {
-      diagnostics.add(
-          new Diagnostic(
-              ERROR,
-              "Sentence must start with an actor",
-              location.plus("parts", parts, parts.getFirst())));
-    }
-    for (var i = 1; i < parts.size() - 1; i++) {
-      var part = parts.get(i);
-      var partLocation = location.plus("parts", parts, part);
-      if (isActor(part)) {
-        diagnostics.add(
-            new Diagnostic(
-                ERROR, "Actors can only be at the beginning or end of a sentence", partLocation));
-      }
-      if (part.isType("activity") != (i % 2 == 1)) {
-        diagnostics.add(
-            new Diagnostic(
-                ERROR, "Must separate actors and work objects using activities", partLocation));
-      }
-    }
-  }
-
-  private boolean isActor(Pointer pointer) {
-    return pointer.isType("user") || pointer.isType("externalSystem");
-  }
 }

@@ -1,6 +1,6 @@
 package org.setms.sew.core.inbound.tool;
 
-import static org.setms.sew.core.domain.model.tool.Level.ERROR;
+import static org.setms.sew.core.domain.model.validation.Level.ERROR;
 import static org.setms.sew.core.inbound.tool.Inputs.entities;
 
 import java.util.Collection;
@@ -9,12 +9,12 @@ import java.util.stream.Stream;
 import org.setms.sew.core.domain.model.sdlc.design.Entity;
 import org.setms.sew.core.domain.model.sdlc.design.Field;
 import org.setms.sew.core.domain.model.sdlc.design.FieldType;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Input;
-import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 
 public class EntityTool extends Tool {
 

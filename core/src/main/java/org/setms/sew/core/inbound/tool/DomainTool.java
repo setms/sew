@@ -1,7 +1,7 @@
 package org.setms.sew.core.inbound.tool;
 
 import static java.util.stream.Collectors.toSet;
-import static org.setms.sew.core.domain.model.tool.Level.WARN;
+import static org.setms.sew.core.domain.model.validation.Level.WARN;
 import static org.setms.sew.core.inbound.tool.Inputs.*;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
@@ -37,14 +37,14 @@ import org.setms.sew.core.domain.model.sdlc.architecture.Module;
 import org.setms.sew.core.domain.model.sdlc.architecture.Modules;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
-import org.setms.sew.core.domain.model.tool.Diagnostic;
 import org.setms.sew.core.domain.model.tool.Input;
-import org.setms.sew.core.domain.model.tool.Location;
 import org.setms.sew.core.domain.model.tool.Output;
 import org.setms.sew.core.domain.model.tool.OutputSink;
 import org.setms.sew.core.domain.model.tool.ResolvedInputs;
 import org.setms.sew.core.domain.model.tool.Suggestion;
 import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class DomainTool extends Tool {
