@@ -125,10 +125,30 @@ public class DomainStoryTool extends Tool {
         .forEach(
             part -> {
               switch (part.getType()) {
-                case "user" ->
+                case "person" ->
                     addActor(
                         part,
                         "material/person",
+                        actorNodesByName,
+                        vertexTexts,
+                        height,
+                        previousVertex,
+                        activity,
+                        graph);
+                case "people" ->
+                    addActor(
+                        part,
+                        "material/people",
+                        actorNodesByName,
+                        vertexTexts,
+                        height,
+                        previousVertex,
+                        activity,
+                        graph);
+                case "computerSystem" ->
+                    addActor(
+                        part,
+                        "material/computer",
                         actorNodesByName,
                         vertexTexts,
                         height,
@@ -147,17 +167,7 @@ public class DomainStoryTool extends Tool {
                         Optional.ofNullable(part.getAttributes().get("icon"))
                             .map(List::getFirst)
                             .map(p -> "%s/%s".formatted(p.getType(), initLower(p.getId())))
-                            .orElse("material/workObject"),
-                        vertexTexts,
-                        height,
-                        previousVertex,
-                        activity,
-                        graph);
-                case "externalSystem" ->
-                    addActor(
-                        part,
-                        "material/system",
-                        actorNodesByName,
+                            .orElse("material/folder"),
                         vertexTexts,
                         height,
                         previousVertex,
@@ -235,5 +245,4 @@ public class DomainStoryTool extends Tool {
     layout.setIntraCellSpacing(height - ICON_SIZE + LINE_HEIGHT);
     layout.execute(graph.getDefaultParent());
   }
-
 }

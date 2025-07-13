@@ -5,6 +5,7 @@ import static org.setms.sew.core.domain.model.validation.Level.ERROR;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -59,6 +60,6 @@ public class Sentence extends NamedObject {
   }
 
   private boolean isActor(Pointer pointer) {
-    return pointer.isType("user") || pointer.isType("externalSystem");
+    return Stream.of("person", "people", "computerSystem").anyMatch(pointer::isType);
   }
 }

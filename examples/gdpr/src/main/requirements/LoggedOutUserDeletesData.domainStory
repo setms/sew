@@ -9,7 +9,7 @@ domainStory LoggedOutUserDeletesData {
 
 sentence {
   parts = [
-        user(User),
+        person(User),
         activity(Requests),
         workObject(DataDeletion, icon=material(Delete))
     ]
@@ -17,7 +17,7 @@ sentence {
 
 sentence {
     parts = [
-        user(CustomerSupportAgent),
+        person(CustomerSupportAgent),
         activity(Checks),
         workObject(Request, icon=material(Work)),
         activity(Against),
@@ -27,12 +27,12 @@ sentence {
 
 sentence {
     parts = [
-        user(CustomerSupportAgent),
+        person(CustomerSupportAgent),
         activity(Approves),
         workObject(Request, icon=material(Work)),
         activity(In),
         workObject(Requests, icon=material(Cases)),
         activity(Using),
-        externalSystem(GdprMiddleware)
+        computerSystem(GdprMiddleware)
     ]
 }

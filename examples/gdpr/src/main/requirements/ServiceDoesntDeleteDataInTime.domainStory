@@ -1,0 +1,26 @@
+package gdpr
+
+domainStory ServiceDoesntDeleteDataInTime {
+  description = "A service doesn't confirm within the allotted time period that it has deleted the user's data. The system sends a reminder."
+  granularity = fine
+  pointInTime = tobe
+  purity = pure
+}
+
+sentence {
+  parts = [
+    computerSystem(GdprMiddleware),
+    activity(NoticesIncomplete),
+    workObject(ServiceRequest, icon=material(Work))
+  ]
+}
+
+sentence {
+  parts = [
+    computerSystem(GdprMiddleware),
+    activity(Sends),
+    workObject(ServiceRequest, icon=material(Work)),
+    activity(To),
+    computerSystem(Service)
+  ]
+}

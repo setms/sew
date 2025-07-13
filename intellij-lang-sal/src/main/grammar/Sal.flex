@@ -18,7 +18,7 @@ import static org.setms.sew.intellij.lang.sal.SalElementTypes.*;
 COMMENT="#"[^\r\n]*[\r\n]+
 IDENTIFIER=[a-z][a-zA-Z_]*
 STRING=\"([^\"\r\n]*)\"
-TYPE=(activity|aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|decision|domain|domainStory|entity|event|externalSystem|field|hotspot|material|module|modules|owner|policy|readModel|scenario|screen|scope|sentence|subdomain|term|useCase|user|userRequirement|valueObject|workObject)
+TYPE=(activity|aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|computerSystem|decision|domain|domainStory|entity|event|externalSystem|field|hotspot|material|module|modules|owner|person|people|policy|readModel|scenario|screen|scope|sentence|subdomain|term|useCase|user|userRequirement|valueObject|workObject)
 NAME=[A-Z][a-zA-Z0-9]*
 WHITE_SPACE=[ \t]+
 NEWLINE=[\r\n]+

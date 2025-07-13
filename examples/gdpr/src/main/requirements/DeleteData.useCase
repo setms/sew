@@ -70,8 +70,8 @@ scenario InstructServicesToDeleteUserData {
 }
 
 scenario ServiceDoesntDeleteDataInTime {
-    elaborate = domainStory(ServiceDoesntDeleteDataInTime)
-    steps     = [
+    elaborates = domainStory(ServiceDoesntDeleteDataInTime)
+    steps      = [
         clockEvent(TimePassed),
         policy(CallService, reads=readModel(ServiceRequests)),
         command(HandleRequest),
@@ -80,8 +80,8 @@ scenario ServiceDoesntDeleteDataInTime {
 }
 
 scenario InformUser {
-    title = "Notify user that request is complete"
-    steps = [
+    elaborates = domainStory(NotifyUserThatRequestIsComplete)
+    steps      = [
          event(RequestFinished),
          policy(NotifyUser),
          command(NotifyUser),

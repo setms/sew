@@ -9,20 +9,20 @@ domainStory LoggedInUserRequestsDataDeletion {
 
 sentence {
   parts = [
-    user(User),
+    person(User),
     activity(Requests),
     workObject(DataDeletion, icon=material(Delete)),
     activity(Via),
-    externalSystem(App)
+    computerSystem(App)
   ]
 }
 
 sentence {
   parts = [
-    externalSystem(App),
+    computerSystem(App),
     activity(Starts),
     workObject(Request, icon=material(Work)),
     activity(In),
-    externalSystem(GdprMiddleware)
+    computerSystem(GdprMiddleware)
   ]
 }

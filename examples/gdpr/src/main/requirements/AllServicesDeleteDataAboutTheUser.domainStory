@@ -9,7 +9,7 @@ domainStory AllServicesDeleteDataAboutTheUser {
 
 sentence {
   parts = [
-    externalSystem(GdprMiddleware),
+    computerSystem(GdprMiddleware),
     activity(Reads),
     workObject(Services, icon=material(AutoAwesomeMotion)),
     activity(And),
@@ -19,20 +19,20 @@ sentence {
 
 sentence {
   parts = [
-    externalSystem(GdprMiddleware),
+    computerSystem(GdprMiddleware),
     activity(Sends),
-    workObject(Request, icon=material(Work)),
+    workObject(ServiceRequest, icon=material(Work)),
     activity(To),
-    externalSystem(Service)
+    computerSystem(Service)
   ]
 }
 
 sentence {
   parts = [
-    externalSystem(Service),
+    computerSystem(Service),
     activity(Sends),
     workObject(RequestCompletion, icon=material(WorkUpdate)),
     activity(To),
-    externalSystem(GdprMiddleware)
+    computerSystem(GdprMiddleware)
   ]
 }
