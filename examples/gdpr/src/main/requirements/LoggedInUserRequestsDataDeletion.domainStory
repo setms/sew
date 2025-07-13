@@ -7,7 +7,7 @@ domainStory LoggedInUserRequestsDataDeletion {
   purity = pure
 }
 
-sentence Sentence1 {
+sentence {
   parts = [
     user(User),
     activity(Requests),
@@ -17,7 +17,7 @@ sentence Sentence1 {
   ]
 }
 
-sentence Sentence2 {
+sentence {
   parts = [
     externalSystem(App),
     activity(Starts),

@@ -2,6 +2,7 @@ package org.setms.sew.core.inbound.format.sal;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -41,14 +43,20 @@ class SalFormatParser implements Parser {
     }
     parseProperties(sal.object(0), result);
     var nestedObjects = new LinkedHashMap<String, DataList>();
+    var index = new AtomicInteger(0);
     sal.object().stream()
         .skip(1)
-        .filter(object -> object.OBJECT_NAME() != null && object.TYPE() != null)
+        .filter(object -> object.TYPE() != null)
         .forEach(
             object -> {
               var type = object.TYPE().getText();
               var objectsOfType = nestedObjects.computeIfAbsent(type, ignored -> new DataList());
-              var nestedObject = new NestedObject(object.OBJECT_NAME().getText());
+              index.getAndIncrement();
+              var name =
+                  Optional.ofNullable(object.OBJECT_NAME())
+                      .map(TerminalNode::getText)
+                      .orElseGet(() -> initUpper(type) + index.get());
+              var nestedObject = new NestedObject(name);
               objectsOfType.add(nestedObject);
               parseProperties(object, nestedObject);
             });

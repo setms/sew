@@ -37,7 +37,7 @@ public class Sentence extends NamedObject {
           new Diagnostic(
               ERROR, "Need at least 3 parts: actor, activity, and work object", location));
     }
-    if (!isActor(parts.getFirst())) {
+    if (!parts.isEmpty() && !isActor(parts.getFirst())) {
       diagnostics.add(new Diagnostic(ERROR, "Sentence must start with an actor", location));
     }
     for (var i = 1; i < parts.size() - 1; i++) {

@@ -4,7 +4,7 @@ domainStory NonuserCantDeleteData {
     description = "When someone who's not a user of our applications requests data deletion, customer support denies the request."
 }
 
-sentence Sentence1 {
+sentence {
     parts = [
         user(Nonuser),
         activity(Requests),
@@ -12,7 +12,7 @@ sentence Sentence1 {
     ]
 }
 
-sentence Sentence2 {
+sentence {
     parts = [
         user(CustomerSupportAgent),
         activity(Checks),
@@ -22,7 +22,7 @@ sentence Sentence2 {
     ]
 }
 
-sentence Sentence3 {
+sentence {
     parts = [
         user(CustomerSupportAgent),
         activity(Sends),

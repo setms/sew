@@ -34,7 +34,8 @@ public class Field extends NamedObject {
   @Override
   public void validate(Location location, Collection<Diagnostic> diagnostics) {
     if (type == FieldType.SELECTION && (values == null || values.size() < 2)) {
-      diagnostics.add(new Diagnostic(ERROR, "Selection field needs at least 2 values to select", location));
+      diagnostics.add(
+          new Diagnostic(ERROR, "Selection field needs at least 2 values to select", location));
     }
   }
 }

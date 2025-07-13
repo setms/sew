@@ -7,7 +7,7 @@ domainStory LoggedOutUserDeletesData {
   purity = pure
 }
 
-sentence Sentence1 {
+sentence {
   parts = [
         user(User),
         activity(Requests),
@@ -15,7 +15,7 @@ sentence Sentence1 {
     ]
 }
 
-sentence Sentence2 {
+sentence {
     parts = [
         user(CustomerSupportAgent),
         activity(Checks),
@@ -25,7 +25,7 @@ sentence Sentence2 {
     ]
 }
 
-sentence Sentence3 {
+sentence {
     parts = [
         user(CustomerSupportAgent),
         activity(Approves),

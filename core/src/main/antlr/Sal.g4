@@ -6,7 +6,7 @@ scope : PACKAGE qualifiedName NEWLINE ;
 
 qualifiedName : IDENTIFIER (DOT IDENTIFIER)* ;
 
-object : TYPE OBJECT_NAME LBRACE NEWLINE property* RBRACE NEWLINE ;
+object : TYPE OBJECT_NAME? LBRACE NEWLINE property* RBRACE NEWLINE ;
 
 property : IDENTIFIER EQ (item | list)  NEWLINE ;
 

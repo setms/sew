@@ -35,7 +35,7 @@ qualifiedName ::= IDENTIFIER (DOT IDENTIFIER)*
 
 object ::= objectStart LBRACE NEWLINE property* RBRACE NEWLINE
 
-objectStart ::= TYPE objectName
+objectStart ::= TYPE objectName?
 
 objectName ::= NAME
 

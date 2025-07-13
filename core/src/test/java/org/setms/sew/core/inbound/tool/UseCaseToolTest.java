@@ -52,7 +52,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       purity = pure
     }
 
-    sentence Sentence1 {
+    sentence {
       parts = [ ]
     }
     """;

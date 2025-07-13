@@ -70,9 +70,8 @@ scenario InstructServicesToDeleteUserData {
 }
 
 scenario ServiceDoesntDeleteDataInTime {
-    title       = "Service doesn't delete data in time"
-    description = "A service doesn't confirm within the allotted time period that it has deleted the user's data. The system sends a reminder."
-    steps       = [
+    elaborate = domainStory(ServiceDoesntDeleteDataInTime)
+    steps     = [
         clockEvent(TimePassed),
         policy(CallService, reads=readModel(ServiceRequests)),
         command(HandleRequest),

@@ -7,7 +7,7 @@ domainStory AllServicesDeleteDataAboutTheUser {
   purity = pure
 }
 
-sentence Sentence1 {
+sentence {
   parts = [
     externalSystem(GdprMiddleware),
     activity(Reads),
@@ -17,7 +17,7 @@ sentence Sentence1 {
   ]
 }
 
-sentence Sentence2 {
+sentence {
   parts = [
     externalSystem(GdprMiddleware),
     activity(Sends),
@@ -27,7 +27,7 @@ sentence Sentence2 {
   ]
 }
 
-sentence Sentence3 {
+sentence {
   parts = [
     externalSystem(Service),
     activity(Sends),

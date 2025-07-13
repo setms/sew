@@ -2,11 +2,13 @@ package org.setms.sew.core.inbound.format.sal;
 
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.format.Builder;
 import org.setms.sew.core.domain.model.format.DataEnum;
@@ -26,14 +28,22 @@ class SalFormatBuilder implements Builder {
   public void build(RootObject root, PrintWriter writer) {
     var nestedObjects = new LinkedHashMap<String, List<NestedObject>>();
     writer.format("package %s%n%n", root.getScope());
-    buildObject(writer, root.getType(), root.getName(), root, nestedObjects);
+    buildObject(writer, root.getType(), 0, root.getName(), root, nestedObjects);
     nestedObjects.forEach(
-        (type, objects) ->
-            objects.forEach(
-                object -> {
-                  writer.println();
-                  buildObject(writer, singular(type), object.getName(), object, emptyMap());
-                }));
+        (type, objects) -> {
+          var index = new AtomicInteger();
+          objects.forEach(
+              object -> {
+                writer.println();
+                buildObject(
+                    writer,
+                    singular(type),
+                    index.incrementAndGet(),
+                    object.getName(),
+                    object,
+                    emptyMap());
+              });
+        });
   }
 
   private String singular(String type) {
@@ -54,10 +64,16 @@ class SalFormatBuilder implements Builder {
   private void buildObject(
       PrintWriter writer,
       String type,
+      int index,
       String name,
       DataObject<?> object,
       Map<String, List<NestedObject>> nestedObjects) {
-    writer.format("%s %s {%n", type, name);
+    writer.format("%s ", type);
+    var defaultName = "%s%d".formatted(initUpper(type), index);
+    if (!name.equals(defaultName)) {
+      writer.format("%s ", name);
+    }
+    writer.println("{");
     object.properties((key, value) -> buildProperty(writer, key, value, nestedObjects));
     writer.println("}");
   }

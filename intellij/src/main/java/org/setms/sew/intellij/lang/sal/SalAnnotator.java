@@ -2,6 +2,7 @@ package org.setms.sew.intellij.lang.sal;
 
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
 import static org.setms.sew.intellij.lang.sal.SalElementTypes.*;
 
 import com.intellij.lang.annotation.AnnotationHolder;
@@ -122,8 +123,23 @@ public class SalAnnotator implements Annotator {
             Stream.of(elements[0].getParent().getParent().getChildren()[0].getChildren()[0]),
             Arrays.stream(elements))
         .distinct()
-        .map(element -> element.getText().replace(' ', '/'))
+        .map(element -> toPath(element))
         .collect(joining("/"));
+  }
+
+  private String toPath(PsiElement element) {
+    if (element.getNode().getElementType() == OBJECT_START && !element.getText().contains(" ")) {
+      var siblings = element.getParent().getChildren();
+      var index = -1;
+      for (var i = 0; i < siblings.length; i++) {
+        if (siblings[i] == element) {
+          index = i + 1;
+          break;
+        }
+      }
+      return "%s/%s%d".formatted(element.getText(), initUpper(element.getText()), index);
+    }
+    return element.getText().replace(' ', '/');
   }
 
   private PsiElement propertyNameOf(PsiElement psiElement) {
