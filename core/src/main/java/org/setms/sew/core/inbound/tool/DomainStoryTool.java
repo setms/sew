@@ -2,6 +2,8 @@ package org.setms.sew.core.inbound.tool;
 
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.format.Strings.toFriendlyName;
+import static org.setms.sew.core.domain.model.validation.Level.WARN;
+import static org.setms.sew.core.inbound.tool.Inputs.PATH_REQUIREMENTS;
 import static org.setms.sew.core.inbound.tool.Inputs.domainStories;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
@@ -15,8 +17,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.domainstory.Sentence;
+import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
+import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.model.tool.*;
 import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.sew.core.domain.model.validation.Location;
+import org.setms.sew.core.domain.services.DomainStoryToUseCase;
+import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class DomainStoryTool extends Tool {
 
@@ -25,6 +32,7 @@ public class DomainStoryTool extends Tool {
   private static final int LINE_HEIGHT = 16;
   private static final String VERTEX_STYLE =
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
+  private static final String CREATE_USE_CASE_SCENARIO = "usecase.scenario.create";
 
   @Override
   public List<Input<?>> getInputs() {
@@ -244,5 +252,63 @@ public class DomainStoryTool extends Tool {
     layout.setInterRankCellSpacing(2.0 * ICON_SIZE);
     layout.setIntraCellSpacing(height - ICON_SIZE + LINE_HEIGHT);
     layout.execute(graph.getDefaultParent());
+  }
+
+  @Override
+  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var useCases = inputs.get(UseCase.class);
+    inputs
+        .get(DomainStory.class)
+        .forEach(domainStory -> validate(domainStory, useCases, diagnostics));
+  }
+
+  private void validate(
+      DomainStory domainStory, Collection<UseCase> useCases, Collection<Diagnostic> diagnostics) {
+    if (useCases.stream()
+        .flatMap(UseCase::scenarios)
+        .map(Scenario::getElaborates)
+        .filter(Objects::nonNull)
+        .noneMatch(elaborates -> elaborates.pointsTo(domainStory))) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Not elaborated in use case scenario",
+              new Location(domainStory),
+              new Suggestion(CREATE_USE_CASE_SCENARIO, "Create use case with scenario")));
+    }
+  }
+
+  @Override
+  protected void apply(
+      String suggestionCode,
+      ResolvedInputs inputs,
+      Location location,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
+    if (CREATE_USE_CASE_SCENARIO.equals(suggestionCode)) {
+      findDomainStory(inputs, location)
+          .ifPresent(domainStory -> createUseCaseFrom(domainStory, sink, diagnostics));
+    } else {
+      super.apply(suggestionCode, inputs, location, sink, diagnostics);
+    }
+  }
+
+  private Optional<DomainStory> findDomainStory(ResolvedInputs inputs, Location location) {
+    return inputs.get(DomainStory.class).stream().filter(location::isInside).findFirst();
+  }
+
+  private void createUseCaseFrom(
+      DomainStory domainStory, OutputSink sink, Collection<Diagnostic> diagnostics) {
+    try {
+      var useCase = new DomainStoryToUseCase().createUseCaseFrom(domainStory);
+      var useCaseSink =
+          toBase(sink).select("%s/%s.useCase".formatted(PATH_REQUIREMENTS, useCase.getName()));
+      try (var output = useCaseSink.open()) {
+        new SalFormat().newBuilder().build(useCase, output);
+      }
+      diagnostics.add(sinkCreated(useCaseSink));
+    } catch (Exception e) {
+      addError(diagnostics, e.getMessage());
+    }
   }
 }

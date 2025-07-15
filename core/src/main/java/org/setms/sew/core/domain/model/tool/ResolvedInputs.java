@@ -8,10 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.atteo.evo.inflector.English;
-import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
-import org.setms.sew.core.domain.model.sdlc.NamedObject;
-import org.setms.sew.core.domain.model.sdlc.Pointer;
-import org.setms.sew.core.domain.model.sdlc.PointerResolver;
+import org.setms.sew.core.domain.model.sdlc.*;
 
 public class ResolvedInputs implements PointerResolver {
 

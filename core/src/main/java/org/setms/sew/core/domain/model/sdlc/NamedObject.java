@@ -33,7 +33,7 @@ public abstract class NamedObject implements Comparable<NamedObject> {
   }
 
   public Pointer pointerTo() {
-    return new Pointer(initLower(getClass().getSimpleName()), getName());
+    return new Pointer(type(), getName());
   }
 
   @Override

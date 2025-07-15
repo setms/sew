@@ -30,7 +30,7 @@ scenario LoggedOutUserRequestsDataDeletion {
         event(RequestReceived),
         readModel(Requests),
         user(CustomerSupportAgent, reads=readModel(Users)),
-        command(StartRequest),
+        command(ApproveRequest),
         aggregate(Requests),
         event(RequestStarted),
         readModel(Requests)

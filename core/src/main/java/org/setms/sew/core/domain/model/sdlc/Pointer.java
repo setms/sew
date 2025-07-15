@@ -45,7 +45,7 @@ public class Pointer implements Comparable<Pointer> {
   }
 
   public boolean isType(String type) {
-    return this.type.equals(type);
+    return this.type != null && this.type.equals(type);
   }
 
   public static Predicate<Pointer> testType(String type) {
@@ -54,6 +54,10 @@ public class Pointer implements Comparable<Pointer> {
 
   public Predicate<Pointer> testEqual() {
     return this::equals;
+  }
+
+  public boolean pointsTo(NamedObject object) {
+    return isType(object.type()) && id.equals(object.getName());
   }
 
   @Override

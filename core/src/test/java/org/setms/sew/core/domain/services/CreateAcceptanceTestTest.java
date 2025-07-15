@@ -12,6 +12,7 @@ import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.PointerResolver;
+import org.setms.sew.core.domain.model.sdlc.UnresolvedObject;
 import org.setms.sew.core.domain.model.sdlc.design.Entity;
 import org.setms.sew.core.domain.model.sdlc.design.Field;
 import org.setms.sew.core.domain.model.sdlc.design.FieldType;
@@ -20,7 +21,6 @@ import org.setms.sew.core.domain.model.sdlc.eventstorming.Command;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.Event;
 import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
-import org.setms.sew.core.domain.model.tool.UnresolvedObject;
 
 class CreateAcceptanceTestTest implements PointerResolver {
 

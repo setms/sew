@@ -8,9 +8,7 @@ sentence {
     parts = [
         person(Nonuser),
         activity(Requests),
-        workObject(DataDeletion, icon=material(Delete)),
-        activity(In),
-        computerSystem(GdprMiddleware)
+        workObject(DataDeletion, icon=material(Delete))
     ]
 }
 
@@ -28,8 +26,6 @@ sentence {
     parts = [
         person(CustomerSupportAgent),
         activity(Denies),
-        workObject(Request, icon=material(Delete)),
-        activity(In),
-        computerSystem(GdprMiddleware)
+        workObject(Request, icon=material(Delete))
     ]
 }

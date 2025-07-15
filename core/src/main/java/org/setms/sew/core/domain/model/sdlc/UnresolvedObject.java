@@ -1,8 +1,6 @@
-package org.setms.sew.core.domain.model.tool;
+package org.setms.sew.core.domain.model.sdlc;
 
 import lombok.Getter;
-import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
-import org.setms.sew.core.domain.model.sdlc.NamedObject;
 
 public class UnresolvedObject extends NamedObject {
 
