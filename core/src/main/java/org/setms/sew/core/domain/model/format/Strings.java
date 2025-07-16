@@ -73,4 +73,8 @@ public class Strings {
         (text, replacement) -> result.set(result.get().replace(text, replacement)));
     return result.get();
   }
+
+  public static String ensureSuffix(String text, String suffix) {
+    return text.endsWith(suffix) ? text : text + suffix;
+  }
 }

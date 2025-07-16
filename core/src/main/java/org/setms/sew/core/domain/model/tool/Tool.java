@@ -1,5 +1,6 @@
 package org.setms.sew.core.domain.model.tool;
 
+import static org.setms.sew.core.domain.model.format.Strings.ensureSuffix;
 import static org.setms.sew.core.domain.model.validation.Level.ERROR;
 import static org.setms.sew.core.domain.model.validation.Level.INFO;
 
@@ -133,10 +134,28 @@ public abstract class Tool {
     return List.of(new Output(new Glob(path, "*.html")), new Output(new Glob(path, "*.png")));
   }
 
+  protected OutputSink sinkFor(NamedObject object, OutputSink base) {
+    var path =
+        getInputs().stream()
+            .filter(input -> input.type().equals(object.getClass()))
+            .map(Input::glob)
+            .map(Glob::path)
+            .findFirst()
+            .orElseThrow();
+    return base.toUri().toString().contains(path)
+        ? base.select("../%s.%s".formatted(object.getName(), object.type()))
+        : toBase(base).select("../%s/%s.%s".formatted(path, object.getName(), object.type()));
+  }
+
   protected OutputSink toBase(OutputSink sink) {
     var glob = getInputs().getFirst().glob();
     if (sink.toUri().toString().endsWith(glob.extension())) {
-      return sink.select(glob.path().replaceAll("[^/]+", "..")).select("..");
+      var path = ensureSuffix(glob.path(), "/");
+      var current = sink;
+      while (!current.toUri().toString().endsWith(path)) {
+        current = current.select("..");
+      }
+      return current.select(path.replaceAll("[^/]+", ".."));
     }
     return sink;
   }

@@ -1,6 +1,9 @@
 package org.setms.sew.core.domain.services;
 
-import jakarta.validation.constraints.NotEmpty;
+import static java.util.Collections.emptyList;
+import static org.setms.sew.core.domain.model.format.Strings.initLower;
+import static org.setms.sew.core.domain.model.format.Strings.initUpper;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +22,8 @@ public class DomainStoryToUseCase {
 
   public UseCase createUseCaseFrom(DomainStory domainStory) {
     return new UseCase(new FullyQualifiedName(domainStory.getPackage(), domainStory.getName()))
-        .setTitle("TODO: title")
-        .setDescription("TODO: description")
+        .setTitle("TODO")
+        .setDescription("TODO")
         .setScenarios(List.of(toScenario(domainStory)));
   }
 
@@ -36,49 +39,56 @@ public class DomainStoryToUseCase {
         sentence -> {
           for (var i = 0; i < sentence.getParts().size(); i++) {
             var part = sentence.getParts().get(i);
-            var step =
+            result.addAll(
                 switch (part.getType()) {
-                  case "person", "people" -> new Pointer("user", part.getId());
-                  case "computerSystem" -> new Pointer("externalSystem", part.getId());
+                  case "person", "people" -> convertPerson(part, result);
+                  case "computerSystem" -> convertComputerSystem(part);
                   case "activity" -> convertActivity(part.getId(), sentence.getParts(), i);
                   case "workObject" -> convertWorkObject(part.getId(), result);
-                  default -> null;
-                };
-            if (step != null) {
-              result.add(step);
-            }
+                  default -> emptyList();
+                });
           }
         });
-    complete(result);
     return result;
   }
 
-  private Pointer convertActivity(String activity, List<Pointer> parts, int index) {
+  private List<Pointer> convertPerson(Pointer part, List<Pointer> steps) {
+    var result = new ArrayList<Pointer>();
+    if (!steps.isEmpty() && steps.getLast().isType("event")) {
+      var aggregate = steps.get(steps.size() - 2);
+      result.add(new Pointer("readModel", aggregate.getId()));
+    }
+    result.add(new Pointer("user", part.getId()));
+    return result;
+  }
+
+  private List<Pointer> convertComputerSystem(Pointer part) {
+    return List.of(new Pointer("externalSystem", part.getId()));
+  }
+
+  private List<Pointer> convertActivity(String activity, List<Pointer> parts, int index) {
+    var result = new ArrayList<Pointer>();
     var previous = parts.get(index - 1);
     if (previous.isType("person") || previous.isType("people")) {
       var next = parts.get(index + 1);
       var command = "%s%s".formatted(language.base(activity), next.getId());
-      return new Pointer("command", command);
+      result.add(new Pointer("command", command));
     }
-    return null;
+    return result;
   }
 
-  private Pointer convertWorkObject(@NotEmpty String workObject, List<Pointer> steps) {
+  private List<Pointer> convertWorkObject(String workObject, List<Pointer> steps) {
+    var result = new ArrayList<Pointer>();
     if (steps.getLast().isType("command")) {
-      return new Pointer("aggregate", language.plural(workObject));
-    }
-    return null;
-  }
+      result.add(new Pointer("aggregate", language.plural(workObject)));
 
-  private void complete(List<Pointer> steps) {
-    if (steps.getLast().isType("aggregate")) {
-      var noun = language.singular(steps.getLast().getId());
-      var verb = steps.get(steps.size() - 2).getId();
-      if (verb.endsWith(noun)) {
-        verb = verb.substring(0, verb.lastIndexOf(noun));
+      var verb = initLower(steps.getLast().getId());
+      if (verb.endsWith(workObject)) {
+        verb = verb.substring(0, verb.lastIndexOf(workObject));
       }
       verb = language.past(language.base(verb));
-      steps.add(new Pointer("event", noun + verb));
+      result.add(new Pointer("event", initUpper(workObject) + initUpper(verb)));
     }
+    return result;
   }
 }

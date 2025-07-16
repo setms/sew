@@ -37,7 +37,8 @@ public class English implements NaturalLanguage {
           Map.entry("bring", "brought"),
           Map.entry("build", "built"),
           Map.entry("leave", "left"),
-          Map.entry("send", "sent"));
+          Map.entry("send", "sent"),
+          Map.entry("sell", "sold"));
 
   @Override
   public String singular(String noun) {
@@ -83,9 +84,6 @@ public class English implements NaturalLanguage {
     }
     if (verb.matches(".*(s|sh|ch|x|z)es$")) {
       return verb.replaceAll("es$", "");
-    }
-    if (verb.endsWith("es")) {
-      return verb.substring(0, verb.length() - 2);
     }
     if (verb.endsWith("s")) {
       return verb.substring(0, verb.length() - 1);

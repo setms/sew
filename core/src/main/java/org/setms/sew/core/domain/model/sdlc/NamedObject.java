@@ -36,6 +36,10 @@ public abstract class NamedObject implements Comparable<NamedObject> {
     return new Pointer(type(), getName());
   }
 
+  public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    // Base classes can add additional validation here
+  }
+
   @Override
   public String toString() {
     return fullyQualifiedName.toString();
@@ -44,9 +48,5 @@ public abstract class NamedObject implements Comparable<NamedObject> {
   @Override
   public int compareTo(NamedObject that) {
     return this.fullyQualifiedName.compareTo(that.fullyQualifiedName);
-  }
-
-  public void validate(Location location, Collection<Diagnostic> diagnostics) {
-    // Base classes can add additional validation here
   }
 }

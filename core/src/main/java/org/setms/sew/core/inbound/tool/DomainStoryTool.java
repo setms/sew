@@ -3,8 +3,7 @@ package org.setms.sew.core.inbound.tool;
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.format.Strings.toFriendlyName;
 import static org.setms.sew.core.domain.model.validation.Level.WARN;
-import static org.setms.sew.core.inbound.tool.Inputs.PATH_REQUIREMENTS;
-import static org.setms.sew.core.inbound.tool.Inputs.domainStories;
+import static org.setms.sew.core.inbound.tool.Inputs.*;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.view.mxGraph;
@@ -36,7 +35,7 @@ public class DomainStoryTool extends Tool {
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(domainStories());
+    return List.of(domainStories(), useCases());
   }
 
   @Override
@@ -301,8 +300,7 @@ public class DomainStoryTool extends Tool {
       DomainStory domainStory, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
       var useCase = new DomainStoryToUseCase().createUseCaseFrom(domainStory);
-      var useCaseSink =
-          toBase(sink).select("%s/%s.useCase".formatted(PATH_REQUIREMENTS, useCase.getName()));
+      var useCaseSink = sinkFor(useCase, sink);
       try (var output = useCaseSink.open()) {
         new SalFormat().newBuilder().build(useCase, output);
       }
