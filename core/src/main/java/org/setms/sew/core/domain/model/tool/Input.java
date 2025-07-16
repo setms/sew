@@ -2,8 +2,8 @@ package org.setms.sew.core.domain.model.tool;
 
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 
-import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.format.Format;
+import org.setms.sew.core.domain.model.nlp.English;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
@@ -19,7 +19,7 @@ public record Input<T extends NamedObject>(String name, Glob glob, Format format
 
   public Input(String path, Format format, Class<T> type, String extension) {
     this(
-        initLower(English.plural(type.getSimpleName())),
+        initLower(new English().plural(type.getSimpleName())),
         new Glob(path, "**/*.%s".formatted(extension)),
         format,
         type);

@@ -9,7 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.atteo.evo.inflector.English;
 import org.setms.sew.core.domain.model.format.Builder;
 import org.setms.sew.core.domain.model.format.DataEnum;
 import org.setms.sew.core.domain.model.format.DataItem;
@@ -19,10 +18,14 @@ import org.setms.sew.core.domain.model.format.DataString;
 import org.setms.sew.core.domain.model.format.NestedObject;
 import org.setms.sew.core.domain.model.format.Reference;
 import org.setms.sew.core.domain.model.format.RootObject;
+import org.setms.sew.core.domain.model.nlp.English;
+import org.setms.sew.core.domain.model.nlp.NaturalLanguage;
 
 class SalFormatBuilder implements Builder {
 
   private static final String INDENT = "  ";
+
+  private final NaturalLanguage language = new English();
 
   @Override
   public void build(RootObject root, PrintWriter writer) {
@@ -50,9 +53,9 @@ class SalFormatBuilder implements Builder {
     var result = type;
     if (result.endsWith("s")) {
       result = result.substring(0, result.length() - 1);
-      if (!English.plural(result).equals(type) && result.endsWith("e")) {
+      if (!language.plural(result).equals(type) && result.endsWith("e")) {
         result = result.substring(0, result.length() - 1);
-        if (!English.plural(result).equals(type)) {
+        if (!language.plural(result).equals(type)) {
           throw new IllegalStateException(
               "Don't know how to turn '%s' into singular form".formatted(type));
         }

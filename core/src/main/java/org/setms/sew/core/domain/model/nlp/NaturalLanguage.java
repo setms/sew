@@ -1,11 +1,14 @@
 package org.setms.sew.core.domain.model.nlp;
 
-
 public interface NaturalLanguage {
 
   String singular(String noun);
 
-  String plural(String noun);
+  default String plural(String noun) {
+    return plural(noun, 2);
+  }
+
+  String plural(String noun, int count);
 
   String base(String verb);
 

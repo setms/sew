@@ -21,10 +21,11 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.atteo.evo.inflector.English;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Languages;
 import org.setms.sew.core.domain.model.format.Strings;
+import org.setms.sew.core.domain.model.nlp.English;
+import org.setms.sew.core.domain.model.nlp.NaturalLanguage;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
@@ -57,16 +58,6 @@ import org.setms.sew.core.inbound.format.sal.SalFormat;
 public class UseCaseTool extends Tool {
 
   private static final String OUTPUT_PATH = "build/reports/useCases";
-  private static final List<String> ELEMENT_ORDER =
-      List.of(
-          "readModel",
-          "user",
-          "command",
-          "aggregate",
-          "event",
-          "policy",
-          "externalSystem",
-          "hotspot");
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
@@ -81,6 +72,8 @@ public class UseCaseTool extends Tool {
   private static final Collection<String> ACTIVE_ELEMENTS =
       List.of("aggregate", "policy", "readModel");
   private static final String CREATE_DOMAIN_STORY = "domainstory.create";
+
+  private final NaturalLanguage language = new English();
   private JLanguageTool languageTool;
 
   @Override
@@ -191,7 +184,7 @@ public class UseCaseTool extends Tool {
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics,
       Location stepLocation) {
-    var types = English.plural(reference.getType());
+    var types = language.plural(reference.getType());
     var candidates = inputs.get(types, NamedObject.class);
     if ("hotspot".equals(reference.getType())) {
       diagnostics.add(

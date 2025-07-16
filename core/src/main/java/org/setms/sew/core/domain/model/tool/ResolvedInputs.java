@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.atteo.evo.inflector.English;
+import org.setms.sew.core.domain.model.nlp.English;
+import org.setms.sew.core.domain.model.nlp.NaturalLanguage;
 import org.setms.sew.core.domain.model.sdlc.*;
 
 public class ResolvedInputs implements PointerResolver {
 
+  private final NaturalLanguage language = new English();
   private final Map<String, List<? extends NamedObject>> values = new HashMap<>();
 
   public void put(String name, List<? extends NamedObject> resolved) {
@@ -19,7 +21,7 @@ public class ResolvedInputs implements PointerResolver {
   }
 
   public <T extends NamedObject> List<T> get(Class<T> type) {
-    return get(initLower(English.plural(type.getSimpleName())), type);
+    return get(initLower(language.plural(type.getSimpleName())), type);
   }
 
   public <T extends NamedObject> List<T> get(String name, Class<T> type) {
@@ -36,7 +38,7 @@ public class ResolvedInputs implements PointerResolver {
     if (type == null) {
       return new UnresolvedObject(new FullyQualifiedName(pointer.getId()), null);
     }
-    var candidates = values.get(English.plural(type));
+    var candidates = values.get(language.plural(type));
     var resolvedObject = pointer.resolveFrom(candidates);
     if (resolvedObject.isPresent()) {
       return resolvedObject.get();

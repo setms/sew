@@ -15,7 +15,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import lombok.Getter;
-import org.atteo.evo.inflector.English;
+import org.setms.sew.core.domain.model.nlp.English;
+import org.setms.sew.core.domain.model.nlp.NaturalLanguage;
 
 public class DesignStructureMatrix<E> {
 
@@ -23,6 +24,7 @@ public class DesignStructureMatrix<E> {
   private static final String SEPARATOR = "|";
   private static final String NL = System.lineSeparator();
 
+  private final NaturalLanguage language = new English();
   @Getter private final List<E> elements = new ArrayList<>();
   private final Map<E, Map<E, Double>> interactionWeights = new HashMap<>();
 
@@ -74,7 +76,7 @@ public class DesignStructureMatrix<E> {
     if (!unknown.isEmpty()) {
       throw new IllegalArgumentException(
           "Unknown %s can't be removed from DSM: %s"
-              .formatted(English.plural("element", unknown.size()), String.join(", ", unknown)));
+              .formatted(language.plural("element", unknown.size()), String.join(", ", unknown)));
     }
     var newElements = new LinkedHashSet<>(this.elements);
     toRemove.forEach(newElements::remove);
@@ -152,5 +154,4 @@ public class DesignStructureMatrix<E> {
     }
     text.append(NL);
   }
-
 }

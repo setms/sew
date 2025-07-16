@@ -16,7 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.atteo.evo.inflector.English;
+import org.setms.sew.core.domain.model.nlp.English;
 import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
 import org.setms.sew.core.domain.model.sdlc.HasType;
 import org.setms.sew.core.domain.model.sdlc.NamedObject;
@@ -84,6 +84,7 @@ public class Scenario extends NamedObject {
 
   @Override
   public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    var language = new English();
     var prev = new AtomicReference<>(steps.getFirst());
     steps.stream()
         .skip(1)
@@ -97,9 +98,9 @@ public class Scenario extends NamedObject {
                         ERROR,
                         "%s can't %s %s"
                             .formatted(
-                                initUpper(English.plural(previous.getType())),
+                                initUpper(language.plural(previous.getType())),
                                 VERBS.getOrDefault(step.getType(), "precede"),
-                                English.plural(step.getType())),
+                                language.plural(step.getType())),
                         location.plus("steps", steps, step)));
               }
               prev.set(step);

@@ -66,8 +66,8 @@ public class English implements NaturalLanguage {
   }
 
   @Override
-  public String plural(String noun) {
-    return org.atteo.evo.inflector.English.plural(noun);
+  public String plural(String noun, int count) {
+    return org.atteo.evo.inflector.English.plural(noun, count);
   }
 
   @Override

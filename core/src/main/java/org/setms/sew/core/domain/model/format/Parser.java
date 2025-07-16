@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.atteo.evo.inflector.English;
+import org.setms.sew.core.domain.model.nlp.English;
 import org.setms.sew.core.domain.model.sdlc.*;
 import org.setms.sew.core.domain.model.tool.Glob;
 import org.setms.sew.core.domain.model.tool.InputSource;
@@ -126,9 +126,10 @@ public interface Parser {
   }
 
   default boolean matchesName(String name, String candidate) {
+    var language = new English();
     return name.equalsIgnoreCase(candidate)
-        || name.equalsIgnoreCase(English.plural(candidate))
-        || English.plural(name).equalsIgnoreCase(candidate);
+        || name.equalsIgnoreCase(language.plural(candidate))
+        || language.plural(name).equalsIgnoreCase(candidate);
   }
 
   default void setProperty(String name, Object targetValue, Object target) {
