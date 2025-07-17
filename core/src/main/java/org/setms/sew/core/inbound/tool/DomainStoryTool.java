@@ -145,7 +145,7 @@ public class DomainStoryTool extends Tool {
                 case "people" ->
                     addActor(
                         part,
-                        "material/people",
+                        "material/group",
                         actorNodesByName,
                         vertexTexts,
                         height,
