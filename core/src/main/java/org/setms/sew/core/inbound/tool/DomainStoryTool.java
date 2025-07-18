@@ -167,7 +167,7 @@ public class DomainStoryTool extends Tool {
                         "%s%s"
                             .formatted(
                                 firstActivity.getAndSet(false) ? "(%d)%n".formatted(index + 1) : "",
-                                toFriendlyName(part.getId())));
+                                initLower(toFriendlyName(part.getId()))));
                 case "workObject" ->
                     addVertex(
                         part,
