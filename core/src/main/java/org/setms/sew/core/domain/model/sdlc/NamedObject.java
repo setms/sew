@@ -6,6 +6,7 @@ import static org.setms.sew.core.domain.model.format.Strings.toFriendlyName;
 import jakarta.validation.Valid;
 import java.util.Collection;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.sew.core.domain.model.validation.Diagnostic;
 import org.setms.sew.core.domain.model.validation.Location;
@@ -14,7 +15,7 @@ import org.setms.sew.core.domain.model.validation.Location;
 @EqualsAndHashCode
 public abstract class NamedObject implements Comparable<NamedObject> {
 
-  @Valid private final FullyQualifiedName fullyQualifiedName;
+  @Getter @Valid private final FullyQualifiedName fullyQualifiedName;
 
   public String type() {
     return initLower(getClass().getSimpleName());

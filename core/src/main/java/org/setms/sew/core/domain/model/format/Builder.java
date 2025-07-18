@@ -15,7 +15,8 @@ import org.setms.sew.core.domain.model.tool.OutputSink;
 
 public interface Builder {
 
-  List<String> IGNORABLE_GETTERS = List.of("getClass", "getPackage", "getName");
+  List<String> IGNORABLE_GETTERS =
+      List.of("getClass", "getFullyQualifiedName", "getPackage", "getName");
 
   default void build(RootObject root, File file) throws IOException {
     try (var writer = new PrintWriter(file)) {
