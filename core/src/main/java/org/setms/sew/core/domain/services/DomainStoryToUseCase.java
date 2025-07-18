@@ -21,10 +21,19 @@ public class DomainStoryToUseCase {
   private final NaturalLanguage language = new English();
 
   public UseCase createUseCaseFrom(DomainStory domainStory) {
-    return new UseCase(new FullyQualifiedName(domainStory.getPackage(), domainStory.getName()))
-        .setTitle("TODO")
-        .setDescription("TODO")
-        .setScenarios(List.of(toScenario(domainStory)));
+    return addScenarioFrom(
+        domainStory,
+        new UseCase(new FullyQualifiedName(domainStory.getPackage(), domainStory.getName()))
+            .setTitle("TODO")
+            .setDescription("TODO")
+            .setScenarios(emptyList()));
+  }
+
+  public UseCase addScenarioFrom(DomainStory domainStory, UseCase source) {
+    var scenarios = new ArrayList<>(source.getScenarios());
+    scenarios.add(toScenario(domainStory));
+    source.setScenarios(scenarios);
+    return source;
   }
 
   private Scenario toScenario(DomainStory domainStory) {

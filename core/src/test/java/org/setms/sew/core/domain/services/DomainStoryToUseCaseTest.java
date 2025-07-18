@@ -90,4 +90,47 @@ class DomainStoryToUseCaseTest {
                                     new Pointer("aggregate", "Tickets"),
                                     new Pointer("event", "TicketSold"))))));
   }
+
+  @Test
+  void shouldAddScenarioToUseCase() {
+    var useCase =
+        new UseCase(new FullyQualifiedName("iguana.Jaguar"))
+            .setTitle("Koala")
+            .setDescription("Leopard")
+            .setScenarios(
+                List.of(
+                    new Scenario(new FullyQualifiedName("iguana.Mule"))
+                        .setSteps(List.of(new Pointer("hotspot", "Nightingale")))));
+    var domainStory =
+        new DomainStory(new FullyQualifiedName("iguana.Opossum"))
+            .setDescription("parrot")
+            .setSentences(
+                List.of(
+                    new Sentence(new FullyQualifiedName("iguana.Sentence1"))
+                        .setParts(
+                            List.of(
+                                new Pointer("person", "Quetzal"),
+                                new Pointer("activity", "Rhino"),
+                                new Pointer("workObject", "Snake")))));
+
+    var actual = converter.addScenarioFrom(domainStory, useCase);
+
+    assertThat(actual)
+        .isEqualTo(
+            new UseCase(new FullyQualifiedName("iguana.Jaguar"))
+                .setTitle("Koala")
+                .setDescription("Leopard")
+                .setScenarios(
+                    List.of(
+                        new Scenario(new FullyQualifiedName("iguana.Mule"))
+                            .setSteps(List.of(new Pointer("hotspot", "Nightingale"))),
+                        new Scenario(new FullyQualifiedName("iguana.Opossum"))
+                            .setElaborates(domainStory.pointerTo())
+                            .setSteps(
+                                List.of(
+                                    new Pointer("user", "Quetzal"),
+                                    new Pointer("command", "RhinoSnake"),
+                                    new Pointer("aggregate", "Snakes"),
+                                    new Pointer("event", "SnakeRhinoed"))))));
+  }
 }

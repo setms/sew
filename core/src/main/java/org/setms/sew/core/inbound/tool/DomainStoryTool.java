@@ -1,5 +1,6 @@
 package org.setms.sew.core.inbound.tool;
 
+import static java.util.function.Predicate.not;
 import static org.setms.sew.core.domain.model.format.Strings.initLower;
 import static org.setms.sew.core.domain.model.format.Strings.toFriendlyName;
 import static org.setms.sew.core.domain.model.validation.Level.WARN;
@@ -13,6 +14,9 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
+import org.setms.sew.core.domain.model.sdlc.FullyQualifiedName;
+import org.setms.sew.core.domain.model.sdlc.NamedObject;
 import org.setms.sew.core.domain.model.sdlc.Pointer;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.domainstory.Sentence;
@@ -273,8 +277,21 @@ public class DomainStoryTool extends Tool {
               WARN,
               "Not elaborated in use case scenario",
               new Location(domainStory),
-              new Suggestion(CREATE_USE_CASE_SCENARIO, "Create use case with scenario")));
+              elaborationSuggestions(useCases)));
     }
+  }
+
+  private List<Suggestion> elaborationSuggestions(Collection<UseCase> useCases) {
+    return Stream.concat(
+            Stream.of(new Suggestion(CREATE_USE_CASE_SCENARIO, "Elaborate in new use case")),
+            useCases.stream()
+                .map(NamedObject::getFullyQualifiedName)
+                .map(
+                    name ->
+                        new Suggestion(
+                            "%s.%s".formatted(CREATE_USE_CASE_SCENARIO, name),
+                            "Elaborate in use case %s".formatted(name))))
+        .toList();
   }
 
   @Override
@@ -284,22 +301,50 @@ public class DomainStoryTool extends Tool {
       Location location,
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
-    if (CREATE_USE_CASE_SCENARIO.equals(suggestionCode)) {
+    if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
       findDomainStory(inputs, location)
-          .ifPresent(domainStory -> createUseCaseFrom(domainStory, sink, diagnostics));
+          .ifPresent(
+              domainStory ->
+                  elaborateInUseCase(
+                      domainStory,
+                      extractUseCaseNameFrom(suggestionCode)
+                          .flatMap(name -> find(inputs.get(UseCase.class), name)),
+                      sink,
+                      diagnostics));
     } else {
       super.apply(suggestionCode, inputs, location, sink, diagnostics);
     }
+  }
+
+  private Optional<FullyQualifiedName> extractUseCaseNameFrom(String suggestionCode) {
+    return Optional.of(suggestionCode)
+        .map(code -> code.substring(CREATE_USE_CASE_SCENARIO.length()))
+        .filter(not(String::isEmpty))
+        .map(code -> code.substring(1))
+        .map(FullyQualifiedName::new);
+  }
+
+  private Optional<UseCase> find(Collection<UseCase> useCases, FullyQualifiedName name) {
+    return useCases.stream()
+        .filter(useCase -> useCase.getFullyQualifiedName().equals(name))
+        .findFirst();
   }
 
   private Optional<DomainStory> findDomainStory(ResolvedInputs inputs, Location location) {
     return inputs.get(DomainStory.class).stream().filter(location::isInside).findFirst();
   }
 
-  private void createUseCaseFrom(
-      DomainStory domainStory, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  private void elaborateInUseCase(
+      DomainStory domainStory,
+      Optional<UseCase> source,
+      OutputSink sink,
+      Collection<Diagnostic> diagnostics) {
     try {
-      var useCase = new DomainStoryToUseCase().createUseCaseFrom(domainStory);
+      var converter = new DomainStoryToUseCase();
+      var useCase =
+          source
+              .map(uc -> converter.addScenarioFrom(domainStory, uc))
+              .orElseGet(() -> converter.createUseCaseFrom(domainStory));
       var useCaseSink = sinkFor(useCase, sink);
       try (var output = useCaseSink.open()) {
         new SalFormat().newBuilder().build(useCase, output);
