@@ -49,7 +49,6 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       description = "TODO: Add description and sentences."
       granularity = fine
       pointInTime = tobe
-      purity = pure
     }
 
     sentence {
