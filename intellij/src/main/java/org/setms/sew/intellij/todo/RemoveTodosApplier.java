@@ -3,7 +3,7 @@ package org.setms.sew.intellij.todo;
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Location;
 
 public class RemoveTodosApplier extends BaseChangeApplier {
 

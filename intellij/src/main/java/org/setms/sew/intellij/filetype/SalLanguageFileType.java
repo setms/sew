@@ -1,9 +1,9 @@
 package org.setms.sew.intellij.filetype;
 
-import static org.setms.sew.core.domain.model.format.Strings.initLower;
+import static org.setms.km.domain.model.format.Strings.initLower;
 
 import javax.swing.Icon;
-import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.sew.intellij.lang.sal.SalLanguage;
 import org.setms.sew.intellij.lang.sal.SalParserDefinition;
 

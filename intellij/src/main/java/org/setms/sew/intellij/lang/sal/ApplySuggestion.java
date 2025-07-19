@@ -12,10 +12,10 @@ import com.intellij.psi.PsiManager;
 import com.intellij.util.IncorrectOperationException;
 import java.io.File;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.domain.model.tool.Suggestion;
-import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.domain.model.validation.Location;
-import org.setms.sew.core.outbound.tool.file.FileOutputSink;
+import org.setms.km.domain.model.tool.Suggestion;
+import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.validation.Location;
+import org.setms.km.outbound.tool.file.FileOutputSink;
 import org.setms.sew.intellij.tool.ToolRunner;
 import org.setms.sew.intellij.tool.VirtualFileInputSource;
 

@@ -1,7 +1,7 @@
 package org.setms.sew.intellij.tool;
 
-import static org.setms.sew.core.domain.model.validation.Level.ERROR;
-import static org.setms.sew.core.domain.model.validation.Level.INFO;
+import static org.setms.km.domain.model.validation.Level.ERROR;
+import static org.setms.km.domain.model.validation.Level.INFO;
 
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
@@ -14,10 +14,10 @@ import com.intellij.psi.PsiDocumentManager;
 import java.io.File;
 import java.net.URI;
 import java.util.Objects;
-import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.domain.model.validation.Diagnostic;
-import org.setms.sew.core.domain.model.validation.Location;
-import org.setms.sew.core.outbound.tool.file.FileOutputSink;
+import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
+import org.setms.km.outbound.tool.file.FileOutputSink;
 
 public class ToolRunner {
 

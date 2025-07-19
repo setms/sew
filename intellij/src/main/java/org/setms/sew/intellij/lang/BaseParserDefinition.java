@@ -10,9 +10,8 @@ import com.intellij.psi.PsiFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.sew.intellij.filetype.BaseLanguageFileType;
 
 public abstract class BaseParserDefinition implements ParserDefinition {

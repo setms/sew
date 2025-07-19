@@ -1,0 +1,63 @@
+plugins {
+    id 'antlr'
+    alias libs.plugins.lombok
+}
+
+dependencies {
+    antlr libs.bundles.antlr
+
+    implementation project(':km')
+
+    implementation libs.bundles.antlr.runtime
+    implementation libs.bundles.classgraph
+    implementation libs.bundles.language
+    implementation libs.bundles.slf4f
+    implementation libs.bundles.validation
+    implementation libs.bundles.visualization
+
+    runtimeOnly libs.bundles.validation.runtime
+
+    testImplementation libs.bundles.junit
+    testRuntimeOnly libs.bundles.junit.runtime
+}
+
+def antlrDir = file("src/main/antlr")
+def langDir = layout.buildDirectory.dir("generated-src")
+def langPackageDir = langDir.map { it.dir("org/setms/sew/lang") }
+
+antlrDir.listFiles(new FilenameFilter() {
+    boolean accept(File dir, String name) {
+        return name.endsWith(".g4")
+    }
+})?.each { File grammarFile ->
+    def baseName = grammarFile.name[0..-4] // strip extension
+    def taskName = "generate${baseName}Parser".toString()
+    def subDir = baseName.toLowerCase()
+    def packageName = "org.setms.sew.lang.$subDir".toString()
+
+    tasks.register(taskName, AntlrTask) {
+        description = "Generates parser for ${grammarFile.name}"
+        group = "antlr"
+        source = fileTree(antlrDir) {
+            include grammarFile.name
+        }
+        outputDirectory = langPackageDir.map { it.dir(subDir) }.get().asFile
+        arguments += ['-package', packageName]
+    }
+
+    tasks.named("compileJava").configure {
+        dependsOn(taskName)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir langDir
+        }
+    }
+}
+
+tasks.named('generateGrammarSource') {
+    enabled = false
+}

@@ -10,11 +10,11 @@ import javax.swing.Icon;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.sew.intellij.lang.LanguageFile;
 
 public abstract class BaseLanguageFileType extends LanguageFileType {
-  
+
   private final String name;
   private final String description;
   private final String extension;

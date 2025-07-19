@@ -11,7 +11,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.Tool;
 
 public abstract class EditorWithPreviewProvider implements FileEditorProvider, DumbAware {
 

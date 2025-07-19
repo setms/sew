@@ -2,4 +2,5 @@ package gdpr
 
 aggregate Requests {
   display = "Requests"
+  root    = entity(Request)
 }

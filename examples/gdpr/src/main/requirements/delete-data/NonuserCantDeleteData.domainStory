@@ -18,7 +18,7 @@ sentence {
         activity(Compares),
         workObject(Request, icon=material(Delete)),
         activity(With),
-        workObject(Users, icon=material(People))
+        workObject(Users, icon=material(Group))
     ]
 }
 

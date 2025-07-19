@@ -2,7 +2,7 @@ package org.setms.sew.intellij.lang.sal;
 
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
-import static org.setms.sew.core.domain.model.format.Strings.initUpper;
+import static org.setms.km.domain.model.format.Strings.initUpper;
 import static org.setms.sew.intellij.lang.sal.SalElementTypes.*;
 
 import com.intellij.lang.annotation.AnnotationHolder;
@@ -18,8 +18,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.sew.intellij.filetype.SalLanguageFileType;
 import org.setms.sew.intellij.lang.LevelSeverity;
 import org.setms.sew.intellij.tool.VirtualFileInputSource;

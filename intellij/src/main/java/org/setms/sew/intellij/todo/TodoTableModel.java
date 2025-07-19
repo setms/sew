@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-import org.setms.sew.core.domain.model.sdlc.process.Todo;
+import org.setms.km.domain.model.collaboration.Todo;
 
 class TodoTableModel extends AbstractTableModel {
 

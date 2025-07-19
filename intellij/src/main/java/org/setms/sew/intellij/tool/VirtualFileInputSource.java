@@ -19,11 +19,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import org.setms.sew.core.domain.model.tool.Glob;
-import org.setms.sew.core.domain.model.tool.InputSource;
-import org.setms.sew.core.domain.model.tool.OutputSink;
-import org.setms.sew.core.domain.model.tool.Tool;
-import org.setms.sew.core.outbound.tool.file.FileOutputSink;
+import org.setms.km.domain.model.tool.Glob;
+import org.setms.km.domain.model.tool.InputSource;
+import org.setms.km.domain.model.tool.OutputSink;
+import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.outbound.tool.file.FileOutputSink;
 
 public class VirtualFileInputSource implements InputSource {
 
