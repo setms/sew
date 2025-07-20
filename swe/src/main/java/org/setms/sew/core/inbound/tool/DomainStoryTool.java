@@ -21,6 +21,7 @@ import org.setms.km.domain.model.artifact.Pointer;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.domainstory.Sentence;
@@ -277,7 +278,7 @@ public class DomainStoryTool extends Tool {
           new Diagnostic(
               WARN,
               "Not elaborated in use case scenario",
-              new Location(domainStory),
+              domainStory.toLocation(),
               elaborationSuggestions(useCases)));
     }
   }
@@ -332,7 +333,9 @@ public class DomainStoryTool extends Tool {
   }
 
   private Optional<DomainStory> findDomainStory(ResolvedInputs inputs, Location location) {
-    return inputs.get(DomainStory.class).stream().filter(location::isInside).findFirst();
+    return inputs.get(DomainStory.class).stream()
+        .filter(domainStory -> domainStory.starts(location))
+        .findFirst();
   }
 
   private void elaborateInUseCase(

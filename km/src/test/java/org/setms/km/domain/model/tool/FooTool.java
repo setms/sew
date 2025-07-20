@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Suggestion;
 
 class FooTool extends Tool {
 

@@ -52,7 +52,7 @@ public class ModulesTool extends Tool {
         .get(Modules.class)
         .forEach(
             modules -> {
-              var location = new Location(modules);
+              var location = modules.toLocation();
               if (modules.getMappedTo() == null) {
                 diagnostics.add(new Diagnostic(ERROR, "Must map to domain", location));
               } else {
@@ -77,15 +77,16 @@ public class ModulesTool extends Tool {
         .forEach(
             module -> {
               if (module.getMappedTo() == null) {
+                Location location = modules.toLocation();
                 diagnostics.add(
-                    new Diagnostic(
-                        ERROR, "Must map to subdomain", new Location(modules).plus(module)));
+                    new Diagnostic(ERROR, "Must map to subdomain", module.appendTo(location)));
               } else if (module.getMappedTo().resolveFrom(domain.getSubdomains()).isEmpty()) {
+                Location location = modules.toLocation();
                 diagnostics.add(
                     new Diagnostic(
                         ERROR,
                         "Unknown subdomain %s".formatted(module.getMappedTo().getId()),
-                        new Location(modules).plus(module)));
+                        module.appendTo(location)));
               }
             });
   }

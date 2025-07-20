@@ -7,7 +7,6 @@ import static lombok.AccessLevel.PRIVATE;
 import jakarta.validation.Validator;
 import java.util.ArrayList;
 import lombok.NoArgsConstructor;
-import org.setms.km.domain.model.artifact.Artifact;
 
 @NoArgsConstructor(access = PRIVATE)
 public class Validation {
@@ -29,9 +28,9 @@ public class Validation {
     if (!violations.isEmpty()) {
       throw new IllegalArgumentException(violations);
     }
-    if (instance instanceof Artifact namedObject) {
+    if (instance instanceof Validatable validatable) {
       var diagnostics = new ArrayList<Diagnostic>();
-      namedObject.validate(new Location(namedObject), diagnostics);
+      validatable.validate(validatable.toLocation(), diagnostics);
       if (!diagnostics.isEmpty()) {
         throw new ValidationException(diagnostics);
       }

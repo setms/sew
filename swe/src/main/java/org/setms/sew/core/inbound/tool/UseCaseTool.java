@@ -33,10 +33,10 @@ import org.setms.km.domain.model.nlp.NaturalLanguage;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Suggestion;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
@@ -113,11 +113,12 @@ public class UseCaseTool extends Tool {
 
   private void validateUseCase(
       UseCase useCase, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var location = new Location(useCase);
+    var location = useCase.toLocation();
     useCase
         .getScenarios()
         .forEach(
-            scenario -> validateScenario(location.plus(scenario), scenario, inputs, diagnostics));
+            scenario ->
+                validateScenario(scenario.appendTo(location), scenario, inputs, diagnostics));
   }
 
   private void validateScenario(
@@ -225,11 +226,12 @@ public class UseCaseTool extends Tool {
     if (acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(step::equals)) {
       var scenario =
           useCase.scenarios().filter(s -> s.getSteps().contains(step)).findFirst().orElseThrow();
+      Location location = useCase.toLocation();
       diagnostics.add(
           new Diagnostic(
               WARN,
               "Missing acceptance test for %s %s".formatted(step.getType(), step.getId()),
-              new Location(useCase).plus(scenario).plus("steps", scenario.getSteps(), step),
+              scenario.appendTo(location).plus("steps", scenario.getSteps(), step),
               List.of(new Suggestion(CREATE_ACCEPTANCE_TEST, "Create acceptance test"))));
     }
   }
@@ -275,7 +277,7 @@ public class UseCaseTool extends Tool {
       OutputSink sink,
       Collection<Diagnostic> diagnostics) {
     inputs.get(UseCase.class).stream()
-        .filter(location::isInside)
+        .filter(useCase -> useCase.starts(location))
         .flatMap(UseCase::scenarios)
         .filter(scenario -> scenario.getName().equals(location.segments().get(4)))
         .map(Scenario::getElaborates)
@@ -900,7 +902,7 @@ public class UseCaseTool extends Tool {
       if (location.segments().size() < 5) {
         return Optional.empty();
       }
-      var useCase = useCases.stream().filter(location::isInside).findFirst();
+      var useCase = useCases.stream().filter(candidate -> candidate.starts(location)).findFirst();
       if (useCase.isEmpty()) {
         return Optional.empty();
       }

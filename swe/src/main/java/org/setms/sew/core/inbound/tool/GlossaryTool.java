@@ -19,7 +19,6 @@ import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
@@ -54,7 +53,7 @@ public class GlossaryTool extends Tool {
           new Diagnostic(
               ERROR,
               "Term '%s' refers to unknown term '%s'".formatted(term.getName(), pointer.getId()),
-              new Location(term)));
+                  term.toLocation()));
     }
   }
 

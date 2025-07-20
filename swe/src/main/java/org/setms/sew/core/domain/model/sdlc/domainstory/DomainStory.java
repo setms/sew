@@ -37,13 +37,15 @@ public class DomainStory extends Artifact {
 
   public Purity purity() {
     return sentences.stream()
-        .map(Sentence::getParts)
-        .flatMap(Collection::stream)
-        .anyMatch(Pointer.testType("computerSystem")) ? DIGITIALIZED : PURE;
+            .map(Sentence::getParts)
+            .flatMap(Collection::stream)
+            .anyMatch(Pointer.testType("computerSystem"))
+        ? DIGITIALIZED
+        : PURE;
   }
 
   @Override
   public void validate(Location location, Collection<Diagnostic> diagnostics) {
-    sentences.forEach(sentence -> sentence.validate(location.plus(sentence), diagnostics));
+    sentences.forEach(sentence -> sentence.validate(sentence.appendTo(location), diagnostics));
   }
 }

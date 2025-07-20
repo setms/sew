@@ -17,10 +17,10 @@ import org.setms.km.domain.model.artifact.Pointer;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Suggestion;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
@@ -85,15 +85,15 @@ public class StakeholdersTool extends Tool {
                 scenario
                     .getSteps()
                     .forEach(
-                        step ->
-                            validateStepUsers(
-                                new Location(useCase)
-                                    .plus(scenario)
-                                    .plus("steps", scenario.getSteps(), step),
-                                step,
-                                users,
-                                owners,
-                                diagnostics)));
+                        step -> {
+                          Location location = useCase.toLocation();
+                          validateStepUsers(
+                              scenario.appendTo(location).plus("steps", scenario.getSteps(), step),
+                              step,
+                              users,
+                              owners,
+                              diagnostics);
+                        }));
   }
 
   private void validateStepUsers(

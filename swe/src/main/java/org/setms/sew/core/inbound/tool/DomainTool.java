@@ -36,10 +36,10 @@ import org.setms.km.domain.model.artifact.Pointer;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Suggestion;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.architecture.Module;
 import org.setms.sew.core.domain.model.sdlc.architecture.Modules;
@@ -285,7 +285,7 @@ public class DomainTool extends Tool {
           new Diagnostic(
               WARN,
               "Subdomains aren't mapped to modules",
-              new Location(domain),
+              domain.toLocation(),
               List.of(new Suggestion(CREATE_MODULES, "Map to modules"))));
     }
   }
@@ -334,7 +334,10 @@ public class DomainTool extends Tool {
   }
 
   private List<Modules> mapDomainToModules(List<Domain> domains, Location location) {
-    return domains.stream().filter(location::isInside).map(this::mapDomainToModules).toList();
+    return domains.stream()
+        .filter(domain -> domain.starts(location))
+        .map(this::mapDomainToModules)
+        .toList();
   }
 
   private Modules mapDomainToModules(Domain domain) {

@@ -2,7 +2,6 @@ package org.setms.km.domain.model.validation;
 
 import java.util.Arrays;
 import java.util.SequencedCollection;
-import org.setms.km.domain.model.tool.Suggestion;
 
 public record Diagnostic(
     Level level, String message, Location location, SequencedCollection<Suggestion> suggestions) {

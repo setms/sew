@@ -28,6 +28,6 @@ public class Entity extends Artifact {
 
   @Override
   public void validate(Location location, Collection<Diagnostic> diagnostics) {
-    fields.forEach(field -> field.validate(location.plus(field), diagnostics));
+    fields.forEach(field -> field.validate(field.appendTo(location), diagnostics));
   }
 }

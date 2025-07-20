@@ -38,6 +38,6 @@ public class UseCase extends Artifact {
 
   @Override
   public void validate(Location location, Collection<Diagnostic> diagnostics) {
-    scenarios.forEach(scenario -> scenario.validate(location.plus(scenario), diagnostics));
+    scenarios.forEach(scenario -> scenario.validate(scenario.appendTo(location), diagnostics));
   }
 }
