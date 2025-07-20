@@ -1,0 +1,33 @@
+package sew
+
+domainStory SoftwareEngineeringWorkbench {
+  description = "Applying science in developing software."
+}
+
+sentence {
+  parts = [
+    people(Scientists),
+    activity(Develop),
+    workObject(ScientificTheories, icon=material(Function))
+  ]
+}
+
+sentence {
+  parts = [
+    people(ToolBuilders),
+    activity(Use),
+    workObject(ScientificTheories, icon=material(Function)),
+    activity(ToBuild),
+    workObject(Tools, icon=material(Construction))
+  ]
+}
+
+sentence {
+  parts = [
+    people(SoftwareDevelopmentTeam),
+    activity(Uses),
+    workObject(Tools, icon=material(Construction)),
+    activity(ToDevelop),
+    workObject(Software, icon=material(DeployedCode))
+  ]
+}
