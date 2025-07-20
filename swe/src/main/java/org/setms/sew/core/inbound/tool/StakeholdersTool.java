@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -98,7 +98,7 @@ public class StakeholdersTool extends Tool {
 
   private void validateStepUsers(
       Location location,
-      Pointer step,
+      Link step,
       List<User> users,
       List<Owner> owners,
       Collection<Diagnostic> diagnostics) {

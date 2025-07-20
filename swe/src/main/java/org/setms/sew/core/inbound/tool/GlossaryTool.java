@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
 import lombok.extern.slf4j.Slf4j;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -43,17 +43,17 @@ public class GlossaryTool extends Tool {
         term ->
             Optional.ofNullable(term.getSeeAlso()).stream()
                 .flatMap(Collection::stream)
-                .forEach(pointer -> validateSeeAlso(term, pointer, terms, diagnostics)));
+                .forEach(link -> validateSeeAlso(term, link, terms, diagnostics)));
   }
 
   private void validateSeeAlso(
-      Term term, Pointer pointer, Collection<Term> candidates, Collection<Diagnostic> diagnostics) {
-    if (pointer.resolveFrom(candidates).isEmpty()) {
+      Term term, Link link, Collection<Term> candidates, Collection<Diagnostic> diagnostics) {
+    if (link.resolveFrom(candidates).isEmpty()) {
       diagnostics.add(
           new Diagnostic(
               ERROR,
-              "Term '%s' refers to unknown term '%s'".formatted(term.getName(), pointer.getId()),
-                  term.toLocation()));
+              "Term '%s' refers to unknown term '%s'".formatted(term.getName(), link.getId()),
+              term.toLocation()));
     }
   }
 
@@ -103,7 +103,7 @@ public class GlossaryTool extends Tool {
       writer.printf(
           "%s.%n      ",
           term.getSeeAlso().stream()
-              .map(pointer -> pointer.resolveFrom(terms))
+              .map(link -> link.resolveFrom(terms))
               .flatMap(Optional::stream)
               .map(a -> "<a href=\"#%s\">%s</a>".formatted(a.getName(), a.getDisplay()))
               .collect(joining(", ")));

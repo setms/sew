@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -18,7 +18,7 @@ import org.setms.km.domain.model.artifact.Pointer;
 public class ReadModel extends Artifact {
 
   @NotEmpty private String display;
-  @NotNull private Pointer content;
+  @NotNull private Link content;
 
   public ReadModel(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.format.Parser;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
@@ -59,15 +59,15 @@ class EventStormTest {
         model
             .findSequences(
                 List.of(
-                    Pointer.testType("aggregate"),
-                    new Pointer("event", "Done")::equals,
-                    Pointer.testType("policy")))
+                    Link.testType("aggregate"),
+                    new Link("event", "Done")::equals,
+                    Link.testType("policy")))
             .toList();
 
     assertThat(actual)
         .hasSize(2)
         .map(Sequence::last)
-        .map(Pointer::getId)
+        .map(Link::getId)
         .allSatisfy(id -> assertThat(id).startsWith(POLICY_PREFIX))
         .map(id -> id.substring(POLICY_PREFIX.length()))
         .containsExactlyInAnyOrder("1", "2");

@@ -1,8 +1,8 @@
 package org.setms.sew.core.domain.services;
 
+import static org.setms.km.domain.model.artifact.Link.testType;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.initUpper;
-import static org.setms.km.domain.model.artifact.Pointer.testType;
 
 import jakarta.validation.constraints.NotEmpty;
 import java.util.ArrayList;
@@ -16,8 +16,8 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
-import org.setms.km.domain.model.artifact.PointerResolver;
+import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.artifact.LinkResolver;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.sew.core.domain.model.sdlc.acceptance.FieldAssignment;
@@ -34,19 +34,19 @@ import org.setms.sew.core.domain.model.sdlc.eventstorming.Event;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
 @RequiredArgsConstructor
-public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
+public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
 
   private final EventStorm eventStorm;
-  private final PointerResolver resolver;
+  private final LinkResolver resolver;
   private final String packageName;
 
   public CreateAcceptanceTest(
-      String packageName, PointerResolver resolver, Collection<UseCase> useCases) {
+      String packageName, LinkResolver resolver, Collection<UseCase> useCases) {
     this(new EventStorm(useCases), resolver, packageName);
   }
 
   @Override
-  public AcceptanceTest apply(Pointer element) {
+  public AcceptanceTest apply(Link element) {
     var result =
         new AcceptanceTest(
                 new FullyQualifiedName(
@@ -83,11 +83,11 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
   private void addScenariosTo(
       AcceptanceTest test,
       BiConsumer<ResolvedSequence, AcceptanceTest> addScenario,
-      List<Predicate<Pointer>> tests) {
+      List<Predicate<Link>> tests) {
     findSequences(tests).forEach(sequence -> addScenario.accept(sequence, test));
   }
 
-  public Stream<ResolvedSequence> findSequences(List<Predicate<Pointer>> tests) {
+  public Stream<ResolvedSequence> findSequences(List<Predicate<Link>> tests) {
     return eventStorm.findSequences(tests).map(s -> s.resolve(resolver));
   }
 
@@ -96,16 +96,16 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
     var scenario =
         new Scenario(scenarioName(sequence, test.getPackage()))
             .setCommand(
-                pointerToVariable(
+                linkToVariable(
                     ensureVariableFor(test.getVariables(), commandAggregateEvent.getFirst())))
             .setEmitted(
-                pointerToVariable(
+                linkToVariable(
                     ensureVariableFor(test.getVariables(), commandAggregateEvent.getLast())));
     test.getScenarios().add(scenario);
   }
 
-  private Pointer pointerToVariable(Variable<?, ?> variable) {
-    return new Pointer("variable", variable.getName());
+  private Link linkToVariable(Variable<?, ?> variable) {
+    return new Link("variable", variable.getName());
   }
 
   private FullyQualifiedName scenarioName(ResolvedSequence sequence, String packageName) {
@@ -138,7 +138,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
 
   private Variable<?, ?> finalizeCommandVariable(
       ElementVariable variable, Command command, List<Variable<?, ?>> variables) {
-    variable.setType(new Pointer(command));
+    variable.setType(new Link(command));
     if (resolver.resolve(command.getPayload(), "entity") instanceof Entity entity
         && !entity.getFields().isEmpty()) {
       setDefinition(variable, command, entity, variables);
@@ -160,7 +160,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
                     new FieldAssignment(
                             new FullyQualifiedName(entityContainer.getPackage(), field.getName()))
                         .setFieldName(field.getName())
-                        .setValue(pointerToVariable(ensureVariableFor(variables, field)))));
+                        .setValue(linkToVariable(ensureVariableFor(variables, field)))));
     variable.setDefinitions(definitions);
   }
 
@@ -186,7 +186,7 @@ public class CreateAcceptanceTest implements Function<Pointer, AcceptanceTest> {
 
   private ElementVariable finalizeEventVariable(
       ElementVariable variable, Event event, @NotEmpty List<Variable<?, ?>> variables) {
-    variable.setType(new Pointer(event));
+    variable.setType(new Link(event));
     if (resolver.resolve(event.getPayload(), "entity") instanceof Entity entity
         && !entity.getFields().isEmpty()) {
       setDefinition(variable, event, entity, variables);

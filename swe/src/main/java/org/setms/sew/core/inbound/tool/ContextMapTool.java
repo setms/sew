@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.SwingConstants;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -98,11 +98,11 @@ public class ContextMapTool extends Tool {
                 source
                     .dependsOn()
                     .forEach(
-                        pointer ->
+                        link ->
                             addEdge(
                                 domain,
                                 source,
-                                pointer,
+                                link,
                                 verticesBySubdomain,
                                 graph,
                                 edgeLabelPositions)));
@@ -123,12 +123,11 @@ public class ContextMapTool extends Tool {
   private void addEdge(
       Domain domain,
       Subdomain source,
-      Pointer pointer,
+      Link link,
       Map<Subdomain, Object> verticesBySubdomain,
       mxGraph graph,
       Map<mxCell, EdgeLabelPlacement> edgeLabelPositions) {
-    pointer
-        .resolveFrom(domain.getSubdomains())
+    link.resolveFrom(domain.getSubdomains())
         .ifPresent(
             target -> {
               var from = verticesBySubdomain.get(source);

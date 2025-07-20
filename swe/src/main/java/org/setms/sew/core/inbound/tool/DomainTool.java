@@ -32,7 +32,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -118,8 +118,7 @@ public class DomainTool extends Tool {
             source ->
                 source
                     .dependsOn()
-                    .forEach(
-                        pointer -> addEdge(domain, source, pointer, verticesBySubdomain, graph)));
+                    .forEach(link -> addEdge(domain, source, link, verticesBySubdomain, graph)));
   }
 
   private Object addVertex(Subdomain domain, mxGraph graph) {
@@ -137,11 +136,10 @@ public class DomainTool extends Tool {
   private void addEdge(
       Domain domain,
       Subdomain source,
-      Pointer pointer,
+      Link link,
       Map<Subdomain, Object> verticesBySubdomain,
       mxGraph graph) {
-    pointer
-        .resolveFrom(domain.getSubdomains())
+    link.resolveFrom(domain.getSubdomains())
         .ifPresent(
             target -> {
               var from = verticesBySubdomain.get(source);
@@ -268,8 +266,8 @@ public class DomainTool extends Tool {
     pointsBySubdomain.put(subdomain, point);
   }
 
-  private int count(Set<Pointer> content, String type) {
-    return (int) content.stream().filter(p -> p.isType(type)).count();
+  private int count(Set<Link> content, String type) {
+    return (int) content.stream().filter(p -> p.hasType(type)).count();
   }
 
   @Override
@@ -294,7 +292,7 @@ public class DomainTool extends Tool {
     return modules ->
         modules.getModules().stream()
             .map(Module::getMappedTo)
-            .map(Pointer::getId)
+            .map(Link::getId)
             .collect(toSet())
             .equals(domain.getSubdomains().stream().map(Subdomain::getName).collect(toSet()));
   }
@@ -342,7 +340,7 @@ public class DomainTool extends Tool {
 
   private Modules mapDomainToModules(Domain domain) {
     var result = new Modules(getFullyQualifiedName(domain));
-    result.setMappedTo(domain.pointerTo());
+    result.setMappedTo(domain.linkTo());
     result.setModules(domain.getSubdomains().stream().map(this::subdmainToModule).toList());
     return result;
   }
@@ -353,7 +351,7 @@ public class DomainTool extends Tool {
 
   private Module subdmainToModule(Subdomain subdomain) {
     var result = new Module(getFullyQualifiedName(subdomain));
-    result.setMappedTo(subdomain.pointerTo());
+    result.setMappedTo(subdomain.linkTo());
     return result;
   }
 }

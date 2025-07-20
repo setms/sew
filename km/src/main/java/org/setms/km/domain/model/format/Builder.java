@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.workspace.OutputSink;
 
 public interface Builder {
@@ -88,18 +88,17 @@ public interface Builder {
       case Enum enumValue -> new DataEnum(enumValue.name().toLowerCase());
       case Collection<?> collection ->
           new DataList().add(collection.stream().map(this::convert).toList());
-      case Pointer pointer -> {
+      case Link link -> {
         var attributes = new HashMap<String, List<Reference>>();
-        pointer
-            .getAttributes()
+        link.getAttributes()
             .forEach(
-                (key, pointers) ->
+                (key, links) ->
                     attributes.put(
                         key,
-                        pointers.stream()
+                        links.stream()
                             .map(ptr -> new Reference(ptr.getType(), ptr.getId()))
                             .toList()));
-        yield new Reference(pointer.getType(), pointer.getId(), attributes);
+        yield new Reference(link.getType(), link.getId(), attributes);
       }
       case Artifact namedObject -> toNestedObject(namedObject);
       default ->

@@ -11,7 +11,7 @@ import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -24,7 +24,7 @@ public class Aggregate extends Artifact {
 
   @NotNull
   @HasType("entity")
-  private Pointer root;
+  private Link root;
 
   public Aggregate(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

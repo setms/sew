@@ -144,14 +144,14 @@ public class ModulesTool extends Tool {
         .flatMap(
             domain ->
                 Stream.ofNullable(module.getMappedTo())
-                    .map(pointer -> pointer.resolveFrom(domain.getSubdomains()))
+                    .map(link -> link.resolveFrom(domain.getSubdomains()))
                     .flatMap(Optional::stream)
                     .map(Subdomain::dependsOn)
                     .flatMap(Collection::stream)
                     .flatMap(
-                        pointer ->
+                        link ->
                             modules.getModules().stream()
-                                .filter(m -> pointer.equals(m.getMappedTo()))));
+                                .filter(m -> link.equals(m.getMappedTo()))));
   }
 
   private Object addVertex(Module module, mxGraph graph) {

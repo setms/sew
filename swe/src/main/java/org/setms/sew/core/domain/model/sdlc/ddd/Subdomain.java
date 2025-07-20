@@ -11,7 +11,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -21,14 +21,14 @@ import org.setms.km.domain.model.artifact.Pointer;
 public class Subdomain extends Artifact {
 
   private DomainClassification classification;
-  @NotEmpty private Set<Pointer> content;
-  private Set<Pointer> dependsOn;
+  @NotEmpty private Set<Link> content;
+  private Set<Link> dependsOn;
 
   public Subdomain(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 
-  public Set<Pointer> dependsOn() {
+  public Set<Link> dependsOn() {
     return Optional.ofNullable(dependsOn).orElseGet(Collections::emptySet);
   }
 }

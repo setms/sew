@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -19,17 +19,17 @@ import org.setms.km.domain.model.artifact.Pointer;
 public class Scenario extends Artifact {
 
   @HasType("variable")
-  private Pointer init;
+  private Link init;
 
   @NotNull
   @HasType("variable")
-  private Pointer command;
+  private Link command;
 
   @HasType("variable")
-  private Pointer state;
+  private Link state;
 
   @HasType("variable")
-  private Pointer emitted;
+  private Link emitted;
 
   public Scenario(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

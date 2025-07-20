@@ -8,7 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -18,7 +18,7 @@ public class Term extends Artifact {
 
   @NotEmpty private String display;
   @NotEmpty private String description;
-  private List<Pointer> seeAlso;
+  private List<Link> seeAlso;
 
   public Term(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

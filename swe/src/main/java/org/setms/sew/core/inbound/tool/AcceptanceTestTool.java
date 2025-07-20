@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -76,12 +76,12 @@ public class AcceptanceTestTool extends Tool {
         name, format(scenario.getEmitted(), acceptanceTest).orElse("?"));
   }
 
-  private String stateOf(Pointer state, AcceptanceTest acceptanceTest) {
+  private String stateOf(Link state, AcceptanceTest acceptanceTest) {
     return format(state, acceptanceTest).map("contains %s"::formatted).orElse("is empty");
   }
 
-  private Optional<String> format(Pointer variablePointer, AcceptanceTest acceptanceTest) {
-    return Optional.ofNullable(variablePointer)
+  private Optional<String> format(Link linkToVariable, AcceptanceTest acceptanceTest) {
+    return Optional.ofNullable(linkToVariable)
         .flatMap(acceptanceTest::findVariable)
         .map(ElementVariable.class::cast)
         .map(this::format);

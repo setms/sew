@@ -8,7 +8,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ public class Bear extends Artifact {
   private String dingo;
   private List<String> fox;
   private List<Hyena> hyenas;
-  private Pointer leopard;
+  private Link leopard;
   private State state;
   private boolean ok;
 

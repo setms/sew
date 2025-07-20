@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.domainstory.Sentence;
 import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
@@ -25,9 +25,9 @@ class DomainStoryToUseCaseTest {
                     new Sentence(new FullyQualifiedName("ape.Sentence1"))
                         .setParts(
                             List.of(
-                                new Pointer("person", "Dingo"),
-                                new Pointer("activity", "Elephants"),
-                                new Pointer("workObject", "Fox")))));
+                                new Link("person", "Dingo"),
+                                new Link("activity", "Elephants"),
+                                new Link("workObject", "Fox")))));
 
     var actual = converter.createUseCaseFrom(domainStory);
 
@@ -39,13 +39,13 @@ class DomainStoryToUseCaseTest {
                 .setScenarios(
                     List.of(
                         new Scenario(new FullyQualifiedName("ape.Bear"))
-                            .setElaborates(domainStory.pointerTo())
+                            .setElaborates(domainStory.linkTo())
                             .setSteps(
                                 List.of(
-                                    new Pointer("user", "Dingo"),
-                                    new Pointer("command", "ElephantFox"),
-                                    new Pointer("aggregate", "Foxes"),
-                                    new Pointer("event", "FoxElephanted"))))));
+                                    new Link("user", "Dingo"),
+                                    new Link("command", "ElephantFox"),
+                                    new Link("aggregate", "Foxes"),
+                                    new Link("event", "FoxElephanted"))))));
   }
 
   @Test
@@ -57,15 +57,15 @@ class DomainStoryToUseCaseTest {
                     new Sentence(new FullyQualifiedName("giraffe.Sentence1"))
                         .setParts(
                             List.of(
-                                new Pointer("person", "Sam"),
-                                new Pointer("activity", "Buys"),
-                                new Pointer("workObject", "Ticket"))),
+                                new Link("person", "Sam"),
+                                new Link("activity", "Buys"),
+                                new Link("workObject", "Ticket"))),
                     new Sentence(new FullyQualifiedName("giraffe.Sentence2"))
                         .setParts(
                             List.of(
-                                new Pointer("person", "Dean"),
-                                new Pointer("activity", "Sells"),
-                                new Pointer("workObject", "Ticket")))));
+                                new Link("person", "Dean"),
+                                new Link("activity", "Sells"),
+                                new Link("workObject", "Ticket")))));
 
     var actual = converter.createUseCaseFrom(domainStory);
 
@@ -77,18 +77,18 @@ class DomainStoryToUseCaseTest {
                 .setScenarios(
                     List.of(
                         new Scenario(new FullyQualifiedName("giraffe.Hyena"))
-                            .setElaborates(domainStory.pointerTo())
+                            .setElaborates(domainStory.linkTo())
                             .setSteps(
                                 List.of(
-                                    new Pointer("user", "Sam"),
-                                    new Pointer("command", "BuyTicket"),
-                                    new Pointer("aggregate", "Tickets"),
-                                    new Pointer("event", "TicketBought"),
-                                    new Pointer("readModel", "Tickets"),
-                                    new Pointer("user", "Dean"),
-                                    new Pointer("command", "SellTicket"),
-                                    new Pointer("aggregate", "Tickets"),
-                                    new Pointer("event", "TicketSold"))))));
+                                    new Link("user", "Sam"),
+                                    new Link("command", "BuyTicket"),
+                                    new Link("aggregate", "Tickets"),
+                                    new Link("event", "TicketBought"),
+                                    new Link("readModel", "Tickets"),
+                                    new Link("user", "Dean"),
+                                    new Link("command", "SellTicket"),
+                                    new Link("aggregate", "Tickets"),
+                                    new Link("event", "TicketSold"))))));
   }
 
   @Test
@@ -100,7 +100,7 @@ class DomainStoryToUseCaseTest {
             .setScenarios(
                 List.of(
                     new Scenario(new FullyQualifiedName("iguana.Mule"))
-                        .setSteps(List.of(new Pointer("hotspot", "Nightingale")))));
+                        .setSteps(List.of(new Link("hotspot", "Nightingale")))));
     var domainStory =
         new DomainStory(new FullyQualifiedName("iguana.Opossum"))
             .setDescription("parrot")
@@ -109,9 +109,9 @@ class DomainStoryToUseCaseTest {
                     new Sentence(new FullyQualifiedName("iguana.Sentence1"))
                         .setParts(
                             List.of(
-                                new Pointer("person", "Quetzal"),
-                                new Pointer("activity", "Rhino"),
-                                new Pointer("workObject", "Snake")))));
+                                new Link("person", "Quetzal"),
+                                new Link("activity", "Rhino"),
+                                new Link("workObject", "Snake")))));
 
     var actual = converter.addScenarioFrom(domainStory, useCase);
 
@@ -123,14 +123,14 @@ class DomainStoryToUseCaseTest {
                 .setScenarios(
                     List.of(
                         new Scenario(new FullyQualifiedName("iguana.Mule"))
-                            .setSteps(List.of(new Pointer("hotspot", "Nightingale"))),
+                            .setSteps(List.of(new Link("hotspot", "Nightingale"))),
                         new Scenario(new FullyQualifiedName("iguana.Opossum"))
-                            .setElaborates(domainStory.pointerTo())
+                            .setElaborates(domainStory.linkTo())
                             .setSteps(
                                 List.of(
-                                    new Pointer("user", "Quetzal"),
-                                    new Pointer("command", "RhinoSnake"),
-                                    new Pointer("aggregate", "Snakes"),
-                                    new Pointer("event", "SnakeRhinoed"))))));
+                                    new Link("user", "Quetzal"),
+                                    new Link("command", "RhinoSnake"),
+                                    new Link("aggregate", "Snakes"),
+                                    new Link("event", "SnakeRhinoed"))))));
   }
 }

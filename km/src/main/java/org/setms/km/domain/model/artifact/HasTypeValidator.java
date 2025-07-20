@@ -3,7 +3,7 @@ package org.setms.km.domain.model.artifact;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class HasTypeValidator implements ConstraintValidator<HasType, Pointer> {
+public class HasTypeValidator implements ConstraintValidator<HasType, Link> {
 
   private String type;
 
@@ -13,7 +13,7 @@ public class HasTypeValidator implements ConstraintValidator<HasType, Pointer> {
   }
 
   @Override
-  public boolean isValid(Pointer value, ConstraintValidatorContext context) {
-    return value == null || value.isType(type);
+  public boolean isValid(Link value, ConstraintValidatorContext context) {
+    return value == null || value.hasType(type);
   }
 }

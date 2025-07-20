@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ public class Command extends Artifact {
   @NotEmpty private String display;
 
   @HasType("entity")
-  private Pointer payload;
+  private Link payload;
 
   public Command(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

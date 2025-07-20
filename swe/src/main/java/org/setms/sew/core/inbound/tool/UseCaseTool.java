@@ -25,8 +25,8 @@ import org.languagetool.JLanguageTool;
 import org.languagetool.Languages;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
-import org.setms.km.domain.model.artifact.UnresolvedObject;
+import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.artifact.UnresolvedArtifact;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.nlp.NaturalLanguage;
@@ -144,7 +144,7 @@ public class UseCaseTool extends Tool {
       return;
     }
     var resolved = inputs.resolve(scenario.getElaborates());
-    if (resolved instanceof UnresolvedObject) {
+    if (resolved instanceof UnresolvedArtifact) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -156,7 +156,7 @@ public class UseCaseTool extends Tool {
 
   private void validateStepReferences(
       Location location,
-      List<Pointer> steps,
+      List<Link> steps,
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics) {
     steps.forEach(
@@ -181,7 +181,7 @@ public class UseCaseTool extends Tool {
   }
 
   private void validateStepReference(
-      Pointer reference,
+      Link reference,
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics,
       Location stepLocation) {
@@ -220,7 +220,7 @@ public class UseCaseTool extends Tool {
 
   private void validateAcceptanceTestFor(
       UseCase useCase,
-      Pointer step,
+      Link step,
       Collection<AcceptanceTest> acceptanceTests,
       Collection<Diagnostic> diagnostics) {
     if (acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(step::equals)) {
@@ -290,7 +290,7 @@ public class UseCaseTool extends Tool {
   }
 
   private void createDomainStoryFor(
-      Pointer reference, Location location, OutputSink sink, Collection<Diagnostic> diagnostics) {
+      Link reference, Location location, OutputSink sink, Collection<Diagnostic> diagnostics) {
     try {
       var packageName = location.segments().getFirst();
       var domainStory =
@@ -333,7 +333,7 @@ public class UseCaseTool extends Tool {
   }
 
   private void createMissingStep(
-      String packageName, Pointer step, OutputSink output, Collection<Diagnostic> diagnostics) {
+      String packageName, Link step, OutputSink output, Collection<Diagnostic> diagnostics) {
     var type = step.getType();
     var sink = output.select("src/main");
     if ("user".equals(type)) {
@@ -502,8 +502,8 @@ public class UseCaseTool extends Tool {
     return result;
   }
 
-  private Map<Pointer, String> wrappedStepTextsFor(Scenario scenario) {
-    var result = new HashMap<Pointer, String>();
+  private Map<Link, String> wrappedStepTextsFor(Scenario scenario) {
+    var result = new HashMap<Link, String>();
     scenario
         .getSteps()
         .forEach(
@@ -518,15 +518,15 @@ public class UseCaseTool extends Tool {
   }
 
   @SuppressWarnings("StringConcatenationInLoop")
-  private int ensureSameNumberOfLinesFor(Map<Pointer, String> textsByPointer) {
-    var result = textsByPointer.values().stream().mapToInt(this::numLinesIn).max().orElseThrow();
-    textsByPointer.forEach(
-        (pointer, text) -> {
+  private int ensureSameNumberOfLinesFor(Map<Link, String> textsByStep) {
+    var result = textsByStep.values().stream().mapToInt(this::numLinesIn).max().orElseThrow();
+    textsByStep.forEach(
+        (step, text) -> {
           var addLines = result - numLinesIn(text);
           for (var i = 0; i < addLines; i++) {
             text += NL;
           }
-          textsByPointer.put(pointer, text);
+          textsByStep.put(step, text);
         });
     return result;
   }
@@ -536,10 +536,10 @@ public class UseCaseTool extends Tool {
   }
 
   private void addStepToGraph(
-      Pointer step,
+      Link step,
       mxGraph graph,
       int vertexHeight,
-      Map<Pointer, String> stepTexts,
+      Map<Link, String> stepTexts,
       AtomicReference<Object> lastVertex) {
     var to = addVertex(graph, step, vertexHeight, stepTexts);
     var previous = lastVertex.get();
@@ -579,7 +579,7 @@ public class UseCaseTool extends Tool {
   }
 
   private Object addVertex(
-      mxGraph graph, Pointer step, int vertexHeight, Map<Pointer, String> stepTexts) {
+      mxGraph graph, Link step, int vertexHeight, Map<Link, String> stepTexts) {
     var url = getClass().getClassLoader().getResource("eventStorm/" + step.getType() + ".png");
     if (url == null) {
       throw new IllegalArgumentException("Icon not found for " + step.getType());
@@ -595,7 +595,7 @@ public class UseCaseTool extends Tool {
         VERTEX_STYLE.formatted(url.toExternalForm()));
   }
 
-  private List<Sentence> describeSteps(List<Pointer> steps, ResolvedInputs context) {
+  private List<Sentence> describeSteps(List<Link> steps, ResolvedInputs context) {
     var result = new ArrayList<Sentence>();
     var inputs = new ArrayList<Artifact>();
     Optional<Actor> actor = Optional.empty();
@@ -700,7 +700,7 @@ public class UseCaseTool extends Tool {
 
     protected static <T extends Artifact> boolean isType(Artifact object, Class<T> type) {
       return type.isInstance(object)
-          || (object instanceof UnresolvedObject unresolvedObject
+          || (object instanceof UnresolvedArtifact unresolvedObject
               && type.getSimpleName().equals(initUpper(unresolvedObject.type())));
     }
 
@@ -826,7 +826,7 @@ public class UseCaseTool extends Tool {
               friendlyName(
                   action,
                   Event.class,
-                  event -> Optional.ofNullable(event.getPayload()).map(Pointer::getId).orElse(""));
+                  event -> Optional.ofNullable(event.getPayload()).map(Link::getId).orElse(""));
           return "%s responds that the %s.".formatted(getName(), initLower(response));
         }
         return actions.isEmpty() ? null : "%s does nothing.".formatted(getName());
@@ -923,7 +923,7 @@ public class UseCaseTool extends Tool {
           .findFirst();
     }
 
-    Optional<Pointer> getStep() {
+    Optional<Link> getStep() {
       return getScenario().map(Scenario::getSteps).map(steps -> steps.get(stepIndex()));
     }
 

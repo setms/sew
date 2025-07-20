@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
-import org.setms.km.domain.model.artifact.Pointer;
-import org.setms.km.domain.model.artifact.PointerResolver;
+import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.artifact.LinkResolver;
 
-public record Sequence(List<Pointer> items) {
+public record Sequence(List<Link> items) {
 
-  public Sequence(Pointer... items) {
+  public Sequence(Link... items) {
     this(asList(items));
   }
 
@@ -20,19 +20,19 @@ public record Sequence(List<Pointer> items) {
     return items.isEmpty();
   }
 
-  public Pointer first() {
+  public Link first() {
     return items.getFirst();
   }
 
-  public Pointer last() {
+  public Link last() {
     return items.getLast();
   }
 
-  public Sequence until(Pointer item) {
+  public Sequence until(Link item) {
     return new Sequence(items.subList(0, 1 + items.indexOf(item)));
   }
 
-  public Collection<Sequence> subSequencesMatching(List<Predicate<Pointer>> predicates) {
+  public Collection<Sequence> subSequencesMatching(List<Predicate<Link>> predicates) {
     var result = new ArrayList<Sequence>();
     var predicateIndex = 0;
     for (var i = 0; i < items.size(); i++) {
@@ -49,12 +49,12 @@ public record Sequence(List<Pointer> items) {
     return result;
   }
 
-  public ResolvedSequence resolve(PointerResolver resolver) {
+  public ResolvedSequence resolve(LinkResolver resolver) {
     return new ResolvedSequence(items.stream().map(resolver::resolve).toList());
   }
 
   @Override
   public String toString() {
-    return items.stream().map(Pointer::toString).collect(joining(" -> "));
+    return items.stream().map(Link::toString).collect(joining(" -> "));
   }
 }

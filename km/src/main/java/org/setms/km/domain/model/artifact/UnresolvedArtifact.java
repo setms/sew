@@ -2,11 +2,11 @@ package org.setms.km.domain.model.artifact;
 
 import lombok.Getter;
 
-public class UnresolvedObject extends Artifact {
+public class UnresolvedArtifact extends Artifact {
 
   @Getter private final String type;
 
-  public UnresolvedObject(FullyQualifiedName fullyQualifiedName, String type) {
+  public UnresolvedArtifact(FullyQualifiedName fullyQualifiedName, String type) {
     super(fullyQualifiedName);
     this.type = type;
   }

@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -95,26 +95,26 @@ public class DomainStoryTool extends Tool {
     return result;
   }
 
-  private Map<Pointer, String> wrappedVertexTextsFor(List<Sentence> sentences) {
-    var result = new HashMap<Pointer, String>();
+  private Map<Link, String> wrappedVertexTextsFor(List<Sentence> sentences) {
+    var result = new HashMap<Link, String>();
     sentences.forEach(
         sentence ->
             sentence.getParts().stream()
-                .filter(p -> !p.isType("activity"))
+                .filter(p -> !p.hasType("activity"))
                 .forEach(part -> result.put(part, wrap(part.getId(), MAX_TEXT_LENGTH))));
     return result;
   }
 
   @SuppressWarnings("StringConcatenationInLoop")
-  private int ensureSameNumberOfLinesFor(Map<Pointer, String> textsByPointer) {
-    var result = textsByPointer.values().stream().mapToInt(this::numLinesIn).max().orElse(1);
-    textsByPointer.forEach(
-        (pointer, text) -> {
+  private int ensureSameNumberOfLinesFor(Map<Link, String> textsByPart) {
+    var result = textsByPart.values().stream().mapToInt(this::numLinesIn).max().orElse(1);
+    textsByPart.forEach(
+        (part, text) -> {
           var addLines = result - numLinesIn(text);
           for (var i = 0; i < addLines; i++) {
             text += NL;
           }
-          textsByPointer.put(pointer, text);
+          textsByPart.put(part, text);
         });
     return result;
   }
@@ -127,7 +127,7 @@ public class DomainStoryTool extends Tool {
       int index,
       Sentence sentence,
       Map<String, Object> actorNodesByName,
-      Map<Pointer, String> vertexTexts,
+      Map<Link, String> vertexTexts,
       int height,
       mxGraph graph) {
     var firstActivity = new AtomicBoolean(true);
@@ -193,10 +193,10 @@ public class DomainStoryTool extends Tool {
   }
 
   private void addActor(
-      Pointer part,
+      Link part,
       String type,
       Map<String, Object> actorNodesByName,
-      Map<Pointer, String> vertexTexts,
+      Map<Link, String> vertexTexts,
       int height,
       AtomicReference<Object> previousVertex,
       AtomicReference<String> activity,
@@ -211,9 +211,9 @@ public class DomainStoryTool extends Tool {
   }
 
   private Object addVertex(
-      Pointer part,
+      Link part,
       String type,
-      Map<Pointer, String> vertexTexts,
+      Map<Link, String> vertexTexts,
       int height,
       AtomicReference<Object> previousVertex,
       AtomicReference<String> activity,

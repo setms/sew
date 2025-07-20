@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.Enums;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -87,7 +87,7 @@ public interface Parser {
           list.map(item -> convert(name, item, target, validate)).filter(Objects::nonNull).toList();
       case NestedObject object -> createObject(object, name, target, validate);
       case Reference reference -> {
-        var attributes = new HashMap<String, List<Pointer>>();
+        var attributes = new HashMap<String, List<Link>>();
         reference
             .getAttributes()
             .forEach(
@@ -95,9 +95,9 @@ public interface Parser {
                     attributes.put(
                         key,
                         references.stream()
-                            .map(ref -> new Pointer(ref.getType(), ref.getId()))
+                            .map(ref -> new Link(ref.getType(), ref.getId()))
                             .toList()));
-        yield new Pointer(reference.getType(), reference.getId(), attributes);
+        yield new Link(reference.getType(), reference.getId(), attributes);
       }
       default ->
           throw new UnsupportedOperationException(

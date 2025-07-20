@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
@@ -45,8 +45,8 @@ public class EventStorm {
                         }));
   }
 
-  private List<Sequence> precursorsOf(Pointer start) {
-    if (start.isType("event")) {
+  private List<Sequence> precursorsOf(Link start) {
+    if (start.hasType("event")) {
       var result =
           sequences.stream()
               .map(sequence -> sequence.until(start))
@@ -59,7 +59,7 @@ public class EventStorm {
     return List.of(new Sequence());
   }
 
-  public void splitFromReads(Sequence precursor, List<Pointer> steps) {
+  public void splitFromReads(Sequence precursor, List<Link> steps) {
     steps.stream()
         .filter(step -> !step.optAttribute(ATTR_READS).isEmpty())
         .forEach(
@@ -77,8 +77,8 @@ public class EventStorm {
   }
 
   @SafeVarargs
-  private Sequence toSequence(List<Pointer>... sequences) {
-    var items = new ArrayList<Pointer>();
+  private Sequence toSequence(List<Link>... sequences) {
+    var items = new ArrayList<Link>();
     for (var sequence : sequences) {
       if (!items.isEmpty() && items.getLast().equals(sequence.getFirst())) {
         items.addAll(sequence.subList(1, sequence.size()));
@@ -89,7 +89,7 @@ public class EventStorm {
     return new Sequence(items);
   }
 
-  private void splitFromUpdates(Sequence precursor, List<Pointer> steps) {
+  private void splitFromUpdates(Sequence precursor, List<Link> steps) {
     steps.stream()
         .filter(step -> !step.optAttribute(ATTR_UPDATES).isEmpty())
         .forEach(
@@ -104,15 +104,15 @@ public class EventStorm {
             });
   }
 
-  public Set<Pointer> elements() {
+  public Set<Link> elements() {
     return sequences.stream().map(Sequence::items).flatMap(Collection::stream).collect(toSet());
   }
 
   public Stream<Sequence> findSequences(String... types) {
-    return findSequences(Arrays.stream(types).map(Pointer::testType).toList());
+    return findSequences(Arrays.stream(types).map(Link::testType).toList());
   }
 
-  public Stream<Sequence> findSequences(List<Predicate<Pointer>> tests) {
+  public Stream<Sequence> findSequences(List<Predicate<Link>> tests) {
     return sequences.stream()
         .map(s -> s.subSequencesMatching(tests))
         .flatMap(Collection::stream)

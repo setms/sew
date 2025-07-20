@@ -8,7 +8,7 @@ import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -18,7 +18,7 @@ import org.setms.km.domain.model.artifact.Pointer;
 public class Module extends Artifact {
 
   @HasType("subdomain")
-  private Pointer mappedTo;
+  private Link mappedTo;
 
   public Module(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

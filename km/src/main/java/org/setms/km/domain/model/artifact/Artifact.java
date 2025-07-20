@@ -35,8 +35,8 @@ public abstract class Artifact
     return toFriendlyName(getName());
   }
 
-  public Pointer pointerTo() {
-    return new Pointer(type(), getName());
+  public Link linkTo() {
+    return new Link(type(), getName());
   }
 
   @Override

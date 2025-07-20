@@ -12,7 +12,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ import org.setms.km.domain.model.artifact.Pointer;
 @EqualsAndHashCode(callSuper = true)
 public class AcceptanceTest extends Artifact {
 
-  @NotNull private Pointer sut;
+  @NotNull private Link sut;
   @NotEmpty @Valid private List<Variable<?, ?>> variables;
   @NotEmpty @Valid private List<Scenario> scenarios;
 
@@ -29,10 +29,10 @@ public class AcceptanceTest extends Artifact {
     super(fullyQualifiedName);
   }
 
-  public Optional<Variable<?, ?>> findVariable(Pointer variable) {
+  public Optional<Variable<?, ?>> findVariable(Link variable) {
     return Optional.ofNullable(variable)
-        .filter(p -> p.isType("variable"))
-        .map(Pointer::getId)
+        .filter(p -> p.hasType("variable"))
+        .map(Link::getId)
         .flatMap(this::findVariable);
   }
 

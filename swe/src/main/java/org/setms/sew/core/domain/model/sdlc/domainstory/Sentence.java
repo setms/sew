@@ -13,7 +13,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 
@@ -24,7 +24,7 @@ import org.setms.km.domain.model.validation.Location;
 @EqualsAndHashCode(callSuper = true)
 public class Sentence extends Artifact {
 
-  @NotEmpty private List<Pointer> parts;
+  @NotEmpty private List<Link> parts;
   private String annotation;
 
   public Sentence(FullyQualifiedName fullyQualifiedName) {
@@ -51,7 +51,7 @@ public class Sentence extends Artifact {
                 "Actors can only occur at the beginning or end of a sentence",
                 partLocation));
       }
-      if (part.isType("activity") != (i % 2 == 1)) {
+      if (part.hasType("activity") != (i % 2 == 1)) {
         diagnostics.add(
             new Diagnostic(
                 ERROR, "Must separate actors and work objects using activities", partLocation));
@@ -59,7 +59,7 @@ public class Sentence extends Artifact {
     }
   }
 
-  private boolean isActor(Pointer pointer) {
-    return Stream.of("person", "people", "computerSystem").anyMatch(pointer::isType);
+  private boolean isActor(Link link) {
+    return Stream.of("person", "people", "computerSystem").anyMatch(link::hasType);
   }
 }

@@ -11,7 +11,7 @@ import lombok.ToString;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ public class Modules extends Artifact {
 
   @NotNull
   @HasType("domain")
-  private Pointer mappedTo;
+  private Link mappedTo;
 
   @NotEmpty @Valid private Collection<Module> modules;
 

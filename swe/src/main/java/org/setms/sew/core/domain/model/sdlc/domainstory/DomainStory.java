@@ -14,7 +14,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 
@@ -39,7 +39,7 @@ public class DomainStory extends Artifact {
     return sentences.stream()
             .map(Sentence::getParts)
             .flatMap(Collection::stream)
-            .anyMatch(Pointer.testType("computerSystem"))
+            .anyMatch(Link.testType("computerSystem"))
         ? DIGITIALIZED
         : PURE;
   }

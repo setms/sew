@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.format.DataEnum;
 import org.setms.km.domain.model.format.DataList;
 import org.setms.km.domain.model.format.DataString;
@@ -253,7 +253,7 @@ class SalFormatTest {
                 .setFox(List.of("giraffe"))
                 .setHyenas(
                     List.of(new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
-                .setLeopard(new Pointer(null, "mule")));
+                .setLeopard(new Link(null, "mule")));
   }
 
   @Test
@@ -280,7 +280,7 @@ class SalFormatTest {
                 .setFox(List.of("giraffe"))
                 .setHyenas(
                     List.of(new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
-                .setLeopard(new Pointer(null, "mule"))
+                .setLeopard(new Link(null, "mule"))
                 .setOk(true)
                 .setState(State.SUCKS));
   }
@@ -297,7 +297,7 @@ class SalFormatTest {
                     .setHyenas(
                         List.of(
                             new Hyena(new FullyQualifiedName("hyena.iguana")).setJaguar("koala")))
-                    .setLeopard(new Pointer(null, "mule"))
+                    .setLeopard(new Link(null, "mule"))
                     .setOk(true)
                     .setState(State.SORTA_OK));
 

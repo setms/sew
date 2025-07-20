@@ -6,10 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
-import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ public class FieldAssignment extends Artifact {
   @NotEmpty private String fieldName;
 
   @HasType("variable")
-  private Pointer value;
+  private Link value;
 
   public FieldAssignment(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

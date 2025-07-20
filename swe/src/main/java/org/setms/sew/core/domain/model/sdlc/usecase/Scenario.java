@@ -19,7 +19,7 @@ import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -70,15 +70,15 @@ public class Scenario extends Artifact {
 
   @NotNull
   @HasType("domainStory")
-  private Pointer elaborates;
+  private Link elaborates;
 
-  @NotEmpty private List<Pointer> steps;
+  @NotEmpty private List<Link> steps;
 
   public Scenario(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 
-  public Stream<Pointer> steps() {
+  public Stream<Link> steps() {
     return steps.stream();
   }
 

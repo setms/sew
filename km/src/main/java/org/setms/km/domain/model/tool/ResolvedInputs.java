@@ -11,7 +11,7 @@ import org.setms.km.domain.model.artifact.*;
 import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.nlp.NaturalLanguage;
 
-public class ResolvedInputs implements PointerResolver {
+public class ResolvedInputs implements LinkResolver {
 
   private final NaturalLanguage language = new English();
   private final Map<String, List<? extends Artifact>> values = new HashMap<>();
@@ -30,19 +30,19 @@ public class ResolvedInputs implements PointerResolver {
   }
 
   @Override
-  public Artifact resolve(Pointer pointer, String defaultType) {
-    if (pointer == null) {
-      return new UnresolvedObject(null, null);
+  public Artifact resolve(Link link, String defaultType) {
+    if (link == null) {
+      return new UnresolvedArtifact(null, null);
     }
-    var type = Optional.ofNullable(pointer.getType()).orElse(defaultType);
+    var type = Optional.ofNullable(link.getType()).orElse(defaultType);
     if (type == null) {
-      return new UnresolvedObject(new FullyQualifiedName(pointer.getId()), null);
+      return new UnresolvedArtifact(new FullyQualifiedName(link.getId()), null);
     }
     var candidates = values.get(language.plural(type));
-    var resolvedObject = pointer.resolveFrom(candidates);
+    var resolvedObject = link.resolveFrom(candidates);
     if (resolvedObject.isPresent()) {
       return resolvedObject.get();
     }
-    return new UnresolvedObject(new FullyQualifiedName(pointer.getId()), pointer.getType());
+    return new UnresolvedArtifact(new FullyQualifiedName(link.getId()), link.getType());
   }
 }

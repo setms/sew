@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.setms.km.domain.model.artifact.Pointer;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.sew.core.domain.model.dsm.ClusteringAlgorithm;
 import org.setms.sew.core.domain.model.dsm.Clusters;
 import org.setms.sew.core.domain.model.dsm.DesignStructureMatrix;
@@ -20,7 +20,7 @@ import org.setms.sew.core.inbound.format.sal.SalFormat;
 @SuppressWarnings("unchecked")
 class DiscoverDomainsFromUseCasesTest {
 
-  private final ClusteringAlgorithm<Pointer> clusteringAlgorithm = mock(ClusteringAlgorithm.class);
+  private final ClusteringAlgorithm<Link> clusteringAlgorithm = mock(ClusteringAlgorithm.class);
 
   @Test
   void shouldGenerateDomains() throws IOException {
@@ -29,7 +29,7 @@ class DiscoverDomainsFromUseCasesTest {
         .thenAnswer(
             invocation -> {
               var dsm = invocation.getArgument(0, DesignStructureMatrix.class);
-              return new Clusters<Pointer>(dsm.getElements()).all();
+              return new Clusters<Link>(dsm.getElements()).all();
             });
 
     var actual = new DiscoverDomainFromUseCases(clusteringAlgorithm).apply(List.of(useCase));

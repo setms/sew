@@ -13,27 +13,27 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 @Value
-public class Pointer implements Comparable<Pointer> {
+public class Link implements Comparable<Link> {
 
   String type;
   @NotEmpty String id;
-  @EqualsAndHashCode.Exclude Map<String, List<Pointer>> attributes;
+  @EqualsAndHashCode.Exclude Map<String, List<Link>> attributes;
 
-  public Pointer(String type, String id, Map<String, List<Pointer>> attributes) {
+  public Link(String type, String id, Map<String, List<Link>> attributes) {
     this.type = type;
     this.id = id;
     this.attributes = attributes;
   }
 
-  public Pointer(String type, String id) {
+  public Link(String type, String id) {
     this(type, id, emptyMap());
   }
 
-  public Pointer(Artifact object) {
+  public Link(Artifact object) {
     this(object.type(), object.getName());
   }
 
-  public List<Pointer> optAttribute(String name) {
+  public List<Link> optAttribute(String name) {
     return attributes.getOrDefault(name, emptyList());
   }
 
@@ -44,24 +44,24 @@ public class Pointer implements Comparable<Pointer> {
         .findFirst();
   }
 
-  public boolean isType(String type) {
+  public boolean hasType(String type) {
     return this.type != null && this.type.equals(type);
   }
 
-  public static Predicate<Pointer> testType(String type) {
-    return pointer -> pointer.isType(type);
+  public static Predicate<Link> testType(String type) {
+    return link -> link.hasType(type);
   }
 
-  public Predicate<Pointer> testEqual() {
+  public Predicate<Link> testEqual() {
     return this::equals;
   }
 
   public boolean pointsTo(Artifact object) {
-    return isType(object.type()) && id.equals(object.getName());
+    return hasType(object.type()) && id.equals(object.getName());
   }
 
   @Override
-  public int compareTo(Pointer that) {
+  public int compareTo(Link that) {
     if (this.type == null && that.type != null) {
       return -1;
     }
