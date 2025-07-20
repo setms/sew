@@ -14,6 +14,9 @@ import javax.imageio.ImageIO;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.domain.model.workspace.InputSource;
+import org.setms.km.domain.model.workspace.OutputSink;
 
 /**
  * Something that validates input, builds output from input, and provides and applies suggestions
@@ -21,7 +24,7 @@ import org.setms.km.domain.model.validation.Location;
  */
 public abstract class Tool {
 
-  protected static final String NL = "\n";
+  protected static final String NL = System.lineSeparator();
 
   /**
    * The inputs this tool consumes.

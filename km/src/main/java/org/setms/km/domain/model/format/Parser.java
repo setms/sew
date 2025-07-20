@@ -24,11 +24,11 @@ import org.setms.km.domain.model.artifact.Enums;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Pointer;
 import org.setms.km.domain.model.nlp.English;
-import org.setms.km.domain.model.tool.Glob;
-import org.setms.km.domain.model.tool.InputSource;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.ValidationException;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.domain.model.workspace.InputSource;
 
 public interface Parser {
 

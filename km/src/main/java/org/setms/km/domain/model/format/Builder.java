@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.Pointer;
-import org.setms.km.domain.model.tool.OutputSink;
+import org.setms.km.domain.model.workspace.OutputSink;
 
 public interface Builder {
 

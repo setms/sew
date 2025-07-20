@@ -1,4 +1,4 @@
-package org.setms.km.outbound.tool.file;
+package org.setms.km.outbound.workspace.file;
 
 import static java.util.Collections.emptyList;
 
@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.setms.km.domain.model.tool.Glob;
+import org.setms.km.domain.model.workspace.Glob;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class FileGlob {

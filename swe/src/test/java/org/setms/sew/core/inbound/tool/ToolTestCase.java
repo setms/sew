@@ -14,10 +14,10 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Files;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.tool.InputSource;
 import org.setms.km.domain.model.tool.Tool;
-import org.setms.km.outbound.tool.file.FileInputSource;
-import org.setms.km.outbound.tool.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.InputSource;
+import org.setms.km.outbound.workspace.file.FileInputSource;
+import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 abstract class ToolTestCase<T extends Artifact> {

@@ -1,10 +1,10 @@
-package org.setms.km.outbound.tool.file;
+package org.setms.km.outbound.workspace.file;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import org.junit.jupiter.api.Test;
-import org.setms.km.domain.model.tool.Glob;
+import org.setms.km.domain.model.workspace.Glob;
 
 class FileInputSourceTest {
 

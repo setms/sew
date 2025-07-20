@@ -15,16 +15,16 @@ import org.jetbrains.annotations.NotNull;
 import org.setms.km.domain.model.tool.Suggestion;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.outbound.tool.file.FileOutputSink;
+import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.intellij.tool.ToolRunner;
 import org.setms.sew.intellij.tool.VirtualFileInputSource;
 
 public class ApplySuggestion implements IntentionAction {
 
-  private final Tool tool;
-  private final Suggestion suggestion;
-  private final Location location;
-  private final PsiElement psiElement;
+  @SafeFieldForPreview private final Tool tool;
+  @SafeFieldForPreview private final Suggestion suggestion;
+  @SafeFieldForPreview private final Location location;
+  @SafeFieldForPreview private final PsiElement psiElement;
 
   public ApplySuggestion(
       Tool tool, Suggestion suggestion, Location location, PsiElement psiElement) {

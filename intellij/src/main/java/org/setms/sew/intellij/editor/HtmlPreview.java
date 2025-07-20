@@ -28,10 +28,10 @@ import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.km.domain.model.tool.Glob;
-import org.setms.km.domain.model.tool.OutputSink;
 import org.setms.km.domain.model.tool.Tool;
-import org.setms.km.outbound.tool.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.intellij.tool.VirtualFileInputSource;
 
 public class HtmlPreview extends UserDataHolderBase implements FileEditor {

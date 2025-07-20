@@ -15,15 +15,15 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.SwingConstants;
 import org.setms.km.domain.model.artifact.Pointer;
-import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
-import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
-import org.setms.km.domain.model.tool.Glob;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
-import org.setms.km.domain.model.tool.OutputSink;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
+import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 
 @SuppressWarnings("unused") // At some point, we'll want a context map
 public class ContextMapTool extends Tool {

@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.outbound.tool.file.FileInputSource;
-import org.setms.km.outbound.tool.file.FileOutputSink;
+import org.setms.km.outbound.workspace.file.FileInputSource;
+import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 

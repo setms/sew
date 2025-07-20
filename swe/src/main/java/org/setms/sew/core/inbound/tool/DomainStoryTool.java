@@ -21,6 +21,7 @@ import org.setms.km.domain.model.artifact.Pointer;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.domainstory.Sentence;
 import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;

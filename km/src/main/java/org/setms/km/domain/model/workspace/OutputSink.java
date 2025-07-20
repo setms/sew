@@ -1,4 +1,4 @@
-package org.setms.km.domain.model.tool;
+package org.setms.km.domain.model.workspace;
 
 import java.io.IOException;
 import java.io.OutputStream;

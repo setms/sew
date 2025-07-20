@@ -1,4 +1,4 @@
-package org.setms.km.outbound.tool.file;
+package org.setms.km.outbound.workspace.file;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.setms.km.domain.model.tool.Glob;
-import org.setms.km.domain.model.tool.InputSource;
-import org.setms.km.domain.model.tool.OutputSink;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.domain.model.workspace.InputSource;
+import org.setms.km.domain.model.workspace.OutputSink;
 
 @Getter
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class FileOutputSink implements OutputSink {
 
   private static File tempDir() {
     try {
-      return Files.createTempDirectory("sew").toFile();
+      return Files.createTempDirectory("org-setms-km").toFile();
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

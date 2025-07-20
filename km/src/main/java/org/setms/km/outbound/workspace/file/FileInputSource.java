@@ -1,4 +1,4 @@
-package org.setms.km.outbound.tool.file;
+package org.setms.km.outbound.workspace.file;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,9 +7,9 @@ import java.io.InputStream;
 import java.util.Collection;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.setms.km.domain.model.tool.Glob;
-import org.setms.km.domain.model.tool.InputSource;
-import org.setms.km.domain.model.tool.OutputSink;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.domain.model.workspace.InputSource;
+import org.setms.km.domain.model.workspace.OutputSink;
 
 @Getter
 @RequiredArgsConstructor

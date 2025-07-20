@@ -7,11 +7,11 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import java.io.IOException;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
-import org.setms.km.domain.model.tool.Glob;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.outbound.tool.file.FileInputSource;
-import org.setms.km.outbound.tool.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.outbound.workspace.file.FileInputSource;
+import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
 class UseCaseToolTest extends ToolTestCase<UseCase> {

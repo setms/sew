@@ -5,6 +5,7 @@ import static org.setms.km.domain.model.format.Strings.initLower;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.nlp.English;
+import org.setms.km.domain.model.workspace.Glob;
 
 public record Input<T extends Artifact>(String name, Glob glob, Format format, Class<T> type) {
 

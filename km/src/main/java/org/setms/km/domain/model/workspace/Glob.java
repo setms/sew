@@ -1,4 +1,4 @@
-package org.setms.km.domain.model.tool;
+package org.setms.km.domain.model.workspace;
 
 public record Glob(String path, String pattern) {
 

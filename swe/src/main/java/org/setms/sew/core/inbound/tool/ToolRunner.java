@@ -3,8 +3,8 @@ package org.setms.sew.core.inbound.tool;
 import java.io.File;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Level;
-import org.setms.km.outbound.tool.file.FileInputSource;
-import org.setms.km.outbound.tool.file.FileOutputSink;
+import org.setms.km.outbound.workspace.file.FileInputSource;
+import org.setms.km.outbound.workspace.file.FileOutputSink;
 
 public class ToolRunner {
 

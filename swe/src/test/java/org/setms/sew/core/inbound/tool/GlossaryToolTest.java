@@ -6,7 +6,7 @@ import static org.setms.km.domain.model.validation.Level.ERROR;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.outbound.tool.file.FileOutputSink;
+import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 
 class GlossaryToolTest extends ToolTestCase<Term> {
