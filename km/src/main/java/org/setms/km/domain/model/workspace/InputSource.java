@@ -2,6 +2,7 @@ package org.setms.km.domain.model.workspace;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Collection;
 
 public interface InputSource {
@@ -10,7 +11,7 @@ public interface InputSource {
 
   String name();
 
-  InputStream open() throws IOException;
+  URI toUri();
 
-  OutputSink toSink();
+  InputStream open() throws IOException;
 }

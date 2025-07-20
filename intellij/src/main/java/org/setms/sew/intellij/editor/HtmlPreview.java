@@ -28,11 +28,10 @@ import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.Tool;
-import org.setms.km.domain.model.workspace.Glob;
-import org.setms.km.domain.model.workspace.OutputSink;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
-import org.setms.sew.intellij.tool.VirtualFileInputSource;
+import org.setms.km.domain.model.workspace.Workspace;
+import org.setms.sew.intellij.tool.VirtualFileWorkspace;
 
 public class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
@@ -59,7 +58,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   private final RateLimiter rateLimiter;
   private final VirtualFile file;
   private final Tool tool;
-  private OutputSink sink;
+  private Workspace workspace;
 
   public HtmlPreview(Project ignored, VirtualFile file, @NotNull Tool tool) {
     this.tool = tool;
@@ -136,12 +135,15 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   private void updateDocument() {
-    deleteSink();
-    sink = new FileOutputSink();
+    var glob = tool.getOutputs().map(Output::glob);
+    if (glob.isEmpty()) {
+      browser.loadURL("about:blank");
+      return;
+    }
+    deleteOutput();
+    workspace = new VirtualFileWorkspace(file, tool);
     var diagnostics =
-        tool.build(new VirtualFileInputSource(file, tool), sink).stream()
-            .filter(diagnostic -> diagnostic.level() == ERROR)
-            .toList();
+        tool.build(workspace).stream().filter(diagnostic -> diagnostic.level() == ERROR).toList();
     if (!diagnostics.isEmpty()) {
       browser.loadHTML(
           ERRORS.formatted(
@@ -150,7 +152,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
                   .collect(joining(ERROR_SEPARATOR))));
       return;
     }
-    var content = sink.matching(new Glob("", "**/*.html"));
+    var content = workspace.output().matching(glob.get());
     if (content.isEmpty()) {
       browser.loadURL("about:blank");
     } else {
@@ -158,15 +160,15 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     }
   }
 
-  private void deleteSink() {
-    if (sink != null) {
+  private void deleteOutput() {
+    if (workspace != null) {
       try {
-        sink.delete();
+        workspace.output().delete();
       } catch (IOException ignored) {
         // Ignore: someone will clean up temp files at some point
       }
+      workspace = null;
     }
-    sink = null;
   }
 
   @Override
@@ -192,7 +194,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     if (browser != null) {
       browser.dispose();
     }
-    deleteSink();
+    deleteOutput();
   }
 
   @Override

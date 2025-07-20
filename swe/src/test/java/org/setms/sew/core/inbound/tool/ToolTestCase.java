@@ -15,12 +15,14 @@ import org.setms.km.domain.model.format.Files;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Tool;
-import org.setms.km.domain.model.workspace.InputSource;
-import org.setms.km.outbound.workspace.file.FileInputSource;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Workspace;
+import org.setms.km.outbound.workspace.file.DirectoryWorkspace;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 abstract class ToolTestCase<T extends Artifact> {
+
+  private static final String FILE_URI_SCHEME = "file:";
 
   @Getter(PROTECTED)
   private final Tool tool;
@@ -74,10 +76,10 @@ abstract class ToolTestCase<T extends Artifact> {
   @Test
   @SuppressWarnings("unchecked")
   void shouldParseObject() throws IOException {
-    var testDir = getTestDir("valid");
+    var workspace = workspaceFor("valid");
     var input = (Input<T>) tool.getInputs().getFirst();
-    var matchingObjects = new FileInputSource(testDir).matching(input.glob());
-    assertThat(matchingObjects).as("Missing objects at " + testDir).isNotEmpty();
+    var matchingObjects = workspace.input().matching(input.glob());
+    assertThat(matchingObjects).as("Missing objects at").isNotEmpty();
     var source = matchingObjects.iterator().next();
 
     try (var sutStream = source.open()) {
@@ -88,7 +90,7 @@ abstract class ToolTestCase<T extends Artifact> {
     }
   }
 
-  protected File getTestDir(String name) {
+  private File getTestDir(String name) {
     return new File(baseDir, name);
   }
 
@@ -96,20 +98,28 @@ abstract class ToolTestCase<T extends Artifact> {
     // Override to add assertions
   }
 
-  protected InputSource inputSourceFor(String path) {
-    return new FileInputSource(getTestDir(path));
+  protected Workspace workspaceFor(String path) {
+    return new DirectoryWorkspace(getTestDir(path));
   }
 
   @Test
-  void shouldBuild() throws IOException {
-    var testDir = getTestDir("valid");
-    var sink = new FileOutputSink(new File(testDir, "build"));
-    var diagnostics = tool.build(new FileInputSource(testDir), sink);
+  void shouldBuild() {
+    var workspace = workspaceFor("valid");
+    var sink = workspace.output();
+    var diagnostics = tool.build(workspace);
     assertThat(diagnostics).as("Diagnostics").isEmpty();
     assertBuild(sink);
   }
 
-  protected void assertBuild(FileOutputSink sink) {
+  protected void assertBuild(OutputSink sink) {
     // Override to add assertions
+  }
+
+  protected File toFile(OutputSink sink) {
+    var path = sink.toUri().toString();
+    if (path.startsWith(FILE_URI_SCHEME)) {
+      path = path.substring(FILE_URI_SCHEME.length());
+    }
+    return new File(path);
   }
 }

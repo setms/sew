@@ -4,16 +4,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Collection;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.InputSource;
-import org.setms.km.domain.model.workspace.OutputSink;
 
 @Getter
 @RequiredArgsConstructor
-public class FileInputSource implements InputSource {
+class FileInputSource implements InputSource {
 
   private final File file;
 
@@ -28,13 +28,13 @@ public class FileInputSource implements InputSource {
   }
 
   @Override
-  public InputStream open() throws IOException {
-    return new FileInputStream(file);
+  public URI toUri() {
+    return file.toURI();
   }
 
   @Override
-  public OutputSink toSink() {
-    return new FileOutputSink(file);
+  public InputStream open() throws IOException {
+    return new FileInputStream(file);
   }
 
   @Override

@@ -49,7 +49,7 @@ import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class DomainTool extends Tool {
 
-  private static final String OUTPUT_PATH = "build/reports/domains";
+  private static final String OUTPUT_PATH = "reports/domains";
   private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
   public static final String CREATE_MODULES = "modules.create";
@@ -60,8 +60,8 @@ public class DomainTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return htmlWithImages(OUTPUT_PATH);
+  public Optional<Output> getOutputs() {
+    return htmlIn(OUTPUT_PATH);
   }
 
   @Override

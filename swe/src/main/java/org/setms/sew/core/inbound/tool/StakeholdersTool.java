@@ -1,6 +1,5 @@
 package org.setms.sew.core.inbound.tool;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.validation.Level.ERROR;
@@ -38,8 +37,8 @@ public class StakeholdersTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return emptyList();
+  public Optional<Output> getOutputs() {
+    return Optional.empty();
   }
 
   @Override

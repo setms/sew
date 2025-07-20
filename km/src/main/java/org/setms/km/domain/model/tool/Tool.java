@@ -17,6 +17,7 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.InputSource;
 import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Workspace;
 
 /**
  * Something that validates input, builds output from input, and provides and applies suggestions
@@ -38,18 +39,18 @@ public abstract class Tool {
    *
    * @return the outputs
    */
-  public abstract List<Output> getOutputs();
+  public abstract Optional<Output> getOutputs();
 
   /**
    * Validate the inputs.
    *
-   * @param source the directory in which to find inputs
+   * @param workspace the workspace in which to find inputs and store outputs
    * @return any validation issues
    */
-  public final SequencedSet<Diagnostic> validate(InputSource source) {
+  public final SequencedSet<Diagnostic> validate(Workspace workspace) {
     var result = new LinkedHashSet<Diagnostic>();
-    validate(resolveInputs(source, result), result);
-    createTodosFor(source.toSink(), result);
+    validate(resolveInputs(workspace.input(), result), result);
+    createTodosFor(workspace.output(), result);
     return result;
   }
 
@@ -117,13 +118,12 @@ public abstract class Tool {
   /**
    * Build the output from the input
    *
-   * @param source where to load input
-   * @param sink where to store output
+   * @param workspace where to retrieve input and store output
    * @return diagnostics about building the output
    */
-  public final List<Diagnostic> build(InputSource source, OutputSink sink) {
+  public final List<Diagnostic> build(Workspace workspace) {
     var result = new ArrayList<Diagnostic>();
-    build(resolveInputs(source, result), sink, result);
+    build(resolveInputs(workspace.input(), result), workspace.output(), result);
     return result;
   }
 
@@ -131,8 +131,8 @@ public abstract class Tool {
     diagnostics.add(new Diagnostic(ERROR, message.formatted(args)));
   }
 
-  public List<Output> htmlWithImages(String path) {
-    return List.of(new Output(new Glob(path, "*.html")), new Output(new Glob(path, "*.png")));
+  public Optional<Output> htmlIn(String path) {
+    return Optional.of(new Output(new Glob(path, "**/*.html")));
   }
 
   protected OutputSink sinkFor(Artifact object, OutputSink base) {
@@ -168,16 +168,15 @@ public abstract class Tool {
    * Apply a suggestion.
    *
    * @param suggestionCode the suggestion to apply
-   * @param source where to load input
+   * @param workspace where to load input and store output
    * @param location where in the input to apply the suggestion
-   * @param sink where to store input
    * @return diagnostics about the applying the suggestion
    */
   public final SequencedSet<Diagnostic> apply(
-      String suggestionCode, InputSource source, Location location, OutputSink sink) {
+      String suggestionCode, Workspace workspace, Location location) {
     var result = new LinkedHashSet<Diagnostic>();
-    var inputs = resolveInputs(source, result);
-    apply(suggestionCode, inputs, location, sink, result);
+    var inputs = resolveInputs(workspace.input(), result);
+    apply(suggestionCode, inputs, location, workspace.output(), result);
     return result;
   }
 

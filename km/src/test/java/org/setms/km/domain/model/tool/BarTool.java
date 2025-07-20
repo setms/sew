@@ -1,8 +1,8 @@
 package org.setms.km.domain.model.tool;
 
-import static java.util.Collections.emptyList;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BarTool extends Tool {
 
@@ -12,7 +12,7 @@ public class BarTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return emptyList();
+  public Optional<Output> getOutputs() {
+    return Optional.empty();
   }
 }

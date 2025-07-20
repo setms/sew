@@ -13,10 +13,7 @@ import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.km.domain.model.workspace.InputSource;
-import org.setms.km.domain.model.workspace.OutputSink;
-import org.setms.km.outbound.workspace.file.FileInputSource;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
@@ -62,13 +59,12 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   @Test
   void shouldRejectMissingOwner() throws IOException {
-    var testDir = getTestDir("invalid/noowner");
-    var source = new FileInputSource(testDir);
+    var workspace = workspaceFor("invalid/noowner");
 
-    var actual = getTool().validate(source);
+    var actual = getTool().validate(workspace);
 
     var suggestion = assertThatToolReportsDiagnosticWithSuggestionToFix(actual);
-    assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, source, new FileOutputSink(testDir));
+    assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, workspace);
   }
 
   private Suggestion assertThatToolReportsDiagnosticWithSuggestionToFix(
@@ -85,10 +81,10 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
   }
 
   private void assertThatApplyingTheSuggestionCreatesAnOwner(
-      Suggestion suggestion, InputSource source, OutputSink sink) throws IOException {
-    var owner = sink.select("src/main/stakeholders/Some.owner");
+      Suggestion suggestion, Workspace workspace) throws IOException {
+    var owner = workspace.output().select("src/main/stakeholders/Some.owner");
 
-    var actual = getTool().apply(suggestion.code(), source, null, sink);
+    var actual = getTool().apply(suggestion.code(), workspace, null);
 
     assertThat(actual).hasSize(1).contains(new Diagnostic(INFO, "Created " + owner.toUri()));
     try {
@@ -100,9 +96,9 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   @Test
   void shouldRejectUnknownSuggestion() {
-    var source = inputSourceFor("invalid/suggestion");
+    var workspace = workspaceFor("invalid/suggestion");
 
-    var actual = getTool().apply("unknown.suggestion", source, null, null);
+    var actual = getTool().apply("unknown.suggestion", workspace, null);
 
     assertThat(actual)
         .hasSize(1)
@@ -111,7 +107,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   @Test
   void shouldRejectMultipleOwners() {
-    var source = inputSourceFor("invalid/owners");
+    var source = workspaceFor("invalid/owners");
 
     var actual = getTool().validate(source);
 
@@ -122,7 +118,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   @Test
   void shouldRejectNonUserInUserCase() {
-    var source = inputSourceFor("invalid/nonuser");
+    var source = workspaceFor("invalid/nonuser");
 
     var actual = getTool().validate(source);
 
@@ -138,7 +134,7 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   @Test
   void shouldRejectUnknownUserInUserCase() {
-    var source = inputSourceFor("invalid/missing");
+    var source = workspaceFor("invalid/missing");
 
     var actual = getTool().validate(source);
 

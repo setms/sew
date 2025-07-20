@@ -6,7 +6,6 @@ import static org.setms.km.domain.model.validation.Level.ERROR;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 
 class GlossaryToolTest extends ToolTestCase<Term> {
@@ -39,26 +38,26 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   void shouldDefineOutputs() {
     var actual = getTool().getOutputs();
 
-    assertThat(actual).hasSize(1);
-    var output = actual.getFirst();
-    assertThat(output.glob()).hasToString("build/reports/glossary/*.html");
+    assertThat(actual)
+        .isPresent()
+        .hasValueSatisfying(
+            output -> assertThat(output.glob()).hasToString("reports/glossary/**/*.html"));
   }
 
   @Test
   void shouldBuildReport() {
-    var source = inputSourceFor("valid");
-    var sink = new FileOutputSink(getTestDir("build"));
+    var workspace = workspaceFor("valid");
 
-    var actual = getTool().build(source, sink);
+    var actual = getTool().build(workspace);
 
     assertThat(actual).isEmpty();
-    var output = sink.select("reports/glossary/report.html").getFile();
+    var output = toFile(workspace.output().select("reports/glossary/report.html"));
     assertThat(output).isFile().content().isEqualTo(GLOSSARY);
   }
 
   @Test
   void shouldRejectMissingDisplay() {
-    var source = inputSourceFor("invalid/display");
+    var source = workspaceFor("invalid/display");
 
     var actual = getTool().validate(source);
 
@@ -73,7 +72,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
 
   @Test
   void shouldRejectInvalidSeeAlso() {
-    var source = inputSourceFor("invalid/see");
+    var source = workspaceFor("invalid/see");
 
     var actual = getTool().validate(source);
 

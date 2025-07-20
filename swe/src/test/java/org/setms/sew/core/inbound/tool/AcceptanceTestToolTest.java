@@ -5,8 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.outbound.workspace.file.FileInputSource;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 
@@ -39,14 +37,13 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
 
   @Test
   void shouldBuild() {
-    var testDir = getTestDir("valid");
-    var source = new FileInputSource(testDir);
-    var sink = new FileOutputSink(testDir).select("build");
+    var workspace = workspaceFor("valid");
 
-    var actual = getTool().build(source, sink);
+    var actual = getTool().build(workspace);
 
     assertThat(actual).isEmpty();
-    var output = sink.select("reports/acceptanceTests/Notifications-aggregate.html").getFile();
+    var output =
+        toFile(workspace.output().select("reports/acceptanceTests/Notifications-aggregate.html"));
     assertThat((output)).isFile().hasContent(ACCEPTANCE_TEST_HTML);
   }
 }

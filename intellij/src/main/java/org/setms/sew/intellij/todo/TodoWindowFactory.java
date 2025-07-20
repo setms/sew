@@ -7,7 +7,6 @@ import static java.awt.BorderLayout.NORTH;
 import static java.awt.Font.ITALIC;
 import static java.awt.event.InputEvent.ALT_DOWN_MASK;
 import static java.awt.event.KeyEvent.VK_ENTER;
-import static java.util.Collections.emptyMap;
 import static javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
 import static javax.swing.SwingUtilities.isLeftMouseButton;
 
@@ -37,10 +36,10 @@ import org.jetbrains.annotations.NotNull;
 import org.setms.km.domain.model.collaboration.Todo;
 import org.setms.km.domain.model.format.Files;
 import org.setms.km.domain.model.workspace.Glob;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 import org.setms.sew.intellij.tool.ToolRunner;
-import org.setms.sew.intellij.tool.VirtualFileInputSource;
+import org.setms.sew.intellij.tool.VirtualFileWorkspace;
 
 public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
 
@@ -75,11 +74,12 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
   private Map<Todo, URI> loadTodos(Project project) {
     var result = new TreeMap<Todo, URI>();
     var parser = new SalFormat().newParser();
-    toInputSource(project)
+    toWorkspace(project)
+        .input()
         .matching(new Glob("", "**/*.todo"))
         .forEach(
             source -> {
-              var uri = source.toSink().toUri();
+              var uri = source.toUri();
               try (var input = source.open()) {
                 var todo = parser.parse(input, Todo.class, false);
                 result.put(todo, uri);
@@ -90,13 +90,13 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
     return result;
   }
 
-  private VirtualFileInputSource toInputSource(Project project) {
-    return toInputSource(project.getBasePath());
+  private Workspace toWorkspace(Project project) {
+    return toWorkspace(project.getBasePath());
   }
 
-  private VirtualFileInputSource toInputSource(String path) {
-    return new VirtualFileInputSource(
-        LocalFileSystem.getInstance().findFileByPath(path), emptyMap(), ignored -> true);
+  private Workspace toWorkspace(String path) {
+    return new VirtualFileWorkspace(
+        LocalFileSystem.getInstance().findFileByPath(path), ignored -> true);
   }
 
   private void performTodoOnDoubleMouseClick(
@@ -136,12 +136,7 @@ public class TodoWindowFactory implements ToolWindowFactory, DumbAware {
     var todoUri = urisByTodo.get(todo);
     var baseDir = toBaseDir(todoUri);
     return ToolRunner.applySuggestion(
-        todo.toTool(),
-        todo.getCode(),
-        todo.toLocation(),
-        project,
-        toInputSource(baseDir.getPath()),
-        new FileOutputSink(baseDir));
+        todo.toTool(), todo.getCode(), todo.toLocation(), project, toWorkspace(baseDir.getPath()));
   }
 
   private File toBaseDir(URI uri) {

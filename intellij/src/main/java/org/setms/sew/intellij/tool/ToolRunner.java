@@ -17,21 +17,16 @@ import java.util.Objects;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.Workspace;
 
 public class ToolRunner {
 
   private static final String CREATED_PREFIX = "Created ";
 
   public static boolean applySuggestion(
-      Tool tool,
-      String code,
-      Location location,
-      Project project,
-      VirtualFileInputSource source,
-      FileOutputSink sink) {
+      Tool tool, String code, Location location, Project project, Workspace workspace) {
     PsiDocumentManager.getInstance(project).commitAllDocuments();
-    var diagnostics = tool.apply(code, source, location, sink);
+    var diagnostics = tool.apply(code, workspace, location);
     var errors = diagnostics.stream().filter(d -> d.level() == ERROR).toList();
     errors.forEach(
         diagnostic ->

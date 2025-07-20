@@ -7,11 +7,8 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import java.io.IOException;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
-import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.workspace.Glob;
-import org.setms.km.outbound.workspace.file.FileInputSource;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
+import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
 class UseCaseToolTest extends ToolTestCase<UseCase> {
@@ -32,14 +29,6 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
         </ol>
       </body>
     </html>
-    """;
-  private static final String DUCK_USER =
-      """
-    package missing
-
-    user Duck {
-      display = "Duck"
-    }
     """;
   private static final String DOMAIN_STORY =
       """
@@ -65,24 +54,16 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     var actual = getTool().getOutputs();
 
     assertThat(actual)
-        .hasSize(2)
-        .allSatisfy(
-            output -> assertThat(output.glob().toString()).contains("build/reports/useCases/*."));
-    assertThat(
-            actual.stream()
-                .map(Output::glob)
-                .map(Glob::pattern)
-                .map(p -> p.substring(1 + p.lastIndexOf(".")))
-                .toList())
-        .containsExactlyInAnyOrder("html", "png");
+        .isPresent()
+        .hasValueSatisfying(
+            output -> assertThat(output.glob().toString()).contains("reports/useCases/**/*.html"));
   }
 
   @Test
   void shouldWarnAboutMissingElementsAndCreateThem() throws IOException {
-    var testDir = getTestDir("missing");
-    var source = new FileInputSource(testDir);
+    var workspace = workspaceFor("missing");
 
-    var diagnostics = getTool().validate(source);
+    var diagnostics = getTool().validate(workspace);
 
     assertThat(diagnostics)
         .hasSizeGreaterThanOrEqualTo(7)
@@ -91,13 +72,12 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
               assertThat(diagnostic.suggestions()).as("Suggestions").isNotEmpty();
             });
-    var sink = new FileOutputSink(testDir);
     var diagnostic = diagnostics.getFirst();
     diagnostics =
         getTool()
-            .apply(diagnostic.suggestions().getFirst().code(), source, diagnostic.location(), sink);
+            .apply(diagnostic.suggestions().getFirst().code(), workspace, diagnostic.location());
     assertThat(diagnostics).hasSize(1).allSatisfy(d -> assertThat(d.message()).contains("Created"));
-    var file = sink.select("src/main/requirements/HappyPath.domainStory").getFile();
+    var file = toFile(workspace.output().select("src/main/requirements/HappyPath.domainStory"));
     assertThat(file).isFile();
     try {
       assertThat(file).hasContent(DOMAIN_STORY);
@@ -108,7 +88,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldRejectGrammarViolation() {
-    var source = inputSourceFor("grammar");
+    var source = workspaceFor("grammar");
 
     var diagnostics = getTool().validate(source);
 
@@ -123,31 +103,27 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Override
-  protected void assertBuild(FileOutputSink sink) {
-    var output = sink.select("reports/useCases/HappyPath.png").getFile();
+  protected void assertBuild(OutputSink sink) {
+    var output = toFile(sink.select("reports/useCases/HappyPath.png"));
     assertThat((output)).isFile();
-    output = sink.select("reports/useCases/JustDoIt.html").getFile();
+    output = toFile(sink.select("reports/useCases/JustDoIt.html"));
     assertThat((output)).isFile().hasContent(USE_CASE_HTML);
   }
 
   @Test
   void shouldBuildComplexUseCaseWithoutProblems() {
-    var testDir = getTestDir("../domains/gdpr");
-    var source = new FileInputSource(testDir);
-    var sink = new FileOutputSink(testDir).select("build");
+    var workspace = workspaceFor("../domains/gdpr");
 
-    var actual = getTool().build(source, sink);
+    var actual = getTool().build(workspace);
 
     assertThat(actual).isEmpty();
   }
 
   @Test
   void shouldCreateDomain() {
-    var testDir = getTestDir("valid");
-    var source = new FileInputSource(testDir);
-    var sink = new FileOutputSink(testDir).select("build");
+    var workspace = workspaceFor("valid");
 
-    var actual = getTool().validate(source);
+    var actual = getTool().validate(workspace);
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
@@ -157,7 +133,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).isEqualTo("Discover subdomains");
-    actual = getTool().apply(suggestion.code(), source, diagnostic.location(), sink);
+    actual = getTool().apply(suggestion.code(), workspace, diagnostic.location());
     assertThat(actual).hasSize(1);
     diagnostic = actual.getFirst();
     assertThat(diagnostic.message()).startsWith("Created ");
@@ -165,11 +141,9 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateAcceptanceTest() {
-    var testDir = getTestDir("valid");
-    var source = new FileInputSource(testDir);
-    var sink = new FileOutputSink(testDir).select("build");
+    var workspace = workspaceFor("valid");
 
-    var actual = getTool().validate(source);
+    var actual = getTool().validate(workspace);
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
@@ -179,7 +153,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).startsWith("Create acceptance test");
-    actual = getTool().apply(suggestion.code(), source, diagnostic.location(), sink);
+    actual = getTool().apply(suggestion.code(), workspace, diagnostic.location());
     assertThat(actual).as("Created artifacts").hasSize(1);
     diagnostic = actual.getFirst();
     assertThat(diagnostic.message()).startsWith("Created ");

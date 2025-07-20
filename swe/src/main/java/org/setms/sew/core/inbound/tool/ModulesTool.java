@@ -31,7 +31,7 @@ import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 @Slf4j
 public class ModulesTool extends Tool {
 
-  private static final String OUTPUT_PATH = "build/reports/modules";
+  private static final String OUTPUT_PATH = "reports/modules";
   private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
 
@@ -41,8 +41,8 @@ public class ModulesTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return htmlWithImages(OUTPUT_PATH);
+  public Optional<Output> getOutputs() {
+    return htmlIn(OUTPUT_PATH);
   }
 
   @Override

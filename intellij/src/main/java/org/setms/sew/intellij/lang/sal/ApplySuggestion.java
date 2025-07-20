@@ -10,14 +10,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.IncorrectOperationException;
-import java.io.File;
 import org.jetbrains.annotations.NotNull;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
 import org.setms.sew.intellij.tool.ToolRunner;
-import org.setms.sew.intellij.tool.VirtualFileInputSource;
+import org.setms.sew.intellij.tool.VirtualFileWorkspace;
 
 public class ApplySuggestion implements IntentionAction {
 
@@ -71,8 +69,7 @@ public class ApplySuggestion implements IntentionAction {
         suggestion.code(),
         location,
         project,
-        new VirtualFileInputSource(psiFile, tool),
-        new FileOutputSink(new File(psiFile.getVirtualFile().getPath())));
+        new VirtualFileWorkspace(psiFile, tool));
     WriteCommandAction.runWriteCommandAction(
         project,
         () -> {

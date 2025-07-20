@@ -17,21 +17,9 @@ import org.setms.km.domain.model.workspace.OutputSink;
 
 @Getter
 @RequiredArgsConstructor
-public class FileOutputSink implements OutputSink {
+class FileOutputSink implements OutputSink {
 
   private final File file;
-
-  public FileOutputSink() {
-    this(tempDir());
-  }
-
-  private static File tempDir() {
-    try {
-      return Files.createTempDirectory("org-setms-km").toFile();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
-    }
-  }
 
   @Override
   public FileOutputSink select(String path) {

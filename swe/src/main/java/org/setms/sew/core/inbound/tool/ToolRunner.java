@@ -3,8 +3,7 @@ package org.setms.sew.core.inbound.tool;
 import java.io.File;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Level;
-import org.setms.km.outbound.workspace.file.FileInputSource;
-import org.setms.km.outbound.workspace.file.FileOutputSink;
+import org.setms.km.outbound.workspace.file.DirectoryWorkspace;
 
 public class ToolRunner {
 
@@ -19,10 +18,8 @@ public class ToolRunner {
               .getClassLoader()
               .loadClass("%s.%s".formatted(ToolRunner.class.getPackageName(), args[0]));
       var tool = (Tool) toolType.getDeclaredConstructor().newInstance();
-      var input = new FileInputSource(new File(args[1]));
-      var output = new FileOutputSink(new File(args[2]));
-
-      var diagnostics = tool.build(input, output);
+      var workspace = new DirectoryWorkspace(new File(args[1]), new File(args[2]));
+      var diagnostics = tool.build(workspace);
       diagnostics.forEach(
           diagnostic -> {
             var stream = diagnostic.level() == Level.INFO ? System.out : System.err;

@@ -57,7 +57,7 @@ import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class UseCaseTool extends Tool {
 
-  private static final String OUTPUT_PATH = "build/reports/useCases";
+  private static final String OUTPUT_PATH = "reports/useCases";
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
@@ -95,8 +95,8 @@ public class UseCaseTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return htmlWithImages(OUTPUT_PATH);
+  public Optional<Output> getOutputs() {
+    return htmlIn(OUTPUT_PATH);
   }
 
   @Override

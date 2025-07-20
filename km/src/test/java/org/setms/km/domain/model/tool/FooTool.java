@@ -1,10 +1,10 @@
 package org.setms.km.domain.model.tool;
 
-import static java.util.Collections.emptyList;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -21,8 +21,8 @@ class FooTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return emptyList();
+  public Optional<Output> getOutputs() {
+    return Optional.empty();
   }
 
   @Override

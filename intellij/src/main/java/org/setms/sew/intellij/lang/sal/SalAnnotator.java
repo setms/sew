@@ -22,7 +22,7 @@ import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.sew.intellij.filetype.SalLanguageFileType;
 import org.setms.sew.intellij.lang.LevelSeverity;
-import org.setms.sew.intellij.tool.VirtualFileInputSource;
+import org.setms.sew.intellij.tool.VirtualFileWorkspace;
 
 public class SalAnnotator implements Annotator {
 
@@ -91,7 +91,7 @@ public class SalAnnotator implements Annotator {
   }
 
   private Set<Diagnostic> validateFile(Tool tool, PsiFile file) {
-    return tool.validate(new VirtualFileInputSource(file, tool));
+    return tool.validate(new VirtualFileWorkspace(file, tool));
   }
 
   private String locationOf(PsiElement psiElement) {

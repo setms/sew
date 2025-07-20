@@ -19,7 +19,6 @@ import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 
@@ -32,8 +31,8 @@ public class GlossaryTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return List.of(new Output(new Glob("build/reports/glossary", "*.html")));
+  public Optional<Output> getOutputs() {
+    return htmlIn("reports/glossary");
   }
 
   @Override

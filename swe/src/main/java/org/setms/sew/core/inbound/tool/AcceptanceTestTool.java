@@ -28,8 +28,8 @@ public class AcceptanceTestTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return List.of();
+  public Optional<Output> getOutputs() {
+    return Optional.empty();
   }
 
   @Override

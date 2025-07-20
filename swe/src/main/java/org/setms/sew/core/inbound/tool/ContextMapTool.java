@@ -8,11 +8,7 @@ import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.SwingConstants;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.Input;
@@ -44,8 +40,8 @@ public class ContextMapTool extends Tool {
   }
 
   @Override
-  public List<Output> getOutputs() {
-    return List.of(new Output(new Glob(OUTPUT_PATH, "*.png")));
+  public Optional<Output> getOutputs() {
+    return Optional.of(new Output(new Glob(OUTPUT_PATH, "*.png")));
   }
 
   @Override
