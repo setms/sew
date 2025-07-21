@@ -73,7 +73,7 @@ class ProjectToolTest extends ToolTestCase<Stakeholder> {
 
   private void assertThatApplyingTheSuggestionCreatesAnOwner(
       Suggestion suggestion, Workspace workspace) throws IOException {
-    var owner = workspace.output().select("src/main/stakeholders/Some.owner");
+    var owner = workspace.output().select("../src/main/stakeholders/Some.owner");
 
     var actual = getTool().apply(suggestion.code(), workspace, null);
 

@@ -44,6 +44,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       parts = [ ]
     }
     """;
+  public static final String CREATED = "Created ";
 
   public UseCaseToolTest() {
     super(new UseCaseTool(), UseCase.class, "main/requirements");
@@ -77,7 +78,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
         getTool()
             .apply(diagnostic.suggestions().getFirst().code(), workspace, diagnostic.location());
     assertThat(diagnostics).hasSize(1).allSatisfy(d -> assertThat(d.message()).contains("Created"));
-    var file = toFile(workspace.output().select("src/main/requirements/HappyPath.domainStory"));
+    var file = toFile(workspace.output().select("../src/main/requirements/HappyPath.domainStory"));
     assertThat(file).isFile();
     try {
       assertThat(file).hasContent(DOMAIN_STORY);
@@ -136,11 +137,23 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     actual = getTool().apply(suggestion.code(), workspace, diagnostic.location());
     assertThat(actual).hasSize(1);
     diagnostic = actual.getFirst();
-    assertThat(diagnostic.message()).startsWith("Created ");
+    assertThat(diagnostic.message()).startsWith(CREATED);
+    workspace
+        .output()
+        .select("..")
+        .matching(Inputs.domains().glob())
+        .forEach(
+            outputSink -> {
+              try {
+                outputSink.delete();
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
   }
 
   @Test
-  void shouldCreateAcceptanceTest() {
+  void shouldCreateAcceptanceTest() throws IOException {
     var workspace = workspaceFor("valid");
 
     var actual = getTool().validate(workspace);
@@ -156,6 +169,18 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     actual = getTool().apply(suggestion.code(), workspace, diagnostic.location());
     assertThat(actual).as("Created artifacts").hasSize(1);
     diagnostic = actual.getFirst();
-    assertThat(diagnostic.message()).startsWith("Created ");
+    assertThat(diagnostic.message()).startsWith(CREATED);
+    workspace
+        .output()
+        .select("..")
+        .matching(Inputs.acceptanceTests().glob())
+        .forEach(
+            outputSink -> {
+              try {
+                outputSink.delete();
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
   }
 }

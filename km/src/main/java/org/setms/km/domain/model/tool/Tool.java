@@ -158,7 +158,7 @@ public abstract class Tool {
       }
       return current.select(path.replaceAll("[^/]+", ".."));
     }
-    return sink;
+    return sink.select("..");
   }
 
   protected void build(

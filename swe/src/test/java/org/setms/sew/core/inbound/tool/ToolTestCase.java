@@ -80,13 +80,13 @@ abstract class ToolTestCase<T extends Artifact> {
     var input = (Input<T>) tool.getInputs().getFirst();
     var matchingObjects = workspace.input().matching(input.glob());
     assertThat(matchingObjects).as("Missing objects at").isNotEmpty();
-    var source = matchingObjects.iterator().next();
+    for (var source : matchingObjects) {
+      try (var sutStream = source.open()) {
+        var parsed = input.format().newParser().parse(sutStream, input.type(), true);
 
-    try (var sutStream = source.open()) {
-      var parsed = input.format().newParser().parse(sutStream, input.type(), true);
-
-      assertThat(parsed).isNotNull();
-      assertThatParsedObjectMatchesExpectations(parsed);
+        assertThat(parsed).isNotNull();
+        assertThatParsedObjectMatchesExpectations(parsed);
+      }
     }
   }
 
