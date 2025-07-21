@@ -68,6 +68,7 @@ graph
     DecisionTool([DecisionTool])
     ArchitectureTool([ArchitectureTool])
     ScreenTool([ScreenTool])
+    InfraTool([InfraTool])
     
     DomainStory <--> DomainStoryTool
     DomainStoryTool --> UseCase
@@ -77,19 +78,21 @@ graph
     CommandTool --> Entity
     UseCaseTool --> Aggregate
     Aggregate <--> AggregateTool
-    AggregateTool --> Entity
     UseCaseTool --> Event 
     Event <--> EventTool
     EventTool --> Entity
+    AggregateTool --> Entity
     UseCaseTool --> ReadModel
     ReadModel <--> ReadModelTool
     ReadModelTool --> Entity
     Entity <--> EntityTool
     Decision --> EntityTool
-    EntityTool --> Schema
+    EntityTool <--> Schema
     UseCaseTool --> Policy
     UseCaseTool --> Screen
     Screen <--> ScreenTool
+    Decision --> ScreenTool
+    ScreenTool <--> Form
     UseCaseTool --> Domain
     Domain <--> DomainTool
     DomainTool --> Module
@@ -97,6 +100,8 @@ graph
     Decision --> ModuleTool
     ModuleTool --> Component
     Component <--> ComponentTool
+    Decision --> ComponentTool
+    ComponentTool <--> Containerfile
     UseCaseTool --> AcceptanceTest
     Decision --> AcceptanceTestTool
     AcceptanceTest <--> AcceptanceTestTool
@@ -116,6 +121,8 @@ graph
     UseCaseTool --> Term
     Decision <--> DecisionTool
     ArchitectureTool <--> Decision
+    Decision --> InfraTool
+    InfraTool <--> Iac
 
     class DomainStory done;
     class DomainStoryTool wip;
@@ -153,4 +160,8 @@ graph
     class ArchitectureTool todo;
     class Screen todo;
     class ScreenTool todo;
+    class Containerfile todo;
+    class Form todo;
+    class InfraTool todo;
+    class Iac todo;
 ```
