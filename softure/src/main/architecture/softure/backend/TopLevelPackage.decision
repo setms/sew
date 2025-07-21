@@ -1,6 +1,6 @@
 package sew.backend
 
 decision TopLevelPackage {
-    choice    = "org.setms.sew"
+    choice    = "org.setms.softure"
     rationale = "Follow Java convention"
 }
