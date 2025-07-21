@@ -41,3 +41,116 @@ implement parsers/builders for the artifact type that it uses/produces.
 - `assemble` task depends on each tool's "build" functionality
 - `check` task depends on each tool's "validation" functionality
 - `help` task depends on each tool's "suggestions" functionality
+
+
+## Tools & artifacts
+
+```mermaid
+graph
+    classDef done fill:green,color:white
+    classDef wip fill:yellow
+    classDef todo fill:red,color:white
+    
+    DomainStoryTool([DomainStoryTool]);
+    UseCaseTool([UseCaseTool])
+    CommandTool([CommandTool])
+    AggregateTool([AggregateTool])
+    EventTool([EventTool])
+    ReadModelTool([ReadModelTool])
+    DomainTool([DomainTool])
+    ModuleTool([ModuleTool])
+    ComponentTool([ComponentTool])
+    AcceptanceTestTool([AcceptanceTestTool])
+    UnitTestTool([UnitTestTool])
+    EntityTool([EntityTool])
+    CiCdTool([CiCdTool])
+    GlossaryTool([GlossaryTool])
+    DecisionTool([DecisionTool])
+    ArchitectureTool([ArchitectureTool])
+    ScreenTool([ScreenTool])
+    
+    DomainStory <--> DomainStoryTool
+    DomainStoryTool --> UseCase
+    UseCase <--> UseCaseTool
+    UseCaseTool --> Command
+    Command <--> CommandTool
+    CommandTool --> Entity
+    UseCaseTool --> Aggregate
+    Aggregate <--> AggregateTool
+    AggregateTool --> Entity
+    UseCaseTool --> Event 
+    Event <--> EventTool
+    EventTool --> Entity
+    UseCaseTool --> ReadModel
+    ReadModel <--> ReadModelTool
+    ReadModelTool --> Entity
+    Entity <--> EntityTool
+    Decision --> EntityTool
+    EntityTool --> Schema
+    UseCaseTool --> Policy
+    UseCaseTool --> Screen
+    Screen <--> ScreenTool
+    UseCaseTool --> Domain
+    Domain <--> DomainTool
+    DomainTool --> Module
+    Module <--> ModuleTool
+    Decision --> ModuleTool
+    ModuleTool --> Component
+    Component <--> ComponentTool
+    UseCaseTool --> AcceptanceTest
+    Decision --> AcceptanceTestTool
+    AcceptanceTest <--> AcceptanceTestTool
+    Aggregate --> AcceptanceTestTool
+    ReadModel --> AcceptanceTestTool
+    Policy --> AcceptanceTestTool
+    AcceptanceTestTool --> UnitTest
+    UnitTest <--> UnitTestTool
+    Decision --> UnitTestTool
+    UnitTestTool --> Code
+    Component --> UnitTestTool
+    Component --> CiCdTool
+    Decision --> CiCdTool
+    CiCdTool <--> CiCdPipeline
+    DomainStoryTool --> Term
+    Term <--> GlossaryTool
+    UseCaseTool --> Term
+    Decision <--> DecisionTool
+    ArchitectureTool <--> Decision
+
+    class DomainStory done;
+    class DomainStoryTool wip;
+    class UseCase done;
+    class UseCaseTool wip;
+    class Command done;
+    class CommandTool todo;
+    class Aggregate done;
+    class AggregateTool todo;
+    class Event done;
+    class EventTool todo;
+    class ReadModel done;
+    class ReadModelTool todo;
+    class Policy done;
+    class Domain done;
+    class DomainTool wip;
+    class Module done;
+    class AcceptanceTest done;
+    class Entity done;
+    class Decision todo;
+    class EntityTool todo;
+    class Schema todo;
+    class ModuleTool wip;
+    class Component done;
+    class AcceptanceTestTool todo;
+    class UnitTest todo;
+    class UnitTestTool todo;
+    class CiCdTool todo;
+    class Code todo;
+    class CiCdPipeline todo;
+    class Term done;
+    class GlossaryTool wip;
+    class DecisionTool todo;
+    class ComponentTool todo;
+    class ArchitectureTool todo;
+    class Screen todo;
+    class ScreenTool todo;
+```
