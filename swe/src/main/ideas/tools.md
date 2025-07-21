@@ -69,7 +69,17 @@ graph
     ArchitectureTool([ArchitectureTool])
     ScreenTool([ScreenTool])
     InfraTool([InfraTool])
+    ProjectTool([ProjectTool])
     
+    ProjectTool <--> Vision
+    ProjectTool <--> BusinessRequirement
+    BusinessRequirement <--> BusinessRequirementTool
+    BusinessRequirementTool <--> UserRequirement
+    UserRequirement <--> UserRequirementTool
+    UserRequirementTool <--> DomainStory
+    ProjectTool <--> Stakeholder
+    Stakeholder --> DomainStoryTool
+    Stakeholder --> UseCaseTool
     DomainStory <--> DomainStoryTool
     DomainStoryTool --> UseCase
     UseCase <--> UseCaseTool
@@ -164,4 +174,11 @@ graph
     class Form todo;
     class InfraTool todo;
     class Iac todo;
+    class Stakeholder done;
+    class ProjectTool wip;
+    class Vision todo;
+    class BusinessRequirement todo;
+    class BusinessRequirementTool todo;
+    class UserRequirement todo;
+    class UserRequirementTool todo;
 ```

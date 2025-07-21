@@ -1,6 +1,6 @@
 package org.setms.sew.intellij.filetype;
 
-import org.setms.sew.core.inbound.tool.StakeholdersTool;
+import org.setms.sew.core.inbound.tool.ProjectTool;
 
 public class OwnerFileType extends SalLanguageFileType {
 
@@ -11,6 +11,6 @@ public class OwnerFileType extends SalLanguageFileType {
         "Owner",
         "Stakeholder who finances the development of the system",
         SewIcons.OWNER,
-        new StakeholdersTool());
+        new ProjectTool());
   }
 }

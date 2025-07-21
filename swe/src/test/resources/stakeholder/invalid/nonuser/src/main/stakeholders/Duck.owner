@@ -1,5 +1,0 @@
-package nonuser
-
-owner Duck {
-    display = "Dagobert"
-}

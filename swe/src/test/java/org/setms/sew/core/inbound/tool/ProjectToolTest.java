@@ -11,38 +11,35 @@ import java.util.SequencedCollection;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
-import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
+class ProjectToolTest extends ToolTestCase<Stakeholder> {
 
   private static final String OWNER_SKELETON =
       """
-      package noowner
+      package missing
 
       owner Some {
         display = "<Some role>"
       }
       """;
 
-  public StakeholdersToolTest() {
-    super(new StakeholdersTool(), Stakeholder.class, "main/stakeholders");
+  public ProjectToolTest() {
+    super(new ProjectTool(), Stakeholder.class, "main/stakeholders");
   }
 
   @Override
   protected void assertInputs(List<Input<?>> actual) {
-    assertThat(actual).hasSize(3);
+    assertThat(actual).hasSize(2);
     assertThat(actual)
         .allSatisfy(input -> assertThat(input.format()).isInstanceOf(SalFormat.class));
-    assertStakeholder(actual.get(0), User.class);
-    assertStakeholder(actual.get(1), Owner.class);
-    assertUseCase(actual.get(2));
+    assertStakeholder(actual.getFirst(), Owner.class);
+    assertStakeholder(actual.get(1), User.class);
   }
 
   private void assertStakeholder(Input<?> input, Class<? extends Stakeholder> type) {
@@ -51,15 +48,9 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
     assertThat(input.type()).isEqualTo(type);
   }
 
-  private void assertUseCase(Input<?> input) {
-    assertThat(input.glob().path()).isEqualTo("src/main/requirements");
-    assertThat(input.glob().pattern()).isEqualTo("**/*.useCase");
-    assertThat(input.type()).isEqualTo(UseCase.class);
-  }
-
   @Test
   void shouldRejectMissingOwner() throws IOException {
-    var workspace = workspaceFor("invalid/noowner");
+    var workspace = workspaceFor("invalid/missing");
 
     var actual = getTool().validate(workspace);
 
@@ -107,44 +98,12 @@ class StakeholdersToolTest extends ToolTestCase<Stakeholder> {
 
   @Test
   void shouldRejectMultipleOwners() {
-    var source = workspaceFor("invalid/owners");
+    var source = workspaceFor("invalid/multiple");
 
     var actual = getTool().validate(source);
 
     assertThat(actual)
         .hasSize(1)
         .contains(new Diagnostic(ERROR, "There can be only one owner, but found First, Second"));
-  }
-
-  @Test
-  void shouldRejectNonUserInUserCase() {
-    var source = workspaceFor("invalid/nonuser");
-
-    var actual = getTool().validate(source);
-
-    assertThat(actual)
-        .hasSize(1)
-        .contains(
-            new Diagnostic(
-                ERROR,
-                "Only users can appear in use case scenarios, found owner Duck",
-                new Location(
-                    "nonuser", "useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
-  }
-
-  @Test
-  void shouldRejectUnknownUserInUserCase() {
-    var source = workspaceFor("invalid/missing");
-
-    var actual = getTool().validate(source);
-
-    assertThat(actual)
-        .hasSize(1)
-        .contains(
-            new Diagnostic(
-                ERROR,
-                "Unknown user Micky",
-                new Location(
-                    "missing", "useCase", "JustDoIt", "scenario", "HappyPath", "steps[0]")));
   }
 }

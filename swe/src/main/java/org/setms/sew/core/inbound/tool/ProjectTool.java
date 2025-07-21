@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -22,18 +21,16 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
-import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
-import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class StakeholdersTool extends Tool {
+public class ProjectTool extends Tool {
 
   private static final String SUGGESTION_CREATE_OWNER = "stakeholders.createOwner";
 
   @Override
   public List<Input<?>> getInputs() {
-    return List.of(users(), owners(), useCases());
+    return List.of(owners(), users());
   }
 
   @Override
@@ -45,9 +42,6 @@ public class StakeholdersTool extends Tool {
   protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var owners = inputs.get(Owner.class);
     validateOwner(owners, diagnostics);
-    var users = inputs.get(User.class);
-    var useCases = inputs.get(UseCase.class);
-    validateUseCaseUsers(useCases, users, owners, diagnostics);
   }
 
   public void validateOwner(List<Owner> owners, Collection<Diagnostic> diagnostics) {
@@ -65,62 +59,6 @@ public class StakeholdersTool extends Tool {
               "There can be only one owner, but found "
                   + owners.stream().map(Owner::getName).sorted().collect(joining(", "))));
     }
-  }
-
-  private void validateUseCaseUsers(
-      List<UseCase> useCases,
-      List<User> users,
-      List<Owner> owners,
-      Collection<Diagnostic> diagnostics) {
-    useCases.forEach(useCase -> validateUseCaseUsers(useCase, users, owners, diagnostics));
-  }
-
-  private void validateUseCaseUsers(
-      UseCase useCase, List<User> users, List<Owner> owners, Collection<Diagnostic> diagnostics) {
-    useCase
-        .getScenarios()
-        .forEach(
-            scenario ->
-                scenario
-                    .getSteps()
-                    .forEach(
-                        step -> {
-                          Location location = useCase.toLocation();
-                          validateStepUsers(
-                              scenario.appendTo(location).plus("steps", scenario.getSteps(), step),
-                              step,
-                              users,
-                              owners,
-                              diagnostics);
-                        }));
-  }
-
-  private void validateStepUsers(
-      Location location,
-      Link step,
-      List<User> users,
-      List<Owner> owners,
-      Collection<Diagnostic> diagnostics) {
-    if ("user".equals(step.getType())) {
-      var name = step.getId();
-      var user = find(name, users);
-      if (user.isEmpty()) {
-        var owner = find(name, owners);
-        if (owner.isPresent()) {
-          diagnostics.add(
-              new Diagnostic(
-                  ERROR,
-                  "Only users can appear in use case scenarios, found owner " + name,
-                  location));
-        } else {
-          diagnostics.add(new Diagnostic(ERROR, "Unknown user " + name, location));
-        }
-      }
-    }
-  }
-
-  private <T extends Stakeholder> Optional<T> find(String name, List<T> candidates) {
-    return candidates.stream().filter(candidate -> name.equals(candidate.getName())).findFirst();
   }
 
   @Override

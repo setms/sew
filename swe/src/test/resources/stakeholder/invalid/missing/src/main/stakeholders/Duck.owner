@@ -1,5 +1,0 @@
-package missing
-
-owner Duck {
-    display = "Dagobert"
-}
