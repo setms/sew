@@ -139,7 +139,7 @@ graph
     class UseCase done;
     class UseCaseTool wip;
     class Command done;
-    class CommandTool todo;
+    class CommandTool done;
     class Aggregate done;
     class AggregateTool todo;
     class Event done;
