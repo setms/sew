@@ -103,10 +103,10 @@ graph
     Aggregate --> AcceptanceTestTool
     ReadModel --> AcceptanceTestTool
     Policy --> AcceptanceTestTool
-    AcceptanceTestTool --> UnitTest
+    AcceptanceTestTool <--> UnitTest
     UnitTest <--> UnitTestTool
     Decision --> UnitTestTool
-    UnitTestTool --> Code
+    UnitTestTool <--> Code
     Component --> UnitTestTool
     Component --> CiCdTool
     Decision --> CiCdTool
