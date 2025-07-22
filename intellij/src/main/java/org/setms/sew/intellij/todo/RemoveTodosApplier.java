@@ -19,6 +19,9 @@ public class RemoveTodosApplier extends BaseChangeApplier {
     var toolInput = tool.getInputs().getFirst();
     try (var input = file.getInputStream()) {
       var artifact = toolInput.format().newParser().parse(input, toolInput.type(), false);
+      if (artifact == null) {
+        return;
+      }
       var location = artifact.toLocation();
       System.out.printf("Removing todos about %s%n", location);
     } catch (IOException e) {
