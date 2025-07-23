@@ -63,21 +63,5 @@
         <annotator language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalAnnotator"/>
         <!-- Acceptance -->
         <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
-
-        <notificationGroup
-                id="Sew"
-                displayType="BALLOON"
-                isLogByDefault="true"
-                toolWindowId="Event Log"/>
-        <vfs.asyncListener implementation="org.setms.sew.intellij.todo.FileListener"/>
-        <postStartupActivity implementation="org.setms.sew.intellij.todo.FileListenerStartup"/>
-
-        <!-- TODO as title is already taken -->
-        <toolWindow
-                id="Tasks"
-                anchor="left"
-                secondary="true"
-                icon="/icons/todos.svg"
-                factoryClass="org.setms.sew.intellij.todo.TodoWindowFactory"/>
     </extensions>
 </idea-plugin>
