@@ -56,7 +56,7 @@ class VirtualFileInputSource implements InputSource {
         .filter(fileFilter)
         .forEach(
             child -> {
-              if (pattern.matcher(child.getName()).matches()) {
+              if (pattern.matcher(child.getName()).matches() && fileFilter.test(child)) {
                 sources.add(new VirtualFileInputSource(child, fileFilter));
               } else {
                 addChildren(child, pattern, sources);

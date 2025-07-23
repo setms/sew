@@ -33,6 +33,10 @@ public class Sentence extends Artifact {
 
   @Override
   public void validate(Location location, Collection<Diagnostic> diagnostics) {
+    if (parts == null) {
+      diagnostics.add(new Diagnostic(ERROR, "Missing parts", location));
+      return;
+    }
     if (parts.size() < 3) {
       diagnostics.add(
           new Diagnostic(

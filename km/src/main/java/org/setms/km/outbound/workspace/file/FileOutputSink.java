@@ -5,12 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.setms.km.domain.model.format.Files;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.InputSource;
 import org.setms.km.domain.model.workspace.OutputSink;
@@ -59,7 +59,7 @@ class FileOutputSink implements OutputSink {
 
   @Override
   public void delete() throws IOException {
-    Files.delete(file.toPath());
+    Files.delete(file);
   }
 
   @Override
