@@ -7,12 +7,14 @@ The architecture of a knowledge management (KM) system is mainly
 - The inputs are **artifacts** that capture knowledge about the problem to solve.
 - The outputs are either new or updated artifacts that knowledge workers enhance, or **reports** that help knowledge
   workers enhance artifacts.
-- The KM system implements the pipes that connect the output artifacts of one tool to the input artifacts of another.
+- The **KM system** implements the pipes that connect the output artifacts of one tool to the input artifacts of others.
+- The **knowledge product** is the sum of all artifacts.
 
 ```mermaid
 graph
     System[KM system]
     ToolRegistry[Tool registry]
+    KnowledgeProduct[Knowledge product]
     
     Tool -- registered in --> ToolRegistry
     System -- responds to changes in --> Workspace
@@ -27,6 +29,7 @@ graph
     Format -- uses --> Builder
     Parser -- parses --> Artifact
     Builder -- builds --> Artifact
+    KnowledgeProduct -- consists of many --> Artifact
     Tool -- may build\nartifacts using --> Builder
     Tool -- consumes --> Artifact
     Tool -- produces --> Artifact
@@ -44,14 +47,14 @@ graph
 
 The KM process kicks off with one or more tools that issue diagnostics with suggestions to get the
 endeavor started.
-Applying those suggestions creates skeletons of artifacts, which knowledge workers then add the knowledge to.
+Applying those suggestions creates skeletons of artifacts, which knowledge workers then add knowledge to.
 Some of those additions trigger a tool to create more artifacts, etc.
-The process ends when all artifacts are complete.
+The process ends when all artifacts that make up the knowledge product are complete.
 
 For instance, in a case management system for social workers, the system may start with the suggestion to add details
 about a client.
-The social worker adds those details, which prompts the system to suggest adding information about the problem to solve
-for the client, etc, etc.
+The social worker adds those details, which prompts the system to suggest adding information about the client's problem, 
+etc, etc.
 
 
 ## Software development tools and artifacts
@@ -59,7 +62,8 @@ for the client, etc, etc.
 At a high level, the same happens in software development.
 The Software Engineering Workbench (SEW) kicks off a project by asking for a vision.
 Once the business sponsor adds that, the SEW asks for business requirements, etc, etc.
-The software development process ends when code running in production is contributing positively to the business goals.
+The software development process ends when code running in production is contributing positively to the business goals,
+as outlined in the vision.
 
 ```mermaid
 graph
@@ -206,13 +210,13 @@ Developing software requires tackling both essential and accidental complexity.
 
 ## Performance considerations
 
-A big difference between a social worker's case and a software system is their complexity, as measured in the number of
-artifacts required to describe the knowledge product.
+Speaking of complexity, a big difference between a social worker's case and a software system is their complexity, as
+measured by the number of artifacts required to describe the knowledge product.
 It's therefore important that a SEW handles large numbers of artifacts efficiently:
 
 - It should cache the results of finding artifacts in the workspace that match globs for a tool, since different tools
-  use the same inputs.
+  use the same inputs and tools run frequently.
 - It should keep track of changes to artifacts and automatically run the appropriate tools to validate them.
   It should also cache suggestions associated with those validations, so that it can present them to knowledge workers
   when they're ready to act them.
-- It should build and cache reports that help knowledge workers perform their tasks of enhancing artifacts.
+- It should build reports that help knowledge workers perform their tasks of enhancing artifacts only when necessary.
