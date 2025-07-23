@@ -31,6 +31,7 @@ junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref
 junit5-runtime = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
 languagetool = { module = "org.languagetool:language-en", version.ref = "languagetool" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
@@ -46,7 +47,7 @@ antlr-runtime = ["antlr-runtime"]
 classgraph = ["classgraph"]
 language = ["evo-inflector", "languagetool"]
 visualization = ["jgraphx", "jfreechart"]
-junit = ["junit5", "junit5-params", "mockito", "assertj"]
+junit = ["junit5", "junit5-params", "mockito", "mockito-junit", "assertj"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
 slf4f = ["slf4j-api"]
 spring-boot = ["spring-thymeleaf", "spring-validation", "spring-web"]

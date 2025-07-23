@@ -47,7 +47,7 @@ public abstract class BaseTool {
    * @param workspace the workspace in which to find inputs and store outputs
    * @return any validation issues
    */
-  public final SequencedSet<Diagnostic> validate(Workspace workspace) {
+  public SequencedSet<Diagnostic> validate(Workspace workspace) {
     var result = new LinkedHashSet<Diagnostic>();
     validate(resolveInputs(workspace.input(), result), result);
     createTodosFor(workspace.output(), result);
@@ -121,7 +121,7 @@ public abstract class BaseTool {
    * @param workspace where to retrieve input and store output
    * @return diagnostics about building the output
    */
-  public final List<Diagnostic> build(Workspace workspace) {
+  public List<Diagnostic> build(Workspace workspace) {
     var result = new ArrayList<Diagnostic>();
     build(resolveInputs(workspace.input(), result), workspace.output(), result);
     return result;

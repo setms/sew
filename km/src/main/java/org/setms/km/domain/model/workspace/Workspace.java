@@ -34,4 +34,6 @@ public abstract class Workspace {
   void onDeleted(URI artifactUri) {
     log.info("Artifact at {} was deleted", artifactUri);
   }
+
+  public void registerChangeHandler(ArtifactChangedHandler handler) {}
 }

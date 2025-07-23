@@ -225,7 +225,7 @@ A KM system that stores artifacts in a file system should maintain a `.km` direc
 
 - `globs/<glob>` contains a list of artifacts matching the glob
   - updated when artifacts matching the glob are added or deleted
-- `suggestions/<tool>/<location>/<suggestion>` contains a suggestion created by the given tool for the artifact at the
+- `diagnostics/<tool>/<location>/<diagnostic>` contains a diagnostic created by the given tool for the artifact at the
   given location
   - deleted before a tool validates an artifact at the location
   - created based on the validation results
