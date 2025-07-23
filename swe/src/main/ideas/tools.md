@@ -1,18 +1,13 @@
-# Architecture
+# Tools and artifacts
 
-The architecture is mainly
+The architecture of a knowledge management system is mainly
 [pipes and filters](https://www.enterpriseintegrationpatterns.com/patterns/messaging/PipesAndFilters.html):
 
-- The filters are tools that consume inputs and produce outputs.
-- The overall system implements the pipes that connect the outputs of one tool to the inputs of another.
-
-## Tools infrastructure
-
-If we maintain a registry of tools, we can reason about them in the abstract.
-For instance, a Gradle plugin could read all tools from the registry and generate task definitions, without
-understanding the specifics of any particular tool.
-Or an IntelliJ plugin could read all input formats and register file extensions and syntax highlighters for them,
-without understanding the specifics of particular file format.
+- The filters are **tools** that consume inputs and produce outputs.
+- The inputs are **artifacts** that capture knowledge about the problem to solve.
+- The outputs are either new or updated artifacts that knowledge workers enhance, or **reports** that help knowledge
+  workers enhance artifacts.
+- The system implements the pipes that connect the outputs of one tool to the inputs of another.
 
 ```mermaid
 graph
@@ -31,19 +26,32 @@ graph
     Tool -- produces --> Artifact
     Tool -- issues --> Diagnostic
     Diagnostic -- provides --> Suggestion
+    Tool -- applies --> Suggestion
+    Artifact -- is stored in --> Workspace
+    KnowledgeWorker -- adds to --> Artifact
+    KnowledgeWorker -- reads --> Report
+    Tool -- builds --> Report
+    Report -- is stored in --> Workspace
 ```
 
-Every tool would live in its own jar and depend on a shared jar that implements the above model and on jars that
-implement parsers/builders for the artifact type that it uses/produces.
+The knowledge management process kicks off with one or more tools that issue diagnostics with suggestions to get the
+endeavor started.
+Applying those suggestions creates skeletons of artifacts, which knowledge workers then add the knowledge to.
+Some of those additions trigger a tool to create more artifacts, etc.
+The process ends when all artifacts are complete.
 
-## Gradle
+For instance, in a case management system for social workers, the system may start with the suggestion to add details
+about a client.
+The social worker adds those details, which prompts the system to suggest adding information about the problem to solve
+for the client, etc, etc.
 
-- `assemble` task depends on each tool's "build" functionality
-- `check` task depends on each tool's "validation" functionality
-- `help` task depends on each tool's "suggestions" functionality
 
+## Software development tools and artifacts
 
-## Tools & artifacts
+At a high level, the same happens in software development.
+The Software Engineering Workbench (SEW) kicks off a project by asking for a vision.
+Once the business sponsor adds that, the SEW asks for business requirements, etc, etc.
+The software development process ends when code running in production is contributing positively to the business goals.
 
 ```mermaid
 graph
@@ -182,3 +190,22 @@ graph
     class UserRequirement todo;
     class UserRequirementTool todo;
 ```
+
+Note that there are two starting points: `ProjectTool` kicks off exploration of the problem space, while
+`ArchitectureTool` starts off navigation of the solution space.
+Developing software requires tackling both essential and accidental complexity.
+
+
+## Performance considerations
+
+A big difference between a social worker's case and a software system is their complexity, as measured in the number of
+artifacts required to describe the knowledge product.
+It's therefore important that a SEW handles large numbers of artifacts efficiently:
+
+- It should cache the results of finding artifacts in the workspace that match globs for a tool, since different tools
+  use the same inputs.
+- It should keep track of changes to artifacts and automatically run the appropriate tools to validate them.
+  It should also cache suggestions associated with those validations, so that it can present them to knowledge workers
+  when they're ready for them.
+- It should build and cache reports based on the artifacts that help knowledge workers perform their tasks of enhancing
+  artifacts.
