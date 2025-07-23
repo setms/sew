@@ -1,6 +1,5 @@
 package org.setms.km.domain.model.tool;
 
-import static java.util.function.Predicate.not;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.*;
@@ -10,25 +9,36 @@ import org.setms.km.domain.model.artifact.Artifact;
 @NoArgsConstructor(access = PRIVATE)
 public class ToolRegistry {
 
-  private static final Map<Class<? extends Artifact>, BaseTool> toolsByArtifactType =
-      new HashMap<>();
+  private static final Collection<BaseTool> tools = new HashSet<>();
 
   static {
+    reload();
+  }
+
+  public static void reload() {
+    clear();
     for (var tool : ServiceLoader.load(BaseTool.class)) {
       add(tool);
     }
   }
 
+  public static void clear() {
+    tools.clear();
+  }
+
   public static void add(BaseTool tool) {
-    Optional.ofNullable(tool)
-        .map(BaseTool::getInputs)
-        .filter(not(Collection::isEmpty))
-        .map(List::getFirst)
-        .map(Input::type)
-        .ifPresent(type -> toolsByArtifactType.put(type, tool));
+    tools.add(tool);
   }
 
   public static <T extends Artifact> Optional<BaseTool> handling(Class<T> type) {
-    return Optional.ofNullable(toolsByArtifactType.get(type));
+    return tools.stream()
+        .filter(tool -> tool.getInputs().stream().limit(1).map(Input::type).anyMatch(type::equals))
+        .findFirst();
+  }
+
+  public static Collection<BaseTool> dependingOn(Class<? extends Artifact> type) {
+    return tools.stream()
+        .filter(tool -> tool.getInputs().stream().map(Input::type).anyMatch(type::equals))
+        .toList();
   }
 }

@@ -26,24 +26,29 @@ class KmSystemTest {
   @Mock Workspace workspace;
   @InjectMocks KmSystem kmSystem;
   @Captor ArgumentCaptor<ArtifactChangedHandler> artifactChangedCaptor;
-  private final FakeTool tool = new FakeTool();
-  private final FakeArtifact artifact = new FakeArtifact(new FullyQualifiedName("ape.Bear"));
+  private final MainTool mainTool = new MainTool();
+  private final OtherTool otherTool = new OtherTool();
+  private final MainArtifact artifact = new MainArtifact(new FullyQualifiedName("ape.Bear"));
 
   @BeforeEach
   void init() {
-    ToolRegistry.add(tool);
+    ToolRegistry.reload();
+    ToolRegistry.add(mainTool);
+    ToolRegistry.add(otherTool);
   }
 
   @Test
   void shouldValidateChangedArtifact() {
     verify(workspace).registerChangeHandler(artifactChangedCaptor.capture());
     var handler = artifactChangedCaptor.getValue();
-    tool.validations.add(new Diagnostic(ERROR, "message"));
+    mainTool.validations.add(new Diagnostic(ERROR, "message"));
 
     handler.changed(artifact);
 
-    assertThat(tool.validated).isTrue();
-    assertThat(tool.built).isFalse();
+    assertThat(mainTool.validated).as("main validated").isTrue();
+    assertThat(mainTool.built).as("main built").isFalse();
+    assertThat(otherTool.validated).as("other validated").isFalse();
+    assertThat(otherTool.built).as("other built").isFalse();
   }
 
   @Test
@@ -53,18 +58,20 @@ class KmSystemTest {
 
     handler.changed(artifact);
 
-    assertThat(tool.validated).isTrue();
-    assertThat(tool.built).isTrue();
+    assertThat(mainTool.validated).as("main validated").isTrue();
+    assertThat(mainTool.built).as("main built").isTrue();
+    assertThat(otherTool.validated).as("other validated").isFalse();
+    assertThat(otherTool.built).as("other built").isTrue();
   }
 
-  private static class FakeArtifact extends Artifact {
+  private static class MainArtifact extends Artifact {
 
-    public FakeArtifact(FullyQualifiedName fullyQualifiedName) {
+    public MainArtifact(FullyQualifiedName fullyQualifiedName) {
       super(fullyQualifiedName);
     }
   }
 
-  private static class FakeTool extends BaseTool {
+  private static class MainTool extends BaseTool {
 
     private boolean validated;
     private final SequencedSet<Diagnostic> validations = new LinkedHashSet<>();
@@ -72,7 +79,7 @@ class KmSystemTest {
 
     @Override
     public List<Input<?>> getInputs() {
-      return List.of(new Input<>("fake", null, FakeArtifact.class));
+      return List.of(new Input<>("fake", null, MainArtifact.class));
     }
 
     @Override
@@ -84,6 +91,43 @@ class KmSystemTest {
     public SequencedSet<Diagnostic> validate(Workspace workspace) {
       validated = true;
       return validations;
+    }
+
+    @Override
+    public List<Diagnostic> build(Workspace workspace) {
+      built = true;
+      return new ArrayList<>();
+    }
+  }
+
+  private static class OtherArtifact extends Artifact {
+
+    public OtherArtifact(FullyQualifiedName fullyQualifiedName) {
+      super(fullyQualifiedName);
+    }
+  }
+
+  private static class OtherTool extends BaseTool {
+
+    private boolean validated;
+    private boolean built;
+
+    @Override
+    public List<Input<?>> getInputs() {
+      return List.of(
+          new Input<>("foo", null, OtherArtifact.class),
+          new Input<>("bar", null, MainArtifact.class));
+    }
+
+    @Override
+    public Optional<Output> getOutputs() {
+      return Optional.empty();
+    }
+
+    @Override
+    public SequencedSet<Diagnostic> validate(Workspace workspace) {
+      validated = true;
+      return new LinkedHashSet<>();
     }
 
     @Override

@@ -16,14 +16,18 @@ public class KmSystem {
   }
 
   private void artifactChanged(Artifact artifact) {
-    ToolRegistry.handling(artifact.getClass())
-        .ifPresent(
-            tool -> {
-              if (tool.validate(workspace).stream()
-                  .map(Diagnostic::level)
-                  .noneMatch(Level.ERROR::equals)) {
-                tool.build(workspace);
-              }
-            });
+    var maybeTool = ToolRegistry.handling(artifact.getClass());
+    var valid = true;
+    if (maybeTool.isPresent()) {
+      var tool = maybeTool.get();
+      valid =
+          tool.validate(workspace).stream().map(Diagnostic::level).noneMatch(Level.ERROR::equals);
+      if (valid) {
+        tool.build(workspace);
+      }
+    }
+    if (valid) {
+      ToolRegistry.dependingOn(artifact.getClass()).forEach(tool -> tool.build(workspace));
+    }
   }
 }
