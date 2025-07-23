@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 
 @NoArgsConstructor(access = PRIVATE)
-public class Tools {
+public class ToolRegistry {
 
   private static final Map<Class<? extends Artifact>, Tool> toolsByArtifactType = new HashMap<>();
 
