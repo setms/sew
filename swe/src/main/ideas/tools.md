@@ -218,5 +218,5 @@ It's therefore important that a SEW handles large numbers of artifacts efficient
   use the same inputs and tools run frequently.
 - It should keep track of changes to artifacts and automatically run the appropriate tools to validate them.
   It should also cache suggestions associated with those validations, so that it can present them to knowledge workers
-  when they're ready to act them.
-- It should build reports that help knowledge workers perform their tasks of enhancing artifacts only when necessary.
+  when they're ready to act on them.
+- It should only build reports when necessary, i.e. when the inputs on which they depend change.
