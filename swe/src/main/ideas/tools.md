@@ -11,7 +11,13 @@ The architecture of a knowledge management (KM) system is mainly
 
 ```mermaid
 graph
+    System[KM system]
+    ToolRegistry[Tool registry]
+    
     Tool -- registered in --> ToolRegistry
+    System -- responds to changes in --> Workspace
+    System -- find tools in --> ToolRegistry
+    System -- calls --> Tool
     Tool -- defines\noutput as --> Output
     Output -- builds\nartifacts at --> Glob
     Tool -- defines input as --> Input
@@ -26,10 +32,12 @@ graph
     Tool -- produces --> Artifact
     Tool -- issues --> Diagnostic
     Diagnostic -- provides --> Suggestion
-    Tool -- applies --> Suggestion
+    Tool -- performs --> Suggestion
     Artifact -- is stored in --> Workspace
-    KnowledgeWorker -- adds to --> Artifact
+    KnowledgeWorker -- updates --> Artifact
+    KnowledgeWorker -- reads --> Diagnostic
     KnowledgeWorker -- reads --> Report
+    KnowledgeWorker -- applies --> Suggestion
     Tool -- builds --> Report
     Report -- is stored in --> Workspace
 ```
@@ -206,5 +214,5 @@ It's therefore important that a SEW handles large numbers of artifacts efficient
   use the same inputs.
 - It should keep track of changes to artifacts and automatically run the appropriate tools to validate them.
   It should also cache suggestions associated with those validations, so that it can present them to knowledge workers
-  when they're ready for them.
+  when they're ready to act them.
 - It should build and cache reports that help knowledge workers perform their tasks of enhancing artifacts.
