@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Files;
 import org.setms.km.domain.model.format.Format;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.file.DirectoryWorkspace;
@@ -25,19 +25,19 @@ abstract class ToolTestCase<T extends Artifact> {
   private static final String FILE_URI_SCHEME = "file:";
 
   @Getter(PROTECTED)
-  private final Tool tool;
+  private final BaseTool tool;
 
   private final Class<? extends Format> formatType;
   private final String sourceLocation;
   private final String extension;
   private final File baseDir;
 
-  protected ToolTestCase(Tool tool, Class<T> type, String sourceLocation) {
+  protected ToolTestCase(BaseTool tool, Class<T> type, String sourceLocation) {
     this(tool, type, SalFormat.class, sourceLocation);
   }
 
   protected ToolTestCase(
-      Tool tool, Class<T> type, Class<? extends Format> formatType, String sourceLocation) {
+          BaseTool tool, Class<T> type, Class<? extends Format> formatType, String sourceLocation) {
     this.tool = tool;
     this.formatType = formatType;
     this.sourceLocation = sourceLocation;

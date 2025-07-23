@@ -16,10 +16,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import javax.swing.SwingConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.OutputSink;
@@ -29,7 +29,7 @@ import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 
 @Slf4j
-public class ModulesTool extends Tool {
+public class ModulesTool extends BaseTool {
 
   private static final String OUTPUT_PATH = "reports/modules";
   private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";

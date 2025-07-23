@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.sew.intellij.filetype.SalLanguageFileType;
 import org.setms.sew.intellij.lang.LevelSeverity;
@@ -31,7 +31,7 @@ public class SalAnnotator implements Annotator {
 
   private static String previousDocumentText;
   private static Set<Diagnostic> diagnostics = emptySet();
-  private static Tool tool;
+  private static BaseTool tool;
 
   @Override
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -90,7 +90,7 @@ public class SalAnnotator implements Annotator {
             });
   }
 
-  private Set<Diagnostic> validateFile(Tool tool, PsiFile file) {
+  private Set<Diagnostic> validateFile(BaseTool tool, PsiFile file) {
     return tool.validate(new VirtualFileWorkspace(file, tool));
   }
 

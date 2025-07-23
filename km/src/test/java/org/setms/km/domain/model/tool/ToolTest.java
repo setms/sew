@@ -1,12 +1,11 @@
 package org.setms.km.domain.model.tool;
 
-
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 class ToolTest {
 
-  private final Tool tool = new FooTool();
+  private final BaseTool tool = new FooTool();
 
   @Test
   void shouldCreateTodoForDiagnosticsWithSuggestions() throws IOException {

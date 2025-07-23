@@ -10,17 +10,17 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.sew.core.domain.model.sdlc.acceptance.Scenario;
 
-public class AcceptanceTestTool extends Tool {
+public class AcceptanceTestTool extends BaseTool {
 
   @Override
   public List<Input<?>> getInputs() {

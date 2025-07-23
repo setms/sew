@@ -9,10 +9,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -21,7 +21,7 @@ import org.setms.sew.core.domain.model.sdlc.design.Entity;
 import org.setms.sew.core.domain.model.sdlc.eventstorming.Command;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class CommandTool extends Tool {
+public class CommandTool extends BaseTool {
 
   public static final String CREATE_PAYLOAD = "payload.create";
 

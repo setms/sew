@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.sew.intellij.filetype.BaseLanguageFileType;
 
 public abstract class BaseParserDefinition implements ParserDefinition {
@@ -22,7 +22,7 @@ public abstract class BaseParserDefinition implements ParserDefinition {
     fileTypes.add(fileType);
   }
 
-  public static Optional<Tool> toolFor(VirtualFile file) {
+  public static Optional<BaseTool> toolFor(VirtualFile file) {
     return Optional.ofNullable(file)
         .map(VirtualFile::getFileType)
         .filter(BaseLanguageFileType.class::isInstance)

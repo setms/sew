@@ -1,7 +1,7 @@
 package org.setms.sew.core.inbound.tool;
 
 import java.io.File;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Level;
 import org.setms.km.outbound.workspace.file.DirectoryWorkspace;
 
@@ -17,7 +17,7 @@ public class ToolRunner {
           ToolRunner.class
               .getClassLoader()
               .loadClass("%s.%s".formatted(ToolRunner.class.getPackageName(), args[0]));
-      var tool = (Tool) toolType.getDeclaredConstructor().newInstance();
+      var tool = (BaseTool) toolType.getDeclaredConstructor().newInstance();
       var workspace = new DirectoryWorkspace(new File(args[1]), new File(args[2]));
       var diagnostics = tool.build(workspace);
       diagnostics.forEach(

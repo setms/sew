@@ -9,7 +9,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Location;
 
 @Getter
@@ -29,9 +29,9 @@ public class Todo extends Artifact {
     super(fullyQualifiedName);
   }
 
-  public Tool toTool() {
+  public BaseTool toTool() {
     try {
-      return (Tool) Class.forName(this.tool).getDeclaredConstructor().newInstance();
+      return (BaseTool) Class.forName(this.tool).getDeclaredConstructor().newInstance();
     } catch (ReflectiveOperationException e) {
       throw new RuntimeException(e);
     }

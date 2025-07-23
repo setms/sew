@@ -1,10 +1,9 @@
 package org.setms.km.domain.model.tool;
 
-
 import java.util.List;
 import java.util.Optional;
 
-public class BarTool extends Tool {
+public class BarTool extends BaseTool {
 
   @Override
   public List<Input<?>> getInputs() {

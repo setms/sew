@@ -3,7 +3,7 @@ package org.setms.sew.intellij.todo;
 import com.intellij.openapi.vfs.AsyncFileListener;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.sew.intellij.filetype.BaseLanguageFileType;
 
 public abstract class BaseChangeApplier implements AsyncFileListener.ChangeApplier {
@@ -18,7 +18,7 @@ public abstract class BaseChangeApplier implements AsyncFileListener.ChangeAppli
     return file;
   }
 
-  protected Tool getTool() {
+  protected BaseTool getTool() {
     return ((BaseLanguageFileType) file.getFileType()).getTool();
   }
 }

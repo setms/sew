@@ -28,8 +28,8 @@ import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Output;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.sew.intellij.tool.VirtualFileWorkspace;
 
@@ -57,10 +57,10 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   private final JPanel panel;
   private final RateLimiter rateLimiter;
   private final VirtualFile file;
-  private final Tool tool;
+  private final BaseTool tool;
   private Workspace workspace;
 
-  public HtmlPreview(Project ignored, VirtualFile file, @NotNull Tool tool) {
+  public HtmlPreview(Project ignored, VirtualFile file, @NotNull BaseTool tool) {
     this.tool = tool;
     this.file = file;
     panel = new JPanel(new BorderLayout());

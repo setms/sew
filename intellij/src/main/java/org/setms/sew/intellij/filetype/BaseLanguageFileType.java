@@ -10,7 +10,7 @@ import javax.swing.Icon;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.sew.intellij.lang.LanguageFile;
 
 public abstract class BaseLanguageFileType extends LanguageFileType {
@@ -19,7 +19,7 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
   private final String description;
   private final String extension;
   private final Icon icon;
-  private final Tool tool;
+  private final BaseTool tool;
 
   public BaseLanguageFileType(
       @NotNull Language language,
@@ -27,7 +27,7 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
       String description,
       String extension,
       Icon icon,
-      Tool tool) {
+      BaseTool tool) {
     super(language);
     this.name = name;
     this.description = description;
@@ -61,7 +61,7 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
     return icon;
   }
 
-  public Tool getTool() {
+  public BaseTool getTool() {
     return tool;
   }
 

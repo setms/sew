@@ -30,7 +30,7 @@ import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.services.DomainStoryToUseCase;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class DomainStoryTool extends Tool {
+public class DomainStoryTool extends BaseTool {
 
   private static final int ICON_SIZE = 52;
   private static final int MAX_TEXT_LENGTH = ICON_SIZE / 4;

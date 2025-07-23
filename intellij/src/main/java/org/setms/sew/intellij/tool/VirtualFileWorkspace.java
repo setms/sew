@@ -4,7 +4,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.workspace.InputSource;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -16,15 +16,15 @@ public class VirtualFileWorkspace extends Workspace {
   private final VirtualFile file;
   private final Predicate<VirtualFile> inputFilter;
 
-  public VirtualFileWorkspace(PsiFile file, Tool tool) {
+  public VirtualFileWorkspace(PsiFile file, BaseTool tool) {
     this(rootOf(file.getVirtualFile(), tool), f -> true);
   }
 
-  public VirtualFileWorkspace(VirtualFile file, Tool tool) {
+  public VirtualFileWorkspace(VirtualFile file, BaseTool tool) {
     this(rootOf(file, tool), f -> !extensionOf(f).equals(extensionOf(file)) || f.equals(file));
   }
 
-  private static VirtualFile rootOf(VirtualFile file, Tool tool) {
+  private static VirtualFile rootOf(VirtualFile file, BaseTool tool) {
     var path = file.getPath();
     var filePath = tool.getInputs().getFirst().glob().path();
     var index = path.indexOf(filePath);

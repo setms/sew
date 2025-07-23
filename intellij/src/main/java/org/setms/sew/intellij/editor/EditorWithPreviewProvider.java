@@ -11,14 +11,14 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 
 public abstract class EditorWithPreviewProvider implements FileEditorProvider, DumbAware {
 
-  private final Tool tool;
+  private final BaseTool tool;
   private final Class<? extends FileType> fileTypeClass;
 
-  protected EditorWithPreviewProvider(Tool tool, Class<? extends FileType> fileTypeClass) {
+  protected EditorWithPreviewProvider(BaseTool tool, Class<? extends FileType> fileTypeClass) {
     this.tool = tool;
     this.fileTypeClass = fileTypeClass;
   }

@@ -11,7 +11,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.sew.intellij.tool.ToolRunner;
@@ -19,13 +19,13 @@ import org.setms.sew.intellij.tool.VirtualFileWorkspace;
 
 public class ApplySuggestion implements IntentionAction {
 
-  @SafeFieldForPreview private final Tool tool;
+  @SafeFieldForPreview private final BaseTool tool;
   @SafeFieldForPreview private final Suggestion suggestion;
   @SafeFieldForPreview private final Location location;
   @SafeFieldForPreview private final PsiElement psiElement;
 
   public ApplySuggestion(
-      Tool tool, Suggestion suggestion, Location location, PsiElement psiElement) {
+      BaseTool tool, Suggestion suggestion, Location location, PsiElement psiElement) {
     this.tool = tool;
     this.suggestion = suggestion;
     this.location = location;
@@ -65,11 +65,7 @@ public class ApplySuggestion implements IntentionAction {
   public void invoke(@NotNull Project project, Editor editor, PsiFile psiFile)
       throws IncorrectOperationException {
     ToolRunner.applySuggestion(
-        tool,
-        suggestion.code(),
-        location,
-        project,
-        new VirtualFileWorkspace(psiFile, tool));
+        tool, suggestion.code(), location, project, new VirtualFileWorkspace(psiFile, tool));
     WriteCommandAction.runWriteCommandAction(
         project,
         () -> {

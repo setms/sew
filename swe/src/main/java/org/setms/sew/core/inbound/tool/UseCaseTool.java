@@ -30,10 +30,10 @@ import org.setms.km.domain.model.artifact.UnresolvedArtifact;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.nlp.NaturalLanguage;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -55,7 +55,7 @@ import org.setms.sew.core.domain.services.DiscoverDomainFromUseCases;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class UseCaseTool extends Tool {
+public class UseCaseTool extends BaseTool {
 
   private static final String OUTPUT_PATH = "reports/useCases";
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =

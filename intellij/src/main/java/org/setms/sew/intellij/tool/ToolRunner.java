@@ -14,7 +14,7 @@ import com.intellij.psi.PsiDocumentManager;
 import java.io.File;
 import java.net.URI;
 import java.util.Objects;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -24,7 +24,7 @@ public class ToolRunner {
   private static final String CREATED_PREFIX = "Created ";
 
   public static boolean applySuggestion(
-      Tool tool, String code, Location location, Project project, Workspace workspace) {
+      BaseTool tool, String code, Location location, Project project, Workspace workspace) {
     PsiDocumentManager.getInstance(project).commitAllDocuments();
     var diagnostics = tool.apply(code, workspace, location);
     var errors = diagnostics.stream().filter(d -> d.level() == ERROR).toList();

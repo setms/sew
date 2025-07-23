@@ -23,7 +23,7 @@ import org.setms.km.domain.model.workspace.Workspace;
  * Something that validates input, builds output from input, and provides and applies suggestions
  * based on the input.
  */
-public abstract class Tool {
+public abstract class BaseTool {
 
   protected static final String NL = System.lineSeparator();
 
