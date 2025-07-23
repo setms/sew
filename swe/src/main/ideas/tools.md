@@ -225,7 +225,8 @@ A SEW that stores artifacts in a file system should maintain a `.sew` directory 
 
 - `globs/<glob>` contains a list of artifacts matching the glob
   - updated when artifacts matching the glob are added or deleted
-- `suggestions/<tool>/<location>/<suggestion>` contains a suggestion for artifacts at a given location
+- `suggestions/<tool>/<location>/<suggestion>` contains a suggestion created by the given tool for the artifact at the
+  given location
   - deleted before a tool validates an artifact at the location
   - created based on the validation results
 - `reports/<tool>/<location>/<report>` contains the report created by the given tool for the artifact at the given
