@@ -221,7 +221,7 @@ It's therefore important that a SEW handles large numbers of artifacts efficient
 - It should only build reports when necessary, i.e. when the inputs on which they depend change.
 - Caches should persist between sessions.
 
-A SEW that stores artifacts in a file system should maintain a `.sew` directory containing:
+A KM system that stores artifacts in a file system should maintain a `.km` directory containing:
 
 - `globs/<glob>` contains a list of artifacts matching the glob
   - updated when artifacts matching the glob are added or deleted
