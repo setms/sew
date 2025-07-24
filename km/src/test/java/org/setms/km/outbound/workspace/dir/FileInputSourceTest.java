@@ -1,4 +1,4 @@
-package org.setms.km.outbound.workspace.file;
+package org.setms.km.outbound.workspace.dir;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

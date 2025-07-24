@@ -14,4 +14,6 @@ public interface InputSource {
   URI toUri();
 
   InputStream open() throws IOException;
+
+  InputSource select(String path);
 }

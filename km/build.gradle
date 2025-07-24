@@ -8,6 +8,7 @@ dependencies {
 
     implementation libs.bundles.antlr.runtime
     implementation libs.bundles.classgraph
+    implementation libs.bundles.directory.watcher
     implementation libs.bundles.language
     implementation libs.bundles.slf4f
     implementation libs.bundles.validation

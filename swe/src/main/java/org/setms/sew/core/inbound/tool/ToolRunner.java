@@ -3,7 +3,7 @@ package org.setms.sew.core.inbound.tool;
 import java.io.File;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Level;
-import org.setms.km.outbound.workspace.file.DirectoryWorkspace;
+import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 
 public class ToolRunner {
 

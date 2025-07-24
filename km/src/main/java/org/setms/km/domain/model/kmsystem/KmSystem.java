@@ -1,9 +1,14 @@
 package org.setms.km.domain.model.kmsystem;
 
+import java.util.Collection;
+import java.util.Optional;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.format.Format;
+import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.ToolRegistry;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Level;
+import org.setms.km.domain.model.workspace.ArtifactDefinition;
 import org.setms.km.domain.model.workspace.Workspace;
 
 public class KmSystem {
@@ -12,7 +17,18 @@ public class KmSystem {
 
   public KmSystem(Workspace workspace) {
     this.workspace = workspace;
-    this.workspace.registerChangeHandler(this::artifactChanged);
+    this.workspace.registerArtifactChangedHandler(this::artifactChanged);
+    ToolRegistry.allTools()
+        .map(BaseTool::getInputs)
+        .flatMap(Collection::stream)
+        .map(
+            input ->
+                new ArtifactDefinition(
+                    input.type(),
+                    input.glob(),
+                    Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
+        .distinct()
+        .forEach(workspace::registerArtifactType);
   }
 
   private void artifactChanged(Artifact artifact) {

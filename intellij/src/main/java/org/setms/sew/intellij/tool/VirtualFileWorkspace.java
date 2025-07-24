@@ -8,7 +8,7 @@ import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.workspace.InputSource;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.km.domain.model.workspace.Workspace;
-import org.setms.km.outbound.workspace.file.DirectoryWorkspace;
+import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 
 @RequiredArgsConstructor
 public class VirtualFileWorkspace extends Workspace {

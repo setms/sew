@@ -1,4 +1,4 @@
-package org.setms.km.outbound.workspace.file;
+package org.setms.km.outbound.workspace.dir;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,6 +35,19 @@ class FileInputSource implements InputSource {
   @Override
   public InputStream open() throws IOException {
     return new FileInputStream(file);
+  }
+
+  @Override
+  public InputSource select(String path) {
+    try {
+      return new FileInputSource(toFile(path).getCanonicalFile());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private File toFile(String path) {
+    return path.startsWith(File.separator) ? new File(path) : new File(file, path);
   }
 
   @Override

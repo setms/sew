@@ -6,6 +6,7 @@ import static java.util.function.Predicate.not;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -71,5 +72,14 @@ class VirtualFileInputSource implements InputSource {
       return new ByteArrayInputStream(document.getText().getBytes(UTF_8));
     }
     return file.getInputStream();
+  }
+
+  @Override
+  public InputSource select(String path) {
+    return new VirtualFileInputSource(
+        path.startsWith(File.separator)
+            ? file.getFileSystem().findFileByPath(path)
+            : file.findFileByRelativePath(path),
+        fileFilter);
   }
 }

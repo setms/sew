@@ -3,6 +3,7 @@ package org.setms.km.domain.model.tool;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.*;
+import java.util.stream.Stream;
 import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 
@@ -40,5 +41,9 @@ public class ToolRegistry {
     return tools.stream()
         .filter(tool -> tool.getInputs().stream().map(Input::type).anyMatch(type::equals))
         .toList();
+  }
+
+  public static Stream<BaseTool> allTools() {
+    return tools.stream();
   }
 }

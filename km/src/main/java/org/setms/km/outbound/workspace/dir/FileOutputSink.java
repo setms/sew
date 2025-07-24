@@ -1,4 +1,4 @@
-package org.setms.km.outbound.workspace.file;
+package org.setms.km.outbound.workspace.dir;
 
 import java.io.File;
 import java.io.FileOutputStream;

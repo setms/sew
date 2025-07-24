@@ -15,7 +15,7 @@ import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.km.domain.model.workspace.Workspace;
-import org.setms.km.outbound.workspace.file.DirectoryWorkspace;
+import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 abstract class ToolTestCase<T extends Artifact> {
@@ -35,7 +35,7 @@ abstract class ToolTestCase<T extends Artifact> {
   }
 
   protected ToolTestCase(
-          BaseTool tool, Class<T> type, Class<? extends Format> formatType, String sourceLocation) {
+      BaseTool tool, Class<T> type, Class<? extends Format> formatType, String sourceLocation) {
     this.tool = tool;
     this.formatType = formatType;
     this.sourceLocation = sourceLocation;
