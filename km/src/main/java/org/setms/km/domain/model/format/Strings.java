@@ -1,7 +1,5 @@
 package org.setms.km.domain.model.format;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.AccessLevel;
@@ -10,7 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Strings {
 
-  private static final Collection<Character> FORBIDDEN = List.of('\'', '[', ']');
   private static final Map<String, String> REPLACEMENTS =
       Map.of("cant", "can't", "doesnt", "doesn't", "isnt", "isn't");
 
@@ -37,24 +34,6 @@ public class Strings {
       return quotedText;
     }
     return quotedText.substring(1, quotedText.length() - 1);
-  }
-
-  public static String toObjectName(String value) {
-    if (value == null || value.isEmpty()) {
-      return value;
-    }
-    var result = new StringBuilder(value);
-    result.insert(0, ' ');
-    for (var i = 0; i < result.length(); i++) {
-      if (Character.isWhitespace(result.charAt(i))) {
-        result.delete(i, i + 1);
-        result.setCharAt(i, Character.toUpperCase(result.charAt(i)));
-      } else if (FORBIDDEN.contains(result.charAt(i))) {
-        result.delete(i, i + 1);
-        i--;
-      }
-    }
-    return result.toString();
   }
 
   public static String toFriendlyName(String name) {

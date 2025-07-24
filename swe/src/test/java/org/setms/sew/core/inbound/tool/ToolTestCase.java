@@ -8,10 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import lombok.Getter;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.format.Files;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
@@ -43,20 +41,6 @@ abstract class ToolTestCase<T extends Artifact> {
     this.sourceLocation = sourceLocation;
     this.extension = initLower(type.getSimpleName());
     this.baseDir = new File("src/test/resources/" + extension);
-  }
-
-  @AfterEach
-  void done() {
-    Files.childrenOf(baseDir).forEach(this::deleteTodos);
-  }
-
-  private void deleteTodos(File dir) {
-    var todoDir = new File(dir, "src/todo");
-    if (todoDir.exists()) {
-      Files.delete(todoDir);
-    } else {
-      Files.childrenOf(dir).forEach(this::deleteTodos);
-    }
   }
 
   @Test
