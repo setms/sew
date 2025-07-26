@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.intellij.platform' version '2.6.0'
+    alias libs.plugins.intellij
     alias libs.plugins.lombok
 }
 
@@ -15,7 +15,7 @@ dependencies {
     testImplementation libs.bundles.junit
 
     intellijPlatform {
-        intellijIdeaCommunity("2024.3.5")
+        intellijIdeaCommunity("2025.1.2")
         instrumentationTools()
         pluginVerifier()
         intellijPlatform.bundledPlugin 'org.intellij.plugins.markdown'
