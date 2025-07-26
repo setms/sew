@@ -17,7 +17,7 @@ public class Files {
     file.delete();
   }
 
-  private static Stream<File> childrenOf(File file) {
+  public static Stream<File> childrenOf(File file) {
     return Stream.ofNullable(file.listFiles()).flatMap(Arrays::stream);
   }
 }

@@ -31,7 +31,7 @@ class DirectoryWorkspaceTest {
 
   @Test
   void shouldReportArtifactChanges() throws FileNotFoundException {
-    workspace.registerArtifactType(
+    workspace.registerArtifactDefinition(
         new ArtifactDefinition(Text.class, new Glob("text", "**/*.txt"), parser));
     workspace.registerArtifactChangedHandler(this::artifactChanged);
 

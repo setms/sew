@@ -13,8 +13,9 @@ public abstract class Workspace {
 
   private InputSource input;
   private OutputSink output;
+  private Resource root;
 
-  public void registerArtifactType(ArtifactDefinition definition) {
+  public void registerArtifactDefinition(ArtifactDefinition definition) {
     artifactDefinitions.add(definition);
   }
 
@@ -59,6 +60,15 @@ public abstract class Workspace {
   }
 
   protected abstract OutputSink newOutputSink();
+
+  public Resource root() {
+    if (root == null) {
+      root = newRoot();
+    }
+    return root;
+  }
+
+  protected abstract Resource newRoot();
 
   public void close() throws IOException {}
 }

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.workspace.InputSource;
 import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 
@@ -53,5 +54,10 @@ public class VirtualFileWorkspace extends Workspace {
   @Override
   protected OutputSink newOutputSink() {
     return new DirectoryWorkspace(file.toNioPath().toFile()).output();
+  }
+
+  @Override
+  protected Resource<?> newRoot() {
+    return new VirtualFileResource(file, inputFilter);
   }
 }

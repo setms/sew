@@ -11,6 +11,7 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.workspace.InputSource;
 import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 
 @Slf4j
@@ -87,6 +88,11 @@ public class DirectoryWorkspace extends Workspace {
   @Override
   protected OutputSink newOutputSink() {
     return new FileOutputSink(outputDirectory);
+  }
+
+  @Override
+  protected Resource newRoot() {
+    return new FileResource(inputDirectory);
   }
 
   @Override

@@ -28,7 +28,7 @@ public class KmSystem {
                     input.glob(),
                     Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
         .distinct()
-        .forEach(workspace::registerArtifactType);
+        .forEach(workspace::registerArtifactDefinition);
   }
 
   private void artifactChanged(Artifact artifact) {

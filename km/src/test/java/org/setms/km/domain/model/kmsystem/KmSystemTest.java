@@ -1,8 +1,7 @@
 package org.setms.km.domain.model.kmsystem;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import java.io.InputStream;
@@ -48,12 +47,11 @@ class KmSystemTest {
     ToolRegistry.reload();
     ToolRegistry.add(mainTool);
     ToolRegistry.add(otherTool);
-
-    kmSystem = new KmSystem((workspace));
   }
 
   @Test
   void shouldValidateChangedArtifact() {
+    createKmSystem();
     verify(workspace).registerArtifactChangedHandler(artifactChangedCaptor.capture());
     var handler = artifactChangedCaptor.getValue();
     mainTool.validations.add(new Diagnostic(ERROR, "message"));
@@ -66,8 +64,13 @@ class KmSystemTest {
     assertThat(otherTool.built).as("other built").isFalse();
   }
 
+  private void createKmSystem() {
+    kmSystem = new KmSystem((workspace));
+  }
+
   @Test
   void shouldBuildValidChangedArtifact() {
+    createKmSystem();
     verify(workspace).registerArtifactChangedHandler(artifactChangedCaptor.capture());
     var handler = artifactChangedCaptor.getValue();
 
@@ -81,7 +84,9 @@ class KmSystemTest {
 
   @Test
   void shouldRegisterArtifactTypesInWorkspace() {
-    verify(workspace, atLeastOnce()).registerArtifactType(artifactDefinitionCaptor.capture());
+    createKmSystem();
+
+    verify(workspace, atLeastOnce()).registerArtifactDefinition(artifactDefinitionCaptor.capture());
     assertThat(artifactDefinitionCaptor.getAllValues())
         .containsExactlyInAnyOrder(
             new ArtifactDefinition(
@@ -89,6 +94,12 @@ class KmSystemTest {
             new ArtifactDefinition(
                 OtherArtifact.class, new Glob("other", "**/*.otherArtifact"), null),
             new ArtifactDefinition(Bar.class, new Glob("bar", "**/*.bar"), null));
+  }
+
+  @Test
+  void shouldUpdateCachedGlobsOnStartup() {
+    // TODO: Fill workspace with artifacts
+    createKmSystem();
   }
 
   private static class MainArtifact extends Artifact {
