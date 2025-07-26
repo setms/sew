@@ -42,7 +42,7 @@ public class DirectoryWorkspace extends Workspace {
     this.watcher.watchAsync();
     // https://github.com/gmethvin/directory-watcher/issues/87
     try {
-      Thread.sleep(1000);
+      Thread.sleep(25);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
