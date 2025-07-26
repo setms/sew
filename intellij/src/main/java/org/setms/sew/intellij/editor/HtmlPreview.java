@@ -152,7 +152,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
                   .collect(joining(ERROR_SEPARATOR))));
       return;
     }
-    var content = workspace.output().matching(glob.get());
+    var content = workspace.root().select("build").matching(glob.get());
     if (content.isEmpty()) {
       browser.loadURL("about:blank");
     } else {
@@ -163,7 +163,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   private void deleteOutput() {
     if (workspace != null) {
       try {
-        workspace.output().delete();
+        workspace.root().select("build").delete();
       } catch (IOException ignored) {
         // Ignore: someone will clean up temp files at some point
       }

@@ -28,7 +28,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.ValidationException;
 import org.setms.km.domain.model.workspace.Glob;
-import org.setms.km.domain.model.workspace.InputSource;
+import org.setms.km.domain.model.workspace.Resource;
 
 public interface Parser {
 
@@ -223,15 +223,15 @@ public interface Parser {
   }
 
   default <T extends Artifact> Stream<T> parseMatching(
-      InputSource source,
+      Resource<?> resource,
       Glob glob,
       Class<T> type,
       boolean validate,
       Collection<Diagnostic> diagnostics) {
-    return source.matching(glob).stream()
+    return resource.matching(glob).stream()
         .map(
-            inputSource -> {
-              try (var inputStream = inputSource.open()) {
+            matchingResource -> {
+              try (var inputStream = matchingResource.readFrom()) {
                 return parse(inputStream, type, validate);
               } catch (ValidationException e) {
                 diagnostics.addAll(e.getDiagnostics());
@@ -241,7 +241,7 @@ public interface Parser {
                     new Diagnostic(
                         ERROR,
                         e.getMessage(),
-                        Optional.ofNullable(inputSource.name())
+                        Optional.ofNullable(matchingResource.name())
                             .map(n -> n.split("\\."))
                             .filter(a -> a.length == 2)
                             .map(a -> new String[] {a[1], a[0]})

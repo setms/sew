@@ -19,7 +19,7 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
@@ -66,37 +66,39 @@ public class ProjectTool extends BaseTool {
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
-      createOwner(sink, inputs, diagnostics);
+      createOwner(resource, inputs, diagnostics);
     } else {
-      super.apply(suggestionCode, inputs, location, sink, diagnostics);
+      super.apply(suggestionCode, inputs, location, resource, diagnostics);
     }
   }
 
   private void createOwner(
-      OutputSink sink, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var packages =
         inputs.get(User.class).stream().map(Artifact::getPackage).collect(Collectors.toSet());
-    var stakeholdersSink = toBase(sink).select(Inputs.PATH_STAKEHOLDERS);
+    var stakeholdersResource = toBase(resource).select(Inputs.PATH_STAKEHOLDERS);
     try {
       var scope =
-          packages.size() == 1 ? packages.iterator().next() : scopeOf(sink, stakeholdersSink);
+          packages.size() == 1
+              ? packages.iterator().next()
+              : scopeOf(resource, stakeholdersResource);
       var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
-      var ownerSink = stakeholdersSink.select(owner.getName() + ".owner");
-      try (var output = ownerSink.open()) {
+      var ownerResource = stakeholdersResource.select(owner.getName() + ".owner");
+      try (var output = ownerResource.writeTo()) {
         new SalFormat().newBuilder().build(owner, output);
       }
-      diagnostics.add(sinkCreated(ownerSink));
+      diagnostics.add(resourceCreated(ownerResource));
     } catch (Exception e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
     }
   }
 
-  private String scopeOf(OutputSink sink, OutputSink stakeholders) {
-    var containers = stakeholders.containers();
-    var uri = containers.isEmpty() ? sink.toUri() : containers.getFirst().toUri();
+  private String scopeOf(Resource<?> resource, Resource<?> stakeholders) {
+    var containers = stakeholders.children();
+    var uri = containers.isEmpty() ? resource.toUri() : containers.getFirst().toUri();
     var result = uri.getPath();
     if (result.endsWith("/")) {
       result = result.substring(0, result.length() - 1);

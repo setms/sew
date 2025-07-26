@@ -37,13 +37,13 @@ class CommandToolTest extends ToolTestCase<Command> {
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).as("Suggestion").isEqualTo("Create entity");
     var diagnostics = getTool().apply(suggestion.code(), workspace, diagnostic.location());
-    var payload = workspace.output().select("../src/main/design/Payload.entity");
+    var payload = workspace.root().select("src/main/design/Payload.entity");
     assertThat(diagnostics)
         .as("Apply diagnostics")
         .hasSize(1)
         .contains(new Diagnostic(INFO, "Created " + payload.toUri()));
     try {
-      assertThat(payload.toInput().open()).hasContent(ENTITY_SKELETON);
+      assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
     } finally {
       payload.delete();
     }

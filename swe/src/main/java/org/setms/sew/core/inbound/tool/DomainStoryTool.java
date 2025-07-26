@@ -22,7 +22,7 @@ import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 import org.setms.sew.core.domain.model.sdlc.domainstory.Sentence;
 import org.setms.sew.core.domain.model.sdlc.usecase.Scenario;
@@ -51,20 +51,22 @@ public class DomainStoryTool extends BaseTool {
   }
 
   @Override
-  public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  public void build(
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var domainStories = inputs.get(DomainStory.class);
-    var reportSink = sink.select(OUTPUT_PATH);
-    domainStories.forEach(domainStory -> build(domainStory, reportSink, diagnostics));
+    var reportResource = resource.select(OUTPUT_PATH);
+    domainStories.forEach(domainStory -> build(domainStory, reportResource, diagnostics));
   }
 
-  private void build(DomainStory domainStory, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var report = sink.select(domainStory.getName() + ".html");
-    try (var writer = new PrintWriter(report.open())) {
+  private void build(
+      DomainStory domainStory, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    var report = resource.select(domainStory.getName() + ".html");
+    try (var writer = new PrintWriter(report.writeTo())) {
       writer.println("<html>");
       writer.println("  <body>");
       writer.printf("    <h1>%s</h1>%n", toFriendlyName(domainStory.getName()));
       writer.printf("    <p>%s</p>%n", domainStory.getDescription());
-      build(domainStory, toGraph(domainStory.getSentences()), sink, diagnostics)
+      build(domainStory, toGraph(domainStory.getSentences()), resource, diagnostics)
           .ifPresent(
               image ->
                   writer.printf(
@@ -302,7 +304,7 @@ public class DomainStoryTool extends BaseTool {
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
       findDomainStory(inputs, location)
@@ -312,10 +314,10 @@ public class DomainStoryTool extends BaseTool {
                       domainStory,
                       extractUseCaseNameFrom(suggestionCode)
                           .flatMap(name -> find(inputs.get(UseCase.class), name)),
-                      sink,
+                      resource,
                       diagnostics));
     } else {
-      super.apply(suggestionCode, inputs, location, sink, diagnostics);
+      super.apply(suggestionCode, inputs, location, resource, diagnostics);
     }
   }
 
@@ -342,7 +344,7 @@ public class DomainStoryTool extends BaseTool {
   private void elaborateInUseCase(
       DomainStory domainStory,
       Optional<UseCase> source,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     try {
       var converter = new DomainStoryToUseCase();
@@ -350,11 +352,11 @@ public class DomainStoryTool extends BaseTool {
           source
               .map(uc -> converter.addScenarioFrom(domainStory, uc))
               .orElseGet(() -> converter.createUseCaseFrom(domainStory));
-      var useCaseSink = sinkFor(useCase, sink);
-      try (var output = useCaseSink.open()) {
+      var useCaseResource = resourceFor(useCase, resource);
+      try (var output = useCaseResource.writeTo()) {
         new SalFormat().newBuilder().build(useCase, output);
       }
-      diagnostics.add(sinkCreated(useCaseSink));
+      diagnostics.add(resourceCreated(useCaseResource));
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }

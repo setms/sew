@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 
 class UseCaseToolTest extends ToolTestCase<UseCase> {
@@ -78,7 +78,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
         getTool()
             .apply(diagnostic.suggestions().getFirst().code(), workspace, diagnostic.location());
     assertThat(diagnostics).hasSize(1).allSatisfy(d -> assertThat(d.message()).contains("Created"));
-    var file = toFile(workspace.output().select("../src/main/requirements/HappyPath.domainStory"));
+    var file = toFile(workspace.root().select("src/main/requirements/HappyPath.domainStory"));
     assertThat(file).isFile();
     try {
       assertThat(file).hasContent(DOMAIN_STORY);
@@ -104,10 +104,10 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Override
-  protected void assertBuild(OutputSink sink) {
-    var output = toFile(sink.select("reports/useCases/HappyPath.png"));
+  protected void assertBuild(Resource<?> resource) {
+    var output = toFile(resource.select("build/reports/useCases/HappyPath.png"));
     assertThat((output)).isFile();
-    output = toFile(sink.select("reports/useCases/JustDoIt.html"));
+    output = toFile(resource.select("build/reports/useCases/JustDoIt.html"));
     assertThat((output)).isFile().hasContent(USE_CASE_HTML);
   }
 
@@ -139,13 +139,12 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     diagnostic = actual.getFirst();
     assertThat(diagnostic.message()).startsWith(CREATED);
     workspace
-        .output()
-        .select("..")
+        .root()
         .matching(Inputs.domains().glob())
         .forEach(
-            outputSink -> {
+            resource -> {
               try {
-                outputSink.delete();
+                resource.delete();
               } catch (IOException e) {
                 throw new RuntimeException(e);
               }
@@ -153,7 +152,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldCreateAcceptanceTest() throws IOException {
+  void shouldCreateAcceptanceTest() {
     var workspace = workspaceFor("valid");
 
     var actual = getTool().validate(workspace);
@@ -171,13 +170,12 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     diagnostic = actual.getFirst();
     assertThat(diagnostic.message()).startsWith(CREATED);
     workspace
-        .output()
-        .select("..")
+        .root()
         .matching(Inputs.acceptanceTests().glob())
         .forEach(
-            outputSink -> {
+            resource -> {
               try {
-                outputSink.delete();
+                resource.delete();
               } catch (IOException e) {
                 throw new RuntimeException(e);
               }

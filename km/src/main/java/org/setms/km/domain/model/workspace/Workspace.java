@@ -11,9 +11,7 @@ public abstract class Workspace {
   private final Collection<ArtifactDefinition> artifactDefinitions = new HashSet<>();
   private final Collection<ArtifactChangedHandler> artifactChangedHandlers = new ArrayList<>();
 
-  private InputSource input;
-  private OutputSink output;
-  private Resource root;
+  private Resource<?> root;
 
   public void registerArtifactDefinition(ArtifactDefinition definition) {
     artifactDefinitions.add(definition);
@@ -28,7 +26,11 @@ public abstract class Workspace {
   }
 
   private Artifact parse(String path, ArtifactDefinition definition) {
-    try (var stream = input().select(path).open()) {
+    var resource = root().select(path);
+    if (resource == null) {
+      return null;
+    }
+    try (var stream = resource.readFrom()) {
       return definition.parser().parse(stream, definition.type(), false);
     } catch (IOException e) {
       return null;
@@ -43,32 +45,14 @@ public abstract class Workspace {
     artifactChangedHandlers.forEach(handler -> handler.changed(artifact));
   }
 
-  public InputSource input() {
-    if (input == null) {
-      input = newInputSource();
-    }
-    return input;
-  }
-
-  protected abstract InputSource newInputSource();
-
-  public OutputSink output() {
-    if (output == null) {
-      output = newOutputSink();
-    }
-    return output;
-  }
-
-  protected abstract OutputSink newOutputSink();
-
-  public Resource root() {
+  public Resource<?> root() {
     if (root == null) {
       root = newRoot();
     }
     return root;
   }
 
-  protected abstract Resource newRoot();
+  protected abstract Resource<?> newRoot();
 
   public void close() throws IOException {}
 }

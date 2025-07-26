@@ -3,7 +3,7 @@ package org.setms.sew.core.inbound.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.Stream;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
 
 public class DomainStoryToolTest extends ToolTestCase<DomainStory> {
@@ -13,8 +13,8 @@ public class DomainStoryToolTest extends ToolTestCase<DomainStory> {
   }
 
   @Override
-  protected void assertBuild(OutputSink sink) {
-    var output = sink.select("reports/domainStories");
+  protected void assertBuild(Resource<?> resource) {
+    var output = resource.select("build/reports/domainStories");
     Stream.of("html", "png")
         .map("NonuserCantDeleteData.%s"::formatted)
         .map(output::select)

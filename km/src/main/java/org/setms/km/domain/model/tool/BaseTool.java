@@ -14,10 +14,7 @@ import javax.imageio.ImageIO;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.domain.model.workspace.Glob;
-import org.setms.km.domain.model.workspace.InputSource;
-import org.setms.km.domain.model.workspace.OutputSink;
-import org.setms.km.domain.model.workspace.Workspace;
+import org.setms.km.domain.model.workspace.*;
 
 /**
  * Something that validates input, builds output from input, and provides and applies suggestions
@@ -49,69 +46,29 @@ public abstract class BaseTool {
    */
   public SequencedSet<Diagnostic> validate(Workspace workspace) {
     var result = new LinkedHashSet<Diagnostic>();
-    validate(resolveInputs(workspace.input(), result), result);
-    createTodosFor(workspace.output(), result);
+    validate(resolveInputs(workspace.root(), result), result);
     return result;
   }
 
-  private ResolvedInputs resolveInputs(InputSource source, Collection<Diagnostic> diagnostics) {
+  private ResolvedInputs resolveInputs(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
     var validate = new AtomicBoolean(true);
     getInputs()
         .forEach(
             input ->
                 result.put(
-                    input.name(), parse(source, input, validate.getAndSet(false), diagnostics)));
+                    input.name(), parse(resource, input, validate.getAndSet(false), diagnostics)));
     return result;
   }
 
   protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
 
-  private void createTodosFor(OutputSink sink, Collection<Diagnostic> diagnostics) {
-    diagnostics.stream()
-        .filter(d -> d.level() != INFO)
-        .filter(d -> !d.suggestions().isEmpty())
-        .forEach(diagnostic -> createTodoFor(diagnostic, sink));
-  }
-
-  private void createTodoFor(Diagnostic diagnostic, OutputSink sink) {
-    /* TODO: Decouple from SAL - needs to be part of the collaboration package
-    var suggestion = diagnostic.suggestions().getFirst();
-    var name = Strings.toObjectName(diagnostic.message());
-    String packageName;
-    String location;
-    String path;
-    if (diagnostic.location() == null) {
-      packageName = "todos";
-      location = null;
-      path = "";
-    } else {
-      packageName = diagnostic.location().segments().getFirst();
-      location = diagnostic.location().toString();
-      path = location + "/";
-    }
-    var todo =
-        new Todo(new FullyQualifiedName(packageName, name))
-            .setTool(getClass().getName())
-            .setLocation(location)
-            .setMessage(diagnostic.message())
-            .setCode(suggestion.code())
-            .setAction(suggestion.message());
-    var todoSink = sink.select("src/todo/%s%s.todo".formatted(path, name));
-    try {
-      new SalFormat().newBuilder().build(todo, todoSink);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-     */
-  }
-
   private <T extends Artifact> List<T> parse(
-      InputSource source, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
+      Resource<?> resource, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
     return input
         .format()
         .newParser()
-        .parseMatching(source, input.glob(), input.type(), validate, diagnostics)
+        .parseMatching(resource, input.glob(), input.type(), validate, diagnostics)
         .toList();
   }
 
@@ -123,7 +80,7 @@ public abstract class BaseTool {
    */
   public List<Diagnostic> build(Workspace workspace) {
     var result = new ArrayList<Diagnostic>();
-    build(resolveInputs(workspace.input(), result), workspace.output(), result);
+    build(resolveInputs(workspace.root(), result), workspace.root().select("build"), result);
     return result;
   }
 
@@ -135,7 +92,7 @@ public abstract class BaseTool {
     return Optional.of(new Output(new Glob(path, "**/*.html")));
   }
 
-  protected OutputSink sinkFor(Artifact object, OutputSink base) {
+  protected Resource<?> resourceFor(Artifact object, Resource<?> base) {
     var path =
         getInputs().stream()
             .filter(input -> input.type().equals(object.getClass()))
@@ -143,26 +100,26 @@ public abstract class BaseTool {
             .map(Glob::path)
             .findFirst()
             .orElseThrow();
-    return base.toUri().toString().contains(path)
+    return base.path().contains(path)
         ? base.select("../%s.%s".formatted(object.getName(), object.type()))
         : toBase(base).select("../%s/%s.%s".formatted(path, object.getName(), object.type()));
   }
 
-  protected OutputSink toBase(OutputSink sink) {
+  protected Resource<?> toBase(Resource<?> resource) {
     var glob = getInputs().getFirst().glob();
-    if (sink.toUri().toString().endsWith(glob.extension())) {
+    if (resource.name().endsWith(glob.extension())) {
       var path = ensureSuffix(glob.path(), "/");
-      var current = sink;
-      while (!current.toUri().toString().endsWith(path)) {
-        current = current.select("..");
+      var current = resource;
+      while (!current.path().endsWith(path)) {
+        current = current.parent().orElseThrow();
       }
       return current.select(path.replaceAll("[^/]+", ".."));
     }
-    return sink.select("..");
+    return resource;
   }
 
   protected void build(
-      ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {}
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {}
 
   /**
    * Apply a suggestion.
@@ -175,8 +132,8 @@ public abstract class BaseTool {
   public final SequencedSet<Diagnostic> apply(
       String suggestionCode, Workspace workspace, Location location) {
     var result = new LinkedHashSet<Diagnostic>();
-    var inputs = resolveInputs(workspace.input(), result);
-    apply(suggestionCode, inputs, location, workspace.output(), result);
+    var inputs = resolveInputs(workspace.root(), result);
+    apply(suggestionCode, inputs, location, workspace.root(), result);
     return result;
   }
 
@@ -184,24 +141,24 @@ public abstract class BaseTool {
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     diagnostics.add(new Diagnostic(ERROR, "Unknown suggestion: " + suggestionCode));
   }
 
-  protected final Diagnostic sinkCreated(OutputSink sink) {
-    return new Diagnostic(INFO, "Created " + sink.toUri());
+  protected final Diagnostic resourceCreated(Resource<?> resource) {
+    return new Diagnostic(INFO, "Created " + resource.toUri());
   }
 
-  protected Optional<OutputSink> build(
-      Artifact object, mxGraph graph, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  protected Optional<Resource<?>> build(
+      Artifact object, mxGraph graph, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     try {
       var image = renderGraph(graph);
       if (image == null) {
         return Optional.empty();
       }
-      var result = sink.select(object.getName() + ".png");
-      try (var output = result.open()) {
+      var result = resource.select(object.getName() + ".png");
+      try (var output = result.writeTo()) {
         ImageIO.write(image, "PNG", output);
       }
       return Optional.of(result);

@@ -37,7 +37,7 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.domainstory.DomainStory;
@@ -260,21 +260,22 @@ public class UseCaseTool extends BaseTool {
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     switch (suggestionCode) {
-      case CREATE_DOMAIN_STORY -> createDomainStory(inputs, location, sink, diagnostics);
-      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, sink, diagnostics);
-      case CREATE_DOMAIN -> createDomain(location.segments().getLast(), inputs, sink, diagnostics);
-      case CREATE_ACCEPTANCE_TEST -> createAcceptanceTest(inputs, location, sink, diagnostics);
-      case null, default -> super.apply(suggestionCode, inputs, location, sink, diagnostics);
+      case CREATE_DOMAIN_STORY -> createDomainStory(inputs, location, resource, diagnostics);
+      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, resource, diagnostics);
+      case CREATE_DOMAIN ->
+          createDomain(location.segments().getLast(), inputs, resource, diagnostics);
+      case CREATE_ACCEPTANCE_TEST -> createAcceptanceTest(inputs, location, resource, diagnostics);
+      case null, default -> super.apply(suggestionCode, inputs, location, resource, diagnostics);
     }
   }
 
   private void createDomainStory(
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     inputs.get(UseCase.class).stream()
         .filter(useCase -> useCase.starts(location))
@@ -284,26 +285,26 @@ public class UseCaseTool extends BaseTool {
         .filter(Objects::nonNull)
         .findFirst()
         .ifPresentOrElse(
-            scenario -> createDomainStoryFor(scenario, location, sink, diagnostics),
+            scenario -> createDomainStoryFor(scenario, location, resource, diagnostics),
             () ->
                 diagnostics.add(new Diagnostic(ERROR, "Unknown scenario %s".formatted(location))));
   }
 
   private void createDomainStoryFor(
-      Link reference, Location location, OutputSink sink, Collection<Diagnostic> diagnostics) {
+      Link reference, Location location, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     try {
       var packageName = location.segments().getFirst();
       var domainStory =
           new DomainStory(new FullyQualifiedName(packageName, reference.getId()))
               .setDescription("TODO: Add description and sentences.")
               .setSentences(List.of(dummySentence(packageName)));
-      var domainStorySink =
-          toBase(sink)
+      var domainStoryResource =
+          toBase(resource)
               .select("%s/%s.domainStory".formatted(PATH_REQUIREMENTS, domainStory.getName()));
-      try (var output = domainStorySink.open()) {
+      try (var output = domainStoryResource.writeTo()) {
         new SalFormat().newBuilder().build(domainStory, output);
       }
-      diagnostics.add(sinkCreated(domainStorySink));
+      diagnostics.add(resourceCreated(domainStoryResource));
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }
@@ -319,7 +320,7 @@ public class UseCaseTool extends BaseTool {
   private void createMissingStep(
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     StepReference.find(location, inputs.get(UseCase.class))
         .ifPresentOrElse(
@@ -327,23 +328,23 @@ public class UseCaseTool extends BaseTool {
                 createMissingStep(
                     stepReference.useCase().getPackage(),
                     stepReference.getStep().orElseThrow(),
-                    toBase(sink),
+                    toBase(resource),
                     diagnostics),
             () -> addError(diagnostics, "Unknown step reference %s", location));
   }
 
   private void createMissingStep(
-      String packageName, Link step, OutputSink output, Collection<Diagnostic> diagnostics) {
+      String packageName, Link step, Resource<?> output, Collection<Diagnostic> diagnostics) {
     var type = step.getType();
-    var sink = output.select("src/main");
+    var resource = output.select("src/main");
     if ("user".equals(type)) {
-      sink = sink.select("stakeholders");
+      resource = resource.select("stakeholders");
     } else {
-      sink = sink.select("design");
+      resource = resource.select("design");
     }
     var name = step.getId();
-    sink = sink.select("%s.%s".formatted(name, type));
-    try (var writer = new PrintWriter(sink.open())) {
+    resource = resource.select("%s.%s".formatted(name, type));
+    try (var writer = new PrintWriter(resource.writeTo())) {
       writer.printf("package %s%n%n", packageName);
       writer.printf("%s %s {%n", type, name);
       writeProperties(type, name, writer);
@@ -351,7 +352,7 @@ public class UseCaseTool extends BaseTool {
     } catch (IOException e) {
       addError(diagnostics, e.getMessage());
     }
-    diagnostics.add(sinkCreated(sink));
+    diagnostics.add(resourceCreated(resource));
   }
 
   private void writeProperties(String type, String name, PrintWriter writer) {
@@ -370,7 +371,7 @@ public class UseCaseTool extends BaseTool {
   private void createDomain(
       String packageName,
       ResolvedInputs inputs,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     try {
       var domain =
@@ -379,12 +380,12 @@ public class UseCaseTool extends BaseTool {
                   inputs.get(UseCase.class).stream()
                       .filter(uc -> packageName.equals(uc.getPackage()))
                       .toList());
-      var domainSink =
-          toBase(sink).select("%s/%s.domain".formatted(PATH_ANALYSIS, domain.getName()));
-      try (var output = domainSink.open()) {
+      var domainResource =
+          toBase(resource).select("%s/%s.domain".formatted(PATH_ANALYSIS, domain.getName()));
+      try (var output = domainResource.writeTo()) {
         new SalFormat().newBuilder().build(domain, output);
       }
-      diagnostics.add(sinkCreated(domainSink));
+      diagnostics.add(resourceCreated(domainResource));
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }
@@ -393,18 +394,18 @@ public class UseCaseTool extends BaseTool {
   private void createAcceptanceTest(
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     try {
       var acceptanceTest = createAcceptanceTestFor(inputs, location);
-      var acceptanceTestSink =
-          toBase(sink)
+      var acceptanceTestResource =
+          toBase(resource)
               .select(
                   "%s/%s.acceptance".formatted(PATH_ACCEPTANCE_TESTS, acceptanceTest.getName()));
-      try (var output = acceptanceTestSink.open()) {
+      try (var output = acceptanceTestResource.writeTo()) {
         new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
       }
-      diagnostics.add(sinkCreated(acceptanceTestSink));
+      diagnostics.add(resourceCreated(acceptanceTestResource));
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
     }
@@ -418,16 +419,20 @@ public class UseCaseTool extends BaseTool {
   }
 
   @Override
-  public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  public void build(
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get(UseCase.class);
-    var reportSink = sink.select("reports/useCases");
-    useCases.forEach(useCase -> build(useCase, inputs, reportSink, diagnostics));
+    var reportResource = resource.select("reports/useCases");
+    useCases.forEach(useCase -> build(useCase, inputs, reportResource, diagnostics));
   }
 
   private void build(
-      UseCase useCase, ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var report = sink.select(useCase.getName() + ".html");
-    try (var writer = new PrintWriter(report.open())) {
+      UseCase useCase,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    var report = resource.select(useCase.getName() + ".html");
+    try (var writer = new PrintWriter(report.writeTo())) {
       writer.println("<html>");
       writer.println("  <body>");
       writer.printf("    <h1>%s</h1>%n", useCase.getTitle());
@@ -450,7 +455,7 @@ public class UseCaseTool extends BaseTool {
                 if (scenario.getSteps() == null || scenario.getSteps().isEmpty()) {
                   return;
                 }
-                build(scenario, sink, diagnostics)
+                build(scenario, resource, diagnostics)
                     .ifPresent(
                         image ->
                             writer.printf(
@@ -476,9 +481,9 @@ public class UseCaseTool extends BaseTool {
     }
   }
 
-  private Optional<OutputSink> build(
-      Scenario scenario, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    return build(scenario, toGraph(scenario), sink, diagnostics);
+  private Optional<Resource<?>> build(
+      Scenario scenario, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    return build(scenario, toGraph(scenario), resource, diagnostics);
   }
 
   private mxGraph toGraph(Scenario scenario) {

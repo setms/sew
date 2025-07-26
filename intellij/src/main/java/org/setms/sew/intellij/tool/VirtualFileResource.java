@@ -41,7 +41,14 @@ public class VirtualFileResource implements Resource<VirtualFileResource> {
   }
 
   @Override
-  public Collection<VirtualFileResource> matching(Glob glob) {
+  public VirtualFileResource select(String path) {
+    return Optional.ofNullable(file.findFileByRelativePath(path))
+        .map(f -> new VirtualFileResource(f, fileFilter))
+        .orElse(null);
+  }
+
+  @Override
+  public List<VirtualFileResource> matching(Glob glob) {
     var result = new ArrayList<VirtualFileResource>();
     var ancestor =
         Optional.ofNullable(glob.path())

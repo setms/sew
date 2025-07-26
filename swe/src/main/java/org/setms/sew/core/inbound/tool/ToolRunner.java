@@ -8,8 +8,8 @@ import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 public class ToolRunner {
 
   public static void main(String... args) {
-    if (args.length < 3) {
-      System.err.println("Usage: <tool> <input> <output>");
+    if (args.length < 2) {
+      System.err.println("Usage: <tool> <dir>");
       System.exit(1);
     }
     try {
@@ -18,7 +18,7 @@ public class ToolRunner {
               .getClassLoader()
               .loadClass("%s.%s".formatted(ToolRunner.class.getPackageName(), args[0]));
       var tool = (BaseTool) toolType.getDeclaredConstructor().newInstance();
-      var workspace = new DirectoryWorkspace(new File(args[1]), new File(args[2]));
+      var workspace = new DirectoryWorkspace(new File(args[1]));
       var diagnostics = tool.build(workspace);
       diagnostics.forEach(
           diagnostic -> {

@@ -15,7 +15,7 @@ import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.sew.core.domain.model.sdlc.acceptance.Scenario;
@@ -33,19 +33,20 @@ public class AcceptanceTestTool extends BaseTool {
   }
 
   @Override
-  protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  protected void build(
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var acceptanceTests = inputs.get(AcceptanceTest.class);
-    var reportSink = sink.select("reports/acceptanceTests");
-    acceptanceTests.forEach(acceptanceTest -> build(acceptanceTest, reportSink, diagnostics));
+    var reportResource = resource.select("reports/acceptanceTests");
+    acceptanceTests.forEach(acceptanceTest -> build(acceptanceTest, reportResource, diagnostics));
   }
 
   private void build(
-      AcceptanceTest acceptanceTest, OutputSink sink, Collection<Diagnostic> diagnostics) {
+      AcceptanceTest acceptanceTest, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var report =
-        sink.select(
+        resource.select(
             "%s-%s.html"
                 .formatted(acceptanceTest.getSut().getId(), acceptanceTest.getSut().getType()));
-    try (var writer = new PrintWriter(report.open())) {
+    try (var writer = new PrintWriter(report.writeTo())) {
       writer.println("<html>");
       writer.println("  <body>");
       writer.printf(

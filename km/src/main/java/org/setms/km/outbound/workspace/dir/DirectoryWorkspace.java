@@ -7,38 +7,23 @@ import io.methvin.watcher.DirectoryWatcher;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.setms.km.domain.model.workspace.InputSource;
-import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 
 @Slf4j
 public class DirectoryWorkspace extends Workspace {
 
-  private final File inputDirectory;
-  private final File outputDirectory;
+  private final File root;
   private final DirectoryWatcher watcher;
 
-  public DirectoryWorkspace(File directory) {
-    this(directory, new File(directory, "build"));
-  }
-
-  public DirectoryWorkspace(File inputDirectory, File outputDirectory) {
-    this.inputDirectory = validate(inputDirectory);
-    this.outputDirectory =
-        Optional.ofNullable(outputDirectory)
-            .map(DirectoryWorkspace::validate)
-            .orElseGet(DirectoryWorkspace::tempDir);
+  public DirectoryWorkspace(File root) {
+    this.root = validate(root);
     try {
       this.watcher =
-          DirectoryWatcher.builder()
-              .path(this.inputDirectory.toPath())
-              .listener(this::fileChanged)
-              .build();
+          DirectoryWatcher.builder().path(this.root.toPath()).listener(this::fileChanged).build();
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to watch directory " + inputDirectory, e);
+      throw new IllegalStateException("Failed to watch directory " + root, e);
     }
     this.watcher.watchAsync();
     // https://github.com/gmethvin/directory-watcher/issues/87
@@ -77,22 +62,14 @@ public class DirectoryWorkspace extends Workspace {
     if (event.isDirectory() || event.eventType() == DELETE) {
       return;
     }
-    parse(event.path().toString()).ifPresent(this::onChanged);
+    var path = event.path().toString();
+    path = path.substring(root.getParent().length());
+    parse(path).ifPresent(this::onChanged);
   }
 
   @Override
-  protected InputSource newInputSource() {
-    return new FileInputSource(inputDirectory);
-  }
-
-  @Override
-  protected OutputSink newOutputSink() {
-    return new FileOutputSink(outputDirectory);
-  }
-
-  @Override
-  protected Resource newRoot() {
-    return new FileResource(inputDirectory);
+  protected Resource<?> newRoot() {
+    return new FileResource(root);
   }
 
   @Override

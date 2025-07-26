@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.Link;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 
 public interface Builder {
 
@@ -36,8 +36,8 @@ public interface Builder {
     build(toRootObject(object), file);
   }
 
-  default void build(Artifact object, OutputSink sink) throws IOException {
-    try (var output = sink.open()) {
+  default void build(Artifact object, Resource<?> resource) throws IOException {
+    try (var output = resource.writeTo()) {
       build(toRootObject(object), output);
     }
   }

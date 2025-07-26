@@ -5,11 +5,8 @@ import com.intellij.psi.PsiFile;
 import java.util.function.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.tool.BaseTool;
-import org.setms.km.domain.model.workspace.InputSource;
-import org.setms.km.domain.model.workspace.OutputSink;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
-import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 
 @RequiredArgsConstructor
 public class VirtualFileWorkspace extends Workspace {
@@ -44,16 +41,6 @@ public class VirtualFileWorkspace extends Workspace {
     var name = file.getName();
     var index = name.lastIndexOf('.');
     return index < 0 ? "" : name.substring(index);
-  }
-
-  @Override
-  protected InputSource newInputSource() {
-    return new VirtualFileInputSource(file, inputFilter);
-  }
-
-  @Override
-  protected OutputSink newOutputSink() {
-    return new DirectoryWorkspace(file.toNioPath().toFile()).output();
   }
 
   @Override

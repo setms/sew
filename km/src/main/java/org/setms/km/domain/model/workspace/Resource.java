@@ -3,7 +3,7 @@ package org.setms.km.domain.model.workspace;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Collection;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +17,10 @@ public interface Resource<T extends Resource<T>> {
     return "%s%s%s".formatted(parent().map(Resource::path).orElse(""), SEPARATOR, name());
   }
 
+  default URI toUri() {
+    return URI.create("urn:setms:km:resource:%s".formatted(path()));
+  }
+
   Optional<T> parent();
 
   @SuppressWarnings("unchecked")
@@ -26,32 +30,9 @@ public interface Resource<T extends Resource<T>> {
 
   List<T> children();
 
-  default Optional<T> select(String path) {
-    var index = path.indexOf(SEPARATOR);
-    if (index < 0) {
-      return childNamed(path);
-    }
-    if (index == 0) {
-      index = path.indexOf(SEPARATOR, 1);
-      if (index < 0) {
-        return Optional.empty();
-      }
-      var rootName = path.substring(1, index);
-      var remainder = path.substring(index + 1);
-      return Optional.of(root())
-          .filter(r -> r.name().equals(rootName))
-          .flatMap(r -> select(remainder));
-    }
-    var name = path.substring(0, index);
-    var remainder = path.substring(index + 1);
-    return childNamed(name).flatMap(c -> c.select(remainder));
-  }
+  T select(String path);
 
-  default Optional<T> childNamed(String name) {
-    return children().stream().filter(c -> c.name().equals(name)).findFirst();
-  }
-
-  Collection<T> matching(Glob glob);
+  List<T> matching(Glob glob);
 
   InputStream readFrom() throws IOException;
 

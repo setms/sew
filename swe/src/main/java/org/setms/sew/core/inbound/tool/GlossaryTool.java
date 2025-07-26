@@ -19,7 +19,7 @@ import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 
 @Slf4j
@@ -57,21 +57,22 @@ public class GlossaryTool extends BaseTool {
   }
 
   @Override
-  public void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  public void build(
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get(Term.class);
     var termsByPackage = terms.stream().collect(groupingBy(Term::getPackage));
     termsByPackage.forEach(
         (glossary, glossaryTerms) ->
-            buildGlossaryFile(sink, glossary, new TreeSet<>(glossaryTerms), diagnostics));
+            buildGlossaryFile(resource, glossary, new TreeSet<>(glossaryTerms), diagnostics));
   }
 
   private void buildGlossaryFile(
-      OutputSink sink,
+      Resource<?> resource,
       String glossary,
       Collection<Term> terms,
       Collection<Diagnostic> diagnostics) {
-    var report = sink.select("reports/glossary/%s.html".formatted(glossary));
-    try (var writer = new PrintWriter(report.open())) {
+    var report = resource.select("reports/glossary/%s.html".formatted(glossary));
+    try (var writer = new PrintWriter(report.writeTo())) {
       buildGlossary(glossary, writer, terms);
     } catch (IOException e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage()));

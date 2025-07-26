@@ -17,7 +17,7 @@ import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Glob;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 
@@ -45,17 +45,18 @@ public class ContextMapTool extends BaseTool {
   }
 
   @Override
-  protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var output = sink.select("reports/domains");
+  protected void build(
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    var output = resource.select("reports/domains");
     inputs.get(Domain.class).forEach(domain -> build(domain, output, diagnostics));
   }
 
-  private void build(Domain domain, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var report = sink.select(domain.getName() + ".html");
-    try (var writer = new PrintWriter(report.open())) {
+  private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    var report = resource.select(domain.getName() + ".html");
+    try (var writer = new PrintWriter(report.writeTo())) {
       writer.println("<html>");
       writer.println("  <body>");
-      build(domain, toGraph(domain), sink, diagnostics)
+      build(domain, toGraph(domain), resource, diagnostics)
           .ifPresent(
               image ->
                   writer.printf(

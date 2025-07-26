@@ -22,7 +22,7 @@ import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.architecture.Module;
 import org.setms.sew.core.domain.model.sdlc.architecture.Modules;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
@@ -92,18 +92,22 @@ public class ModulesTool extends BaseTool {
   }
 
   @Override
-  protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  protected void build(
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var domains = inputs.get(Domain.class);
-    inputs.get(Modules.class).forEach(modules -> build(modules, sink, diagnostics, domains));
+    inputs.get(Modules.class).forEach(modules -> build(modules, resource, diagnostics, domains));
   }
 
   private void build(
-      Modules modules, OutputSink sink, Collection<Diagnostic> diagnostics, List<Domain> domains) {
-    var report = sink.select(modules.getName() + ".html");
-    try (var writer = new PrintWriter(report.open())) {
+      Modules modules,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics,
+      List<Domain> domains) {
+    var report = resource.select(modules.getName() + ".html");
+    try (var writer = new PrintWriter(report.writeTo())) {
       writer.println("<html>");
       writer.println("  <body>");
-      build(modules, toGraph(modules, domains), sink, diagnostics)
+      build(modules, toGraph(modules, domains), resource, diagnostics)
           .ifPresent(
               image ->
                   writer.printf(

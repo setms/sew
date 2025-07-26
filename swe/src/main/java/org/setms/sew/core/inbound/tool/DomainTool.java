@@ -40,7 +40,7 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.architecture.Module;
 import org.setms.sew.core.domain.model.sdlc.architecture.Modules;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
@@ -65,23 +65,24 @@ public class DomainTool extends BaseTool {
   }
 
   @Override
-  protected void build(ResolvedInputs inputs, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var output = sink.select("reports/domains");
+  protected void build(
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    var output = resource.select("reports/domains");
     inputs.get(Domain.class).forEach(domain -> build(domain, output, diagnostics));
   }
 
-  private void build(Domain domain, OutputSink sink, Collection<Diagnostic> diagnostics) {
-    var report = sink.select(domain.getName() + ".html");
-    try (var writer = new PrintWriter(report.open())) {
+  private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    var report = resource.select(domain.getName() + ".html");
+    try (var writer = new PrintWriter(report.writeTo())) {
       writer.println("<html>");
       writer.println("  <body>");
-      build(domain, toGraph(domain), sink, diagnostics)
+      build(domain, toGraph(domain), resource, diagnostics)
           .ifPresent(
               image ->
                   writer.printf(
                       "    <img src=\"%s\" width=\"100%%\">%n",
                       report.toUri().resolve(".").normalize().relativize(image.toUri())));
-      //      buildCoreDomainChart(domain, sink, diagnostics)
+      //      buildCoreDomainChart(domain, resource, diagnostics)
       //          .ifPresent(
       //              coreDomainChart ->
       //                  writer.printf(
@@ -154,8 +155,8 @@ public class DomainTool extends BaseTool {
   }
 
   @SuppressWarnings("unused") // I'll come back to this at some point
-  private Optional<OutputSink> buildCoreDomainChart(
-      Domain domain, OutputSink sink, Collection<Diagnostic> diagnostics) {
+  private Optional<Resource<?>> buildCoreDomainChart(
+      Domain domain, Resource<?> sink, Collection<Diagnostic> diagnostics) {
     return Optional.of(domain.getSubdomains())
         .filter(
             subdomains ->
@@ -163,10 +164,10 @@ public class DomainTool extends BaseTool {
         .map(subdomains -> buildCoreDomainChart(domain.getName(), subdomains, sink, diagnostics));
   }
 
-  private OutputSink buildCoreDomainChart(
+  private Resource<?> buildCoreDomainChart(
       String name,
       List<Subdomain> subdomains,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     var dataset = new XYSeriesCollection();
     var core = new XYSeries("Core");
@@ -234,8 +235,8 @@ public class DomainTool extends BaseTool {
 
     var width = 800;
     var height = 600;
-    var result = sink.select("%s-core-domain-chart.png".formatted(name));
-    try (var output = result.open()) {
+    var result = resource.select("%s-core-domain-chart.png".formatted(name));
+    try (var output = result.writeTo()) {
       ChartUtils.writeChartAsPNG(output, chart, width, height);
     } catch (Exception e) {
       addError(diagnostics, e.getMessage());
@@ -302,7 +303,7 @@ public class DomainTool extends BaseTool {
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> sink,
       Collection<Diagnostic> diagnostics) {
     if (CREATE_MODULES.equals(suggestionCode)) {
       createModules(inputs, location, sink, diagnostics);
@@ -314,17 +315,17 @@ public class DomainTool extends BaseTool {
   private void createModules(
       ResolvedInputs inputs,
       Location location,
-      OutputSink sink,
+      Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
     mapDomainToModules(inputs.get(Domain.class), location)
         .forEach(
             modules -> {
-              var modulesSink =
-                  toBase(sink)
+              var modulesResource =
+                  toBase(resource)
                       .select("%s/%s.modules".formatted(PATH_ARCHITECTURE, modules.getName()));
-              try (var output = modulesSink.open()) {
+              try (var output = modulesResource.writeTo()) {
                 new SalFormat().newBuilder().build(modules, output);
-                diagnostics.add(sinkCreated(modulesSink));
+                diagnostics.add(resourceCreated(modulesResource));
               } catch (Exception e) {
                 addError(diagnostics, e.getMessage());
               }

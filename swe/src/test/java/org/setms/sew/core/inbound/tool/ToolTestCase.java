@@ -13,7 +13,7 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.workspace.OutputSink;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
@@ -62,10 +62,10 @@ abstract class ToolTestCase<T extends Artifact> {
   void shouldParseObject() throws IOException {
     var workspace = workspaceFor("valid");
     var input = (Input<T>) tool.getInputs().getFirst();
-    var matchingObjects = workspace.input().matching(input.glob());
+    var matchingObjects = workspace.root().matching(input.glob());
     assertThat(matchingObjects).as("Missing objects at").isNotEmpty();
     for (var source : matchingObjects) {
-      try (var sutStream = source.open()) {
+      try (var sutStream = source.readFrom()) {
         var parsed = input.format().newParser().parse(sutStream, input.type(), true);
 
         assertThat(parsed).isNotNull();
@@ -89,18 +89,18 @@ abstract class ToolTestCase<T extends Artifact> {
   @Test
   void shouldBuild() {
     var workspace = workspaceFor("valid");
-    var sink = workspace.output();
+    var resource = workspace.root();
     var diagnostics = tool.build(workspace);
     assertThat(diagnostics).as("Diagnostics").isEmpty();
-    assertBuild(sink);
+    assertBuild(resource);
   }
 
-  protected void assertBuild(OutputSink sink) {
+  protected void assertBuild(Resource<?> resource) {
     // Override to add assertions
   }
 
-  protected File toFile(OutputSink sink) {
-    var path = sink.toUri().toString();
+  protected File toFile(Resource<?> resource) {
+    var path = resource.toUri().toString();
     if (path.startsWith(FILE_URI_SCHEME)) {
       path = path.substring(FILE_URI_SCHEME.length());
     }
