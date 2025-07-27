@@ -44,9 +44,9 @@ class KmSystemTest {
 
   @BeforeEach
   void init() {
-    ToolRegistry.reload();
-    ToolRegistry.add(mainTool);
-    ToolRegistry.add(otherTool);
+    Tools.reload();
+    Tools.add(mainTool);
+    Tools.add(otherTool);
   }
 
   @Test

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 
 @NoArgsConstructor(access = PRIVATE)
-public class ToolRegistry {
+public class Tools {
 
   private static final Collection<BaseTool> tools = new HashSet<>();
 
@@ -31,7 +31,7 @@ public class ToolRegistry {
     tools.add(tool);
   }
 
-  public static <T extends Artifact> Optional<BaseTool> handling(Class<T> type) {
+  public static <T extends Artifact> Optional<BaseTool> targeting(Class<T> type) {
     return tools.stream()
         .filter(tool -> tool.getInputs().stream().limit(1).map(Input::type).anyMatch(type::equals))
         .findFirst();
@@ -43,7 +43,7 @@ public class ToolRegistry {
         .toList();
   }
 
-  public static Stream<BaseTool> allTools() {
+  public static Stream<BaseTool> all() {
     return tools.stream();
   }
 }

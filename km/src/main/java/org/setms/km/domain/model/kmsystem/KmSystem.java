@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.BaseTool;
-import org.setms.km.domain.model.tool.ToolRegistry;
+import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Level;
 import org.setms.km.domain.model.workspace.ArtifactDefinition;
@@ -18,7 +18,7 @@ public class KmSystem {
   public KmSystem(Workspace workspace) {
     this.workspace = workspace;
     this.workspace.registerArtifactChangedHandler(this::artifactChanged);
-    ToolRegistry.allTools()
+    Tools.all()
         .map(BaseTool::getInputs)
         .flatMap(Collection::stream)
         .map(
@@ -32,7 +32,7 @@ public class KmSystem {
   }
 
   private void artifactChanged(Artifact artifact) {
-    var maybeTool = ToolRegistry.handling(artifact.getClass());
+    var maybeTool = Tools.targeting(artifact.getClass());
     var valid = true;
     if (maybeTool.isPresent()) {
       var tool = maybeTool.get();
@@ -43,7 +43,7 @@ public class KmSystem {
       }
     }
     if (valid) {
-      ToolRegistry.dependingOn(artifact.getClass()).forEach(tool -> tool.build(workspace));
+      Tools.dependingOn(artifact.getClass()).forEach(tool -> tool.build(workspace));
     }
   }
 }

@@ -5,24 +5,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class ToolRegistryTest {
+class ToolsTest {
 
   @BeforeEach
   void init() {
-    ToolRegistry.reload();
+    Tools.reload();
   }
 
   @Test
   void shouldRegisterTool() {
-    assertThat(ToolRegistry.handling(Foo.class)).isEmpty();
+    assertThat(Tools.targeting(Foo.class)).isEmpty();
 
     var tool = new FooTool();
-    ToolRegistry.add(tool);
-    assertThat(ToolRegistry.handling(Foo.class)).isPresent().hasValue(tool);
+    Tools.add(tool);
+    assertThat(Tools.targeting(Foo.class)).isPresent().hasValue(tool);
   }
 
   @Test
   void shouldRegisterToolsViaServiceLoader() {
-    assertThat(ToolRegistry.handling(Bar.class)).isPresent().containsInstanceOf(BarTool.class);
+    assertThat(Tools.targeting(Bar.class)).isPresent().containsInstanceOf(BarTool.class);
   }
 }
