@@ -28,8 +28,6 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.artifact.UnresolvedArtifact;
 import org.setms.km.domain.model.format.Strings;
-import org.setms.km.domain.model.nlp.English;
-import org.setms.km.domain.model.nlp.NaturalLanguage;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Output;
@@ -73,7 +71,6 @@ public class UseCaseTool extends BaseTool {
       List.of("aggregate", "policy", "readModel");
   private static final String CREATE_DOMAIN_STORY = "domainstory.create";
 
-  private final NaturalLanguage language = new English();
   private JLanguageTool languageTool;
 
   @Override
@@ -185,13 +182,11 @@ public class UseCaseTool extends BaseTool {
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics,
       Location stepLocation) {
-    var types = language.plural(reference.getType());
-    var candidates = inputs.get(types, Artifact.class);
     if ("hotspot".equals(reference.getType())) {
       diagnostics.add(
           new Diagnostic(
               WARN, "Unresolved hotspot '%s'".formatted(reference.getId()), stepLocation));
-    } else if (reference.resolveFrom(candidates).isEmpty()) {
+    } else if (inputs.resolve(reference) instanceof UnresolvedArtifact) {
       diagnostics.add(
           new Diagnostic(
               WARN,

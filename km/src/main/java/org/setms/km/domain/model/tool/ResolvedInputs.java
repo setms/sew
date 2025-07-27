@@ -24,7 +24,7 @@ public class ResolvedInputs implements LinkResolver {
     return get(initLower(language.plural(type.getSimpleName())), type);
   }
 
-  public <T extends Artifact> List<T> get(String name, Class<T> type) {
+  private <T extends Artifact> List<T> get(String name, Class<T> type) {
     var namedObjects = Optional.ofNullable(values.get(name)).orElseGet(Collections::emptyList);
     return namedObjects.stream().map(type::cast).toList();
   }
