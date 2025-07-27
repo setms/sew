@@ -33,8 +33,8 @@ public class AcceptanceTestTool extends BaseTool {
   }
 
   @Override
-  protected void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  public void build(
+          ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var acceptanceTests = inputs.get(AcceptanceTest.class);
     var reportResource = resource.select("reports/acceptanceTests");
     acceptanceTests.forEach(acceptanceTest -> build(acceptanceTest, reportResource, diagnostics));

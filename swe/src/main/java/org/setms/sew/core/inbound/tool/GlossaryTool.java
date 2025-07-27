@@ -36,7 +36,7 @@ public class GlossaryTool extends BaseTool {
   }
 
   @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get(Term.class);
     terms.forEach(
         term ->

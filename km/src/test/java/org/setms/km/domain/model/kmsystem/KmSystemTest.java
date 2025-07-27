@@ -1,5 +1,6 @@
 package org.setms.km.domain.model.kmsystem;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.setms.km.domain.model.validation.Level.ERROR;
@@ -21,10 +22,7 @@ import org.setms.km.domain.model.format.Parser;
 import org.setms.km.domain.model.format.RootObject;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.workspace.ArtifactChangedHandler;
-import org.setms.km.domain.model.workspace.ArtifactDefinition;
-import org.setms.km.domain.model.workspace.Glob;
-import org.setms.km.domain.model.workspace.Workspace;
+import org.setms.km.domain.model.workspace.*;
 
 @ExtendWith(MockitoExtension.class)
 class KmSystemTest {
@@ -33,6 +31,10 @@ class KmSystemTest {
 
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
   private KmSystem kmSystem;
+
+  @Mock
+  @SuppressWarnings("rawtypes")
+  Resource resource;
 
   @Mock Workspace workspace;
   @Captor ArgumentCaptor<ArtifactChangedHandler> artifactChangedCaptor;
@@ -51,6 +53,7 @@ class KmSystemTest {
 
   @Test
   void shouldValidateChangedArtifact() {
+    givenRootResource();
     createKmSystem();
     verify(workspace).registerArtifactChangedHandler(artifactChangedCaptor.capture());
     var handler = artifactChangedCaptor.getValue();
@@ -64,12 +67,19 @@ class KmSystemTest {
     assertThat(otherTool.built).as("other built").isFalse();
   }
 
+  @SuppressWarnings("unchecked")
+  private void givenRootResource() {
+    when(resource.matching(any(Glob.class))).thenReturn(emptyList());
+    when(workspace.root()).thenReturn(resource);
+  }
+
   private void createKmSystem() {
     kmSystem = new KmSystem((workspace));
   }
 
   @Test
   void shouldBuildValidChangedArtifact() {
+    givenRootResource();
     createKmSystem();
     verify(workspace).registerArtifactChangedHandler(artifactChangedCaptor.capture());
     var handler = artifactChangedCaptor.getValue();
@@ -92,7 +102,7 @@ class KmSystemTest {
             new ArtifactDefinition(
                 MainArtifact.class, new Glob("main", "**/*.mainArtifact"), PARSER),
             new ArtifactDefinition(
-                OtherArtifact.class, new Glob("other", "**/*.otherArtifact"), null),
+                OtherArtifact.class, new Glob("other", "**/*.otherArtifact"), PARSER),
             new ArtifactDefinition(Bar.class, new Glob("bar", "**/*.bar"), null));
   }
 
@@ -126,15 +136,15 @@ class KmSystemTest {
     }
 
     @Override
-    public SequencedSet<Diagnostic> validate(Workspace workspace) {
+    public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+      diagnostics.addAll(validations);
       validated = true;
-      return validations;
     }
 
     @Override
-    public List<Diagnostic> build(Workspace workspace) {
+    public void build(
+        ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
       built = true;
-      return new ArrayList<>();
     }
   }
 
@@ -153,7 +163,7 @@ class KmSystemTest {
     @Override
     public List<Input<?>> getInputs() {
       return List.of(
-          new Input<>("other", null, OtherArtifact.class),
+          new Input<>("other", new TestFormat(), OtherArtifact.class),
           new Input<>("main", new TestFormat(), MainArtifact.class));
     }
 
@@ -163,15 +173,14 @@ class KmSystemTest {
     }
 
     @Override
-    public SequencedSet<Diagnostic> validate(Workspace workspace) {
+    public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
       validated = true;
-      return new LinkedHashSet<>();
     }
 
     @Override
-    public List<Diagnostic> build(Workspace workspace) {
+    public void build(
+        ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
       built = true;
-      return new ArrayList<>();
     }
   }
 

@@ -26,7 +26,7 @@ class FooTool extends BaseTool {
   }
 
   @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     diagnostics.add(
         new Diagnostic(
             WARN, MESSAGE, new Location("foo", "Baz"), List.of(new Suggestion(CODE, SUGGESTION))));

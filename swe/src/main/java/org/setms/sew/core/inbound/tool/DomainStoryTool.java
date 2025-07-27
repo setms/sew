@@ -263,7 +263,7 @@ public class DomainStoryTool extends BaseTool {
   }
 
   @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get(UseCase.class);
     inputs
         .get(DomainStory.class)

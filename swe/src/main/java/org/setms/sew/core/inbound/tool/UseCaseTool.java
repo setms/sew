@@ -97,7 +97,7 @@ public class UseCaseTool extends BaseTool {
   }
 
   @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get(UseCase.class);
     useCases.forEach(useCase -> validateUseCase(useCase, inputs, diagnostics));
     if (diagnostics.isEmpty()) {

@@ -45,7 +45,7 @@ public class ContextMapTool extends BaseTool {
   }
 
   @Override
-  protected void build(
+  public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var output = resource.select("reports/domains");
     inputs.get(Domain.class).forEach(domain -> build(domain, output, diagnostics));

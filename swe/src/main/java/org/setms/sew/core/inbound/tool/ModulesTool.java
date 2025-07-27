@@ -46,7 +46,7 @@ public class ModulesTool extends BaseTool {
   }
 
   @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var domains = inputs.get(Domain.class);
     inputs
         .get(Modules.class)
@@ -92,7 +92,7 @@ public class ModulesTool extends BaseTool {
   }
 
   @Override
-  protected void build(
+  public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var domains = inputs.get(Domain.class);
     inputs.get(Modules.class).forEach(modules -> build(modules, resource, diagnostics, domains));

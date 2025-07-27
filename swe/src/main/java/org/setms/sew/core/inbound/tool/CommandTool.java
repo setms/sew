@@ -36,7 +36,7 @@ public class CommandTool extends BaseTool {
   }
 
   @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var entities = inputs.get(Entity.class);
     inputs.get(Command.class).forEach(command -> validate(command, entities, diagnostics));
   }

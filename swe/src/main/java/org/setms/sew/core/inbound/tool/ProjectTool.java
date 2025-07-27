@@ -39,7 +39,7 @@ public class ProjectTool extends BaseTool {
   }
 
   @Override
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var owners = inputs.get(Owner.class);
     validateOwner(owners, diagnostics);
   }

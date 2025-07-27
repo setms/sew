@@ -41,9 +41,11 @@ public abstract class BaseTool {
   /**
    * Validate the inputs.
    *
+   * @deprecated Shouldn't need to call this anymore, KmSystem takes care of that
    * @param workspace the workspace in which to find inputs and store outputs
    * @return any validation issues
    */
+  @Deprecated
   public SequencedSet<Diagnostic> validate(Workspace workspace) {
     var result = new LinkedHashSet<Diagnostic>();
     validate(resolveInputs(workspace.root(), result), result);
@@ -61,7 +63,7 @@ public abstract class BaseTool {
     return result;
   }
 
-  protected void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
 
   private <T extends Artifact> List<T> parse(
       Resource<?> resource, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
@@ -75,9 +77,11 @@ public abstract class BaseTool {
   /**
    * Build the output from the input
    *
+   * @deprecated Shouldn't need to call this anymore, the KmSystem should take care of this
    * @param workspace where to retrieve input and store output
    * @return diagnostics about building the output
    */
+  @Deprecated
   public List<Diagnostic> build(Workspace workspace) {
     var result = new ArrayList<Diagnostic>();
     build(resolveInputs(workspace.root(), result), workspace.root().select("build"), result);
@@ -118,7 +122,7 @@ public abstract class BaseTool {
     return resource;
   }
 
-  protected void build(
+  public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {}
 
   /**
