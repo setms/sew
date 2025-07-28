@@ -3,58 +3,78 @@ package org.setms.sew.intellij.tool;
 import static java.util.function.Predicate.not;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.net.URI;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 
 @RequiredArgsConstructor
 public class VirtualFileResource implements Resource<VirtualFileResource> {
 
-  private final VirtualFile file;
+  private final VirtualFile virtualFile;
   private final Predicate<VirtualFile> fileFilter;
+  private final File file;
 
   @Override
   public String name() {
-    return file.getName();
+    return virtualFile == null ? file.getName() : virtualFile.getName();
   }
 
   @Override
   public Optional<VirtualFileResource> parent() {
-    return Optional.ofNullable(file.getParent())
-        .map(parent -> new VirtualFileResource(parent, fileFilter));
+    if (virtualFile == null) {
+      return Optional.ofNullable(file.getParentFile())
+          .map(parent -> new VirtualFileResource(null, fileFilter, parent));
+    }
+    return Optional.ofNullable(virtualFile.getParent())
+        .map(parent -> new VirtualFileResource(parent, fileFilter, null));
   }
 
   @Override
   public List<VirtualFileResource> children() {
-    return Stream.ofNullable(file.getChildren())
+    return Stream.ofNullable(virtualFile.getChildren())
         .flatMap(Arrays::stream)
         .filter(fileFilter)
-        .map(child -> new VirtualFileResource(child, fileFilter))
+        .map(child -> new VirtualFileResource(child, fileFilter, null))
         .toList();
   }
 
   @Override
   public VirtualFileResource select(String path) {
-    return Optional.ofNullable(file.findFileByRelativePath(path))
-        .map(f -> new VirtualFileResource(f, fileFilter))
-        .orElse(null);
+    if (path.startsWith(File.separator)) {
+      return new VirtualFileResource(
+          virtualFile.getFileSystem().refreshAndFindFileByPath(path), fileFilter, null);
+    }
+    if (virtualFile == null) {
+      return new VirtualFileResource(null, fileFilter, new File(file, path));
+    }
+    var result = virtualFile.findFileByRelativePath(path);
+    if (result == null) {
+      return new VirtualFileResource(
+          null, fileFilter, new File(virtualFile.toNioPath().toFile(), path));
+    }
+    return new VirtualFileResource(result, fileFilter, null);
   }
 
   @Override
   public List<VirtualFileResource> matching(Glob glob) {
+    if (virtualFile == null) {
+      return Files.matching(file, glob).stream()
+          .map(found -> new VirtualFileResource(null, fileFilter, found))
+          .toList();
+    }
     var result = new ArrayList<VirtualFileResource>();
     var ancestor =
         Optional.ofNullable(glob.path())
             .filter(not(String::isBlank))
-            .map(file::findFileByRelativePath)
-            .orElse(file);
+            .map(virtualFile::findFileByRelativePath)
+            .orElse(virtualFile);
     var pattern = Pattern.compile(glob.pattern().replace("**/*.", ".+\\."));
     addChildren(ancestor, pattern, result);
     return result;
@@ -69,7 +89,7 @@ public class VirtualFileResource implements Resource<VirtualFileResource> {
         .forEach(
             child -> {
               if (pattern.matcher(child.getName()).matches() && fileFilter.test(child)) {
-                sources.add(new VirtualFileResource(child, fileFilter));
+                sources.add(new VirtualFileResource(child, fileFilter, null));
               } else {
                 addChildren(child, pattern, sources);
               }
@@ -77,17 +97,35 @@ public class VirtualFileResource implements Resource<VirtualFileResource> {
   }
 
   @Override
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   public InputStream readFrom() throws IOException {
-    return file.getInputStream();
+    if (virtualFile == null) {
+      file.getParentFile().mkdirs();
+      return new FileInputStream(file);
+    }
+    return virtualFile.getInputStream();
   }
 
   @Override
+  @SuppressWarnings("ResultOfMethodCallIgnored")
   public OutputStream writeTo() throws IOException {
-    return file.getOutputStream(null);
+    if (virtualFile == null) {
+      file.getParentFile().mkdirs();
+      return new FileOutputStream(file);
+    }
+    return virtualFile.getOutputStream(null);
   }
 
   @Override
   public void delete() throws IOException {
-    file.delete(null);
+    virtualFile.delete(null);
+  }
+
+  @Override
+  public URI toUri() {
+    if (virtualFile == null) {
+      return file.toURI();
+    }
+    return Resource.super.toUri();
   }
 }

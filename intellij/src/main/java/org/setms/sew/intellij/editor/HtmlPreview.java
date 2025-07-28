@@ -5,6 +5,7 @@ import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import com.intellij.ide.ui.LafManagerListener;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -57,10 +58,12 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   private final JPanel panel;
   private final RateLimiter rateLimiter;
   private final VirtualFile file;
+  private final Project project;
   private final BaseTool tool;
   private Workspace workspace;
 
-  public HtmlPreview(Project ignored, VirtualFile file, @NotNull BaseTool tool) {
+  public HtmlPreview(Project project, VirtualFile file, @NotNull BaseTool tool) {
+    this.project = project;
     this.tool = tool;
     this.file = file;
     panel = new JPanel(new BorderLayout());
@@ -131,7 +134,8 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   protected void showDocument() {
-    SwingUtilities.invokeLater(this::updateDocument);
+    SwingUtilities.invokeLater(
+        () -> WriteCommandAction.runWriteCommandAction(project, this::updateDocument));
   }
 
   private void updateDocument() {
@@ -194,7 +198,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     if (browser != null) {
       browser.dispose();
     }
-    deleteOutput();
+    WriteCommandAction.runWriteCommandAction(project, this::deleteOutput);
   }
 
   @Override

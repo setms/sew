@@ -7,7 +7,7 @@ import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.setms.km.domain.model.format.Files;
+import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 
@@ -67,7 +67,7 @@ class FileResource implements Resource<FileResource> {
 
   @Override
   public List<FileResource> matching(Glob glob) {
-    return FileGlob.matching(file, glob).stream()
+    return Files.matching(file, glob).stream()
         .map(matching -> new FileResource(matching, root))
         .toList();
   }

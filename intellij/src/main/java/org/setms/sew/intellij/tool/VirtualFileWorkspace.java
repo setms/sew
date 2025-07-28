@@ -45,6 +45,6 @@ public class VirtualFileWorkspace extends Workspace {
 
   @Override
   protected Resource<?> newRoot() {
-    return new VirtualFileResource(file, inputFilter);
+    return new VirtualFileResource(file, inputFilter, null);
   }
 }

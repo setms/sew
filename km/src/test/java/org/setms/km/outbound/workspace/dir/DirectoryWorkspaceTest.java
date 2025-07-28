@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.format.Files;
+import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.format.Parser;
 import org.setms.km.domain.model.format.RootObject;
 import org.setms.km.domain.model.workspace.ArtifactDefinition;
