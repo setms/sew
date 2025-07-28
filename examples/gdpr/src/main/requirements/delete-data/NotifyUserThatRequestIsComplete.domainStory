@@ -10,7 +10,7 @@ domainStory NotifyUserThatRequestIsComplete {
 sentence {
   parts = [
     computerSystem(GdprMiddleware),
-    activity(),
-
+    activity(Notifies),
+    person(User)
   ]
 }

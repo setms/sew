@@ -63,5 +63,11 @@
         <annotator language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalAnnotator"/>
         <!-- Acceptance -->
         <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
+
+        <notificationGroup
+                id="Sew"
+                displayType="BALLOON"
+                isLogByDefault="true"
+                toolWindowId="Event Log"/>
     </extensions>
 </idea-plugin>

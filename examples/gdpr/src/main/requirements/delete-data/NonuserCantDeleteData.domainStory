@@ -7,8 +7,10 @@ domainStory NonuserCantDeleteData {
 sentence {
     parts = [
         person(Nonuser),
-        activity(Requests),
-        workObject(DataDeletion, icon=material(Delete))
+        activity(Submits),
+        workObject(Request, icon=material(Draft)),
+        activity(To),
+        workObject(DeleteData, icon=material(Delete))
     ]
 }
 
@@ -16,7 +18,7 @@ sentence {
     parts = [
         person(CustomerSupportAgent),
         activity(Compares),
-        workObject(Request, icon=material(Delete)),
+        workObject(Request, icon=material(Draft)),
         activity(With),
         workObject(Users, icon=material(Group))
     ]
@@ -26,6 +28,6 @@ sentence {
     parts = [
         person(CustomerSupportAgent),
         activity(Denies),
-        workObject(Request, icon=material(Delete))
+        workObject(Request, icon=material(Draft))
     ]
 }

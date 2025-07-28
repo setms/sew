@@ -23,7 +23,6 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import org.cef.browser.CefBrowser;
 import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
@@ -134,7 +133,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   protected void showDocument() {
-    SwingUtilities.invokeLater(
+    ApplicationManager.getApplication().invokeLater(
         () -> WriteCommandAction.runWriteCommandAction(project, this::updateDocument));
   }
 

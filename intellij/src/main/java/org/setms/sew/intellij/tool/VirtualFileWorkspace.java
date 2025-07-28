@@ -15,7 +15,15 @@ public class VirtualFileWorkspace extends Workspace {
   private final Predicate<VirtualFile> inputFilter;
 
   public VirtualFileWorkspace(PsiFile file, BaseTool tool) {
-    this(rootOf(file.getVirtualFile(), tool), f -> true);
+    this(rootOf(virtualFileOf(file), tool), f -> true);
+  }
+
+  public static VirtualFile virtualFileOf(PsiFile file) {
+    var result = file.getVirtualFile();
+    if (result == null) {
+      result = file.getViewProvider().getVirtualFile();
+    }
+    return result;
   }
 
   public VirtualFileWorkspace(VirtualFile file, BaseTool tool) {

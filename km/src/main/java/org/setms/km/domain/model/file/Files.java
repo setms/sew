@@ -17,6 +17,9 @@ public class Files {
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public static void delete(File file) {
+    if (file == null || !file.exists()) {
+      return;
+    }
     if (file.isDirectory()) {
       childrenOf(file).forEach(Files::delete);
     }

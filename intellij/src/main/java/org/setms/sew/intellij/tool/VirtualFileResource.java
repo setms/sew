@@ -38,6 +38,11 @@ public class VirtualFileResource implements Resource<VirtualFileResource> {
 
   @Override
   public List<VirtualFileResource> children() {
+    if (virtualFile == null) {
+      return Files.childrenOf(file)
+          .map(child -> new VirtualFileResource(null, fileFilter, child))
+          .toList();
+    }
     return Stream.ofNullable(virtualFile.getChildren())
         .flatMap(Arrays::stream)
         .filter(fileFilter)
@@ -118,6 +123,9 @@ public class VirtualFileResource implements Resource<VirtualFileResource> {
 
   @Override
   public void delete() throws IOException {
+    if (virtualFile == null) {
+      Files.delete(file);
+    }
     virtualFile.delete(null);
   }
 
@@ -126,6 +134,6 @@ public class VirtualFileResource implements Resource<VirtualFileResource> {
     if (virtualFile == null) {
       return file.toURI();
     }
-    return Resource.super.toUri();
+    return virtualFile.toNioPath().toUri();
   }
 }
