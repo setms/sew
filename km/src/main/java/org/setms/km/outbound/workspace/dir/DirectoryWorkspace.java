@@ -6,7 +6,6 @@ import io.methvin.watcher.DirectoryChangeEvent;
 import io.methvin.watcher.DirectoryWatcher;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -50,21 +49,22 @@ public class DirectoryWorkspace extends Workspace {
     }
   }
 
-  private static File tempDir() {
-    try {
-      return Files.createTempDirectory("org-setms-km").toFile();
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
+  private void fileChanged(DirectoryChangeEvent event) {
+    if (event.isDirectory()) {
+      return;
+    }
+    var path = toPath(event);
+    if (event.eventType() == DELETE) {
+      onDeleted(path);
+    } else {
+      parse(path).ifPresent(artifact -> onChanged(path, artifact));
     }
   }
 
-  private void fileChanged(DirectoryChangeEvent event) {
-    if (event.isDirectory() || event.eventType() == DELETE) {
-      return;
-    }
-    var path = event.path().toString();
-    path = path.substring(root.getParent().length());
-    parse(path).ifPresent(this::onChanged);
+  private String toPath(DirectoryChangeEvent event) {
+    var result = event.path().toString();
+    result = result.substring(root.getParent().length());
+    return result;
   }
 
   @Override

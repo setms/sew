@@ -51,7 +51,7 @@ class DirectoryWorkspaceTest {
     }
   }
 
-  private void artifactChanged(Artifact artifact) {
+  private void artifactChanged(String ignored, Artifact artifact) {
     assertThat(artifact).isInstanceOf(Text.class);
     changed = true;
   }

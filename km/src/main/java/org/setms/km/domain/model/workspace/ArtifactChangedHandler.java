@@ -5,5 +5,5 @@ import org.setms.km.domain.model.artifact.Artifact;
 @FunctionalInterface
 public interface ArtifactChangedHandler {
 
-  void changed(Artifact artifact);
+  void changed(String path, Artifact artifact);
 }

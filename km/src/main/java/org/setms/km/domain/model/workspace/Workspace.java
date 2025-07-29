@@ -10,6 +10,7 @@ public abstract class Workspace {
 
   private final Collection<ArtifactDefinition> artifactDefinitions = new HashSet<>();
   private final Collection<ArtifactChangedHandler> artifactChangedHandlers = new ArrayList<>();
+  private final Collection<ArtifactDeletedHandler> artifactDeletedHandlers = new ArrayList<>();
 
   private Resource<?> root;
 
@@ -41,8 +42,16 @@ public abstract class Workspace {
     artifactChangedHandlers.add(handler);
   }
 
-  protected void onChanged(Artifact artifact) {
-    artifactChangedHandlers.forEach(handler -> handler.changed(artifact));
+  protected void onChanged(String path, Artifact artifact) {
+    artifactChangedHandlers.forEach(handler -> handler.changed(path, artifact));
+  }
+
+  public void registerArtifactDeletedHandler(ArtifactDeletedHandler handler) {
+    artifactDeletedHandlers.add(handler);
+  }
+
+  protected void onDeleted(String path) {
+    artifactDeletedHandlers.forEach(handler -> handler.deleted(path));
   }
 
   public Resource<?> root() {
