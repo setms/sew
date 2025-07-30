@@ -144,9 +144,20 @@ public abstract class WorkspaceTestCase {
 
   @Test
   void shouldDeleteResource() throws IOException {
-    createChild(workspace.root(), "bye").delete();
+    var path = "/bye";
+    var deleted = new AtomicBoolean();
+    workspace.registerArtifactDeletedHandler(
+        deletedPath -> {
+          if (!deleted.get()) {
+            assertThat(deletedPath).as("Deleted path").isEqualTo(path);
+            deleted.set(true);
+          }
+        });
 
-    assertThat(workspace.root().children()).isEmpty();
+    createChild(workspace.root(), path).delete();
+
+    assertThat(workspace.root().children()).as("Children after delete").isEmpty();
+    assertThat(deleted.get()).as("Deleted").isTrue();
   }
 
   @Test

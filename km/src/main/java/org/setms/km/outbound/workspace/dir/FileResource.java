@@ -1,7 +1,6 @@
 package org.setms.km.outbound.workspace.dir;
 
-import static io.methvin.watcher.DirectoryChangeEvent.EventType.CREATE;
-import static io.methvin.watcher.DirectoryChangeEvent.EventType.MODIFY;
+import static io.methvin.watcher.DirectoryChangeEvent.EventType.*;
 
 import io.methvin.watcher.DirectoryChangeEvent;
 import java.io.*;
@@ -101,7 +100,9 @@ class FileResource implements Resource<FileResource> {
 
   @Override
   public void delete() throws IOException {
+    var path = file.toPath();
     Files.delete(file);
+    workspace.fileChanged(new DirectoryChangeEvent(DELETE, false, path, null, 1, null));
   }
 
   @Override
