@@ -42,3 +42,8 @@ intellijPlatform {
         }
     }
 }
+
+version = 'latest'
+jar {
+    archiveClassifier = ''
+}
