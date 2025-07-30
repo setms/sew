@@ -13,13 +13,9 @@ public interface Resource<T extends Resource<T>> {
 
   String name();
 
-  default String path() {
-    return "%s%s%s".formatted(parent().map(Resource::path).orElse(""), SEPARATOR, name());
-  }
+  String path();
 
-  default URI toUri() {
-    return URI.create("urn:setms:km:resource:%s".formatted(path()));
-  }
+  URI toUri();
 
   Optional<T> parent();
 

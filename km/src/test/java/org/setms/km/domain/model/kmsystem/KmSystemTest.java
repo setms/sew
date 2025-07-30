@@ -11,6 +11,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.*;
+import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 
 class KmSystemTest {
 

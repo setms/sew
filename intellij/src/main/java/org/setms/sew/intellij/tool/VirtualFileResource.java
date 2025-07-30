@@ -27,6 +27,11 @@ public class VirtualFileResource implements Resource<VirtualFileResource> {
   }
 
   @Override
+  public String path() {
+    return virtualFile == null ? file.getPath() : virtualFile.getPath();
+  }
+
+  @Override
   public Optional<VirtualFileResource> parent() {
     if (virtualFile == null) {
       return Optional.ofNullable(file.getParentFile())

@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.file.Files;
@@ -13,22 +14,28 @@ import org.setms.km.domain.model.workspace.Resource;
 
 @Getter(AccessLevel.PACKAGE)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode
 class FileResource implements Resource<FileResource> {
 
   private final File file;
   private final File root;
 
   FileResource(File file) {
-    if (file == null) {
-      throw new IllegalArgumentException("Missing file");
-    }
-    this.file = file;
-    this.root = file;
+    this(file, file);
   }
 
   @Override
   public String name() {
-    return file.getName();
+    return isRoot() ? "" : file.getName();
+  }
+
+  private boolean isRoot() {
+    return file.equals(root);
+  }
+
+  @Override
+  public String path() {
+    return isRoot() ? "/" : file.getPath().substring(root.getPath().length());
   }
 
   @Override
@@ -38,10 +45,7 @@ class FileResource implements Resource<FileResource> {
 
   @Override
   public Optional<FileResource> parent() {
-    if (file.equals(root)) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(file.getParentFile()).map(parent -> new FileResource(parent, root));
+    return isRoot() ? Optional.empty() : Optional.of(new FileResource(file.getParentFile(), root));
   }
 
   @Override
@@ -52,17 +56,17 @@ class FileResource implements Resource<FileResource> {
   @Override
   public FileResource select(String path) {
     if (path.startsWith(Resource.SEPARATOR)) {
-      if (!path.startsWith(root().path())) {
-        // Prevent navigating outside the root
-        return null;
-      }
-      return new FileResource(new File(root, path.substring(root().path().length())), root);
+      return new FileResource(new File(root, path.substring(1)), root);
     }
-    return Optional.of(new File(file, path))
-        // Prevent navigating outside the root
-        .filter(f -> f.getPath().startsWith(root.getPath()))
-        .map(f -> new FileResource(f, root))
-        .orElse(null);
+    try {
+      return Optional.of(new File(file, path).getCanonicalFile())
+          // Prevent navigating outside the root
+          .filter(f -> f.getPath().startsWith(root.getPath()))
+          .map(f -> new FileResource(f, root))
+          .orElse(null);
+    } catch (IOException e) {
+      return null;
+    }
   }
 
   @Override
@@ -87,5 +91,10 @@ class FileResource implements Resource<FileResource> {
   @Override
   public void delete() throws IOException {
     Files.delete(file);
+  }
+
+  @Override
+  public String toString() {
+    return file.getPath();
   }
 }

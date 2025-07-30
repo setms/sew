@@ -1,6 +1,7 @@
-package org.setms.km.domain.model.kmsystem;
+package org.setms.km.outbound.workspace.memory;
 
 import java.io.*;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,21 +20,28 @@ record InMemoryResource(
 
   @Override
   public String name() {
-    var index = path.lastIndexOf("/");
-    if (index == 0) {
-      return path;
+    if (path.equals("/")) {
+      return "";
     }
-    return path.substring(1 + index);
+    return path.substring(1 + path.lastIndexOf("/"));
+  }
+
+  @Override
+  public URI toUri() {
+    return URI.create("urn:org:setms:km:workspace:memory:" + path);
   }
 
   @Override
   public Optional<InMemoryResource> parent() {
-    var index = path.lastIndexOf("/");
-    if (index == 0) {
+    if (path.equals("/")) {
       return Optional.empty();
     }
+    var index = path.lastIndexOf("/");
+    if (index == 0) {
+      return Optional.of(new InMemoryResource(artifactsByPath, "/", pathChanged, pathDeleted));
+    }
     return Optional.of(
-        new InMemoryResource(artifactsByPath, path.substring(1 + index), pathChanged, pathDeleted));
+        new InMemoryResource(artifactsByPath, path.substring(0, index), pathChanged, pathDeleted));
   }
 
   @Override
@@ -46,6 +54,9 @@ record InMemoryResource(
 
   @Override
   public InMemoryResource select(String path) {
+    if (path.startsWith("/")) {
+      return new InMemoryResource(artifactsByPath, path, pathChanged, pathDeleted);
+    }
     var selected = this.path;
     for (var part : path.split("/")) {
       if ("..".equals(part)) {
@@ -95,5 +106,10 @@ record InMemoryResource(
               artifactsByPath.remove(path);
               pathDeleted.accept(path);
             });
+  }
+
+  @Override
+  public String toString() {
+    return toUri().toString();
   }
 }
