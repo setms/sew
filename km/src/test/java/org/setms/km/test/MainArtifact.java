@@ -1,11 +1,11 @@
-package org.setms.km.domain.model.kmsystem;
+package org.setms.km.test;
 
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 
-public class OtherArtifact extends Artifact {
+public class MainArtifact extends Artifact {
 
-  public OtherArtifact(FullyQualifiedName fullyQualifiedName) {
+  public MainArtifact(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

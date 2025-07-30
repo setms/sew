@@ -1,4 +1,4 @@
-package org.setms.km.domain.model.kmsystem;
+package org.setms.km.test;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,10 +10,10 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
-class OtherTool extends BaseTool {
+public class OtherTool extends BaseTool {
 
-  static boolean validated;
-  static boolean built;
+  public static boolean validated;
+  public static boolean built;
 
   public static void init() {
     validated = false;

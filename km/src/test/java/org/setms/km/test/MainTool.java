@@ -1,4 +1,4 @@
-package org.setms.km.domain.model.kmsystem;
+package org.setms.km.test;
 
 import java.util.*;
 import org.setms.km.domain.model.tool.BaseTool;
@@ -8,11 +8,11 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
-class MainTool extends BaseTool {
+public class MainTool extends BaseTool {
 
-  static final SequencedSet<Diagnostic> validations = new LinkedHashSet<>();
-  static boolean validated;
-  static boolean built;
+  public static final SequencedSet<Diagnostic> validations = new LinkedHashSet<>();
+  public static boolean validated;
+  public static boolean built;
 
   public static void init(Diagnostic diagnostic) {
     init();

@@ -13,8 +13,8 @@ import org.setms.km.domain.model.workspace.Workspace;
 @Slf4j
 public class DirectoryWorkspace extends Workspace {
 
-  private final File root;
   private final DirectoryWatcher watcher;
+  final File root;
 
   public DirectoryWorkspace(File root) {
     this.root = validate(root);
@@ -49,7 +49,7 @@ public class DirectoryWorkspace extends Workspace {
     }
   }
 
-  private void fileChanged(DirectoryChangeEvent event) {
+  void fileChanged(DirectoryChangeEvent event) {
     if (event.isDirectory()) {
       return;
     }
@@ -63,13 +63,13 @@ public class DirectoryWorkspace extends Workspace {
 
   private String toPath(DirectoryChangeEvent event) {
     var result = event.path().toString();
-    result = result.substring(root.getParent().length());
+    result = result.substring(root.getPath().length());
     return result;
   }
 
   @Override
   protected Resource<?> newRoot() {
-    return new FileResource(root);
+    return new FileResource(root, this);
   }
 
   @Override

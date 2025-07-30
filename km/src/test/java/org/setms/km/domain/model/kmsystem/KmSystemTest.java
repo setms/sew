@@ -12,6 +12,10 @@ import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.*;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
+import org.setms.km.test.MainArtifact;
+import org.setms.km.test.MainTool;
+import org.setms.km.test.OtherTool;
+import org.setms.km.test.TestFormat;
 
 class KmSystemTest {
 

@@ -1,4 +1,4 @@
-package org.setms.km.domain.model.kmsystem;
+package org.setms.km.test;
 
 import java.io.PrintWriter;
 import org.setms.km.domain.model.format.Builder;

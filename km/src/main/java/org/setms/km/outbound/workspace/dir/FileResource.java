@@ -1,5 +1,9 @@
 package org.setms.km.outbound.workspace.dir;
 
+import static io.methvin.watcher.DirectoryChangeEvent.EventType.CREATE;
+import static io.methvin.watcher.DirectoryChangeEvent.EventType.MODIFY;
+
+import io.methvin.watcher.DirectoryChangeEvent;
 import java.io.*;
 import java.net.URI;
 import java.util.List;
@@ -13,16 +17,12 @@ import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 
 @Getter(AccessLevel.PACKAGE)
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @EqualsAndHashCode
 class FileResource implements Resource<FileResource> {
 
   private final File file;
-  private final File root;
-
-  FileResource(File file) {
-    this(file, file);
-  }
+  private final DirectoryWorkspace workspace;
 
   @Override
   public String name() {
@@ -30,12 +30,12 @@ class FileResource implements Resource<FileResource> {
   }
 
   private boolean isRoot() {
-    return file.equals(root);
+    return file.equals(workspace.root);
   }
 
   @Override
   public String path() {
-    return isRoot() ? "/" : file.getPath().substring(root.getPath().length());
+    return isRoot() ? "/" : file.getPath().substring(workspace.root.getPath().length());
   }
 
   @Override
@@ -45,24 +45,26 @@ class FileResource implements Resource<FileResource> {
 
   @Override
   public Optional<FileResource> parent() {
-    return isRoot() ? Optional.empty() : Optional.of(new FileResource(file.getParentFile(), root));
+    return isRoot()
+        ? Optional.empty()
+        : Optional.of(new FileResource(file.getParentFile(), workspace));
   }
 
   @Override
   public List<FileResource> children() {
-    return Files.childrenOf(file).map(child -> new FileResource(child, root)).toList();
+    return Files.childrenOf(file).map(child -> new FileResource(child, workspace)).toList();
   }
 
   @Override
   public FileResource select(String path) {
     if (path.startsWith(Resource.SEPARATOR)) {
-      return new FileResource(new File(root, path.substring(1)), root);
+      return new FileResource(new File(workspace.root, path.substring(1)), workspace);
     }
     try {
       return Optional.of(new File(file, path).getCanonicalFile())
           // Prevent navigating outside the root
-          .filter(f -> f.getPath().startsWith(root.getPath()))
-          .map(f -> new FileResource(f, root))
+          .filter(f -> f.getPath().startsWith(workspace.root.getPath()))
+          .map(f -> new FileResource(f, workspace))
           .orElse(null);
     } catch (IOException e) {
       return null;
@@ -72,7 +74,7 @@ class FileResource implements Resource<FileResource> {
   @Override
   public List<FileResource> matching(Glob glob) {
     return Files.matching(file, glob).stream()
-        .map(matching -> new FileResource(matching, root))
+        .map(matching -> new FileResource(matching, workspace))
         .toList();
   }
 
@@ -85,7 +87,16 @@ class FileResource implements Resource<FileResource> {
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public OutputStream writeTo() throws IOException {
     file.getParentFile().mkdirs();
-    return new FileOutputStream(file);
+    var eventType = file.isFile() ? MODIFY : CREATE;
+    return new FileOutputStream(file) {
+      @Override
+      public void close() throws IOException {
+        super.close();
+        // For some reason, the directory watcher doesn't pick up the file changes
+        workspace.fileChanged(
+            new DirectoryChangeEvent(eventType, false, file.toPath(), null, 1, null));
+      }
+    };
   }
 
   @Override
