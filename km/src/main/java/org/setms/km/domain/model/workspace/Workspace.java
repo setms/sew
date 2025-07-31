@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.artifact.Artifact;
 
 @Slf4j
-public abstract class Workspace {
+public abstract class Workspace<T> {
 
   private final Collection<ArtifactDefinition> artifactDefinitions = new HashSet<>();
   private final Collection<ArtifactChangedHandler> artifactChangedHandlers = new ArrayList<>();
@@ -64,4 +64,6 @@ public abstract class Workspace {
   protected abstract Resource<?> newRoot();
 
   public void close() throws IOException {}
+
+  public abstract Resource<?> find(T external);
 }

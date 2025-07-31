@@ -2,13 +2,12 @@ package org.setms.sew.intellij.usecase;
 
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.inbound.tool.UseCaseTool;
 import org.setms.sew.intellij.editor.EditorWithPreviewProvider;
 
 public class UseCaseEditorProvider extends EditorWithPreviewProvider {
 
   public UseCaseEditorProvider() {
-    super(new UseCaseTool(), UseCaseFileType.class);
+    super(UseCaseFileType.class);
   }
 
   @Override

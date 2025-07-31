@@ -1,11 +1,9 @@
 package org.setms.sew.intellij.editor;
 
-import static java.util.stream.Collectors.joining;
-import static org.setms.km.domain.model.validation.Level.ERROR;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.intellij.ide.ui.LafManagerListener;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -20,6 +18,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,9 +28,10 @@ import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.km.domain.model.tool.BaseTool;
-import org.setms.km.domain.model.tool.Output;
-import org.setms.km.domain.model.workspace.Workspace;
+import org.setms.km.domain.model.kmsystem.KmSystem;
+import org.setms.km.domain.model.workspace.Glob;
+import org.setms.km.domain.model.workspace.Resource;
+import org.setms.sew.intellij.km.KmSystemService;
 import org.setms.sew.intellij.workspace.IntellijWorkspace;
 
 public class HtmlPreview extends UserDataHolderBase implements FileEditor {
@@ -39,32 +40,20 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
       """
           document.body.style.backgroundColor = '%s';
           document.body.style.color = '%s';""";
-  private static final String ERRORS =
-      """
-      <html>
-        <body>
-          <h1>Unable to show object</h1>
-          <p>
-            Please fix the following issues to show the object:
-          </p>
-          <ul>
-            <li>%s</li>
-          </ul>
-        </body>
-      </html>""";
-  private static final String ERROR_SEPARATOR = "</li><li>";
+  private static final Glob HTML_GLOB = new Glob("", "**/*.html");
+
   private final JBCefBrowser browser;
   private final JPanel panel;
   private final RateLimiter rateLimiter;
   private final VirtualFile file;
-  private final Project project;
-  private final BaseTool tool;
-  private Workspace workspace;
+  private final KmSystem kmSystem;
+  private final IntellijWorkspace workspace;
 
-  public HtmlPreview(Project project, VirtualFile file, @NotNull BaseTool tool) {
-    this.project = project;
-    this.tool = tool;
+  public HtmlPreview(Project project, VirtualFile file) {
+    this.kmSystem = project.getService(KmSystemService.class).getKmSystem();
+    this.workspace = (IntellijWorkspace) kmSystem.getWorkspace();
     this.file = file;
+
     panel = new JPanel(new BorderLayout());
     var document = FileDocumentManager.getInstance().getDocument(file);
     if (JBCefApp.isSupported() && document != null) {
@@ -99,6 +88,27 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
             browser.getCefBrowser());
   }
 
+  private void updateStyleWhenColorSchemeChanges() {
+    ApplicationManager.getApplication()
+        .getMessageBus()
+        .connect()
+        .subscribe(LafManagerListener.TOPIC, (LafManagerListener) source -> forceStyle());
+  }
+
+  private void forceStyle() {
+    browser.getCefBrowser().executeJavaScript(getStyle(), browser.getCefBrowser().getURL(), 0);
+  }
+
+  private String getStyle() {
+    var scheme = EditorColorsManager.getInstance().getGlobalScheme();
+    return STYLE.formatted(
+        htmlColorOf(scheme.getDefaultBackground()), htmlColorOf(scheme.getDefaultForeground()));
+  }
+
+  private String htmlColorOf(Color color) {
+    return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
+  }
+
   private void trackDocumentChanges(Document document) {
     document.addDocumentListener(
         new com.intellij.openapi.editor.event.DocumentListener() {
@@ -111,66 +121,29 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
         });
   }
 
-  private void updateStyleWhenColorSchemeChanges() {
-    ApplicationManager.getApplication()
-        .getMessageBus()
-        .connect()
-        .subscribe(LafManagerListener.TOPIC, (LafManagerListener) source -> forceStyle());
+  private void showDocument() {
+    ApplicationManager.getApplication().invokeLaterOnWriteThread(this::showFile);
   }
 
-  protected void forceStyle() {
-    browser.getCefBrowser().executeJavaScript(getStyle(), browser.getCefBrowser().getURL(), 0);
+  private void showFile() {
+    updateFile();
+    browser.loadURL(
+        Optional.ofNullable(workspace.find(file))
+            .map(Resource::path)
+            .map(kmSystem::mainReportFor)
+            .map(report -> report.matching(HTML_GLOB))
+            .map(List::getFirst)
+            .map(Resource::toUri)
+            .map(Object::toString)
+            .orElse("about:blank"));
   }
 
-  private @NotNull String getStyle() {
-    var scheme = EditorColorsManager.getInstance().getGlobalScheme();
-    return STYLE.formatted(
-        htmlColorOf(scheme.getDefaultBackground()), htmlColorOf(scheme.getDefaultForeground()));
-  }
-
-  private String htmlColorOf(Color color) {
-    return String.format("#%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
-  }
-
-  protected void showDocument() {
-    ApplicationManager.getApplication()
-        .invokeLater(() -> WriteCommandAction.runWriteCommandAction(project, this::updateDocument));
-  }
-
-  private void updateDocument() {
-    var glob = tool.getOutputs().map(Output::glob);
-    if (glob.isEmpty()) {
-      browser.loadURL("about:blank");
-      return;
-    }
-    deleteOutput();
-    workspace = new IntellijWorkspace(file, tool);
-    var diagnostics =
-        tool.build(workspace).stream().filter(diagnostic -> diagnostic.level() == ERROR).toList();
-    if (!diagnostics.isEmpty()) {
-      browser.loadHTML(
-          ERRORS.formatted(
-              diagnostics.stream()
-                  .map(diagnostic -> "%s: %s".formatted(diagnostic.level(), diagnostic.message()))
-                  .collect(joining(ERROR_SEPARATOR))));
-      return;
-    }
-    var content = workspace.root().select("build").matching(glob.get());
-    if (content.isEmpty()) {
-      browser.loadURL("about:blank");
-    } else {
-      browser.loadURL(content.getFirst().toUri().toString());
-    }
-  }
-
-  private void deleteOutput() {
-    if (workspace != null) {
-      try {
-        workspace.root().select("build").delete();
-      } catch (IOException ignored) {
-        // Ignore: someone will clean up temp files at some point
-      }
-      workspace = null;
+  private void updateFile() {
+    try {
+      file.setBinaryContent(
+          FileDocumentManager.getInstance().getDocument(file).getText().getBytes(UTF_8));
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update virtual file from document", e);
     }
   }
 
@@ -197,7 +170,6 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     if (browser != null) {
       browser.dispose();
     }
-    WriteCommandAction.runWriteCommandAction(project, this::deleteOutput);
   }
 
   @Override

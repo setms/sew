@@ -9,7 +9,6 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
@@ -18,11 +17,10 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.sew.intellij.filetype.SalLanguageFileType;
+import org.setms.sew.intellij.km.KmSystemService;
 import org.setms.sew.intellij.lang.LevelSeverity;
-import org.setms.sew.intellij.workspace.IntellijWorkspace;
 
 public class SalAnnotator implements Annotator {
 
@@ -31,7 +29,6 @@ public class SalAnnotator implements Annotator {
 
   private static String previousDocumentText;
   private static Set<Diagnostic> diagnostics = emptySet();
-  private static BaseTool tool;
 
   @Override
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -41,7 +38,7 @@ public class SalAnnotator implements Annotator {
       return;
     }
     var file = psiElement.getContainingFile();
-    if (file == null || !file.isValid()) {
+    if (file == null || !file.isValid() || file.getVirtualFile() == null) {
       return;
     }
     if (!(file.getFileType() instanceof SalLanguageFileType)) {
@@ -61,8 +58,9 @@ public class SalAnnotator implements Annotator {
 
     if (!document.getText().equals(previousDocumentText)) {
       previousDocumentText = document.getText();
-      tool = ((SalLanguageFileType) file.getFileType()).getTool();
-      diagnostics = tool == null ? emptySet() : validateFile(tool, file);
+      var service = psiElement.getProject().getService(KmSystemService.class);
+      var resource = service.getWorkspace().find(file.getVirtualFile());
+      diagnostics = service.getKmSystem().diagnosticsFor(resource.path());
     }
     if (diagnostics.isEmpty()) {
       return;
@@ -82,16 +80,11 @@ public class SalAnnotator implements Annotator {
                       .range(psiElement);
               for (var suggestion : diagnostic.suggestions()) {
                 builder
-                    .newFix(
-                        new ApplySuggestion(tool, suggestion, diagnostic.location(), psiElement))
+                    .newFix(new ApplySuggestion(suggestion, diagnostic.location(), psiElement))
                     .registerFix();
               }
               builder.create();
             });
-  }
-
-  private Set<Diagnostic> validateFile(BaseTool tool, PsiFile file) {
-    return tool.validate(new IntellijWorkspace(file, tool));
   }
 
   private String locationOf(PsiElement psiElement) {

@@ -2,13 +2,12 @@ package org.setms.sew.intellij.domainstory;
 
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.setms.sew.core.inbound.tool.DomainStoryTool;
 import org.setms.sew.intellij.editor.EditorWithPreviewProvider;
 
 public class DomainStoryEditorProvider extends EditorWithPreviewProvider {
 
   public DomainStoryEditorProvider() {
-    super(new DomainStoryTool(), DomainStoryFileType.class);
+    super(DomainStoryFileType.class);
   }
 
   @Override

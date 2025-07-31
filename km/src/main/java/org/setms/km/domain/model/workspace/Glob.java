@@ -12,7 +12,7 @@ public record Glob(String path, String pattern) {
 
   public boolean matches(String path) {
     var candidate = path;
-    var index = candidate.indexOf(this.path);
+    var index = path.isEmpty() ? 0 : candidate.indexOf(this.path);
     if (index < 0) {
       return false;
     }

@@ -11,7 +11,7 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 
 @Slf4j
-public class DirectoryWorkspace extends Workspace {
+public class DirectoryWorkspace extends Workspace<File> {
 
   private final DirectoryWatcher watcher;
   final File root;
@@ -76,5 +76,13 @@ public class DirectoryWorkspace extends Workspace {
   public void close() throws IOException {
     watcher.close();
     super.close();
+  }
+
+  @Override
+  public Resource<?> find(File external) {
+    if (external.getPath().startsWith(root.getPath())) {
+      return new FileResource(external, this);
+    }
+    return null;
   }
 }

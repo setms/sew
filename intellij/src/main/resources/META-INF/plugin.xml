@@ -64,6 +64,9 @@
         <!-- Acceptance -->
         <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
 
+        <!-- KM -->
+        <postStartupActivity implementation="org.setms.sew.intellij.km.KmStartupActivity"/>
+
         <notificationGroup
                 id="Sew"
                 displayType="BALLOON"

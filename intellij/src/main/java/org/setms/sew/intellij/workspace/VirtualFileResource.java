@@ -6,7 +6,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import java.io.*;
 import java.net.URI;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.setms.km.domain.model.workspace.Resource;
 class VirtualFileResource implements Resource<VirtualFileResource> {
 
   private final VirtualFile virtualFile;
-  private final Predicate<VirtualFile> fileFilter;
   private final File file;
 
   @Override
@@ -35,23 +33,20 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   public Optional<VirtualFileResource> parent() {
     if (virtualFile == null) {
       return Optional.ofNullable(file.getParentFile())
-          .map(parent -> new VirtualFileResource(null, fileFilter, parent));
+          .map(parent -> new VirtualFileResource(null, parent));
     }
     return Optional.ofNullable(virtualFile.getParent())
-        .map(parent -> new VirtualFileResource(parent, fileFilter, null));
+        .map(parent -> new VirtualFileResource(parent, null));
   }
 
   @Override
   public List<VirtualFileResource> children() {
     if (virtualFile == null) {
-      return Files.childrenOf(file)
-          .map(child -> new VirtualFileResource(null, fileFilter, child))
-          .toList();
+      return Files.childrenOf(file).map(child -> new VirtualFileResource(null, child)).toList();
     }
     return Stream.ofNullable(virtualFile.getChildren())
         .flatMap(Arrays::stream)
-        .filter(fileFilter)
-        .map(child -> new VirtualFileResource(child, fileFilter, null))
+        .map(child -> new VirtualFileResource(child, null))
         .toList();
   }
 
@@ -59,24 +54,23 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   public VirtualFileResource select(String path) {
     if (path.startsWith(File.separator)) {
       return new VirtualFileResource(
-          virtualFile.getFileSystem().refreshAndFindFileByPath(path), fileFilter, null);
+          virtualFile.getFileSystem().refreshAndFindFileByPath(path), null);
     }
     if (virtualFile == null) {
-      return new VirtualFileResource(null, fileFilter, new File(file, path));
+      return new VirtualFileResource(null, new File(file, path));
     }
     var result = virtualFile.findFileByRelativePath(path);
     if (result == null) {
-      return new VirtualFileResource(
-          null, fileFilter, new File(virtualFile.toNioPath().toFile(), path));
+      return new VirtualFileResource(null, new File(virtualFile.toNioPath().toFile(), path));
     }
-    return new VirtualFileResource(result, fileFilter, null);
+    return new VirtualFileResource(result, null);
   }
 
   @Override
   public List<VirtualFileResource> matching(Glob glob) {
     if (virtualFile == null) {
       return Files.matching(file, glob).stream()
-          .map(found -> new VirtualFileResource(null, fileFilter, found))
+          .map(found -> new VirtualFileResource(null, found))
           .toList();
     }
     var result = new ArrayList<VirtualFileResource>();
@@ -95,11 +89,10 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
       VirtualFile file, Pattern pattern, Collection<VirtualFileResource> sources) {
     Optional.ofNullable(file.getChildren()).stream()
         .flatMap(Arrays::stream)
-        .filter(fileFilter)
         .forEach(
             child -> {
-              if (pattern.matcher(child.getName()).matches() && fileFilter.test(child)) {
-                sources.add(new VirtualFileResource(child, fileFilter, null));
+              if (pattern.matcher(child.getName()).matches()) {
+                sources.add(new VirtualFileResource(child, null));
               } else {
                 addChildren(child, pattern, sources);
               }

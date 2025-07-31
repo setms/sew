@@ -29,14 +29,14 @@ public abstract class WorkspaceTestCase {
   private static final String CONTENT = "abc123";
 
   @Getter(PROTECTED)
-  private Workspace workspace;
+  private Workspace<?> workspace;
 
   @BeforeEach
   protected void init() {
     workspace = newWorkspace();
   }
 
-  protected abstract Workspace newWorkspace();
+  protected abstract Workspace<?> newWorkspace();
 
   @AfterEach
   void done() throws IOException {

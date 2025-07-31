@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
+import lombok.Getter;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.BaseTool;
@@ -29,9 +30,9 @@ import org.setms.km.domain.model.workspace.Workspace;
 public class KmSystem {
 
   private final ObjectMapper mapper = new ObjectMapper();
-  private final Workspace workspace;
+  @Getter private final Workspace<?> workspace;
 
-  public KmSystem(Workspace workspace) {
+  public KmSystem(Workspace<?> workspace) {
     this.workspace = workspace;
     this.workspace.registerArtifactChangedHandler(this::artifactChanged);
     this.workspace.registerArtifactDeletedHandler(this::artifactDeleted);
@@ -53,7 +54,7 @@ public class KmSystem {
     writeGlobPaths(pathFor(glob), paths);
   }
 
-  private void registerArtifactDefinitions(Workspace workspace) {
+  private void registerArtifactDefinitions(Workspace<?> workspace) {
     Tools.all()
         .map(BaseTool::getInputs)
         .flatMap(Collection::stream)
@@ -217,8 +218,8 @@ public class KmSystem {
     return Map.of("code", suggestion.code(), "message", suggestion.message());
   }
 
-  public List<Diagnostic> diagnosticsFor(String path) {
-    var result = new ArrayList<Diagnostic>();
+  public Set<Diagnostic> diagnosticsFor(String path) {
+    var result = new LinkedHashSet<Diagnostic>();
     workspace
         .root()
         .select(".km/diagnostics%s".formatted(path))
@@ -290,5 +291,9 @@ public class KmSystem {
 
   private void removeGlobPath(Glob glob, String path) {
     updateGlobPaths(glob, path, Collection::remove);
+  }
+
+  public void applySuggestion(Resource<?> resource, String code, Location location) {
+    // TODO: Implement
   }
 }

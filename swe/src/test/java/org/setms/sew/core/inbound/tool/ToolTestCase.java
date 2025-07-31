@@ -82,7 +82,7 @@ abstract class ToolTestCase<T extends Artifact> {
     // Override to add assertions
   }
 
-  protected Workspace workspaceFor(String path) {
+  protected Workspace<?> workspaceFor(String path) {
     return new DirectoryWorkspace(getTestDir(path));
   }
 

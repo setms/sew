@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
@@ -27,7 +28,7 @@ class KmSystemTest {
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
   private KmSystem kmSystem;
 
-  private final Workspace workspace = new InMemoryWorkspace();
+  private final Workspace<?> workspace = new InMemoryWorkspace();
   private final MainTool mainTool = new MainTool();
   private final OtherTool otherTool = new OtherTool();
   private final ObjectMapper mapper = new ObjectMapper();
@@ -128,7 +129,7 @@ class KmSystemTest {
 
     var path = storeNewMainArtifact();
 
-    assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(List.of(mainValidationDiagnostic));
+    assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(Set.of(mainValidationDiagnostic));
   }
 
   private Resource<?> diagnosticsResourceFor(BaseTool tool, Resource<?> diagnosticsRoot) {
@@ -147,7 +148,7 @@ class KmSystemTest {
     var path = storeNewMainArtifact();
 
     assertThat(kmSystem.diagnosticsFor(path))
-        .isEqualTo(List.of(mainValidationDiagnostic, mainBuildDiagnostic, otherBuildDiagnostic));
+        .isEqualTo(Set.of(mainValidationDiagnostic, mainBuildDiagnostic, otherBuildDiagnostic));
   }
 
   @Test
