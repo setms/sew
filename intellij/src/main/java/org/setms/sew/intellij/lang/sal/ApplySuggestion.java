@@ -15,7 +15,7 @@ import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.sew.intellij.tool.ToolRunner;
-import org.setms.sew.intellij.tool.VirtualFileWorkspace;
+import org.setms.sew.intellij.workspace.IntellijWorkspace;
 
 public class ApplySuggestion implements IntentionAction {
 
@@ -65,7 +65,7 @@ public class ApplySuggestion implements IntentionAction {
   public void invoke(@NotNull Project project, Editor editor, PsiFile psiFile)
       throws IncorrectOperationException {
     ToolRunner.applySuggestion(
-        tool, suggestion.code(), location, project, new VirtualFileWorkspace(psiFile, tool));
+        tool, suggestion.code(), location, project, new IntellijWorkspace(psiFile, tool));
     WriteCommandAction.runWriteCommandAction(
         project,
         () -> {

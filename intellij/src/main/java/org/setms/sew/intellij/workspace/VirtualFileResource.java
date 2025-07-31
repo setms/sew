@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.tool;
+package org.setms.sew.intellij.workspace;
 
 import static java.util.function.Predicate.not;
 
@@ -15,7 +15,7 @@ import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 
 @RequiredArgsConstructor
-public class VirtualFileResource implements Resource<VirtualFileResource> {
+class VirtualFileResource implements Resource<VirtualFileResource> {
 
   private final VirtualFile virtualFile;
   private final Predicate<VirtualFile> fileFilter;

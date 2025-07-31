@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.workspace.Workspace;
-import org.setms.sew.intellij.tool.VirtualFileWorkspace;
+import org.setms.sew.intellij.workspace.IntellijWorkspace;
 
 public class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
@@ -133,8 +133,8 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   protected void showDocument() {
-    ApplicationManager.getApplication().invokeLater(
-        () -> WriteCommandAction.runWriteCommandAction(project, this::updateDocument));
+    ApplicationManager.getApplication()
+        .invokeLater(() -> WriteCommandAction.runWriteCommandAction(project, this::updateDocument));
   }
 
   private void updateDocument() {
@@ -144,7 +144,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
       return;
     }
     deleteOutput();
-    workspace = new VirtualFileWorkspace(file, tool);
+    workspace = new IntellijWorkspace(file, tool);
     var diagnostics =
         tool.build(workspace).stream().filter(diagnostic -> diagnostic.level() == ERROR).toList();
     if (!diagnostics.isEmpty()) {

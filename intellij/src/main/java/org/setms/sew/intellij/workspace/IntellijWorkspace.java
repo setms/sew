@@ -1,4 +1,4 @@
-package org.setms.sew.intellij.tool;
+package org.setms.sew.intellij.workspace;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -9,12 +9,12 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 
 @RequiredArgsConstructor
-public class VirtualFileWorkspace extends Workspace {
+public class IntellijWorkspace extends Workspace {
 
   private final VirtualFile file;
   private final Predicate<VirtualFile> inputFilter;
 
-  public VirtualFileWorkspace(PsiFile file, BaseTool tool) {
+  public IntellijWorkspace(PsiFile file, BaseTool tool) {
     this(rootOf(virtualFileOf(file), tool), f -> true);
   }
 
@@ -26,7 +26,7 @@ public class VirtualFileWorkspace extends Workspace {
     return result;
   }
 
-  public VirtualFileWorkspace(VirtualFile file, BaseTool tool) {
+  public IntellijWorkspace(VirtualFile file, BaseTool tool) {
     this(rootOf(file, tool), f -> !extensionOf(f).equals(extensionOf(file)) || f.equals(file));
   }
 
