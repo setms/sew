@@ -114,6 +114,7 @@ public class KmSystem {
   private void updateArtifacts(String path, Artifact artifact) {
     var maybeTool = Tools.targeting(artifact.getClass());
     var valid = true;
+    var buildResource = reportResourceFor(path);
     if (maybeTool.isPresent()) {
       var tool = maybeTool.get();
       var diagnostics = new LinkedHashSet<Diagnostic>();
@@ -121,7 +122,7 @@ public class KmSystem {
       tool.validate(inputs, diagnostics);
       valid = diagnostics.stream().map(Diagnostic::level).noneMatch(Level.ERROR::equals);
       if (valid) {
-        tool.build(inputs, workspace.root().select("build"), diagnostics);
+        tool.build(inputs, buildResource.select(tool.getClass().getName()), diagnostics);
       }
       storeDiagnostics(path, tool, diagnostics);
     }
@@ -132,10 +133,14 @@ public class KmSystem {
               tool -> {
                 var diagnostics = new LinkedHashSet<Diagnostic>();
                 var inputs = resolveInputs(tool, diagnostics);
-                tool.build(inputs, workspace.root().select("build"), diagnostics);
+                tool.build(inputs, buildResource.select(tool.getClass().getName()), diagnostics);
                 storeDiagnostics(path, tool, diagnostics);
               });
     }
+  }
+
+  private Resource<?> reportResourceFor(String path) {
+    return workspace.root().select(".km/reports%s".formatted(path));
   }
 
   private ResolvedInputs resolveInputs(BaseTool tool, Collection<Diagnostic> diagnostics) {
@@ -238,6 +243,22 @@ public class KmSystem {
 
   private Suggestion deserializeSuggestion(Map<String, String> suggestion) {
     return new Suggestion(suggestion.get("code"), suggestion.get("message"));
+  }
+
+  public Resource<?> mainReportFor(String path) {
+    var maybeTool =
+        Tools.all().filter(tool -> tool.getInputs().getFirst().glob().matches(path)).findFirst();
+    if (maybeTool.isEmpty()) {
+      return null;
+    }
+    var result = reportResourceFor(path).select(maybeTool.get().getClass().getName());
+    if (result.children().isEmpty()) {
+      return null;
+    }
+    if (result.children().stream().map(Resource::name).anyMatch(name -> name.contains("."))) {
+      return result;
+    }
+    return result.children().getFirst();
   }
 
   private void artifactDeleted(String path) {

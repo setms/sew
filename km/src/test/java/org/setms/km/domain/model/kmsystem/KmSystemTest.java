@@ -78,12 +78,13 @@ class KmSystemTest {
     mainTool.init();
     otherTool.init();
 
-    storeNewMainArtifact();
+    var path = storeNewMainArtifact();
 
     assertThat(mainTool.validated).as("main validated").isTrue();
     assertThat(mainTool.built).as("main built").isTrue();
     assertThat(otherTool.validated).as("other validated").isFalse();
     assertThat(otherTool.built).as("other built").isTrue();
+    assertThat(kmSystem.mainReportFor(path).name()).isEqualTo("report1");
   }
 
   @Test

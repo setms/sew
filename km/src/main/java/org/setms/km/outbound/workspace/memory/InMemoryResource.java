@@ -48,8 +48,15 @@ record InMemoryResource(
   public List<InMemoryResource> children() {
     return artifactsByPath.keySet().stream()
         .filter(candidate -> candidate.startsWith(path + "/"))
+        .map(this::directChildOf)
+        .distinct()
         .map(child -> new InMemoryResource(artifactsByPath, child, pathChanged, pathDeleted))
         .toList();
+  }
+
+  private String directChildOf(String descendant) {
+    var index = descendant.indexOf("/", path.length() + 1);
+    return index < 0 ? descendant : descendant.substring(0, index);
   }
 
   @Override
