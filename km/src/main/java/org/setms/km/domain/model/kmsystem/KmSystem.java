@@ -122,7 +122,7 @@ public class KmSystem {
       tool.validate(inputs, diagnostics);
       valid = diagnostics.stream().map(Diagnostic::level).noneMatch(Level.ERROR::equals);
       if (valid) {
-        tool.build(inputs, buildResource.select(tool.getClass().getName()), diagnostics);
+        buildReports(tool, buildResource, inputs, diagnostics);
       }
       storeDiagnostics(path, tool, diagnostics);
     }
@@ -133,7 +133,7 @@ public class KmSystem {
               tool -> {
                 var diagnostics = new LinkedHashSet<Diagnostic>();
                 var inputs = resolveInputs(tool, diagnostics);
-                tool.build(inputs, buildResource.select(tool.getClass().getName()), diagnostics);
+                buildReports(tool, buildResource, inputs, diagnostics);
                 storeDiagnostics(path, tool, diagnostics);
               });
     }
@@ -141,6 +141,20 @@ public class KmSystem {
 
   private Resource<?> reportResourceFor(String path) {
     return workspace.root().select(".km/reports%s".formatted(path));
+  }
+
+  private void buildReports(
+      BaseTool tool,
+      Resource<? extends Resource<?>> buildResource,
+      ResolvedInputs inputs,
+      Collection<Diagnostic> diagnostics) {
+    try {
+      var toolReport = buildResource.select(tool.getClass().getName());
+      toolReport.delete();
+      tool.build(inputs, toolReport, diagnostics);
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to build report", e);
+    }
   }
 
   private ResolvedInputs resolveInputs(BaseTool tool, Collection<Diagnostic> diagnostics) {

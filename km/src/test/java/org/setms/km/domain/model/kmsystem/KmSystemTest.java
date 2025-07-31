@@ -172,4 +172,34 @@ class KmSystemTest {
       mapper.writeValue(output, Map.of("diagnostics", emptyList()));
     }
   }
+
+  @Test
+  void shouldClearPreviouslyStoredReports() throws IOException {
+    var path = "/main/Bear.mainArtifact";
+    var report =
+        workspace
+            .root()
+            .select(".km/reports%s/%s/old-report".formatted(path, mainTool.getClass().getName()));
+    createReport(report);
+    createKmSystem();
+    mainTool.init();
+    otherTool.init();
+
+    var artifactPath = storeNewMainArtifact();
+
+    assertThat(path).as("Test got path wrong").isEqualTo(artifactPath);
+    assertThatIsEmpty(report);
+  }
+
+  private void createReport(Resource<?> report) throws IOException {
+    try (var writer = new PrintWriter(report.writeTo())) {
+      writer.println("Awesome report");
+    }
+  }
+
+  private void assertThatIsEmpty(Resource<?> resource) throws IOException {
+    try (var input = resource.readFrom()) {
+      assertThat(input.available()).as("Size of old report").isZero();
+    }
+  }
 }
