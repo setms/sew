@@ -1,15 +1,20 @@
 package org.setms.km.domain.model.kmsystem;
 
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.setms.km.domain.model.validation.Level.ERROR;
+import static org.setms.km.domain.model.validation.Level.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.*;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.km.test.MainArtifact;
@@ -25,6 +30,7 @@ class KmSystemTest {
   private final Workspace workspace = new InMemoryWorkspace();
   private final MainTool mainTool = new MainTool();
   private final OtherTool otherTool = new OtherTool();
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @BeforeEach
   void init() {
@@ -36,15 +42,15 @@ class KmSystemTest {
   @Test
   void shouldNotBuildInvalidChangedArtifact() throws IOException {
     createKmSystem();
-    MainTool.init(new Diagnostic(ERROR, "message"));
-    OtherTool.init();
+    mainTool.init(new Diagnostic(ERROR, "message"), null);
+    otherTool.init();
 
     storeNewMainArtifact();
 
-    assertThat(MainTool.validated).as("main validated").isTrue();
-    assertThat(MainTool.built).as("main built").isFalse();
-    assertThat(OtherTool.validated).as("other validated").isFalse();
-    assertThat(OtherTool.built).as("other built").isFalse();
+    assertThat(mainTool.validated).as("main validated").isTrue();
+    assertThat(mainTool.built).as("main built").isFalse();
+    assertThat(otherTool.validated).as("other validated").isFalse();
+    assertThat(otherTool.built).as("other built").isFalse();
   }
 
   private void createKmSystem() {
@@ -69,15 +75,15 @@ class KmSystemTest {
   @Test
   void shouldBuildValidChangedArtifactAndDependents() throws IOException {
     createKmSystem();
-    MainTool.init();
-    OtherTool.init();
+    mainTool.init();
+    otherTool.init();
 
     storeNewMainArtifact();
 
-    assertThat(MainTool.validated).as("main validated").isTrue();
-    assertThat(MainTool.built).as("main built").isTrue();
-    assertThat(OtherTool.validated).as("other validated").isFalse();
-    assertThat(OtherTool.built).as("other built").isTrue();
+    assertThat(mainTool.validated).as("main validated").isTrue();
+    assertThat(mainTool.built).as("main built").isTrue();
+    assertThat(otherTool.validated).as("other validated").isFalse();
+    assertThat(otherTool.built).as("other built").isTrue();
   }
 
   @Test
@@ -108,5 +114,61 @@ class KmSystemTest {
     workspace.root().select(path).delete();
 
     assertThat(globsForMainTool()).isEmpty();
+  }
+
+  @Test
+  void shouldStoreValidationDiagnostics() throws IOException {
+    createKmSystem();
+    var mainValidationDiagnostic =
+        new Diagnostic(
+            ERROR, "Main message", new Location("ape", "bear"), new Suggestion("cheetah", "dingo"));
+    mainTool.init(mainValidationDiagnostic, null);
+    otherTool.init(new Diagnostic(WARN, "Other message"), null);
+
+    var path = storeNewMainArtifact();
+
+    assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(List.of(mainValidationDiagnostic));
+  }
+
+  private Resource<?> diagnosticsResourceFor(BaseTool tool, Resource<?> diagnosticsRoot) {
+    return diagnosticsRoot.select("%s.json".formatted(tool.getClass().getName()));
+  }
+
+  @Test
+  void shouldStoreBuildDiagnostics() throws IOException {
+    createKmSystem();
+    var mainValidationDiagnostic = new Diagnostic(INFO, "Validation message");
+    var mainBuildDiagnostic = new Diagnostic(ERROR, "Build message");
+    mainTool.init(mainValidationDiagnostic, mainBuildDiagnostic);
+    var otherBuildDiagnostic = new Diagnostic(WARN, "Other message");
+    otherTool.init(null, otherBuildDiagnostic);
+
+    var path = storeNewMainArtifact();
+
+    assertThat(kmSystem.diagnosticsFor(path))
+        .isEqualTo(List.of(mainValidationDiagnostic, mainBuildDiagnostic, otherBuildDiagnostic));
+  }
+
+  @Test
+  void shouldClearPreviouslyStoredDiagnostics() throws IOException {
+    var path = "/main/Bear.mainArtifact";
+    var diagnosticsRoot = workspace.root().select(".km/diagnostics%s".formatted(path));
+    createDiagnostic(diagnosticsRoot, mainTool);
+    createDiagnostic(diagnosticsRoot, otherTool);
+    createKmSystem();
+    mainTool.init();
+    otherTool.init();
+
+    var artifactPath = storeNewMainArtifact();
+
+    assertThat(path).as("Test got path wrong").isEqualTo(artifactPath);
+    assertThat(kmSystem.diagnosticsFor(artifactPath)).isEmpty();
+  }
+
+  private void createDiagnostic(Resource<?> diagnosticsRoot, BaseTool tool) throws IOException {
+    var diagnosticsResource = diagnosticsResourceFor(tool, diagnosticsRoot);
+    try (var output = diagnosticsResource.writeTo()) {
+      mapper.writeValue(output, Map.of("diagnostics", emptyList()));
+    }
   }
 }

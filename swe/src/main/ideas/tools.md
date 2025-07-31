@@ -223,14 +223,13 @@ It's therefore important that a SEW handles large numbers of artifacts efficient
 
 A KM system that stores artifacts in a file system should maintain a `.km` directory containing:
 
-- `globs/<glob>` contains a list of artifacts matching the glob
-  - updated when artifacts matching the glob are added or deleted
-- `diagnostics/<tool>/<location>/<diagnostic>` contains a diagnostic created by the given tool for the artifact at the
-  given location
+- `globs/<path>/<pattern>.glob` contains a list of resources matching the glob
+  - updated when resources matching the glob are added or deleted
+- `diagnostics/<path>/<tool>.json` contains all the diagnostics created by the given tool for the resource
+  at the given path
   - deleted before a tool validates an artifact at the location
-  - created based on the validation results
-- `reports/<tool>/<location>/<report>` contains the report created by the given tool for the artifact at the given
-  location
+  - created based on the validation results reported by the tool
+- `reports/<path>/<tool>` contains the report(s) created by the given tool for the artifact at the given resource path
   - this is a directory containing one or more files
   - deleted before a tool build reports
   - created based on the reports created by the tool

@@ -28,7 +28,7 @@ record InMemoryResource(
 
   @Override
   public URI toUri() {
-    return URI.create("urn:org:setms:km:workspace:memory:" + path);
+    return URI.create("memory:" + path);
   }
 
   @Override
