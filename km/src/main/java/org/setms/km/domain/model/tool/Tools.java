@@ -18,7 +18,8 @@ public class Tools {
 
   public static void reload() {
     clear();
-    for (var tool : ServiceLoader.load(BaseTool.class)) {
+    var classLoader = BaseTool.class.getClassLoader();
+    for (var tool : ServiceLoader.load(BaseTool.class, classLoader)) {
       add(tool);
     }
   }

@@ -2,6 +2,7 @@ package org.setms.sew.intellij.km;
 
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.kmsystem.KmSystem;
@@ -16,7 +17,7 @@ public final class KmSystemService {
   @Getter private IntellijWorkspace workspace;
 
   public void start() {
-    workspace = new IntellijWorkspace(project.getWorkspaceFile());
+    workspace = new IntellijWorkspace(ProjectUtil.guessProjectDir(project));
     kmSystem = new KmSystem(workspace);
   }
 }

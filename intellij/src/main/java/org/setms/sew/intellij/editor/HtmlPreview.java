@@ -17,6 +17,7 @@ import com.intellij.ui.jcef.JBCefBrowser;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -140,8 +141,12 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
   private void updateFile() {
     try {
-      file.setBinaryContent(
-          FileDocumentManager.getInstance().getDocument(file).getText().getBytes(UTF_8));
+      var baos = new ByteArrayOutputStream();
+      file.getInputStream().transferTo(baos);
+      var text = FileDocumentManager.getInstance().getDocument(file).getText();
+      if (!text.equals(baos.toString())) {
+        file.setBinaryContent(text.getBytes(UTF_8));
+      }
     } catch (IOException e) {
       throw new IllegalStateException("Failed to update virtual file from document", e);
     }
