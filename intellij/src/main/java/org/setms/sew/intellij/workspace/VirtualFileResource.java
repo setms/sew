@@ -8,16 +8,24 @@ import java.net.URI;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 
-@RequiredArgsConstructor
 class VirtualFileResource implements Resource<VirtualFileResource> {
 
   private final VirtualFile virtualFile;
   private final File file;
+  private final String rootPath;
+
+  VirtualFileResource(VirtualFile virtualFile, File file, String rootPath) {
+    if (virtualFile == null && file == null) {
+      throw new IllegalArgumentException("Need either VirtualFile or File");
+    }
+    this.virtualFile = virtualFile;
+    this.file = file;
+    this.rootPath = rootPath;
+  }
 
   @Override
   public String name() {
@@ -26,27 +34,30 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
 
   @Override
   public String path() {
-    return virtualFile == null ? file.getPath() : virtualFile.getPath();
+    var filePath = virtualFile == null ? file.getPath() : virtualFile.getPath();
+    return filePath.substring(rootPath.length());
   }
 
   @Override
   public Optional<VirtualFileResource> parent() {
     if (virtualFile == null) {
       return Optional.ofNullable(file.getParentFile())
-          .map(parent -> new VirtualFileResource(null, parent));
+          .map(parent -> new VirtualFileResource(null, parent, rootPath));
     }
     return Optional.ofNullable(virtualFile.getParent())
-        .map(parent -> new VirtualFileResource(parent, null));
+        .map(parent -> new VirtualFileResource(parent, null, rootPath));
   }
 
   @Override
   public List<VirtualFileResource> children() {
     if (virtualFile == null) {
-      return Files.childrenOf(file).map(child -> new VirtualFileResource(null, child)).toList();
+      return Files.childrenOf(file)
+          .map(child -> new VirtualFileResource(null, child, rootPath))
+          .toList();
     }
     return Stream.ofNullable(virtualFile.getChildren())
         .flatMap(Arrays::stream)
-        .map(child -> new VirtualFileResource(child, null))
+        .map(child -> new VirtualFileResource(child, null, rootPath))
         .toList();
   }
 
@@ -54,23 +65,24 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   public VirtualFileResource select(String path) {
     if (path.startsWith(File.separator)) {
       return new VirtualFileResource(
-          virtualFile.getFileSystem().refreshAndFindFileByPath(path), null);
+          virtualFile.getFileSystem().refreshAndFindFileByPath(rootPath + path), null, rootPath);
     }
     if (virtualFile == null) {
-      return new VirtualFileResource(null, new File(file, path));
+      return new VirtualFileResource(null, new File(file, path), rootPath);
     }
     var result = virtualFile.findFileByRelativePath(path);
     if (result == null) {
-      return new VirtualFileResource(null, new File(virtualFile.toNioPath().toFile(), path));
+      return new VirtualFileResource(
+          null, new File(virtualFile.toNioPath().toFile(), path), rootPath);
     }
-    return new VirtualFileResource(result, null);
+    return new VirtualFileResource(result, null, rootPath);
   }
 
   @Override
   public List<VirtualFileResource> matching(Glob glob) {
     if (virtualFile == null) {
       return Files.matching(file, glob).stream()
-          .map(found -> new VirtualFileResource(null, found))
+          .map(found -> new VirtualFileResource(null, found, rootPath))
           .toList();
     }
     var result = new ArrayList<VirtualFileResource>();
@@ -92,7 +104,7 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
         .forEach(
             child -> {
               if (pattern.matcher(child.getName()).matches()) {
-                sources.add(new VirtualFileResource(child, null));
+                sources.add(new VirtualFileResource(child, null, rootPath));
               } else {
                 addChildren(child, pattern, sources);
               }
@@ -123,8 +135,9 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   public void delete() throws IOException {
     if (virtualFile == null) {
       Files.delete(file);
+    } else {
+      virtualFile.delete(null);
     }
-    virtualFile.delete(null);
   }
 
   @Override

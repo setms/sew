@@ -13,4 +13,4 @@
 # MacOS
 .DS_Store
 
-**/src/todo/
+.km/

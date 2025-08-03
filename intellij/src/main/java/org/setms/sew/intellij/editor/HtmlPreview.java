@@ -1,9 +1,8 @@
 package org.setms.sew.intellij.editor;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.intellij.ide.ui.LafManagerListener;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -123,11 +122,34 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   private void showDocument() {
-    ApplicationManager.getApplication().invokeLaterOnWriteThread(this::showFile);
+    ApplicationManager.getApplication()
+        .invokeLater(
+            () -> {
+              updateFile();
+              showFile();
+            });
+  }
+
+  private void updateFile() {
+    try {
+      var fileContents = new ByteArrayOutputStream();
+      file.getInputStream().transferTo(fileContents);
+      var documentManager = FileDocumentManager.getInstance();
+      var document = documentManager.getDocument(file);
+      var text = document.getText();
+      if (!text.equals(fileContents.toString())) {
+        WriteAction.run(
+            () -> {
+              documentManager.saveDocument(document);
+              workspace.changed(file);
+            });
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update virtual file from document", e);
+    }
   }
 
   private void showFile() {
-    updateFile();
     browser.loadURL(
         Optional.ofNullable(workspace.find(file))
             .map(Resource::path)
@@ -137,19 +159,6 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
             .map(Resource::toUri)
             .map(Object::toString)
             .orElse("about:blank"));
-  }
-
-  private void updateFile() {
-    try {
-      var baos = new ByteArrayOutputStream();
-      file.getInputStream().transferTo(baos);
-      var text = FileDocumentManager.getInstance().getDocument(file).getText();
-      if (!text.equals(baos.toString())) {
-        file.setBinaryContent(text.getBytes(UTF_8));
-      }
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to update virtual file from document", e);
-    }
   }
 
   @Override
