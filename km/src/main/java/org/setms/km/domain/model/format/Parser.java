@@ -229,27 +229,29 @@ public interface Parser {
       boolean validate,
       Collection<Diagnostic> diagnostics) {
     return resource.matching(glob).stream()
-        .map(
-            matchingResource -> {
-              try (var inputStream = matchingResource.readFrom()) {
-                return parse(inputStream, type, validate);
-              } catch (ValidationException e) {
-                diagnostics.addAll(e.getDiagnostics());
-                return null;
-              } catch (Exception e) {
-                diagnostics.add(
-                    new Diagnostic(
-                        ERROR,
-                        e.getMessage(),
-                        Optional.ofNullable(matchingResource.name())
-                            .map(n -> n.split("\\."))
-                            .filter(a -> a.length == 2)
-                            .map(a -> new String[] {a[1], a[0]})
-                            .map(Location::new)
-                            .orElse(null)));
-                return null;
-              }
-            })
+        .map(matchingResource -> parse(matchingResource, type, validate, diagnostics))
         .filter(Objects::nonNull);
+  }
+
+  default <T extends Artifact> T parse(
+      Resource<?> resource, Class<T> type, boolean validate, Collection<Diagnostic> diagnostics) {
+    try (var inputStream = resource.readFrom()) {
+      return parse(inputStream, type, validate);
+    } catch (ValidationException e) {
+      diagnostics.addAll(e.getDiagnostics());
+      return null;
+    } catch (Exception e) {
+      diagnostics.add(
+          new Diagnostic(
+              ERROR,
+              e.getMessage(),
+              Optional.ofNullable(resource.name())
+                  .map(n -> n.split("\\."))
+                  .filter(a -> a.length == 2)
+                  .map(a -> new String[] {a[1], a[0]})
+                  .map(Location::new)
+                  .orElse(null)));
+      return null;
+    }
   }
 }

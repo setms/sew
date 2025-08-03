@@ -119,7 +119,7 @@ public class KmSystem {
     if (maybeTool.isPresent()) {
       var tool = maybeTool.get();
       var diagnostics = new LinkedHashSet<Diagnostic>();
-      var inputs = resolveInputs(tool, diagnostics);
+      var inputs = resolveInputs(path, tool, diagnostics);
       tool.validate(inputs, diagnostics);
       valid = diagnostics.stream().map(Diagnostic::level).noneMatch(Level.ERROR::equals);
       if (valid) {
@@ -133,7 +133,7 @@ public class KmSystem {
           .forEach(
               tool -> {
                 var diagnostics = new LinkedHashSet<Diagnostic>();
-                var inputs = resolveInputs(tool, diagnostics);
+                var inputs = resolveInputs(path, tool, diagnostics);
                 buildReports(tool, buildResource, inputs, diagnostics);
                 storeDiagnostics(path, tool, diagnostics);
               });
@@ -158,7 +158,8 @@ public class KmSystem {
     }
   }
 
-  private ResolvedInputs resolveInputs(BaseTool tool, Collection<Diagnostic> diagnostics) {
+  private ResolvedInputs resolveInputs(
+      String path, BaseTool tool, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
     var validate = new AtomicBoolean(true);
     tool.getInputs()
@@ -166,15 +167,22 @@ public class KmSystem {
             input ->
                 result.put(
                     input.name(),
-                    parse(workspace.root(), input, validate.getAndSet(false), diagnostics)));
+                    parse(workspace.root(), path, input, validate.getAndSet(false), diagnostics)));
     return result;
   }
 
   private <T extends Artifact> List<T> parse(
-      Resource<?> resource, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
-    return input
-        .format()
-        .newParser()
+      Resource<?> resource,
+      String path,
+      Input<T> input,
+      boolean validate,
+      Collection<Diagnostic> diagnostics) {
+    var parser = input.format().newParser();
+    if (input.glob().matches(path)) {
+      var result = parser.parse(resource.select(path), input.type(), validate, diagnostics);
+      return result == null ? emptyList() : List.of(result);
+    }
+    return parser
         .parseMatching(resource, input.glob(), input.type(), validate, diagnostics)
         .toList();
   }
