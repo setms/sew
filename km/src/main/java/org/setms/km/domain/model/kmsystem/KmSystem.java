@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
 import lombok.Getter;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
@@ -36,8 +37,22 @@ public class KmSystem {
     this.workspace = workspace;
     this.workspace.registerArtifactChangedHandler(this::artifactChanged);
     this.workspace.registerArtifactDeletedHandler(this::artifactDeleted);
-    registerArtifactDefinitions(workspace);
+    registerArtifactDefinitionsIn(workspace);
     cacheGlobs();
+  }
+
+  private void registerArtifactDefinitionsIn(Workspace<?> workspace) {
+    Tools.all()
+        .map(BaseTool::getInputs)
+        .flatMap(Collection::stream)
+        .map(
+            input ->
+                new ArtifactDefinition(
+                    input.type(),
+                    input.glob(),
+                    Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
+        .distinct()
+        .forEach(workspace::registerArtifactDefinition);
   }
 
   private void cacheGlobs() {
@@ -51,21 +66,7 @@ public class KmSystem {
 
   private void cacheGlob(Glob glob) {
     var paths = workspace.root().matching(glob).stream().map(Resource::path).collect(toSet());
-    writeGlobPaths(pathFor(glob), paths);
-  }
-
-  private void registerArtifactDefinitions(Workspace<?> workspace) {
-    Tools.all()
-        .map(BaseTool::getInputs)
-        .flatMap(Collection::stream)
-        .map(
-            input ->
-                new ArtifactDefinition(
-                    input.type(),
-                    input.glob(),
-                    Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
-        .distinct()
-        .forEach(workspace::registerArtifactDefinition);
+    writeGlobPaths(resourceContainingPathsFor(glob), paths);
   }
 
   private void artifactChanged(String path, Artifact artifact) {
@@ -88,19 +89,24 @@ public class KmSystem {
 
   private void updateGlobPaths(
       Glob glob, String path, BiFunction<Collection<String>, String, Boolean> updater) {
-    var globPath = pathFor(glob);
-    var paths = new TreeSet<String>();
-    try (var reader = new BufferedReader(new InputStreamReader(globPath.readFrom()))) {
-      reader.lines().forEach(paths::add);
-    } catch (IOException ignored) {
-      // Ignore
-    }
+    var globPath = resourceContainingPathsFor(glob);
+    var paths = linesInTextOf(globPath);
     if (updater.apply(paths, path)) {
       writeGlobPaths(globPath, paths);
     }
   }
 
-  private Resource<?> pathFor(Glob glob) {
+  private Collection<String> linesInTextOf(Resource<? extends Resource<?>> resource) {
+    var paths = new TreeSet<String>();
+    try (var reader = new BufferedReader(new InputStreamReader(resource.readFrom()))) {
+      reader.lines().forEach(paths::add);
+    } catch (IOException ignored) {
+      // Ignore
+    }
+    return paths;
+  }
+
+  private Resource<?> resourceContainingPathsFor(Glob glob) {
     return workspace.root().select(".km/globs/%s.glob".formatted(glob));
   }
 
@@ -182,9 +188,14 @@ public class KmSystem {
       var result = parser.parse(resource.select(path), input.type(), validate, diagnostics);
       return result == null ? emptyList() : List.of(result);
     }
-    return parser
-        .parseMatching(resource, input.glob(), input.type(), validate, diagnostics)
+    return resourcesMatching(input.glob())
+        .map(match -> parser.parse(match, input.type(), validate, diagnostics))
+        .filter(Objects::nonNull)
         .toList();
+  }
+
+  private Stream<Resource<?>> resourcesMatching(Glob glob) {
+    return linesInTextOf(resourceContainingPathsFor(glob)).stream().map(workspace.root()::select);
   }
 
   private void storeDiagnostics(String path, BaseTool tool, Collection<Diagnostic> diagnostics) {

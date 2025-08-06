@@ -41,7 +41,7 @@ class KmSystemTest {
   }
 
   @Test
-  void shouldNotBuildInvalidChangedArtifact() throws IOException {
+  void shouldValidateChangedArtifactButNotBuildItWhenInvalid() throws IOException {
     createKmSystem();
     mainTool.init(new Diagnostic(ERROR, "message"), null);
     otherTool.init();
@@ -152,7 +152,7 @@ class KmSystemTest {
   }
 
   @Test
-  void shouldClearPreviouslyStoredDiagnostics() throws IOException {
+  void shouldClearPreviouslyStoredDiagnosticsBeforeValidation() throws IOException {
     var path = "/main/Bear.mainArtifact";
     var diagnosticsRoot = workspace.root().select(".km/diagnostics%s".formatted(path));
     createDiagnostic(diagnosticsRoot, mainTool);
@@ -175,7 +175,7 @@ class KmSystemTest {
   }
 
   @Test
-  void shouldClearPreviouslyStoredReports() throws IOException {
+  void shouldClearPreviouslyStoredReportsBeforeBuilding() throws IOException {
     var path = "/main/Bear.mainArtifact";
     var report =
         workspace
