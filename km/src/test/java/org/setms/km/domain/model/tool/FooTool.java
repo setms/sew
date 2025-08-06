@@ -4,7 +4,6 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -18,11 +17,6 @@ class FooTool extends BaseTool {
   @Override
   public List<Input<?>> getInputs() {
     return List.of(new Input<>("foo", null, Foo.class));
-  }
-
-  @Override
-  public Optional<Output> getOutputs() {
-    return Optional.empty();
   }
 
   @Override

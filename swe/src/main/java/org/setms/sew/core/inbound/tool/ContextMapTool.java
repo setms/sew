@@ -13,10 +13,8 @@ import javax.swing.SwingConstants;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
@@ -37,11 +35,6 @@ public class ContextMapTool extends BaseTool {
   @Override
   public List<Input<?>> getInputs() {
     return List.of(domains(), useCases());
-  }
-
-  @Override
-  public Optional<Output> getOutputs() {
-    return Optional.of(new Output(new Glob(OUTPUT_PATH, "*.png")));
   }
 
   @Override

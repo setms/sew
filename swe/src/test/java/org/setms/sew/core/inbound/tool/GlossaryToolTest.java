@@ -35,16 +35,6 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   }
 
   @Test
-  void shouldDefineOutputs() {
-    var actual = getTool().getOutputs();
-
-    assertThat(actual)
-        .isPresent()
-        .hasValueSatisfying(
-            output -> assertThat(output.glob()).hasToString("reports/glossary/**/*.html"));
-  }
-
-  @Test
   void shouldBuildReport() {
     var workspace = workspaceFor("valid");
 

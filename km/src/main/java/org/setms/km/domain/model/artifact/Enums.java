@@ -2,6 +2,7 @@ package org.setms.km.domain.model.artifact;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import lombok.Getter;
@@ -17,6 +18,11 @@ public class Enums<T extends Enum<T>> extends HashSet<T> {
 
   public static <T extends Enum<T>> Enums<T> of(Class<T> type) {
     return new Enums<>(type);
+  }
+
+  @SuppressWarnings({"unchecked"})
+  public static <T extends Enum<T>> Enums<T> of(T... items) {
+    return of(Arrays.asList(items));
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})

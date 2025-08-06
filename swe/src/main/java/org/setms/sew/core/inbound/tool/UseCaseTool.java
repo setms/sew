@@ -30,7 +30,6 @@ import org.setms.km.domain.model.artifact.UnresolvedArtifact;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -55,7 +54,6 @@ import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 public class UseCaseTool extends BaseTool {
 
-  private static final String OUTPUT_PATH = "reports/useCases";
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
@@ -89,11 +87,6 @@ public class UseCaseTool extends BaseTool {
         entities(),
         domains(),
         acceptanceTests());
-  }
-
-  @Override
-  public Optional<Output> getOutputs() {
-    return htmlIn(OUTPUT_PATH);
   }
 
   @Override

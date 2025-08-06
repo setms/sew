@@ -46,11 +46,6 @@ public class DomainStoryTool extends BaseTool {
   }
 
   @Override
-  public Optional<Output> getOutputs() {
-    return htmlIn(OUTPUT_PATH);
-  }
-
-  @Override
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var domainStories = inputs.get(DomainStory.class);

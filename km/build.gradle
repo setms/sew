@@ -1,7 +1,10 @@
 plugins {
     id 'antlr'
     alias libs.plugins.lombok
+    alias(libs.plugins.pitest)
 }
+
+group = 'org.setms.km'
 
 dependencies {
     antlr libs.bundles.antlr
@@ -59,4 +62,26 @@ sourceSets {
 
 tasks.named('generateGrammarSource') {
     enabled = false
+}
+
+def userHomeDir = System.properties['user.home']
+def pitestHistoryFilePath = "${userHomeDir}/.pitest/cache/${project.group}.${project.name}.${project.version}_pitest_history.bin"
+// ensure mutation tests run during build process both locally and in pipeline
+check.dependsOn 'pitest'
+pitest {
+    //adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
+    junit5PluginVersion = '1.2.1'
+    // mutationThreshold should be increased as tests are refactored with an ultimate goal of 80% or higher
+    mutationThreshold = 43
+    // withHistory is not used in order to have explicit control over the location to enable caching w/in the CI/CD pipeline
+    historyInputLocation = pitestHistoryFilePath
+    historyOutputLocation = pitestHistoryFilePath
+    features = ["+auto_threads"]
+    // Exclude generated classes and Spring config from mutation testing as both are better suited for end-to-end and/or narrow integration tests
+    // DO NOT add to this list.
+    excludedClasses = ["*.generated.*", "*.config.*"]
+    useClasspathFile = true
+}
+tasks.named('pitest') {
+    dependsOn test
 }

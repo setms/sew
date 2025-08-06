@@ -12,7 +12,7 @@ public class ValidationException extends IllegalArgumentException {
   private final Collection<Diagnostic> diagnostics;
 
   public ValidationException(Collection<Diagnostic> diagnostics) {
-      super(diagnostics.stream().map(Diagnostic::toString).collect(joining(lineSeparator())));
+    super(diagnostics.stream().map(Diagnostic::toString).collect(joining(lineSeparator())));
     this.diagnostics = diagnostics;
   }
 }

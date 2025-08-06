@@ -18,7 +18,6 @@ import javax.swing.SwingConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -31,18 +30,12 @@ import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 @Slf4j
 public class ModulesTool extends BaseTool {
 
-  private static final String OUTPUT_PATH = "reports/modules";
   private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
 
   @Override
   public List<Input<?>> getInputs() {
     return List.of(modules(), domains());
-  }
-
-  @Override
-  public Optional<Output> getOutputs() {
-    return htmlIn(OUTPUT_PATH);
   }
 
   @Override

@@ -10,20 +10,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
 @Value
+@RequiredArgsConstructor
 public class Link implements Comparable<Link> {
 
   String type;
   @NotEmpty String id;
   @EqualsAndHashCode.Exclude Map<String, List<Link>> attributes;
-
-  public Link(String type, String id, Map<String, List<Link>> attributes) {
-    this.type = type;
-    this.id = id;
-    this.attributes = attributes;
-  }
 
   public Link(String type, String id) {
     this(type, id, emptyMap());

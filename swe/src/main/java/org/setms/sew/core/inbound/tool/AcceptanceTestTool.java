@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
@@ -28,13 +27,8 @@ public class AcceptanceTestTool extends BaseTool {
   }
 
   @Override
-  public Optional<Output> getOutputs() {
-    return Optional.empty();
-  }
-
-  @Override
   public void build(
-          ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var acceptanceTests = inputs.get(AcceptanceTest.class);
     var reportResource = resource.select("reports/acceptanceTests");
     acceptanceTests.forEach(acceptanceTest -> build(acceptanceTest, reportResource, diagnostics));

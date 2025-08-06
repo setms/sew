@@ -1,4 +1,4 @@
-package org.setms.sew.core.inbound.format.sew;
+package org.setms.sew.core.inbound.format.sal;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,6 @@ import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.format.NestedObject;
 import org.setms.km.domain.model.format.Reference;
 import org.setms.km.domain.model.format.RootObject;
-import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 class SalFormatTest {
 

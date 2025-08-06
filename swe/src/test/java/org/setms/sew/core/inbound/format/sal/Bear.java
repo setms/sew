@@ -1,4 +1,4 @@
-package org.setms.sew.core.inbound.format.sew;
+package org.setms.sew.core.inbound.format.sal;
 
 import java.util.List;
 import lombok.EqualsAndHashCode;

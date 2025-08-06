@@ -51,16 +51,6 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldDefineOutputs() {
-    var actual = getTool().getOutputs();
-
-    assertThat(actual)
-        .isPresent()
-        .hasValueSatisfying(
-            output -> assertThat(output.glob().toString()).contains("reports/useCases/**/*.html"));
-  }
-
-  @Test
   void shouldWarnAboutMissingElementsAndCreateThem() throws IOException {
     var workspace = workspaceFor("missing");
 

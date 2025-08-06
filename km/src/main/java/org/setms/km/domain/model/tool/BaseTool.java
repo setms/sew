@@ -32,13 +32,6 @@ public abstract class BaseTool {
   public abstract List<Input<?>> getInputs();
 
   /**
-   * The outputs this tool produces.
-   *
-   * @return the outputs
-   */
-  public abstract Optional<Output> getOutputs();
-
-  /**
    * Validate the inputs.
    *
    * @deprecated Shouldn't need to call this anymore, KmSystem takes care of that
@@ -90,10 +83,6 @@ public abstract class BaseTool {
 
   protected void addError(Collection<Diagnostic> diagnostics, String message, Object... args) {
     diagnostics.add(new Diagnostic(ERROR, message.formatted(args)));
-  }
-
-  public Optional<Output> htmlIn(String path) {
-    return Optional.of(new Output(new Glob(path, "**/*.html")));
   }
 
   protected Resource<?> resourceFor(Artifact object, Resource<?> base) {

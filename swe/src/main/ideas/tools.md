@@ -225,10 +225,12 @@ A KM system that stores artifacts in a file system should maintain a `.km` direc
 
 - `globs/<path>/<pattern>.glob` contains a list of resources matching the glob
   - updated when resources matching the glob are added or deleted
+  - and checked at startup in background
 - `diagnostics/<path>/<tool>.json` contains all the diagnostics created by the given tool for the resource
   at the given path
   - deleted before a tool validates an artifact at the location
   - created based on the validation results reported by the tool
+  - at startup in background
 - `reports/<path>/<tool>` contains the report(s) created by the given tool for the artifact at the given resource path
   - this is a directory containing one or more files
   - deleted before a tool build reports

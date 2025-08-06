@@ -7,11 +7,9 @@ import static org.setms.sew.core.inbound.tool.Inputs.entities;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.km.domain.model.tool.Output;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -28,11 +26,6 @@ public class CommandTool extends BaseTool {
   @Override
   public List<Input<?>> getInputs() {
     return List.of(commands(), entities());
-  }
-
-  @Override
-  public Optional<Output> getOutputs() {
-    return Optional.empty();
   }
 
   @Override
