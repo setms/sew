@@ -46,7 +46,7 @@ public abstract class BaseTool {
    * @return any validation issues
    */
   @Deprecated
-  public SequencedSet<Diagnostic> validate(Workspace workspace) {
+  public SequencedSet<Diagnostic> validate(Workspace<?> workspace) {
     var result = new LinkedHashSet<Diagnostic>();
     validate(resolveInputs(workspace.root(), result), result);
     return result;
@@ -82,7 +82,7 @@ public abstract class BaseTool {
    * @return diagnostics about building the output
    */
   @Deprecated
-  public List<Diagnostic> build(Workspace workspace) {
+  public List<Diagnostic> build(Workspace<?> workspace) {
     var result = new ArrayList<Diagnostic>();
     build(resolveInputs(workspace.root(), result), workspace.root().select("build"), result);
     return result;
@@ -134,7 +134,7 @@ public abstract class BaseTool {
    * @return diagnostics about the applying the suggestion
    */
   public final SequencedSet<Diagnostic> apply(
-      String suggestionCode, Workspace workspace, Location location) {
+      String suggestionCode, Workspace<?> workspace, Location location) {
     var result = new LinkedHashSet<Diagnostic>();
     var inputs = resolveInputs(workspace.root(), result);
     apply(suggestionCode, inputs, location, workspace.root(), result);
