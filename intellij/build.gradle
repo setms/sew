@@ -1,6 +1,7 @@
 plugins {
     alias libs.plugins.intellij
     alias libs.plugins.lombok
+    alias libs.plugins.spotless
 }
 
 repositories {

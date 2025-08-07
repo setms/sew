@@ -15,9 +15,10 @@ languagetool = "6.6.12-3"
 lombok-plugin = "8.14"
 mapstruct-plugin = "1.0.9"
 mockito = "5.18.0"
-pitest = "1.15.0"
+pitest-plugin = "1.15.0"
 pitest-junit5 = "1.2.1"
 slf4j = "2.0.17"
+spotless-plugin = "7.2.1"
 spring-boot-plugin = "3.5.4"
 validation = "3.1.1"
 validation-el = "4.0.2"
@@ -70,5 +71,6 @@ intellij-platform = { id = "org.jetbrains.intellij.platform.module", version.ref
 intellij-grammarkit = { id = "org.jetbrains.grammarkit", version.ref = "intellij-grammarkit" }
 lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
 mapstruct = { id = "com.github.akazver.mapstruct", version.ref = "mapstruct-plugin" }
-pitest = { id = "info.solidsoft.pitest", version.ref = "pitest" }
+pitest = { id = "info.solidsoft.pitest", version.ref = "pitest-plugin" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless-plugin"  }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot-plugin" }

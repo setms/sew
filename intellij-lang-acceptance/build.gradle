@@ -1,7 +1,8 @@
 plugins {
     id 'java'
-    alias libs.plugins.intellij.platform
     alias libs.plugins.intellij.grammarkit
+    alias libs.plugins.intellij.platform
+    alias libs.plugins.spotless
 }
 
 repositories {

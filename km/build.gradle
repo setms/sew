@@ -1,10 +1,10 @@
 plugins {
     id 'antlr'
     alias libs.plugins.lombok
-    alias(libs.plugins.pitest)
+    alias libs.plugins.pitest
+    alias libs.plugins.spotless
 }
 
-group = 'org.setms.km'
 
 dependencies {
     antlr libs.bundles.antlr
