@@ -30,7 +30,7 @@ import org.setms.sew.core.domain.model.sdlc.usecase.UseCase;
 import org.setms.sew.core.domain.services.DomainStoryToUseCase;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class DomainStoryTool extends BaseTool {
+public class DomainStoryTool extends BaseTool<DomainStory> {
 
   private static final int ICON_SIZE = 52;
   private static final int MAX_TEXT_LENGTH = ICON_SIZE / 4;
@@ -41,8 +41,13 @@ public class DomainStoryTool extends BaseTool {
   private static final String OUTPUT_PATH = "reports/domainStories";
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(domainStories(), useCases());
+  public Input<DomainStory> getMainInput() {
+    return domainStories();
+  }
+
+  @Override
+  public Set<Input<?>> getAdditionalInputs() {
+    return Set.of(useCases());
   }
 
   @Override

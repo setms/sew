@@ -52,7 +52,7 @@ import org.setms.sew.core.domain.services.DiscoverDomainFromUseCases;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class UseCaseTool extends BaseTool {
+public class UseCaseTool extends BaseTool<UseCase> {
 
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
@@ -72,9 +72,13 @@ public class UseCaseTool extends BaseTool {
   private JLanguageTool languageTool;
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(
-        useCases(),
+  public Input<UseCase> getMainInput() {
+    return useCases();
+  }
+
+  @Override
+  public Set<Input<?>> getAdditionalInputs() {
+    return Set.of(
         domainStories(),
         aggregates(),
         clockEvents(),

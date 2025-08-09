@@ -2,9 +2,7 @@ package org.setms.sew.core.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.setms.km.domain.model.tool.Input;
 import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.inbound.format.acceptance.AcceptanceFormat;
 
@@ -25,14 +23,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     """;
 
   protected AcceptanceTestToolTest() {
-    super(new AcceptanceTestTool(), AcceptanceTest.class, "test/acceptance");
-  }
-
-  @Override
-  protected void assertInputs(List<Input<?>> actual) {
-    var input = actual.getFirst();
-    assertThat(input.glob()).hasToString("src/test/acceptance/**/*.acceptance");
-    assertThat(input.format()).isInstanceOf(AcceptanceFormat.class);
+    super(new AcceptanceTestTool(), AcceptanceFormat.class, "test/acceptance", "acceptance");
   }
 
   @Test

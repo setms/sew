@@ -10,13 +10,16 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
-public class OtherTool extends TestTool {
+public class OtherTool extends TestTool<OtherArtifact> {
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(
-        new Input<>("other", new TestFormat(), OtherArtifact.class),
-        new Input<>("main", new TestFormat(), MainArtifact.class));
+  public Input<OtherArtifact> getMainInput() {
+    return new Input<>("other", new TestFormat(), OtherArtifact.class);
+  }
+
+  @Override
+  public Set<Input<?>> getAdditionalInputs() {
+    return Set.of(new Input<>("main", new TestFormat(), MainArtifact.class));
   }
 
   @Override

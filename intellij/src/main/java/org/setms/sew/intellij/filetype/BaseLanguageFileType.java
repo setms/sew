@@ -7,6 +7,7 @@ import com.intellij.openapi.util.NlsSafe;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiFile;
 import javax.swing.Icon;
+import lombok.Getter;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +20,7 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
   private final String description;
   private final String extension;
   private final Icon icon;
-  private final BaseTool tool;
+  @Getter private final BaseTool<?> tool;
 
   public BaseLanguageFileType(
       @NotNull Language language,
@@ -27,7 +28,7 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
       String description,
       String extension,
       Icon icon,
-      BaseTool tool) {
+      BaseTool<?> tool) {
     super(language);
     this.name = name;
     this.description = description;
@@ -59,10 +60,6 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
   @Override
   public Icon getIcon() {
     return icon;
-  }
-
-  public BaseTool getTool() {
-    return tool;
   }
 
   public PsiFile createFile(@NotNull FileViewProvider viewProvider) {

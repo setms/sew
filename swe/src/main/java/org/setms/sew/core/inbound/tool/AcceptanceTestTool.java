@@ -5,7 +5,6 @@ import static org.setms.sew.core.inbound.tool.Inputs.acceptanceTests;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -19,11 +18,11 @@ import org.setms.sew.core.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.sew.core.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.sew.core.domain.model.sdlc.acceptance.Scenario;
 
-public class AcceptanceTestTool extends BaseTool {
+public class AcceptanceTestTool extends BaseTool<AcceptanceTest> {
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(acceptanceTests());
+  public Input<AcceptanceTest> getMainInput() {
+    return acceptanceTests();
   }
 
   @Override

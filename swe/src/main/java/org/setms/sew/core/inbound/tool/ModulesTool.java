@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.swing.SwingConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +29,19 @@ import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 
 @Slf4j
-public class ModulesTool extends BaseTool {
+public class ModulesTool extends BaseTool<Modules> {
 
   private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(modules(), domains());
+  public Input<Modules> getMainInput() {
+    return modules();
+  }
+
+  @Override
+  public Set<Input<?>> getAdditionalInputs() {
+    return Set.of(domains());
   }
 
   @Override

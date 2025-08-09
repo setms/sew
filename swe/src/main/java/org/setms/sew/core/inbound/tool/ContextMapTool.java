@@ -20,7 +20,7 @@ import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 
 @SuppressWarnings("unused") // At some point, we'll want a context map
-public class ContextMapTool extends BaseTool {
+public class ContextMapTool extends BaseTool<Domain> {
 
   private static final String OUTPUT_PATH = "build/reports/domains";
   private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";
@@ -33,8 +33,13 @@ public class ContextMapTool extends BaseTool {
   private static final int MAX_TEXT_LENGTH = 15;
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(domains(), useCases());
+  public Input<Domain> getMainInput() {
+    return null;
+  }
+
+  @Override
+  public Set<Input<?>> getAdditionalInputs() {
+    return Set.of(domains(), useCases());
   }
 
   @Override

@@ -9,7 +9,6 @@ import static org.setms.sew.core.inbound.tool.Inputs.terms;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +21,11 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.core.domain.model.sdlc.ddd.Term;
 
 @Slf4j
-public class GlossaryTool extends BaseTool {
+public class GlossaryTool extends BaseTool<Term> {
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(terms());
+  public Input<Term> getMainInput() {
+    return terms();
   }
 
   @Override

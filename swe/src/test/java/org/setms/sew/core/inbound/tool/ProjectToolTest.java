@@ -6,19 +6,18 @@ import static org.setms.km.domain.model.validation.Level.INFO;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.SequencedCollection;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
-import org.setms.sew.core.domain.model.sdlc.stakeholders.Stakeholder;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-class ProjectToolTest extends ToolTestCase<Stakeholder> {
+class ProjectToolTest extends ToolTestCase<Owner> {
 
   private static final String OWNER_SKELETON =
       """
@@ -30,22 +29,20 @@ class ProjectToolTest extends ToolTestCase<Stakeholder> {
       """;
 
   public ProjectToolTest() {
-    super(new ProjectTool(), Stakeholder.class, "main/stakeholders");
+    super(new ProjectTool(), Owner.class, "main/stakeholders");
   }
 
   @Override
-  protected void assertInputs(List<Input<?>> actual) {
-    assertThat(actual).hasSize(2);
-    assertThat(actual)
-        .allSatisfy(input -> assertThat(input.format()).isInstanceOf(SalFormat.class));
-    assertStakeholder(actual.getFirst(), Owner.class);
-    assertStakeholder(actual.get(1), User.class);
-  }
-
-  private void assertStakeholder(Input<?> input, Class<? extends Stakeholder> type) {
-    assertThat(input.glob().path()).isEqualTo("src/main/stakeholders");
-    assertThat(input.glob().pattern()).isEqualTo("**/*." + type.getSimpleName().toLowerCase());
-    assertThat(input.type()).isEqualTo(type);
+  protected void assertInputs(Set<Input<?>> inputs) {
+    assertThat(inputs).hasSize(1);
+    assertThat(inputs)
+        .allSatisfy(
+            input -> {
+              assertThat(input.format()).isInstanceOf(SalFormat.class);
+              assertThat(input.glob().path()).isEqualTo("src/main/stakeholders");
+              assertThat(input.glob().pattern()).isEqualTo("**/*." + User.class.getSimpleName().toLowerCase());
+              assertThat(input.type()).isEqualTo(User.class);
+            });
   }
 
   @Test

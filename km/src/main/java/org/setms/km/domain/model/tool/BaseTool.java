@@ -1,5 +1,6 @@
 package org.setms.km.domain.model.tool;
 
+import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.format.Strings.ensureSuffix;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.INFO;
@@ -9,7 +10,6 @@ import com.mxgraph.view.mxGraph;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -20,16 +20,37 @@ import org.setms.km.domain.model.workspace.*;
  * Something that validates input, builds output from input, and provides and applies suggestions
  * based on the input.
  */
-public abstract class BaseTool {
+public abstract class BaseTool<A extends Artifact> {
 
   protected static final String NL = System.lineSeparator();
 
   /**
-   * The inputs this tool consumes.
+   * The primary input this tool consumes, the artifacts it validates.
    *
-   * @return the inputs
+   * @return the main input
    */
-  public abstract List<Input<?>> getInputs();
+  public abstract Input<A> getMainInput();
+
+  /**
+   * Any additional inputs this tool consumes, if any.
+   *
+   * @return any additional inputs
+   */
+  public Set<Input<?>> getAdditionalInputs() {
+    return emptySet();
+  }
+
+  /**
+   * All inputs that this tool consumes. That's the main input plus any additional inputs.
+   *
+   * @return all inputs that this tool consumes
+   */
+  public Set<Input<?>> getAllInputs() {
+    var result = new LinkedHashSet<Input<?>>();
+    result.add(getMainInput());
+    result.addAll(getAdditionalInputs());
+    return result;
+  }
 
   /**
    * Validate the inputs.
@@ -47,16 +68,24 @@ public abstract class BaseTool {
 
   private ResolvedInputs resolveInputs(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
-    var validate = new AtomicBoolean(true);
-    getInputs()
-        .forEach(
-            input ->
-                result.put(
-                    input.name(), parse(resource, input, validate.getAndSet(false), diagnostics)));
+    resolveInput(getMainInput(), resource, true, diagnostics, result);
+    getAdditionalInputs()
+        .forEach(input -> resolveInput(input, resource, false, diagnostics, result));
     return result;
   }
 
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {}
+  private void resolveInput(
+      Input<?> input,
+      Resource<?> resource,
+      boolean validate, Collection<Diagnostic> diagnostics,
+      ResolvedInputs inputs) {
+    inputs.put(input.name(), parse(resource, input, validate, diagnostics));
+  }
+
+  @SuppressWarnings("unused")
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    // For descendants to override if that have additional validation logic
+  }
 
   private <T extends Artifact> List<T> parse(
       Resource<?> resource, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
@@ -87,7 +116,7 @@ public abstract class BaseTool {
 
   protected Resource<?> resourceFor(Artifact object, Resource<?> base) {
     var path =
-        getInputs().stream()
+        getAdditionalInputs().stream()
             .filter(input -> input.type().equals(object.getClass()))
             .map(Input::glob)
             .map(Glob::path)
@@ -99,7 +128,7 @@ public abstract class BaseTool {
   }
 
   protected Resource<?> toBase(Resource<?> resource) {
-    var glob = getInputs().getFirst().glob();
+    var glob = getMainInput().glob();
     if (resource.name().endsWith(glob.extension())) {
       var path = ensureSuffix(glob.path(), "/");
       var current = resource;
@@ -111,6 +140,7 @@ public abstract class BaseTool {
     return resource;
   }
 
+  @SuppressWarnings("unused")
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {}
 
@@ -130,6 +160,7 @@ public abstract class BaseTool {
     return result;
   }
 
+  @SuppressWarnings("unused")
   protected void apply(
       String suggestionCode,
       ResolvedInputs inputs,

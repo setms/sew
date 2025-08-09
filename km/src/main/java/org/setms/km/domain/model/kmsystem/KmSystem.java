@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import lombok.Getter;
@@ -44,8 +43,8 @@ public class KmSystem {
 
   private void registerArtifactDefinitionsIn(Workspace<?> workspace) {
     Tools.all()
-        .map(BaseTool::getInputs)
-        .flatMap(Collection::stream)
+        .map(BaseTool::getMainInput)
+        .filter((Objects::nonNull))
         .map(
             input ->
                 new ArtifactDefinition(
@@ -58,7 +57,7 @@ public class KmSystem {
 
   private void cacheGlobs() {
     Tools.all()
-        .map(BaseTool::getInputs)
+        .map(BaseTool::getAllInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .distinct()
@@ -77,7 +76,7 @@ public class KmSystem {
 
   private void addToGlobs(String path) {
     Tools.all()
-        .map(BaseTool::getInputs)
+        .map(BaseTool::getAllInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .filter(glob -> glob.matches(path))
@@ -119,12 +118,14 @@ public class KmSystem {
     }
   }
 
-  private void updateArtifact(String path, Artifact artifact) {
-    updateArtifact(path, artifact.getClass(), Tools.targeting(artifact.getClass()));
+  @SuppressWarnings("unchecked")
+  private <T extends Artifact> void updateArtifact(String path, T artifact) {
+    var aClass = (Class<T>) artifact.getClass();
+    updateArtifact(path, aClass, Tools.targeting(aClass));
   }
 
-  private void updateArtifact(
-      String path, Class<? extends Artifact> type, Optional<BaseTool> maybeTool) {
+  private <T extends Artifact> void updateArtifact(
+      String path, Class<T> type, Optional<BaseTool<T>> maybeTool) {
     var valid = true;
     var buildResource = reportResourceFor(path);
     if (maybeTool.isPresent()) {
@@ -156,7 +157,7 @@ public class KmSystem {
   }
 
   private void buildReports(
-      BaseTool tool,
+      BaseTool<?> tool,
       Resource<? extends Resource<?>> buildResource,
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics) {
@@ -170,16 +171,21 @@ public class KmSystem {
   }
 
   private ResolvedInputs resolveInputs(
-      String path, BaseTool tool, Collection<Diagnostic> diagnostics) {
+      String path, BaseTool<?> tool, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
-    var validate = new AtomicBoolean(true);
-    tool.getInputs()
-        .forEach(
-            input ->
-                result.put(
-                    input.name(),
-                    parse(workspace.root(), path, input, validate.getAndSet(false), diagnostics)));
+    resolve(path, tool.getMainInput(), true, diagnostics, result);
+    // TODO: Don't add parser errors to diagnostics for this path
+    tool.getAdditionalInputs().forEach(input -> resolve(path, input, false, diagnostics, result));
     return result;
+  }
+
+  private void resolve(
+      String path,
+      Input<?> input,
+      boolean validate,
+      Collection<Diagnostic> diagnostics,
+      ResolvedInputs inputs) {
+    inputs.put(input.name(), parse(workspace.root(), path, input, validate, diagnostics));
   }
 
   private <T extends Artifact> List<T> parse(
@@ -203,18 +209,14 @@ public class KmSystem {
     return linesInTextOf(resourceContainingPathsFor(glob)).stream().map(workspace.root()::select);
   }
 
-  private void storeDiagnostics(String path, BaseTool tool, Collection<Diagnostic> diagnostics) {
+  private void storeDiagnostics(String path, BaseTool<?> tool, Collection<Diagnostic> diagnostics) {
     var diagnosticsResource =
         workspace
             .root()
             .select(".km/diagnostics%s/%s.json".formatted(path, tool.getClass().getName()));
     try {
-      if (diagnostics.isEmpty()) {
-        diagnosticsResource.delete();
-      } else {
-        try (var writer = new PrintWriter(diagnosticsResource.writeTo())) {
-          mapper.writeValue(writer, serialize(diagnostics));
-        }
+      try (var writer = new PrintWriter(diagnosticsResource.writeTo())) {
+        mapper.writeValue(writer, serialize(diagnostics));
       }
     } catch (IOException e) {
       throw new IllegalStateException("Failed to store diagnostics", e);
@@ -286,7 +288,7 @@ public class KmSystem {
 
   public Resource<?> mainReportFor(String path) {
     var maybeTool =
-        Tools.all().filter(tool -> tool.getInputs().getFirst().glob().matches(path)).findFirst();
+        Tools.all().filter(tool -> tool.getMainInput().glob().matches(path)).findFirst();
     if (maybeTool.isEmpty()) {
       return null;
     }
@@ -306,7 +308,7 @@ public class KmSystem {
 
   private void removeFromGlobs(String path) {
     Tools.all()
-        .map(BaseTool::getInputs)
+        .map(BaseTool::getAllInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .filter(glob -> glob.matches(path))
@@ -318,18 +320,20 @@ public class KmSystem {
   }
 
   @SuppressWarnings("unchecked")
-  public Set<Diagnostic> applySuggestion(Resource<?> resource, String code, Location location) {
+  public <T extends Artifact> Set<Diagnostic> applySuggestion(
+      Resource<?> resource, String code, Location location) {
     if (resource == null) {
       return emptySet();
     }
     return Tools.all()
-        .filter(tool -> tool.getInputs().getFirst().glob().matches(resource.path()))
+        .filter(tool -> tool.getMainInput().glob().matches(resource.path()))
         .findFirst()
         .map(
             tool -> {
               var result = tool.apply(code, workspace, location);
-              updateArtifact(
-                  resource.path(), tool.getInputs().getFirst().type(), Optional.of(tool));
+              var type = (Class<T>) tool.getMainInput().type();
+              var typedTool = (BaseTool<T>) tool;
+              updateArtifact(resource.path(), type, Optional.of(typedTool));
               return result;
             })
         .map(Set.class::cast)

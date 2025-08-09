@@ -10,7 +10,7 @@ import org.setms.km.domain.model.artifact.Artifact;
 @NoArgsConstructor(access = PRIVATE)
 public class Tools {
 
-  private static final Collection<BaseTool> tools = new HashSet<>();
+  private static final Collection<BaseTool<?>> tools = new HashSet<>();
 
   static {
     reload();
@@ -28,23 +28,25 @@ public class Tools {
     tools.clear();
   }
 
-  public static void add(BaseTool tool) {
+  public static void add(BaseTool<?> tool) {
     tools.add(tool);
   }
 
-  public static <T extends Artifact> Optional<BaseTool> targeting(Class<T> type) {
+  @SuppressWarnings("unchecked")
+  public static <T extends Artifact> Optional<BaseTool<T>> targeting(Class<T> type) {
     return tools.stream()
-        .filter(tool -> tool.getInputs().stream().limit(1).map(Input::type).anyMatch(type::equals))
+        .filter(tool -> type.equals(tool.getMainInput().type()))
+        .map(tool -> (BaseTool<T>) tool)
         .findFirst();
   }
 
-  public static Collection<BaseTool> dependingOn(Class<? extends Artifact> type) {
+  public static Collection<BaseTool<?>> dependingOn(Class<? extends Artifact> type) {
     return tools.stream()
-        .filter(tool -> tool.getInputs().stream().map(Input::type).anyMatch(type::equals))
+        .filter(tool -> tool.getAdditionalInputs().stream().map(Input::type).anyMatch(type::equals))
         .toList();
   }
 
-  public static Stream<BaseTool> all() {
+  public static Stream<BaseTool<?>> all() {
     return tools.stream();
   }
 }

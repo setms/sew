@@ -3,12 +3,13 @@ package org.setms.km.test;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.SequencedSet;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
-public abstract class TestTool extends BaseTool {
+public abstract class TestTool<A extends Artifact> extends BaseTool<A> {
 
   private final SequencedSet<Diagnostic> validationDiagnostics = new LinkedHashSet<>();
   private final SequencedSet<Diagnostic> buildDiagnostics = new LinkedHashSet<>();

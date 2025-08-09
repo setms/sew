@@ -6,8 +6,9 @@ import static org.setms.km.domain.model.format.Strings.initLower;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.file.Files;
@@ -19,48 +20,59 @@ import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
+@RequiredArgsConstructor
 abstract class ToolTestCase<T extends Artifact> {
 
   @Getter(PROTECTED)
-  private final BaseTool tool;
+  private final BaseTool<T> tool;
 
   private final Class<? extends Format> formatType;
   private final String sourceLocation;
   private final String extension;
   private final File baseDir;
 
-  protected ToolTestCase(BaseTool tool, Class<T> type, String sourceLocation) {
-    this(tool, type, SalFormat.class, sourceLocation);
+  protected ToolTestCase(BaseTool<T> tool, Class<T> type, String sourceLocation) {
+    this(tool, SalFormat.class, sourceLocation, type);
   }
 
   protected ToolTestCase(
-      BaseTool tool, Class<T> type, Class<? extends Format> formatType, String sourceLocation) {
-    this.tool = tool;
-    this.formatType = formatType;
-    this.sourceLocation = sourceLocation;
-    this.extension = initLower(type.getSimpleName());
-    this.baseDir = new File("src/test/resources/" + extension);
+      BaseTool<T> tool, Class<? extends Format> formatType, String sourceLocation, Class<T> type) {
+    this(tool, formatType, sourceLocation, initLower(type.getSimpleName()));
+  }
+
+  protected ToolTestCase(
+      BaseTool<T> tool,
+      Class<? extends Format> formatType,
+      String sourceLocation,
+      String extension) {
+    this(tool, formatType, sourceLocation, extension, new File("src/test/resources/" + extension));
   }
 
   @Test
   void shouldDefineInputs() {
-    var actual = tool.getInputs();
-
-    assertThat(actual).isNotEmpty();
-    assertInputs(actual);
+    assertMainInput();
+    assertAdditionalInputs();
   }
 
-  protected void assertInputs(List<Input<?>> actual) {
-    var input = actual.getFirst();
-    assertThat(input.glob()).hasToString("src/%s/**/*.%s".formatted(sourceLocation, extension));
-    assertThat(input.format()).isInstanceOf(formatType);
+  private void assertMainInput() {
+    var actual = tool.getMainInput();
+
+    assertThat(actual.glob()).hasToString("src/%s/**/*.%s".formatted(sourceLocation, extension));
+    assertThat(actual.format()).isInstanceOf(formatType);
+  }
+
+  private void assertAdditionalInputs() {
+    assertInputs(tool.getAdditionalInputs());
+  }
+
+  protected void assertInputs(Set<Input<?>> inputs) {
+    // For descendants to override, if needed
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   void shouldParseObject() throws IOException {
     var workspace = workspaceFor("valid");
-    var input = (Input<T>) tool.getInputs().getFirst();
+    var input = tool.getMainInput();
     var matchingObjects = workspace.root().matching(input.glob());
     assertThat(matchingObjects).as("Missing objects at").isNotEmpty();
     for (var source : matchingObjects) {

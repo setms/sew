@@ -2,14 +2,14 @@ package org.setms.sew.core.inbound.tool;
 
 import static org.setms.sew.core.inbound.tool.Inputs.entities;
 
-import java.util.List;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
+import org.setms.sew.core.domain.model.sdlc.design.Entity;
 
-public class EntityTool extends BaseTool {
+public class EntityTool extends BaseTool<Entity> {
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(entities());
+  public Input<Entity> getMainInput() {
+    return entities();
   }
 }

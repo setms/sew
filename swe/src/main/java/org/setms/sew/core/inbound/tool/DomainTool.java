@@ -46,15 +46,20 @@ import org.setms.sew.core.domain.model.sdlc.ddd.Domain;
 import org.setms.sew.core.domain.model.sdlc.ddd.Subdomain;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class DomainTool extends BaseTool {
+public class DomainTool extends BaseTool<Domain> {
 
   private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
   public static final String CREATE_MODULES = "modules.create";
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(domains(), useCases(), modules());
+  public Input<Domain> getMainInput() {
+    return domains();
+  }
+
+  @Override
+  public Set<Input<?>> getAdditionalInputs() {
+    return Set.of(useCases(), modules());
   }
 
   @Override

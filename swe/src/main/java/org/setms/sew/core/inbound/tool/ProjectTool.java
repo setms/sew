@@ -8,6 +8,7 @@ import static org.setms.sew.core.inbound.tool.Inputs.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
@@ -22,13 +23,18 @@ import org.setms.sew.core.domain.model.sdlc.stakeholders.Owner;
 import org.setms.sew.core.domain.model.sdlc.stakeholders.User;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
-public class ProjectTool extends BaseTool {
+public class ProjectTool extends BaseTool<Owner> {
 
   private static final String SUGGESTION_CREATE_OWNER = "stakeholders.createOwner";
 
   @Override
-  public List<Input<?>> getInputs() {
-    return List.of(owners(), users());
+  public Input<Owner> getMainInput() {
+    return owners();
+  }
+
+  @Override
+  public Set<Input<?>> getAdditionalInputs() {
+    return Set.of(users());
   }
 
   @Override

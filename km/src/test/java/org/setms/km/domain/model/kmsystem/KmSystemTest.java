@@ -59,7 +59,7 @@ class KmSystemTest {
   }
 
   private String storeNewMainArtifact() throws IOException {
-    var glob = mainTool.getInputs().getFirst().glob();
+    var glob = mainTool.getMainInput().glob();
     var resource =
         workspace
             .root()
@@ -99,9 +99,7 @@ class KmSystemTest {
 
   private List<String> globsForMainTool() throws IOException {
     var globPaths =
-        workspace
-            .root()
-            .select(".km/globs/%s.glob".formatted(mainTool.getInputs().getFirst().glob()));
+        workspace.root().select(".km/globs/%s.glob".formatted(mainTool.getMainInput().glob()));
     try (var reader = new BufferedReader(new InputStreamReader(globPaths.readFrom()))) {
       return reader.lines().toList();
     }
@@ -132,7 +130,7 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(Set.of(mainValidationDiagnostic));
   }
 
-  private Resource<?> diagnosticsResourceFor(BaseTool tool, Resource<?> diagnosticsRoot) {
+  private Resource<?> diagnosticsResourceFor(BaseTool<?> tool, Resource<?> diagnosticsRoot) {
     return diagnosticsRoot.select("%s.json".formatted(tool.getClass().getName()));
   }
 
@@ -167,7 +165,7 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(artifactPath)).isEmpty();
   }
 
-  private void createDiagnostic(Resource<?> diagnosticsRoot, BaseTool tool) throws IOException {
+  private void createDiagnostic(Resource<?> diagnosticsRoot, BaseTool<?> tool) throws IOException {
     var diagnosticsResource = diagnosticsResourceFor(tool, diagnosticsRoot);
     try (var output = diagnosticsResource.writeTo()) {
       mapper.writeValue(output, Map.of("diagnostics", emptyList()));

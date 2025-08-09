@@ -119,11 +119,14 @@ public interface Parser {
         new ClassGraph()
             .enableClassInfo()
             .acceptPackages(parent.getClass().getPackageName())
+            .filterClasspathElements(path -> !path.contains(".gradle"))
             .scan()) {
       return scanResult.getAllClasses().stream()
           .filter(c -> matchesName(c.getSimpleName(), name))
           .map(ClassInfo::loadClass)
           .findFirst();
+    } catch (Exception e) {
+      return Optional.empty();
     }
   }
 
