@@ -70,7 +70,12 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
     if (virtualFile == null) {
       return new VirtualFileResource(null, new File(file, path), rootPath);
     }
-    var result = virtualFile.findFileByRelativePath(path);
+    VirtualFile result = null;
+    try {
+      result = virtualFile.findFileByRelativePath(path);
+    } catch (Exception ignored) {
+      // Nothing to do
+    }
     if (result == null) {
       return new VirtualFileResource(
           null, new File(virtualFile.toNioPath().toFile(), path), rootPath);

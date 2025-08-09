@@ -15,6 +15,9 @@ import org.setms.km.domain.model.workspace.Glob;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Files {
 
+  private static final String FILE_URI_SCHEME = "file:";
+  private static final String PATH_PREFIX = "//";
+
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public static void delete(File file) {
     if (file == null || !file.exists()) {
@@ -45,5 +48,15 @@ public class Files {
     } catch (IOException e) {
       return emptyList();
     }
+  }
+
+  public static File get(String path) {
+    if (path.startsWith(FILE_URI_SCHEME)) {
+      path = path.substring(FILE_URI_SCHEME.length());
+    }
+    if (path.startsWith(PATH_PREFIX)) {
+      path = path.substring(PATH_PREFIX.length());
+    }
+    return new File(path);
   }
 }

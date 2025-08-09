@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
@@ -19,8 +20,6 @@ import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.sew.core.inbound.format.sal.SalFormat;
 
 abstract class ToolTestCase<T extends Artifact> {
-
-  private static final String FILE_URI_SCHEME = "file:";
 
   @Getter(PROTECTED)
   private final BaseTool tool;
@@ -100,10 +99,6 @@ abstract class ToolTestCase<T extends Artifact> {
   }
 
   protected File toFile(Resource<?> resource) {
-    var path = resource.toUri().toString();
-    if (path.startsWith(FILE_URI_SCHEME)) {
-      path = path.substring(FILE_URI_SCHEME.length());
-    }
-    return new File(path);
+    return Files.get(resource.toUri().toString());
   }
 }

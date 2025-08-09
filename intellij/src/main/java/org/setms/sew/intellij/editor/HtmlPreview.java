@@ -46,12 +46,12 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   private final JPanel panel;
   private final RateLimiter rateLimiter;
   private final VirtualFile file;
-  private final KmSystem kmSystem;
-  private final IntellijWorkspace workspace;
+  private final Project project;
+  private KmSystem kmSystem;
+  private IntellijWorkspace workspace;
 
   public HtmlPreview(Project project, VirtualFile file) {
-    this.kmSystem = project.getService(KmSystemService.class).getKmSystem();
-    this.workspace = (IntellijWorkspace) kmSystem.getWorkspace();
+    this.project = project;
     this.file = file;
 
     panel = new JPanel(new BorderLayout());
@@ -141,7 +141,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
         WriteAction.run(
             () -> {
               documentManager.saveDocument(document);
-              workspace.changed(file);
+              getWorkspace().changed(file);
             });
       }
     } catch (IOException e) {
@@ -149,11 +149,31 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     }
   }
 
+  private IntellijWorkspace getWorkspace() {
+    if (workspace == null) {
+      workspace = (IntellijWorkspace) getKmSystem().getWorkspace();
+      if (workspace == null) {
+        throw new IllegalStateException("Missing workspace");
+      }
+    }
+    return workspace;
+  }
+
+  private KmSystem getKmSystem() {
+    if (kmSystem == null) {
+      kmSystem = project.getService(KmSystemService.class).getKmSystem();
+      if (kmSystem == null) {
+        throw new IllegalStateException("Missing KmSystem");
+      }
+    }
+    return kmSystem;
+  }
+
   private void showFile() {
     browser.loadURL(
-        Optional.ofNullable(workspace.find(file))
+        Optional.ofNullable(getWorkspace().find(file))
             .map(Resource::path)
-            .map(kmSystem::mainReportFor)
+            .map(getKmSystem()::mainReportFor)
             .map(report -> report.matching(HTML_GLOB))
             .map(List::getFirst)
             .map(Resource::toUri)

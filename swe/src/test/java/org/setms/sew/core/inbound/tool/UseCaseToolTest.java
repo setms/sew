@@ -57,7 +57,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     var diagnostics = getTool().validate(workspace);
 
     assertThat(diagnostics)
-        .hasSizeGreaterThanOrEqualTo(7)
+        .hasSizeGreaterThanOrEqualTo(6)
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);

@@ -1,6 +1,7 @@
 package org.setms.km.domain.model.kmsystem;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -71,7 +72,7 @@ public class KmSystem {
 
   private void artifactChanged(String path, Artifact artifact) {
     addToGlobs(path);
-    updateArtifacts(path, artifact);
+    updateArtifact(path, artifact);
   }
 
   private void addToGlobs(String path) {
@@ -118,8 +119,12 @@ public class KmSystem {
     }
   }
 
-  private void updateArtifacts(String path, Artifact artifact) {
-    var maybeTool = Tools.targeting(artifact.getClass());
+  private void updateArtifact(String path, Artifact artifact) {
+    updateArtifact(path, artifact.getClass(), Tools.targeting(artifact.getClass()));
+  }
+
+  private void updateArtifact(
+      String path, Class<? extends Artifact> type, Optional<BaseTool> maybeTool) {
     var valid = true;
     var buildResource = reportResourceFor(path);
     if (maybeTool.isPresent()) {
@@ -134,7 +139,7 @@ public class KmSystem {
       storeDiagnostics(path, tool, diagnostics);
     }
     if (valid) {
-      Tools.dependingOn(artifact.getClass()).stream()
+      Tools.dependingOn(type).stream()
           .filter(tool -> maybeTool.isEmpty() || !tool.equals(maybeTool.get()))
           .forEach(
               tool -> {
@@ -312,7 +317,22 @@ public class KmSystem {
     updateGlobPaths(glob, path, Collection::remove);
   }
 
-  public void applySuggestion(Resource<?> resource, String code, Location location) {
-    // TODO: Implement
+  @SuppressWarnings("unchecked")
+  public Set<Diagnostic> applySuggestion(Resource<?> resource, String code, Location location) {
+    if (resource == null) {
+      return emptySet();
+    }
+    return Tools.all()
+        .filter(tool -> tool.getInputs().getFirst().glob().matches(resource.path()))
+        .findFirst()
+        .map(
+            tool -> {
+              var result = tool.apply(code, workspace, location);
+              updateArtifact(
+                  resource.path(), tool.getInputs().getFirst().type(), Optional.of(tool));
+              return result;
+            })
+        .map(Set.class::cast)
+        .orElseGet(Collections::emptySet);
   }
 }
