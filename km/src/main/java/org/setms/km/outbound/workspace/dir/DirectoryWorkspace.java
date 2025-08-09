@@ -39,7 +39,11 @@ public class DirectoryWorkspace extends Workspace<File> {
       throw new IllegalArgumentException("Missing directory");
     }
     try {
-      var result = file.getCanonicalFile();
+      File result = file;
+      if (result.getPath().contains("~")) {
+        result = new File(result.getPath().replace("~", System.getProperty("user.home")));
+      }
+      result = result.getCanonicalFile();
       if (!result.isDirectory()) {
         result.mkdirs();
       }
