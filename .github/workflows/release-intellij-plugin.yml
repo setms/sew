@@ -18,14 +18,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Show free disk
+        run: df -h
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'corretto'
           java-version: '21'
 
+      - name: Show free disk
+        run: df -h
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Show free disk
+        run: df -h
 
       - name: Build IntelliJ plugin
         run: ./gradlew check :intellij:buildPlugin
