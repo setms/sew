@@ -95,9 +95,9 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Override
   protected void assertBuild(Resource<?> resource) {
-    var output = toFile(resource.select("build/reports/useCases/HappyPath.png"));
+    var output = toFile(resource.select("build/JustDoIt/HappyPath.png"));
     assertThat((output)).isFile();
-    output = toFile(resource.select("build/reports/useCases/JustDoIt.html"));
+    output = toFile(resource.select("build/JustDoIt/JustDoIt.html"));
     assertThat((output)).isFile().hasContent(USE_CASE_HTML);
   }
 

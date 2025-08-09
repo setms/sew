@@ -414,8 +414,8 @@ public class UseCaseTool extends BaseTool<UseCase> {
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var useCases = inputs.get(UseCase.class);
-    var reportResource = resource.select("reports/useCases");
-    useCases.forEach(useCase -> build(useCase, inputs, reportResource, diagnostics));
+    useCases.forEach(
+        useCase -> build(useCase, inputs, resource.select(useCase.getName()), diagnostics));
   }
 
   private void build(

@@ -38,7 +38,6 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
   private static final String VERTEX_STYLE =
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   private static final String CREATE_USE_CASE_SCENARIO = "usecase.scenario.create";
-  private static final String OUTPUT_PATH = "reports/domainStories";
 
   @Override
   public Input<DomainStory> getMainInput() {
@@ -54,8 +53,8 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var domainStories = inputs.get(DomainStory.class);
-    var reportResource = resource.select(OUTPUT_PATH);
-    domainStories.forEach(domainStory -> build(domainStory, reportResource, diagnostics));
+    domainStories.forEach(
+        domainStory -> build(domainStory, resource.select(domainStory.getName()), diagnostics));
   }
 
   private void build(

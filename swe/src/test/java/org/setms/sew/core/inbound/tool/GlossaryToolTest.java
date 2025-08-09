@@ -41,7 +41,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
     var actual = getTool().build(workspace);
 
     assertThat(actual).isEmpty();
-    var output = toFile(workspace.root().select("build/reports/glossary/report.html"));
+    var output = toFile(workspace.root().select("build/report.html"));
     assertThat(output).isFile().content().isEqualTo(GLOSSARY);
   }
 

@@ -14,7 +14,7 @@ public class DomainStoryToolTest extends ToolTestCase<DomainStory> {
 
   @Override
   protected void assertBuild(Resource<?> resource) {
-    var output = resource.select("build/reports/domainStories");
+    var output = resource.select("build/NonuserCantDeleteData");
     Stream.of("html", "png")
         .map("NonuserCantDeleteData.%s"::formatted)
         .map(output::select)

@@ -33,9 +33,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     var actual = getTool().build(workspace);
 
     assertThat(actual).isEmpty();
-    var output =
-        toFile(
-            workspace.root().select("build/reports/acceptanceTests/Notifications-aggregate.html"));
+    var output = toFile(workspace.root().select("build/Notifications-aggregate.html"));
     assertThat((output)).isFile().hasContent(ACCEPTANCE_TEST_HTML);
   }
 }

@@ -65,8 +65,7 @@ public class DomainTool extends BaseTool<Domain> {
   @Override
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var output = resource.select("reports/domains");
-    inputs.get(Domain.class).forEach(domain -> build(domain, output, diagnostics));
+    inputs.get(Domain.class).forEach(domain -> build(domain, resource, diagnostics));
   }
 
   private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {

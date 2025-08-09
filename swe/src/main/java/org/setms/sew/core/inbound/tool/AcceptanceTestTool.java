@@ -29,8 +29,7 @@ public class AcceptanceTestTool extends BaseTool<AcceptanceTest> {
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var acceptanceTests = inputs.get(AcceptanceTest.class);
-    var reportResource = resource.select("reports/acceptanceTests");
-    acceptanceTests.forEach(acceptanceTest -> build(acceptanceTest, reportResource, diagnostics));
+    acceptanceTests.forEach(acceptanceTest -> build(acceptanceTest, resource, diagnostics));
   }
 
   private void build(

@@ -64,7 +64,7 @@ public class GlossaryTool extends BaseTool<Term> {
       String glossary,
       Collection<Term> terms,
       Collection<Diagnostic> diagnostics) {
-    var report = resource.select("reports/glossary/%s.html".formatted(glossary));
+    var report = resource.select("%s.html".formatted(glossary));
     try (var writer = new PrintWriter(report.writeTo())) {
       buildGlossary(glossary, writer, terms);
     } catch (IOException e) {
