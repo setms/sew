@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,13 +103,14 @@ record InMemoryResource(
 
   @Override
   public List<InMemoryResource> matching(Glob glob) {
-    return artifactsByPath.keySet().stream()
-        .filter(glob::matches)
-        .map(
-            match ->
-                new InMemoryResource(
-                    artifactsByPath, modifiedTimeByPath, match, pathChanged, pathDeleted))
-        .toList();
+    return new LinkedHashSet<>(artifactsByPath.keySet())
+        .stream()
+            .filter(glob::matches)
+            .map(
+                match ->
+                    new InMemoryResource(
+                        artifactsByPath, modifiedTimeByPath, match, pathChanged, pathDeleted))
+            .toList();
   }
 
   @Override
