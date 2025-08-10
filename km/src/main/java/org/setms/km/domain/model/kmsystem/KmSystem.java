@@ -1,7 +1,6 @@
 package org.setms.km.domain.model.kmsystem;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +15,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -365,13 +365,15 @@ public class KmSystem {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Artifact> Set<Diagnostic> applySuggestion(
+  public <T extends Artifact> AppliedSuggestion applySuggestion(
       Resource<?> resource, String code, Location location) {
     if (resource == null) {
-      return emptySet();
+      return new AppliedSuggestion();
     }
     return Tools.all()
-        .filter(tool -> tool.getMainInput().glob().matches(resource.path()))
+        .filter(
+            tool ->
+                tool.getMainInput() != null && tool.getMainInput().glob().matches(resource.path()))
         .findFirst()
         .map(
             tool -> {
@@ -381,7 +383,6 @@ public class KmSystem {
               updateArtifact(resource.path(), type, Optional.of(typedTool));
               return result;
             })
-        .map(Set.class::cast)
-        .orElseGet(Collections::emptySet);
+        .orElseGet(AppliedSuggestion::new);
   }
 }

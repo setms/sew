@@ -3,7 +3,6 @@ package org.setms.km.domain.model.tool;
 import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.format.Strings.ensureSuffix;
 import static org.setms.km.domain.model.validation.Level.ERROR;
-import static org.setms.km.domain.model.validation.Level.INFO;
 
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
@@ -151,28 +150,23 @@ public abstract class BaseTool<A extends Artifact> {
    * @param suggestionCode the suggestion to apply
    * @param workspace where to load input and store output
    * @param location where in the input to apply the suggestion
-   * @return diagnostics about the applying the suggestion
+   * @return artifacts created/changed and diagnostics
    */
-  public final SequencedSet<Diagnostic> apply(
+  public final AppliedSuggestion apply(
       String suggestionCode, Workspace<?> workspace, Location location) {
-    var result = new LinkedHashSet<Diagnostic>();
-    var inputs = resolveInputs(workspace.root(), result);
-    apply(suggestionCode, inputs, location, workspace.root(), result);
-    return result;
+    var result = new AppliedSuggestion();
+    var inputs = resolveInputs(workspace.root(), new LinkedHashSet<>());
+    return apply(suggestionCode, inputs, location, workspace.root(), result);
   }
 
   @SuppressWarnings("unused")
-  protected void apply(
+  protected AppliedSuggestion apply(
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
-    diagnostics.add(new Diagnostic(ERROR, "Unknown suggestion: " + suggestionCode));
-  }
-
-  protected final Diagnostic resourceCreated(Resource<?> resource) {
-    return new Diagnostic(INFO, "Created " + resource.toUri());
+      AppliedSuggestion appliedSuggestion) {
+    return appliedSuggestion.with(new Diagnostic(ERROR, "Unknown suggestion: " + suggestionCode));
   }
 
   protected Optional<Resource<?>> build(

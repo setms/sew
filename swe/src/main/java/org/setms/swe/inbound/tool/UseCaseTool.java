@@ -28,6 +28,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.artifact.UnresolvedArtifact;
 import org.setms.km.domain.model.format.Strings;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -248,42 +249,48 @@ public class UseCaseTool extends BaseTool<UseCase> {
   }
 
   @Override
-  protected void apply(
+  protected AppliedSuggestion apply(
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
-    switch (suggestionCode) {
-      case CREATE_DOMAIN_STORY -> createDomainStory(inputs, location, resource, diagnostics);
-      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, resource, diagnostics);
+      AppliedSuggestion appliedSuggestion) {
+    return switch (suggestionCode) {
+      case CREATE_DOMAIN_STORY -> createDomainStory(inputs, location, resource, appliedSuggestion);
+      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, resource, appliedSuggestion);
       case CREATE_DOMAIN ->
-          createDomain(location.segments().getLast(), inputs, resource, diagnostics);
-      case CREATE_ACCEPTANCE_TEST -> createAcceptanceTest(inputs, location, resource, diagnostics);
-      case null, default -> super.apply(suggestionCode, inputs, location, resource, diagnostics);
-    }
+          createDomain(location.segments().getLast(), inputs, resource, appliedSuggestion);
+      case CREATE_ACCEPTANCE_TEST ->
+          createAcceptanceTest(inputs, location, resource, appliedSuggestion);
+      case null, default ->
+          super.apply(suggestionCode, inputs, location, resource, appliedSuggestion);
+    };
   }
 
-  private void createDomainStory(
+  private AppliedSuggestion createDomainStory(
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
-    inputs.get(UseCase.class).stream()
+      AppliedSuggestion appliedSuggestion) {
+    return inputs.get(UseCase.class).stream()
         .filter(useCase -> useCase.starts(location))
         .flatMap(UseCase::scenarios)
         .filter(scenario -> scenario.getName().equals(location.segments().get(4)))
         .map(Scenario::getElaborates)
         .filter(Objects::nonNull)
         .findFirst()
-        .ifPresentOrElse(
-            scenario -> createDomainStoryFor(scenario, location, resource, diagnostics),
+        .map(scenario -> createDomainStoryFor(scenario, location, resource, appliedSuggestion))
+        .orElseGet(
             () ->
-                diagnostics.add(new Diagnostic(ERROR, "Unknown scenario %s".formatted(location))));
+                appliedSuggestion.with(
+                    new Diagnostic(ERROR, "Unknown scenario %s".formatted(location))));
   }
 
-  private void createDomainStoryFor(
-      Link reference, Location location, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  private AppliedSuggestion createDomainStoryFor(
+      Link reference,
+      Location location,
+      Resource<?> resource,
+      AppliedSuggestion appliedSuggestion) {
     try {
       var packageName = location.segments().getFirst();
       var domainStory =
@@ -296,37 +303,39 @@ public class UseCaseTool extends BaseTool<UseCase> {
       try (var output = domainStoryResource.writeTo()) {
         new SalFormat().newBuilder().build(domainStory, output);
       }
-      diagnostics.add(resourceCreated(domainStoryResource));
+      return appliedSuggestion.with(domainStoryResource);
     } catch (Exception e) {
-      addError(diagnostics, e.getMessage());
+      return appliedSuggestion.with(e);
     }
   }
 
-  private org.setms.swe.domain.model.sdlc.domainstory.Sentence dummySentence(
-      String packageName) {
+  private org.setms.swe.domain.model.sdlc.domainstory.Sentence dummySentence(String packageName) {
     return new org.setms.swe.domain.model.sdlc.domainstory.Sentence(
             new FullyQualifiedName(packageName, "Sentence1"))
         .setParts(emptyList());
   }
 
-  private void createMissingStep(
+  private AppliedSuggestion createMissingStep(
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
-    StepReference.find(location, inputs.get(UseCase.class))
-        .ifPresentOrElse(
+      AppliedSuggestion appliedSuggestion) {
+    return StepReference.find(location, inputs.get(UseCase.class))
+        .map(
             stepReference ->
                 createMissingStep(
                     stepReference.useCase().getPackage(),
                     stepReference.getStep().orElseThrow(),
                     toBase(resource),
-                    diagnostics),
-            () -> addError(diagnostics, "Unknown step reference %s", location));
+                    appliedSuggestion))
+        .orElseGet(
+            () ->
+                appliedSuggestion.with(
+                    new Diagnostic(ERROR, "Unknown step reference %s", location)));
   }
 
-  private void createMissingStep(
-      String packageName, Link step, Resource<?> output, Collection<Diagnostic> diagnostics) {
+  private AppliedSuggestion createMissingStep(
+      String packageName, Link step, Resource<?> output, AppliedSuggestion appliedSuggestion) {
     var type = step.getType();
     var resource = output.select("src/main");
     if ("user".equals(type)) {
@@ -342,9 +351,9 @@ public class UseCaseTool extends BaseTool<UseCase> {
       writeProperties(type, name, writer);
       writer.println("}");
     } catch (IOException e) {
-      addError(diagnostics, e.getMessage());
+      return appliedSuggestion.with(e);
     }
-    diagnostics.add(resourceCreated(resource));
+    return appliedSuggestion.with(resource);
   }
 
   private void writeProperties(String type, String name, PrintWriter writer) {
@@ -360,11 +369,11 @@ public class UseCaseTool extends BaseTool<UseCase> {
     writer.printf("  %s = \"%s\"%n", nameProperty, toFriendlyName(name));
   }
 
-  private void createDomain(
+  private AppliedSuggestion createDomain(
       String packageName,
       ResolvedInputs inputs,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
+      AppliedSuggestion appliedSuggestion) {
     try {
       var domain =
           new DiscoverDomainFromUseCases()
@@ -377,17 +386,17 @@ public class UseCaseTool extends BaseTool<UseCase> {
       try (var output = domainResource.writeTo()) {
         new SalFormat().newBuilder().build(domain, output);
       }
-      diagnostics.add(resourceCreated(domainResource));
+      return appliedSuggestion.with(domainResource);
     } catch (Exception e) {
-      addError(diagnostics, e.getMessage());
+      return appliedSuggestion.with(e);
     }
   }
 
-  private void createAcceptanceTest(
+  private AppliedSuggestion createAcceptanceTest(
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
+      AppliedSuggestion appliedSuggestion) {
     try {
       var acceptanceTest = createAcceptanceTestFor(inputs, location);
       var acceptanceTestResource =
@@ -397,9 +406,9 @@ public class UseCaseTool extends BaseTool<UseCase> {
       try (var output = acceptanceTestResource.writeTo()) {
         new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
       }
-      diagnostics.add(resourceCreated(acceptanceTestResource));
+      return appliedSuggestion.with(acceptanceTestResource);
     } catch (Exception e) {
-      addError(diagnostics, e.getMessage());
+      return appliedSuggestion.with(e);
     }
   }
 

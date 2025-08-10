@@ -161,4 +161,8 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
     }
     return virtualFile.toNioPath().toUri();
   }
+
+  public File toFile() {
+    return virtualFile == null ? file : virtualFile.toNioPath().toFile();
+  }
 }

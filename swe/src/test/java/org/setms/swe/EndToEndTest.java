@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.kmsystem.KmSystem;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 
@@ -46,20 +47,33 @@ class EndToEndTest {
 
   @Test
   void shouldGuideSoftwareEngineering() throws IOException {
-    assertThatExistingDomainStoryIsValidated();
+    var domainStory = assertThatExistingDomainStoryIsValidated();
+    assertThatEventStormIsCreatedFromDomainStory(domainStory);
   }
 
-  private void assertThatExistingDomainStoryIsValidated() throws IOException {
-    var domainStory =
+  private Resource<?> assertThatExistingDomainStoryIsValidated() throws IOException {
+    var result =
         workspace
             .root()
             .select("src/main/requirements/%s.domainStory".formatted(DOMAIN_STORY_NAME));
-    try (var writer = new PrintWriter(domainStory.writeTo())) {
+    try (var writer = new PrintWriter(result.writeTo())) {
       writer.println(DOMAIN_STORY_CONTENT.formatted(DOMAIN_STORY_NAME));
     }
     kmSystem = new KmSystem(workspace);
     await()
         .atMost(5, SECONDS)
-        .untilAsserted(() -> assertThat(kmSystem.diagnosticsFor(domainStory.path())).isNotEmpty());
+        .untilAsserted(() -> assertThat(kmSystem.diagnosticsFor(result.path())).isNotEmpty());
+    return result;
+  }
+
+  private void assertThatEventStormIsCreatedFromDomainStory(Resource<?> domainStory) {
+    var maybeDiagnostic =
+        kmSystem.diagnosticsFor(domainStory.path()).stream()
+            .filter(d -> !d.suggestions().isEmpty())
+            .findFirst();
+    assertThat(maybeDiagnostic).as("Diagnostic with suggestion").isPresent();
+    var diagnostic = maybeDiagnostic.get();
+    kmSystem.applySuggestion(
+        domainStory, diagnostic.suggestions().getFirst().code(), diagnostic.location());
   }
 }

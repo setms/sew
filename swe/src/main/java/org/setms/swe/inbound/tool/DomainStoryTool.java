@@ -299,25 +299,25 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
   }
 
   @Override
-  protected void apply(
+  protected AppliedSuggestion apply(
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
+      AppliedSuggestion appliedSuggestion) {
     if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
-      findDomainStory(inputs, location)
-          .ifPresent(
+      return findDomainStory(inputs, location)
+          .map(
               domainStory ->
                   elaborateInUseCase(
                       domainStory,
                       extractUseCaseNameFrom(suggestionCode)
                           .flatMap(name -> find(inputs.get(UseCase.class), name)),
                       resource,
-                      diagnostics));
-    } else {
-      super.apply(suggestionCode, inputs, location, resource, diagnostics);
+                      appliedSuggestion))
+          .orElse(appliedSuggestion);
     }
+    return super.apply(suggestionCode, inputs, location, resource, appliedSuggestion);
   }
 
   private Optional<FullyQualifiedName> extractUseCaseNameFrom(String suggestionCode) {
@@ -340,11 +340,11 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
         .findFirst();
   }
 
-  private void elaborateInUseCase(
+  private AppliedSuggestion elaborateInUseCase(
       DomainStory domainStory,
       Optional<UseCase> source,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
+      AppliedSuggestion appliedSuggestion) {
     try {
       var converter = new DomainStoryToUseCase();
       var useCase =
@@ -355,9 +355,9 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
       try (var output = useCaseResource.writeTo()) {
         new SalFormat().newBuilder().build(useCase, output);
       }
-      diagnostics.add(resourceCreated(useCaseResource));
+      return appliedSuggestion.with(useCaseResource);
     } catch (Exception e) {
-      addError(diagnostics, e.getMessage());
+      return appliedSuggestion.with(e);
     }
   }
 }

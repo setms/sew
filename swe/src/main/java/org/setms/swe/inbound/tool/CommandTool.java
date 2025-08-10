@@ -1,6 +1,5 @@
 package org.setms.swe.inbound.tool;
 
-import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.entities;
@@ -9,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -56,32 +56,32 @@ public class CommandTool extends BaseTool<Command> {
   }
 
   @Override
-  protected void apply(
+  protected AppliedSuggestion apply(
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
+      AppliedSuggestion appliedSuggestion) {
     if (CREATE_PAYLOAD.equals(suggestionCode)) {
-      createPayload(inputs.get(Command.class), location, resource, diagnostics);
-    } else {
-      super.apply(suggestionCode, inputs, location, resource, diagnostics);
+      return createPayload(inputs.get(Command.class), location, resource, appliedSuggestion);
     }
+    return super.apply(suggestionCode, inputs, location, resource, appliedSuggestion);
   }
 
-  private void createPayload(
+  private AppliedSuggestion createPayload(
       List<Command> commands,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
-    commands.stream()
-        .filter(command -> command.starts(location))
+      AppliedSuggestion appliedSuggestion) {
+    return commands.stream()
+        .filter(command1 -> command1.starts(location))
         .findFirst()
-        .ifPresent(command -> createPayloadFor(command, resource, diagnostics));
+        .map(command -> createPayloadFor(command, resource, appliedSuggestion))
+        .orElse(appliedSuggestion);
   }
 
-  private void createPayloadFor(
-      Command command, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  private AppliedSuggestion createPayloadFor(
+      Command command, Resource<?> resource, AppliedSuggestion appliedSuggestion) {
     var designResource = toBase(resource).select(Inputs.PATH_DESIGN);
     try {
       var entity =
@@ -90,9 +90,9 @@ public class CommandTool extends BaseTool<Command> {
       try (var output = entityResource.writeTo()) {
         new SalFormat().newBuilder().build(entity, output);
       }
-      diagnostics.add(resourceCreated(entityResource));
+      return appliedSuggestion.with(entityResource);
     } catch (Exception e) {
-      diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
+      return appliedSuggestion.with(e);
     }
   }
 }

@@ -1,6 +1,7 @@
 package org.setms.sew.intellij.plugin.workspace;
 
 import com.intellij.openapi.vfs.VirtualFile;
+import java.io.File;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -33,5 +34,9 @@ public class IntellijWorkspace extends Workspace<VirtualFile> {
 
   public void changed(VirtualFile file) {
     parse(find(file).path()).ifPresent(artifact -> onChanged(find(file).path(), artifact));
+  }
+
+  public File toFile(Resource<?> resource) {
+    return resource instanceof VirtualFileResource virtualFileResource ? virtualFileResource.toFile() : null;
   }
 }

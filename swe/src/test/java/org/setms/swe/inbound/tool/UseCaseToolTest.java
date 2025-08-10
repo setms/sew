@@ -44,7 +44,6 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       parts = [ ]
     }
     """;
-  public static final String CREATED = "Created ";
 
   public UseCaseToolTest() {
     super(new UseCaseTool(), UseCase.class, "main/requirements");
@@ -64,11 +63,13 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
               assertThat(diagnostic.suggestions()).as("Suggestions").isNotEmpty();
             });
     var diagnostic = diagnostics.getFirst();
-    diagnostics =
+    var created =
         getTool()
-            .apply(diagnostic.suggestions().getFirst().code(), workspace, diagnostic.location());
-    assertThat(diagnostics).hasSize(1).allSatisfy(d -> assertThat(d.message()).contains("Created"));
-    var file = toFile(workspace.root().select("src/main/requirements/HappyPath.domainStory"));
+            .apply(diagnostic.suggestions().getFirst().code(), workspace, diagnostic.location())
+            .createdOrChanged();
+    var domainStory = workspace.root().select("src/main/requirements/HappyPath.domainStory");
+    assertThat(created).hasSize(1).contains(domainStory);
+    var file = toFile(domainStory);
     assertThat(file).isFile();
     try {
       assertThat(file).hasContent(DOMAIN_STORY);
@@ -124,10 +125,9 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).isEqualTo("Discover subdomains");
-    actual = getTool().apply(suggestion.code(), workspace, diagnostic.location());
-    assertThat(actual).hasSize(1);
-    diagnostic = actual.getFirst();
-    assertThat(diagnostic.message()).startsWith(CREATED);
+    var created =
+        getTool().apply(suggestion.code(), workspace, diagnostic.location()).createdOrChanged();
+    assertThat(created).hasSize(1);
     workspace
         .root()
         .matching(Inputs.domains().glob())
@@ -155,10 +155,9 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).startsWith("Create acceptance test");
-    actual = getTool().apply(suggestion.code(), workspace, diagnostic.location());
-    assertThat(actual).as("Created artifacts").hasSize(1);
-    diagnostic = actual.getFirst();
-    assertThat(diagnostic.message()).startsWith(CREATED);
+    var created =
+        getTool().apply(suggestion.code(), workspace, diagnostic.location()).createdOrChanged();
+    assertThat(created).as("Created artifacts").hasSize(1);
     workspace
         .root()
         .matching(Inputs.acceptanceTests().glob())

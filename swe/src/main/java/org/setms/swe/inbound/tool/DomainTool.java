@@ -33,6 +33,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -296,37 +297,35 @@ public class DomainTool extends BaseTool<Domain> {
   }
 
   @Override
-  protected void apply(
+  protected AppliedSuggestion apply(
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
       Resource<?> sink,
-      Collection<Diagnostic> diagnostics) {
+      AppliedSuggestion appliedSuggestion) {
     if (CREATE_MODULES.equals(suggestionCode)) {
-      createModules(inputs, location, sink, diagnostics);
-    } else {
-      super.apply(suggestionCode, inputs, location, sink, diagnostics);
+      return createModules(inputs, location, sink, appliedSuggestion);
     }
+    return super.apply(suggestionCode, inputs, location, sink, appliedSuggestion);
   }
 
-  private void createModules(
+  private AppliedSuggestion createModules(
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
-    mapDomainToModules(inputs.get(Domain.class), location)
-        .forEach(
-            modules -> {
-              var modulesResource =
-                  toBase(resource)
-                      .select("%s/%s.modules".formatted(PATH_ARCHITECTURE, modules.getName()));
-              try (var output = modulesResource.writeTo()) {
-                new SalFormat().newBuilder().build(modules, output);
-                diagnostics.add(resourceCreated(modulesResource));
-              } catch (Exception e) {
-                addError(diagnostics, e.getMessage());
-              }
-            });
+      AppliedSuggestion appliedSuggestion) {
+    var result = appliedSuggestion;
+    for (var modules : mapDomainToModules(inputs.get(Domain.class), location)) {
+      var modulesResource =
+          toBase(resource).select("%s/%s.modules".formatted(PATH_ARCHITECTURE, modules.getName()));
+      try (var output = modulesResource.writeTo()) {
+        new SalFormat().newBuilder().build(modules, output);
+        result = result.with(modulesResource);
+      } catch (Exception e) {
+        result = result.with(e);
+      }
+    }
+    return result;
   }
 
   private List<Modules> mapDomainToModules(List<Domain> domains, Location location) {

@@ -1,12 +1,10 @@
 package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.setms.km.domain.model.validation.Level.INFO;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
-import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 
 class CommandToolTest extends ToolTestCase<Command> {
@@ -36,12 +34,13 @@ class CommandToolTest extends ToolTestCase<Command> {
     assertThat(diagnostic.suggestions()).as("Suggestions").hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).as("Suggestion").isEqualTo("Create entity");
-    var diagnostics = getTool().apply(suggestion.code(), workspace, diagnostic.location());
+    var created =
+        getTool().apply(suggestion.code(), workspace, diagnostic.location()).createdOrChanged();
     var payload = workspace.root().select("src/main/design/Payload.entity");
-    assertThat(diagnostics)
+    assertThat(created)
         .as("Apply diagnostics")
         .hasSize(1)
-        .contains(new Diagnostic(INFO, "Created " + payload.toUri()));
+        .contains(payload);
     try {
       assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
     } finally {

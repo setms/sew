@@ -2,7 +2,6 @@ package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.ERROR;
-import static org.setms.km.domain.model.validation.Level.INFO;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
@@ -40,7 +39,8 @@ class ProjectToolTest extends ToolTestCase<Owner> {
             input -> {
               assertThat(input.format()).isInstanceOf(SalFormat.class);
               assertThat(input.glob().path()).isEqualTo("src/main/stakeholders");
-              assertThat(input.glob().pattern()).isEqualTo("**/*." + User.class.getSimpleName().toLowerCase());
+              assertThat(input.glob().pattern())
+                  .isEqualTo("**/*." + User.class.getSimpleName().toLowerCase());
               assertThat(input.type()).isEqualTo(User.class);
             });
   }
@@ -69,12 +69,12 @@ class ProjectToolTest extends ToolTestCase<Owner> {
   }
 
   private void assertThatApplyingTheSuggestionCreatesAnOwner(
-      Suggestion suggestion, Workspace workspace) throws IOException {
+      Suggestion suggestion, Workspace<?> workspace) throws IOException {
     var owner = workspace.root().select("src/main/stakeholders/Some.owner");
 
-    var actual = getTool().apply(suggestion.code(), workspace, null);
+    var actual = getTool().apply(suggestion.code(), workspace, null).createdOrChanged();
 
-    assertThat(actual).hasSize(1).contains(new Diagnostic(INFO, "Created " + owner.toUri()));
+    assertThat(actual).hasSize(1).contains(owner);
     try {
       assertThat(owner.readFrom()).hasContent(OWNER_SKELETON);
     } finally {
@@ -86,7 +86,7 @@ class ProjectToolTest extends ToolTestCase<Owner> {
   void shouldRejectUnknownSuggestion() {
     var workspace = workspaceFor("invalid/suggestion");
 
-    var actual = getTool().apply("unknown.suggestion", workspace, null);
+    var actual = getTool().apply("unknown.suggestion", workspace, null).diagnostics();
 
     assertThat(actual)
         .hasSize(1)

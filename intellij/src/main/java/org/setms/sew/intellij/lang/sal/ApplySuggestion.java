@@ -19,9 +19,6 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.file.Files;
-import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.validation.Level;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.sew.intellij.plugin.km.KmSystemService;
@@ -79,19 +76,13 @@ public class ApplySuggestion implements IntentionAction {
       return;
     }
     var service = project.getService(KmSystemService.class);
-    var created =
+    var appliedSuggestion =
         service
             .getKmSystem()
-            .applySuggestion(service.getWorkspace().find(file), suggestion.code(), location)
-            .stream()
-            .filter(
-                diagnostic ->
-                    diagnostic.level() == Level.INFO && diagnostic.message().startsWith("Created"))
-            .map(Diagnostic::message)
-            .map(message -> message.substring(7).trim())
-            .map(Files::get)
-            .filter(File::isFile)
-            .toList();
+            .applySuggestion(service.getWorkspace().find(file), suggestion.code(), location);
+    var created = appliedSuggestion.createdOrChanged().stream().map(service.getWorkspace()::toFile)
+        .filter(File::isFile)
+        .toList();
     reloadVirtualFileAndPsi(project, psiFile, file, created);
   }
 

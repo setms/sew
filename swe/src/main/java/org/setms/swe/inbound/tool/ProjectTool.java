@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -61,21 +62,20 @@ public class ProjectTool extends BaseTool<Owner> {
   }
 
   @Override
-  public void apply(
+  public AppliedSuggestion apply(
       String suggestionCode,
       ResolvedInputs inputs,
       Location location,
       Resource<?> resource,
-      Collection<Diagnostic> diagnostics) {
+      AppliedSuggestion appliedSuggestion) {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
-      createOwner(resource, inputs, diagnostics);
-    } else {
-      super.apply(suggestionCode, inputs, location, resource, diagnostics);
+      return createOwner(resource, inputs, appliedSuggestion);
     }
+    return super.apply(suggestionCode, inputs, location, resource, appliedSuggestion);
   }
 
-  private void createOwner(
-      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  private AppliedSuggestion createOwner(
+      Resource<?> resource, ResolvedInputs inputs, AppliedSuggestion appliedSuggestion) {
     var packages =
         inputs.get(User.class).stream().map(Artifact::getPackage).collect(Collectors.toSet());
     var stakeholdersResource = toBase(resource).select(Inputs.PATH_STAKEHOLDERS);
@@ -89,9 +89,9 @@ public class ProjectTool extends BaseTool<Owner> {
       try (var output = ownerResource.writeTo()) {
         new SalFormat().newBuilder().build(owner, output);
       }
-      diagnostics.add(resourceCreated(ownerResource));
+      return appliedSuggestion.with(ownerResource);
     } catch (Exception e) {
-      diagnostics.add(new Diagnostic(ERROR, e.getMessage()));
+      return appliedSuggestion.with(e);
     }
   }
 

@@ -17,7 +17,7 @@ class DirectoryWorkspaceTest extends WorkspaceTestCase {
   }
 
   @Override
-  protected Workspace newWorkspace() {
+  protected Workspace<?> newWorkspace() {
     return new DirectoryWorkspace(file);
   }
 }
