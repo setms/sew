@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.setms.km.domain.model.tool.BaseTool;
-import org.setms.sew.intellij.filetype.BaseLanguageFileType;
+import org.setms.sew.intellij.plugin.filetype.BaseLanguageFileType;
 
 public abstract class BaseParserDefinition implements ParserDefinition {
 

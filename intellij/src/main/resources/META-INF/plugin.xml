@@ -4,68 +4,68 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="AcceptanceTest" language="Acceptance" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.acceptancetest.AcceptanceTestFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.acceptancetest.AcceptanceTestFileType"
                   extensions="acceptance"/>
         <fileType name="Aggregate" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.AggregateFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.AggregateFileType"
                   extensions="aggregate"/>
         <fileType name="ClockEvent" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.ClockEventFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.ClockEventFileType"
                   extensions="clockEvent"/>
         <fileType name="Command" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.CommandFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.CommandFileType"
                   extensions="command"/>
         <fileType name="Domain" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.domain.DomainFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.domain.DomainFileType"
                   extensions="domain"/>
         <fileType name="DomainStory" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.domainstory.DomainStoryFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.domainstory.DomainStoryFileType"
                   extensions="domainStory"/>
         <fileType name="Decision" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.DecisionFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.DecisionFileType"
                   extensions="decision"/>
         <fileType name="Entity" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.EntityFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.EntityFileType"
                   extensions="entity"/>
         <fileType name="Event" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.EventFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.EventFileType"
                   extensions="event"/>
         <fileType name="Modules" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.modules.ModulesFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.modules.ModulesFileType"
                   extensions="modules"/>
         <fileType name="Owner" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.OwnerFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.OwnerFileType"
                   extensions="owner"/>
         <fileType name="Policy" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.PolicyFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.PolicyFileType"
                   extensions="policy"/>
         <fileType name="ReadModel" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.ReadModelFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.ReadModelFileType"
                   extensions="readModel"/>
         <fileType name="Use case" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.usecase.UseCaseFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.usecase.UseCaseFileType"
                   extensions="useCase"/>
         <fileType name="User" language="Sal" fieldName="INSTANCE"
-                  implementationClass="org.setms.sew.intellij.filetype.UserFileType"
+                  implementationClass="org.setms.sew.intellij.plugin.filetype.UserFileType"
                   extensions="user"/>
 
-        <fileEditorProvider implementation="org.setms.sew.intellij.domain.DomainEditorProvider"/>
-        <fileEditorProvider implementation="org.setms.sew.intellij.domainstory.DomainStoryEditorProvider"/>
-        <fileEditorProvider implementation="org.setms.sew.intellij.modules.ModulesEditorProvider"/>
-        <fileEditorProvider implementation="org.setms.sew.intellij.usecase.UseCaseEditorProvider"/>
-        <fileEditorProvider implementation="org.setms.sew.intellij.acceptancetest.AcceptanceTestEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.plugin.domain.DomainEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.plugin.domainstory.DomainStoryEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.plugin.modules.ModulesEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.plugin.usecase.UseCaseEditorProvider"/>
+        <fileEditorProvider implementation="org.setms.sew.intellij.plugin.acceptancetest.AcceptanceTestEditorProvider"/>
 
         <!-- Languages -->
         <!-- SAL -->
         <lang.syntaxHighlighterFactory language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalSyntaxHighlighterFactory"/>
         <lang.parserDefinition language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalParserDefinition"/>
-        <postStartupActivity implementation="org.setms.sew.intellij.structure.SalStartupActivity"/>
+        <postStartupActivity implementation="org.setms.sew.intellij.plugin.structure.SalStartupActivity"/>
         <annotator language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalAnnotator"/>
         <!-- Acceptance -->
         <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
 
         <!-- KM -->
-        <postStartupActivity implementation="org.setms.sew.intellij.km.KmStartupActivity"/>
+        <postStartupActivity implementation="org.setms.sew.intellij.plugin.km.KmStartupActivity"/>
 
         <notificationGroup
                 id="Sew"

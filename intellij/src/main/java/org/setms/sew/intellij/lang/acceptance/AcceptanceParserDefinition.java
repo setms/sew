@@ -43,5 +43,4 @@ public class AcceptanceParserDefinition extends BaseParserDefinition {
   public @NotNull TokenSet getStringLiteralElements() {
     return TokenSet.create(AcceptanceElementTypes.STRING);
   }
-
 }

@@ -18,9 +18,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.sew.intellij.filetype.SalLanguageFileType;
-import org.setms.sew.intellij.km.KmSystemService;
 import org.setms.sew.intellij.lang.LevelSeverity;
+import org.setms.sew.intellij.plugin.filetype.SalLanguageFileType;
+import org.setms.sew.intellij.plugin.km.KmSystemService;
 
 public class SalAnnotator implements Annotator {
 

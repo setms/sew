@@ -24,7 +24,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Level;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.sew.intellij.km.KmSystemService;
+import org.setms.sew.intellij.plugin.km.KmSystemService;
 
 public class ApplySuggestion implements IntentionAction {
 
