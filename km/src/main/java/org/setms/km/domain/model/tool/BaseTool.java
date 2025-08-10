@@ -47,7 +47,7 @@ public abstract class BaseTool<A extends Artifact> {
    */
   public Set<Input<?>> getAllInputs() {
     var result = new LinkedHashSet<Input<?>>();
-    result.add(getMainInput());
+    Optional.ofNullable(getMainInput()).ifPresent(result::add);
     result.addAll(getAdditionalInputs());
     return result;
   }
@@ -77,7 +77,8 @@ public abstract class BaseTool<A extends Artifact> {
   private void resolveInput(
       Input<?> input,
       Resource<?> resource,
-      boolean validate, Collection<Diagnostic> diagnostics,
+      boolean validate,
+      Collection<Diagnostic> diagnostics,
       ResolvedInputs inputs) {
     inputs.put(input.name(), parse(resource, input, validate, diagnostics));
   }
