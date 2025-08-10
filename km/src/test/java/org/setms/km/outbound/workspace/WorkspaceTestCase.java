@@ -199,7 +199,7 @@ public abstract class WorkspaceTestCase {
   }
 
   @Test
-  void shouldRememberWhenResourceWasLastModified() throws IOException {
+  void shouldRememberWhenResourceWasLastModified() throws IOException, InterruptedException {
     var resource = workspace.root().select("Ape.bear");
     try (var writer = new PrintWriter(resource.writeTo())) {
       writer.println("cheetah");
@@ -208,6 +208,7 @@ public abstract class WorkspaceTestCase {
     var rightNow = now();
     assertThat(modified).as("Creation time").isBefore(rightNow).isAfter(rightNow.minusSeconds(2));
 
+    Thread.sleep(10);
     try (var writer = new PrintWriter(resource.writeTo())) {
       writer.println("dingo");
     }
