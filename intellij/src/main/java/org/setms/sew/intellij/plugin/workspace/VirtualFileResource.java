@@ -5,6 +5,9 @@ import static java.util.function.Predicate.not;
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.*;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -143,6 +146,12 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
     } else {
       virtualFile.delete(null);
     }
+  }
+
+  @Override
+  public LocalDateTime lastModifiedAt() {
+    var result = virtualFile == null ? file.lastModified() : virtualFile.getModificationStamp();
+    return Instant.ofEpochMilli(result).atZone(ZoneId.systemDefault()).toLocalDateTime();
   }
 
   @Override

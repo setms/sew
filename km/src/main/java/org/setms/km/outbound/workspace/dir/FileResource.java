@@ -5,6 +5,9 @@ import static io.methvin.watcher.DirectoryChangeEvent.EventType.*;
 import io.methvin.watcher.DirectoryChangeEvent;
 import java.io.*;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import lombok.AccessLevel;
@@ -103,6 +106,13 @@ class FileResource implements Resource<FileResource> {
     var path = file.toPath();
     Files.delete(file);
     workspace.fileChanged(new DirectoryChangeEvent(DELETE, false, path, null, 1, null));
+  }
+
+  @Override
+  public LocalDateTime lastModifiedAt() {
+    return Instant.ofEpochMilli(file.lastModified())
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime();
   }
 
   @Override

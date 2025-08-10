@@ -1,6 +1,7 @@
 package org.setms.km.outbound.workspace;
 
 import static java.lang.System.lineSeparator;
+import static java.time.LocalDateTime.now;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.stream.Collectors.joining;
 import static lombok.AccessLevel.PROTECTED;
@@ -195,5 +196,22 @@ public abstract class WorkspaceTestCase {
     await()
         .atMost(250, MILLISECONDS)
         .untilAsserted(() -> assertThat(changed.get()).as("Changed handler called").isTrue());
+  }
+
+  @Test
+  void shouldRememberWhenResourceWasLastModified() throws IOException {
+    var resource = workspace.root().select("Ape.bear");
+    try (var writer = new PrintWriter(resource.writeTo())) {
+      writer.println("cheetah");
+    }
+    var modified = resource.lastModifiedAt();
+    var rightNow = now();
+    assertThat(modified).as("Creation time").isBefore(rightNow).isAfter(rightNow.minusSeconds(2));
+
+    try (var writer = new PrintWriter(resource.writeTo())) {
+      writer.println("dingo");
+    }
+    modified = resource.lastModifiedAt();
+    assertThat(modified).as("Creation time").isBefore(now()).isAfter(rightNow);
   }
 }

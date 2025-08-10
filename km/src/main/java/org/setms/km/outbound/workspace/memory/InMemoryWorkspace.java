@@ -8,7 +8,7 @@ public class InMemoryWorkspace extends Workspace<Void> {
 
   @Override
   protected Resource<?> newRoot() {
-    return new InMemoryResource(new TreeMap<>(), "/", this::onChanged, this::onDeleted);
+    return new InMemoryResource( "/", this::onChanged, this::onDeleted);
   }
 
   @Override
