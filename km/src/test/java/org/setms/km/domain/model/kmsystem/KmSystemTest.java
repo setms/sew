@@ -2,10 +2,12 @@ package org.setms.km.domain.model.kmsystem;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.setms.km.domain.model.validation.Level.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +26,8 @@ import org.setms.km.test.OtherTool;
 import org.setms.km.test.TestFormat;
 
 class KmSystemTest {
+
+  public static final Duration MAX_BACKGROUND_VALIDATION_TIME = Duration.ofSeconds(1);
 
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
   private KmSystem kmSystem;
@@ -200,5 +204,37 @@ class KmSystemTest {
     try (var input = resource.readFrom()) {
       assertThat(input.available()).as("Size of old report").isZero();
     }
+  }
+
+  @Test
+  void shouldValidateExistingArtifact() throws IOException {
+    storeNewMainArtifact();
+
+    createKmSystem();
+
+    await()
+        .atMost(MAX_BACKGROUND_VALIDATION_TIME)
+        .untilAsserted(
+            () -> assertThat(mainTool.validated).as("Existing artifact validated").isTrue());
+  }
+
+  @Test
+  void shouldValidationOfExistingArtifactIfItHasntChanged()
+      throws IOException, InterruptedException {
+    var path = storeNewMainArtifact();
+    var diagnosticsResource =
+        workspace
+            .root()
+            .select(".km/diagnostics%s/%s.json".formatted(path, MainTool.class.getName()));
+    try (var output = diagnosticsResource.writeTo()) {
+      output.write(1);
+    }
+    assertThat(workspace.root().select(path).lastModifiedAt())
+        .isBefore(diagnosticsResource.lastModifiedAt());
+
+    createKmSystem();
+
+    Thread.sleep(MAX_BACKGROUND_VALIDATION_TIME);
+    assertThat(mainTool.validated).as("Existing artifact re-validated").isFalse();
   }
 }

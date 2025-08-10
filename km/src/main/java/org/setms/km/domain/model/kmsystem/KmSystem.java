@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.Getter;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -35,24 +36,10 @@ public class KmSystem {
 
   public KmSystem(Workspace<?> workspace) {
     this.workspace = workspace;
-    this.workspace.registerArtifactChangedHandler(this::artifactChanged);
-    this.workspace.registerArtifactDeletedHandler(this::artifactDeleted);
-    registerArtifactDefinitionsIn(workspace);
     cacheGlobs();
-  }
-
-  private void registerArtifactDefinitionsIn(Workspace<?> workspace) {
-    Tools.all()
-        .map(BaseTool::getMainInput)
-        .filter((Objects::nonNull))
-        .map(
-            input ->
-                new ArtifactDefinition(
-                    input.type(),
-                    input.glob(),
-                    Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
-        .distinct()
-        .forEach(workspace::registerArtifactDefinition);
+    registerHandlers();
+    registerArtifactDefinitions();
+    validateArtifacts();
   }
 
   private void cacheGlobs() {
@@ -67,6 +54,23 @@ public class KmSystem {
   private void cacheGlob(Glob glob) {
     var paths = workspace.root().matching(glob).stream().map(Resource::path).collect(toSet());
     writeGlobPaths(resourceContainingPathsFor(glob), paths);
+  }
+
+  private Resource<?> resourceContainingPathsFor(Glob glob) {
+    return workspace.root().select(".km/globs/%s.glob".formatted(glob));
+  }
+
+  private void writeGlobPaths(Resource<? extends Resource<?>> globPath, Collection<String> paths) {
+    try (var writer = new PrintWriter(globPath.writeTo())) {
+      paths.forEach(writer::println);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update globs", e);
+    }
+  }
+
+  public void registerHandlers() {
+    workspace.registerArtifactChangedHandler(this::artifactChanged);
+    workspace.registerArtifactDeletedHandler(this::artifactDeleted);
   }
 
   private void artifactChanged(String path, Artifact artifact) {
@@ -90,13 +94,13 @@ public class KmSystem {
   private void updateGlobPaths(
       Glob glob, String path, BiFunction<Collection<String>, String, Boolean> updater) {
     var globPath = resourceContainingPathsFor(glob);
-    var paths = linesInTextOf(globPath);
+    var paths = linesOfTextIn(globPath);
     if (updater.apply(paths, path)) {
       writeGlobPaths(globPath, paths);
     }
   }
 
-  private Collection<String> linesInTextOf(Resource<? extends Resource<?>> resource) {
+  private Collection<String> linesOfTextIn(Resource<? extends Resource<?>> resource) {
     var paths = new TreeSet<String>();
     try (var reader = new BufferedReader(new InputStreamReader(resource.readFrom()))) {
       reader.lines().forEach(paths::add);
@@ -104,18 +108,6 @@ public class KmSystem {
       // Ignore
     }
     return paths;
-  }
-
-  private Resource<?> resourceContainingPathsFor(Glob glob) {
-    return workspace.root().select(".km/globs/%s.glob".formatted(glob));
-  }
-
-  private void writeGlobPaths(Resource<? extends Resource<?>> globPath, Collection<String> paths) {
-    try (var writer = new PrintWriter(globPath.writeTo())) {
-      paths.forEach(writer::println);
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to update globs", e);
-    }
   }
 
   @SuppressWarnings("unchecked")
@@ -206,7 +198,7 @@ public class KmSystem {
   }
 
   private Stream<Resource<?>> resourcesMatching(Glob glob) {
-    return linesInTextOf(resourceContainingPathsFor(glob)).stream().map(workspace.root()::select);
+    return linesOfTextIn(resourceContainingPathsFor(glob)).stream().map(workspace.root()::select);
   }
 
   private void storeDiagnostics(String path, BaseTool<?> tool, Collection<Diagnostic> diagnostics) {
@@ -286,22 +278,6 @@ public class KmSystem {
     return new Suggestion(suggestion.get("code"), suggestion.get("message"));
   }
 
-  public Resource<?> mainReportFor(String path) {
-    var maybeTool =
-        Tools.all().filter(tool -> tool.getMainInput().glob().matches(path)).findFirst();
-    if (maybeTool.isEmpty()) {
-      return null;
-    }
-    var result = reportResourceFor(path).select(maybeTool.get().getClass().getName());
-    if (result.children().isEmpty()) {
-      return null;
-    }
-    if (result.children().stream().map(Resource::name).anyMatch(name -> name.contains("."))) {
-      return result;
-    }
-    return result.children().getFirst();
-  }
-
   private void artifactDeleted(String path) {
     removeFromGlobs(path);
   }
@@ -317,6 +293,75 @@ public class KmSystem {
 
   private void removeGlobPath(Glob glob, String path) {
     updateGlobPaths(glob, path, Collection::remove);
+  }
+
+  private void registerArtifactDefinitions() {
+    Tools.all()
+        .map(BaseTool::getMainInput)
+        .filter((Objects::nonNull))
+        .map(
+            input ->
+                new ArtifactDefinition(
+                    input.type(),
+                    input.glob(),
+                    Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
+        .distinct()
+        .forEach(workspace::registerArtifactDefinition);
+  }
+
+  private void validateArtifacts() {
+    new Thread(this::validateExistingArtifacts).start();
+  }
+
+  private void validateExistingArtifacts() {
+    workspace.root().matching(new Glob(".km/globs", "**/*.glob")).stream()
+        .map(this::linesOfTextIn)
+        .flatMap(Collection::stream)
+        .map(workspace.root()::select)
+        .filter(Objects::nonNull)
+        .forEach(this::validateExistingArtifact);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends Artifact> void validateExistingArtifact(Resource<?> artifact) {
+    var diagnosticsResources =
+        workspace
+            .root()
+            .matching(new Glob("/.km/diagnostics%s".formatted(artifact.path()), "**/*.json"));
+    var lastValidated =
+        diagnosticsResources.isEmpty() ? null : diagnosticsResources.getFirst().lastModifiedAt();
+    if (lastValidated == null || lastValidated.isBefore(artifact.lastModifiedAt())) {
+      Predicate<BaseTool<?>> filter =
+          diagnosticsResources.isEmpty()
+              ? tool ->
+                  tool.getMainInput() != null && tool.getMainInput().glob().matches(artifact.path())
+              : tool -> tool.getClass().getName().equals(diagnosticsResources.getFirst().name());
+      Tools.all()
+          .filter(filter)
+          .findFirst()
+          .ifPresent(
+              tool -> {
+                Class<T> artifactType = (Class<T>) tool.getMainInput().type();
+                Optional<BaseTool<T>> maybeTool = Optional.of((BaseTool<T>) tool);
+                updateArtifact(artifact.path(), artifactType, maybeTool);
+              });
+    }
+  }
+
+  public Resource<?> mainReportFor(String path) {
+    var maybeTool =
+        Tools.all().filter(tool -> tool.getMainInput().glob().matches(path)).findFirst();
+    if (maybeTool.isEmpty()) {
+      return null;
+    }
+    var result = reportResourceFor(path).select(maybeTool.get().getClass().getName());
+    if (result.children().isEmpty()) {
+      return null;
+    }
+    if (result.children().stream().map(Resource::name).anyMatch(name -> name.contains("."))) {
+      return result;
+    }
+    return result.children().getFirst();
   }
 
   @SuppressWarnings("unchecked")
