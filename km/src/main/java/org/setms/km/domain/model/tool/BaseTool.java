@@ -116,15 +116,15 @@ public abstract class BaseTool<A extends Artifact> {
 
   protected Resource<?> resourceFor(Artifact object, Resource<?> base) {
     var path =
-        getAdditionalInputs().stream()
+        getAllInputs().stream()
             .filter(input -> input.type().equals(object.getClass()))
             .map(Input::glob)
             .map(Glob::path)
             .findFirst()
             .orElseThrow();
     return base.path().contains(path)
-        ? base.select("../%s.%s".formatted(object.getName(), object.type()))
-        : toBase(base).select("../%s/%s.%s".formatted(path, object.getName(), object.type()));
+        ? base.select("%s.%s".formatted(object.getName(), object.type()))
+        : toBase(base).select("%s/%s.%s".formatted(path, object.getName(), object.type()));
   }
 
   protected Resource<?> toBase(Resource<?> resource) {

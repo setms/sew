@@ -35,7 +35,12 @@ public class Tools {
   @SuppressWarnings("unchecked")
   public static <T extends Artifact> Optional<BaseTool<T>> targeting(Class<T> type) {
     return tools.stream()
-        .filter(tool -> type.equals(tool.getMainInput().type()))
+        .filter(
+            tool ->
+                Optional.ofNullable(tool.getMainInput())
+                    .map(Input::type)
+                    .filter(type::equals)
+                    .isPresent())
         .map(tool -> (BaseTool<T>) tool)
         .findFirst();
   }

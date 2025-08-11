@@ -165,7 +165,8 @@ public class KmSystem {
   private ResolvedInputs resolveInputs(
       String path, BaseTool<?> tool, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
-    resolve(path, tool.getMainInput(), true, diagnostics, result);
+    Optional.ofNullable(tool.getMainInput())
+        .ifPresent(input -> resolve(path, input, true, diagnostics, result));
     // TODO: Don't add parser errors to diagnostics for this path
     tool.getAdditionalInputs().forEach(input -> resolve(path, input, false, diagnostics, result));
     return result;

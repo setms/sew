@@ -34,6 +34,25 @@ class EndToEndTest {
         ]
       }
       """;
+  private static final String CREATED_EVENT_STORM =
+      """
+      package todo
+
+      useCase AddTodo {
+        description = "TODO"
+        title = "TODO"
+      }
+
+      scenario AddTodo {
+        elaborates = domainStory(AddTodo)
+        steps = [
+          user(User),
+          command(AddTodoItem),
+          aggregate(TodoItems),
+          event(TodoItemAdded)
+        ]
+      }
+      """;
 
   private final File root = new File("build/e2etest");
   private Workspace<?> workspace;
@@ -67,13 +86,21 @@ class EndToEndTest {
   }
 
   private void assertThatEventStormIsCreatedFromDomainStory(Resource<?> domainStory) {
-    var maybeDiagnostic =
+    var diagnosticsWithSuggestions =
         kmSystem.diagnosticsFor(domainStory.path()).stream()
             .filter(d -> !d.suggestions().isEmpty())
-            .findFirst();
-    assertThat(maybeDiagnostic).as("Diagnostic with suggestion").isPresent();
-    var diagnostic = maybeDiagnostic.get();
-    kmSystem.applySuggestion(
-        domainStory, diagnostic.suggestions().getFirst().code(), diagnostic.location());
+            .toList();
+    assertThat(diagnosticsWithSuggestions).as("Diagnostics with suggestion").hasSize(1);
+    var diagnostic = diagnosticsWithSuggestions.getFirst();
+
+    var appliedSuggestion =
+        kmSystem.applySuggestion(
+            domainStory, diagnostic.suggestions().getFirst().code(), diagnostic.location());
+
+    assertThat(appliedSuggestion.diagnostics()).isEmpty();
+    var created = appliedSuggestion.createdOrChanged();
+    assertThat(created).hasSize(1);
+    var eventStorm = created.iterator().next();
+    assertThat(eventStorm.contentAsString()).isEqualTo(CREATED_EVENT_STORM);
   }
 }
