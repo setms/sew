@@ -40,7 +40,7 @@ public class ModulesTool extends BaseTool<Modules> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(domains());
   }
 

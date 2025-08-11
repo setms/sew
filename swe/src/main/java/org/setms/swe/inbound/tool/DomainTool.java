@@ -59,7 +59,7 @@ public class DomainTool extends BaseTool<Domain> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(useCases(), modules());
   }
 

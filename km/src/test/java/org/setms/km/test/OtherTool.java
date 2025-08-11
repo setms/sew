@@ -18,7 +18,7 @@ public class OtherTool extends TestTool<OtherArtifact> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(new Input<>("main", new TestFormat(), MainArtifact.class));
   }
 

@@ -78,7 +78,7 @@ public class UseCaseTool extends BaseTool<UseCase> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(
         domainStories(),
         aggregates(),

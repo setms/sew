@@ -34,7 +34,7 @@ public class ProjectTool extends BaseTool<Owner> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(users());
   }
 

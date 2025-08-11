@@ -45,7 +45,7 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(useCases());
   }
 

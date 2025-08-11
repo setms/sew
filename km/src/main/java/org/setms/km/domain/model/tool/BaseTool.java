@@ -24,18 +24,24 @@ public abstract class BaseTool<A extends Artifact> {
   protected static final String NL = System.lineSeparator();
 
   /**
-   * The primary input this tool consumes, the artifacts it validates.
+   * The primary input this tool consumes, if any. In other words, the artifacts it validates.
    *
    * @return the main input
    */
-  public abstract Input<A> getMainInput();
+  public Optional<Input<A>> mainInput() {
+    return Optional.ofNullable(getMainInput());
+  }
+
+  protected Input<A> getMainInput() {
+    return null;
+  }
 
   /**
    * Any additional inputs this tool consumes, if any.
    *
    * @return any additional inputs
    */
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return emptySet();
   }
 
@@ -44,11 +50,15 @@ public abstract class BaseTool<A extends Artifact> {
    *
    * @return all inputs that this tool consumes
    */
-  public Set<Input<?>> getAllInputs() {
+  public Set<Input<?>> allInputs() {
     var result = new LinkedHashSet<Input<?>>();
-    Optional.ofNullable(getMainInput()).ifPresent(result::add);
-    result.addAll(getAdditionalInputs());
+    mainInput().ifPresent(result::add);
+    result.addAll(additionalInputs());
     return result;
+  }
+
+  public boolean matchesMainInput(String path) {
+    return mainInput().map(Input::glob).filter(glob -> glob.matches(path)).isPresent();
   }
 
   /**
@@ -67,9 +77,8 @@ public abstract class BaseTool<A extends Artifact> {
 
   private ResolvedInputs resolveInputs(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
-    resolveInput(getMainInput(), resource, true, diagnostics, result);
-    getAdditionalInputs()
-        .forEach(input -> resolveInput(input, resource, false, diagnostics, result));
+    mainInput().ifPresent(input -> resolveInput(input, resource, true, diagnostics, result));
+    additionalInputs().forEach(input -> resolveInput(input, resource, false, diagnostics, result));
     return result;
   }
 
@@ -116,7 +125,7 @@ public abstract class BaseTool<A extends Artifact> {
 
   protected Resource<?> resourceFor(Artifact object, Resource<?> base) {
     var path =
-        getAllInputs().stream()
+        allInputs().stream()
             .filter(input -> input.type().equals(object.getClass()))
             .map(Input::glob)
             .map(Glob::path)
@@ -128,7 +137,11 @@ public abstract class BaseTool<A extends Artifact> {
   }
 
   protected Resource<?> toBase(Resource<?> resource) {
-    var glob = getMainInput().glob();
+    var input = mainInput();
+    if (input.isEmpty()) {
+      return null;
+    }
+    var glob = input.get().glob();
     if (resource.name().endsWith(glob.extension())) {
       var path = ensureSuffix(glob.path(), "/");
       var current = resource;

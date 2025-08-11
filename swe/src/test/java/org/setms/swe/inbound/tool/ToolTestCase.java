@@ -55,14 +55,16 @@ abstract class ToolTestCase<T extends Artifact> {
   }
 
   private void assertMainInput() {
-    var actual = tool.getMainInput();
-
-    assertThat(actual.glob()).hasToString("src/%s/**/*.%s".formatted(sourceLocation, extension));
-    assertThat(actual.format()).isInstanceOf(formatType);
+    var actual = tool.mainInput();
+    if (actual.isPresent()) {
+      var input = actual.get();
+      assertThat(input.glob()).hasToString("src/%s/**/*.%s".formatted(sourceLocation, extension));
+      assertThat(input.format()).isInstanceOf(formatType);
+    }
   }
 
   private void assertAdditionalInputs() {
-    assertInputs(tool.getAdditionalInputs());
+    assertInputs(tool.additionalInputs());
   }
 
   protected void assertInputs(Set<Input<?>> inputs) {
@@ -72,7 +74,11 @@ abstract class ToolTestCase<T extends Artifact> {
   @Test
   void shouldParseObject() throws IOException {
     var workspace = workspaceFor("valid");
-    var input = tool.getMainInput();
+    var maybeInput = tool.mainInput();
+    if (maybeInput.isEmpty()) {
+      return;
+    }
+    var input = maybeInput.get();
     var matchingObjects = workspace.root().matching(input.glob());
     assertThat(matchingObjects).as("Missing objects at").isNotEmpty();
     for (var source : matchingObjects) {

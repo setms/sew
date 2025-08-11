@@ -30,7 +30,7 @@ public class CommandTool extends BaseTool<Command> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(entities());
   }
 

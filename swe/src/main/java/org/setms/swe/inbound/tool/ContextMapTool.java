@@ -38,7 +38,7 @@ public class ContextMapTool extends BaseTool<Domain> {
   }
 
   @Override
-  public Set<Input<?>> getAdditionalInputs() {
+  public Set<Input<?>> additionalInputs() {
     return Set.of(domains(), useCases());
   }
 

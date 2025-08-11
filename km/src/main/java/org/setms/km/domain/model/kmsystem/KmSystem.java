@@ -44,7 +44,7 @@ public class KmSystem {
 
   private void cacheGlobs() {
     Tools.all()
-        .map(BaseTool::getAllInputs)
+        .map(BaseTool::allInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .distinct()
@@ -80,7 +80,7 @@ public class KmSystem {
 
   private void addToGlobs(String path) {
     Tools.all()
-        .map(BaseTool::getAllInputs)
+        .map(BaseTool::allInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .filter(glob -> glob.matches(path))
@@ -165,10 +165,9 @@ public class KmSystem {
   private ResolvedInputs resolveInputs(
       String path, BaseTool<?> tool, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
-    Optional.ofNullable(tool.getMainInput())
-        .ifPresent(input -> resolve(path, input, true, diagnostics, result));
+    tool.mainInput().ifPresent(input -> resolve(path, input, true, diagnostics, result));
     // TODO: Don't add parser errors to diagnostics for this path
-    tool.getAdditionalInputs().forEach(input -> resolve(path, input, false, diagnostics, result));
+    tool.additionalInputs().forEach(input -> resolve(path, input, false, diagnostics, result));
     return result;
   }
 
@@ -285,7 +284,7 @@ public class KmSystem {
 
   private void removeFromGlobs(String path) {
     Tools.all()
-        .map(BaseTool::getAllInputs)
+        .map(BaseTool::allInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .filter(glob -> glob.matches(path))
@@ -298,8 +297,8 @@ public class KmSystem {
 
   private void registerArtifactDefinitions() {
     Tools.all()
-        .map(BaseTool::getMainInput)
-        .filter((Objects::nonNull))
+        .map(BaseTool::mainInput)
+        .flatMap(Optional::stream)
         .map(
             input ->
                 new ArtifactDefinition(
@@ -334,15 +333,14 @@ public class KmSystem {
     if (lastValidated == null || lastValidated.isBefore(artifact.lastModifiedAt())) {
       Predicate<BaseTool<?>> filter =
           diagnosticsResources.isEmpty()
-              ? tool ->
-                  tool.getMainInput() != null && tool.getMainInput().glob().matches(artifact.path())
+              ? tool -> tool.matchesMainInput(artifact.path())
               : tool -> tool.getClass().getName().equals(diagnosticsResources.getFirst().name());
       Tools.all()
           .filter(filter)
           .findFirst()
           .ifPresent(
               tool -> {
-                Class<T> artifactType = (Class<T>) tool.getMainInput().type();
+                Class<T> artifactType = (Class<T>) tool.mainInput().orElseThrow().type();
                 Optional<BaseTool<T>> maybeTool = Optional.of((BaseTool<T>) tool);
                 updateArtifact(artifact.path(), artifactType, maybeTool);
               });
@@ -350,8 +348,7 @@ public class KmSystem {
   }
 
   public Resource<?> mainReportFor(String path) {
-    var maybeTool =
-        Tools.all().filter(tool -> tool.getMainInput().glob().matches(path)).findFirst();
+    var maybeTool = Tools.all().filter(tool -> tool.matchesMainInput(path)).findFirst();
     if (maybeTool.isEmpty()) {
       return null;
     }
@@ -372,14 +369,12 @@ public class KmSystem {
       return new AppliedSuggestion();
     }
     return Tools.all()
-        .filter(
-            tool ->
-                tool.getMainInput() != null && tool.getMainInput().glob().matches(resource.path()))
+        .filter(tool -> tool.matchesMainInput(resource.path()))
         .findFirst()
         .map(
             tool -> {
               var result = tool.apply(code, workspace, location);
-              var type = (Class<T>) tool.getMainInput().type();
+              var type = (Class<T>) tool.mainInput().orElseThrow().type();
               var typedTool = (BaseTool<T>) tool;
               updateArtifact(resource.path(), type, Optional.of(typedTool));
               return result;
