@@ -117,9 +117,10 @@ public interface Parser {
   default Optional<? extends Class<?>> findClassNamed(String name, Object parent) {
     try (var scanResult =
         new ClassGraph()
+            .overrideClassLoaders(parent.getClass().getClassLoader())
+            .ignoreParentClassLoaders()
             .enableClassInfo()
             .acceptPackages(parent.getClass().getPackageName())
-            .filterClasspathElements(path -> !path.contains(".gradle"))
             .scan()) {
       return scanResult.getAllClasses().stream()
           .filter(c -> matchesName(c.getSimpleName(), name))
