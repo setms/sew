@@ -1,7 +1,5 @@
 package org.setms.sew.intellij.plugin.workspace;
 
-import static java.util.function.Predicate.not;
-
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.*;
 import java.net.URI;
@@ -9,7 +7,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.workspace.Glob;
@@ -93,30 +90,7 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
           .map(found -> new VirtualFileResource(null, found, rootPath))
           .toList();
     }
-    var result = new ArrayList<VirtualFileResource>();
-    var ancestor =
-        Optional.ofNullable(glob.path())
-            .filter(not(String::isBlank))
-            .map(virtualFile::findFileByRelativePath)
-            .orElse(virtualFile);
-    var pattern = Pattern.compile(glob.pattern().replace("**/*.", ".+\\."));
-    addChildren(ancestor, pattern, result);
-    return result;
-  }
-
-  @SuppressWarnings("UnsafeVfsRecursion")
-  private void addChildren(
-      VirtualFile file, Pattern pattern, Collection<VirtualFileResource> sources) {
-    Optional.ofNullable(file.getChildren()).stream()
-        .flatMap(Arrays::stream)
-        .forEach(
-            child -> {
-              if (pattern.matcher(child.getName()).matches()) {
-                sources.add(new VirtualFileResource(child, null, rootPath));
-              } else {
-                addChildren(child, pattern, sources);
-              }
-            });
+    return new VirtualFileResource(null, virtualFile.toNioPath().toFile(), rootPath).matching(glob);
   }
 
   @Override
@@ -124,7 +98,13 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   public InputStream readFrom() throws IOException {
     if (virtualFile == null) {
       file.getParentFile().mkdirs();
+      if (!file.isFile()) {
+        throw new IOException("%s is not a file, so can't read from it".formatted(file));
+      }
       return new FileInputStream(file);
+    }
+    if (virtualFile.isDirectory()) {
+      throw new IOException("Can't read from directory " + virtualFile.toNioPath());
     }
     return virtualFile.getInputStream();
   }

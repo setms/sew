@@ -82,7 +82,10 @@ class FileResource implements Resource<FileResource> {
 
   @Override
   public InputStream readFrom() throws IOException {
-    return new FileInputStream(file);
+    if (file.isFile()) {
+      return new FileInputStream(file);
+    }
+    throw new IOException("%s is not a file, so can't read from it".formatted(file));
   }
 
   @Override
