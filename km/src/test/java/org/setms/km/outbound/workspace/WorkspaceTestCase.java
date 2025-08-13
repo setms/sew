@@ -168,8 +168,9 @@ public abstract class WorkspaceTestCase {
     createChild(workspace.root(), "elephant.dingo");
     createChild(workspace.root(), "fox/giraffe.dingo");
     createChild(workspace.root(), "ape/hyena.iguana");
+    createChild(workspace.root(), "jaguar/koala/ape/leopard/mule.dingo");
 
-    assertThat(workspace.root().matching(new Glob("ape", "**/*.dingo"))).hasSize(2);
+    assertThat(workspace.root().matching(new Glob("ape", "**/*.dingo"))).hasSize(3);
   }
 
   @Test

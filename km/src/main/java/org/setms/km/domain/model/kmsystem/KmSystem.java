@@ -10,9 +10,9 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.Getter;
+import org.json.JSONObject;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
@@ -39,7 +39,7 @@ public class KmSystem {
     cacheGlobs();
     registerHandlers();
     registerArtifactDefinitions();
-    validateArtifacts();
+    validateArtifactsInBackground();
   }
 
   private void cacheGlobs() {
@@ -101,13 +101,13 @@ public class KmSystem {
   }
 
   private Collection<String> linesOfTextIn(Resource<? extends Resource<?>> resource) {
-    var paths = new TreeSet<String>();
+    var result = new TreeSet<String>();
     try (var reader = new BufferedReader(new InputStreamReader(resource.readFrom()))) {
-      reader.lines().forEach(paths::add);
+      reader.lines().forEach(result::add);
     } catch (IOException ignored) {
       // Ignore
     }
-    return paths;
+    return result;
   }
 
   @SuppressWarnings("unchecked")
@@ -139,7 +139,6 @@ public class KmSystem {
                 var diagnostics = new LinkedHashSet<Diagnostic>();
                 var inputs = resolveInputs(path, tool, diagnostics);
                 buildReports(tool, buildResource, inputs, diagnostics);
-                storeDiagnostics(path, tool, diagnostics);
               });
     }
   }
@@ -208,7 +207,7 @@ public class KmSystem {
             .select(".km/diagnostics%s/%s.json".formatted(path, tool.getClass().getName()));
     try {
       try (var writer = new PrintWriter(diagnosticsResource.writeTo())) {
-        mapper.writeValue(writer, serialize(diagnostics));
+        writer.println(new JSONObject(serialize(diagnostics)).toString(2));
       }
     } catch (IOException e) {
       throw new IllegalStateException("Failed to store diagnostics", e);
@@ -309,21 +308,30 @@ public class KmSystem {
         .forEach(workspace::registerArtifactDefinition);
   }
 
-  private void validateArtifacts() {
-    new Thread(this::validateExistingArtifacts).start();
+  protected void validateArtifactsInBackground() {
+    var thread = new Thread(this::validateExistingArtifacts);
+    thread.setDaemon(true);
+    thread.start();
   }
 
-  private void validateExistingArtifacts() {
-    workspace.root().matching(new Glob(".km/globs", "**/*.glob")).stream()
+  protected void validateExistingArtifacts() {
+    outOfDateArtifacts().forEach(this::updateOutOfDateArtifact);
+  }
+
+  protected List<OutOfDateArtifact<?>> outOfDateArtifacts() {
+    return workspace.root().matching(new Glob(".km/globs", "**/*.glob")).stream()
         .map(this::linesOfTextIn)
         .flatMap(Collection::stream)
+        .toList()
+        .stream()
         .map(workspace.root()::select)
         .filter(Objects::nonNull)
-        .forEach(this::validateExistingArtifact);
+        .flatMap(this::checkOutOfDate)
+        .toList();
   }
 
   @SuppressWarnings("unchecked")
-  private <T extends Artifact> void validateExistingArtifact(Resource<?> artifact) {
+  private <T extends Artifact> Stream<OutOfDateArtifact<?>> checkOutOfDate(Resource<?> artifact) {
     var diagnosticsResources =
         workspace
             .root()
@@ -331,20 +339,19 @@ public class KmSystem {
     var lastValidated =
         diagnosticsResources.isEmpty() ? null : diagnosticsResources.getFirst().lastModifiedAt();
     if (lastValidated == null || lastValidated.isBefore(artifact.lastModifiedAt())) {
-      Predicate<BaseTool<?>> filter =
-          diagnosticsResources.isEmpty()
-              ? tool -> tool.matchesMainInput(artifact.path())
-              : tool -> tool.getClass().getName().equals(diagnosticsResources.getFirst().name());
-      Tools.all()
-          .filter(filter)
-          .findFirst()
-          .ifPresent(
-              tool -> {
-                Class<T> artifactType = (Class<T>) tool.mainInput().orElseThrow().type();
-                Optional<BaseTool<T>> maybeTool = Optional.of((BaseTool<T>) tool);
-                updateArtifact(artifact.path(), artifactType, maybeTool);
-              });
+      var tool = Tools.all().filter(t -> t.matchesMainInput(artifact.path())).findFirst();
+      if (tool.isEmpty()) {
+        return Stream.empty();
+      }
+      Class<T> artifactType = (Class<T>) tool.get().mainInput().orElseThrow().type();
+      Optional<BaseTool<T>> maybeTool = Optional.of((BaseTool<T>) tool.get());
+      return Stream.of(new OutOfDateArtifact<>(artifact.path(), artifactType, maybeTool));
     }
+    return Stream.empty();
+  }
+
+  protected <T extends Artifact> void updateOutOfDateArtifact(OutOfDateArtifact<T> artifact) {
+    updateArtifact(artifact.path(), artifact.artifactType(), artifact.maybeTool());
   }
 
   public Resource<?> mainReportFor(String path) {

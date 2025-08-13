@@ -5,8 +5,11 @@ import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.initUpper;
 import static org.setms.sew.intellij.lang.sal.SalElementTypes.*;
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
@@ -59,6 +62,18 @@ public class SalAnnotator implements Annotator {
     if (!document.getText().equals(previousDocumentText)) {
       previousDocumentText = document.getText();
       var service = psiElement.getProject().getService(KmSystemService.class);
+      if (service.isNotReady()) {
+        service
+            .whenReady()
+            .thenRunAsync(
+                () ->
+                    ApplicationManager.getApplication()
+                        .invokeLater(
+                            () -> DaemonCodeAnalyzer.getInstance(psiElement.getProject()).restart(),
+                            ModalityState.nonModal(),
+                            psiElement.getProject().getDisposed()));
+        return;
+      }
       var resource = service.getWorkspace().find(file.getVirtualFile());
       diagnostics = service.getKmSystem().diagnosticsFor(resource.path());
     }

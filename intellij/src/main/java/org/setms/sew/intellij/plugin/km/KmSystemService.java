@@ -3,7 +3,9 @@ package org.setms.sew.intellij.plugin.km;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectUtil;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.kmsystem.KmSystem;
 import org.setms.sew.intellij.plugin.workspace.IntellijWorkspace;
@@ -12,30 +14,34 @@ import org.setms.sew.intellij.plugin.workspace.IntellijWorkspace;
 @RequiredArgsConstructor
 public final class KmSystemService {
 
+  private final AtomicBoolean started = new AtomicBoolean();
+  private final CompletableFuture<Void> ready = new CompletableFuture<>();
+
   private final Project project;
+  @Getter
   private KmSystem kmSystem;
-  private IntellijWorkspace workspace;
 
   public void start() {
-    workspace = new IntellijWorkspace(ProjectUtil.guessProjectDir(project));
+    if (!started.compareAndSet(false, true)) {
+      return;
+    }
     ApplicationManager.getApplication()
         .runWriteAction(
             () -> {
-              kmSystem = new KmSystem(workspace);
+              kmSystem = new IntellijKmSystem(project);
             });
+    ready.complete(null);
   }
 
-  public KmSystem getKmSystem() {
-    if (kmSystem == null) {
-      start();
-    }
-    return kmSystem;
+  public boolean isNotReady() {
+    return !ready.isDone();
+  }
+
+  public CompletableFuture<Void> whenReady() {
+    return ready;
   }
 
   public IntellijWorkspace getWorkspace() {
-    if (workspace == null) {
-      start();
-    }
-    return workspace;
+    return (IntellijWorkspace) kmSystem.getWorkspace();
   }
 }

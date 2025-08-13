@@ -135,7 +135,7 @@ public class UseCaseTool extends BaseTool<UseCase> {
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics) {
     if (scenario.getElaborates() == null) {
-      diagnostics.add(new Diagnostic(WARN, "Must elaborate domain story", location));
+      diagnostics.add(new Diagnostic(WARN, "Scenario doesn't elaborate a domain story", location));
       return;
     }
     var resolved = inputs.resolve(scenario.getElaborates());

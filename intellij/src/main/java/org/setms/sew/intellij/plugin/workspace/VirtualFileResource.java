@@ -64,10 +64,12 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   @Override
   public VirtualFileResource select(String path) {
     if (path.startsWith(File.separator)) {
-      return new VirtualFileResource(
-          virtualFile.getFileSystem().refreshAndFindFileByPath(rootPath + path), null, rootPath);
+      var found = virtualFile.getFileSystem().refreshAndFindFileByPath(rootPath + path);
+      if (found != null) {
+        return new VirtualFileResource(found, null, rootPath);
+      }
     }
-    if (virtualFile == null) {
+    if (virtualFile == null || path.startsWith(File.separator)) {
       return new VirtualFileResource(null, new File(file, path), rootPath);
     }
     VirtualFile result = null;
@@ -76,11 +78,11 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
     } catch (Exception ignored) {
       // Nothing to do
     }
-    if (result == null) {
-      return new VirtualFileResource(
-          null, new File(virtualFile.toNioPath().toFile(), path), rootPath);
+    if (result != null) {
+      return new VirtualFileResource(result, null, rootPath);
     }
-    return new VirtualFileResource(result, null, rootPath);
+    return new VirtualFileResource(
+        null, new File(virtualFile.toNioPath().toFile(), path), rootPath);
   }
 
   @Override
@@ -144,5 +146,10 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
 
   public File toFile() {
     return virtualFile == null ? file : virtualFile.toNioPath().toFile();
+  }
+
+  @Override
+  public String toString() {
+    return path();
   }
 }

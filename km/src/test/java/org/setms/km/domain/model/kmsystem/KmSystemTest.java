@@ -139,21 +139,6 @@ class KmSystemTest {
   }
 
   @Test
-  void shouldStoreBuildDiagnostics() throws IOException {
-    createKmSystem();
-    var mainValidationDiagnostic = new Diagnostic(INFO, "Validation message");
-    var mainBuildDiagnostic = new Diagnostic(ERROR, "Build message");
-    mainTool.init(mainValidationDiagnostic, mainBuildDiagnostic);
-    var otherBuildDiagnostic = new Diagnostic(WARN, "Other message");
-    otherTool.init(null, otherBuildDiagnostic);
-
-    var path = storeNewMainArtifact();
-
-    assertThat(kmSystem.diagnosticsFor(path))
-        .isEqualTo(Set.of(mainValidationDiagnostic, mainBuildDiagnostic, otherBuildDiagnostic));
-  }
-
-  @Test
   void shouldClearPreviouslyStoredDiagnosticsBeforeValidation() throws IOException {
     var path = "/main/Bear.mainArtifact";
     var diagnosticsRoot = workspace.root().select(".km/diagnostics%s".formatted(path));

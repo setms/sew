@@ -35,13 +35,11 @@ public class Files {
 
   public static List<File> matching(File file, Glob glob) {
     try {
-      var root = new File(file, glob.path()).getCanonicalFile().toPath();
-      var pathMatcher = root.getFileSystem().getPathMatcher("glob:" + glob.pattern());
-      try (var paths = java.nio.file.Files.walk(root)) {
+      try (var paths = java.nio.file.Files.walk(file.toPath())) {
         return paths
             .filter(java.nio.file.Files::isRegularFile)
             .filter(java.nio.file.Files::isReadable)
-            .filter(pathMatcher::matches)
+            .filter(path -> glob.matches(path.toString()))
             .map(Path::toFile)
             .toList();
       }

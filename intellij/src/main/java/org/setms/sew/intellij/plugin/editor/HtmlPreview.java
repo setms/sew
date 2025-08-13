@@ -28,11 +28,9 @@ import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.km.domain.model.kmsystem.KmSystem;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.intellij.plugin.km.KmSystemService;
-import org.setms.sew.intellij.plugin.workspace.IntellijWorkspace;
 
 public class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
@@ -47,8 +45,6 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   private final RateLimiter rateLimiter;
   private final VirtualFile file;
   private final Project project;
-  private KmSystem kmSystem;
-  private IntellijWorkspace workspace;
 
   public HtmlPreview(Project project, VirtualFile file) {
     this.project = project;
@@ -122,6 +118,11 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   private void showDocument() {
+    var service = project.getService(KmSystemService.class);
+    if (service.isNotReady()) {
+      service.whenReady().thenRunAsync(this::showDocument);
+      return;
+    }
     ApplicationManager.getApplication()
         .invokeLater(
             () -> {
@@ -141,7 +142,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
         WriteAction.run(
             () -> {
               documentManager.saveDocument(document);
-              getWorkspace().changed(file);
+              project.getService(KmSystemService.class).getWorkspace().changed(file);
             });
       }
     } catch (IOException e) {
@@ -149,31 +150,12 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     }
   }
 
-  private IntellijWorkspace getWorkspace() {
-    if (workspace == null) {
-      workspace = (IntellijWorkspace) getKmSystem().getWorkspace();
-      if (workspace == null) {
-        throw new IllegalStateException("Missing workspace");
-      }
-    }
-    return workspace;
-  }
-
-  private KmSystem getKmSystem() {
-    if (kmSystem == null) {
-      kmSystem = project.getService(KmSystemService.class).getKmSystem();
-      if (kmSystem == null) {
-        throw new IllegalStateException("Missing KmSystem");
-      }
-    }
-    return kmSystem;
-  }
-
   private void showFile() {
+    var service = project.getService(KmSystemService.class);
     browser.loadURL(
-        Optional.ofNullable(getWorkspace().find(file))
+        Optional.ofNullable(service.getWorkspace().find(file))
             .map(Resource::path)
-            .map(getKmSystem()::mainReportFor)
+            .map(service.getKmSystem()::mainReportFor)
             .map(report -> report.matching(HTML_GLOB))
             .map(List::getFirst)
             .map(Resource::toUri)
