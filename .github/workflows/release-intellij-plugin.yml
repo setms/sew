@@ -27,6 +27,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Restore Pitest analysis cache
+        id: restore-pitest-cache
+        uses: actions/cache/restore@v4
+        with:
+          key: ${{ runner.os }}-pitest-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-pitest-
+          path: ~/.pitest/cache/*_pitest_history.bin
+
       - name: Build IntelliJ plugin
         run: ./gradlew check :intellij:buildPlugin
 
@@ -40,3 +48,9 @@ jobs:
           draft: false
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
+
+      - name: Save Pitest analysis Cache
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.restore-pitest-cache.outputs.cache-primary-key }}
+          path: ~/.pitest/cache/*_pitest_history.bin
