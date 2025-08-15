@@ -9,16 +9,16 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Link;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.swe.domain.model.sdlc.acceptance.Scenario;
 
-public class AcceptanceTestTool extends BaseTool<AcceptanceTest> {
+public class AcceptanceTestTool extends Tool<AcceptanceTest> {
 
   @Override
   public Input<AcceptanceTest> getMainInput() {

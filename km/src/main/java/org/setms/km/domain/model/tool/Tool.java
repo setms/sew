@@ -2,6 +2,7 @@ package org.setms.km.domain.model.tool;
 
 import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.format.Strings.ensureSuffix;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import com.mxgraph.util.mxCellRenderer;
@@ -19,7 +20,7 @@ import org.setms.km.domain.model.workspace.*;
  * Something that validates input, builds output from input, and provides and applies suggestions
  * based on the input.
  */
-public abstract class BaseTool<A extends Artifact> {
+public abstract class Tool<A extends Artifact> {
 
   protected static final String NL = System.lineSeparator();
 
@@ -32,6 +33,12 @@ public abstract class BaseTool<A extends Artifact> {
     return Optional.ofNullable(getMainInput());
   }
 
+  /**
+   * Returns the main input; the artifacts to be validated. Override when the tool validates some
+   * artifacts.
+   *
+   * @return the main input
+   */
   protected Input<A> getMainInput() {
     return null;
   }
@@ -57,6 +64,12 @@ public abstract class BaseTool<A extends Artifact> {
     return result;
   }
 
+  /**
+   * Whether a given path matches this tool's main input.
+   *
+   * @param path the path to match against the main input
+   * @return whether the path matches the main input
+   */
   public boolean matchesMainInput(String path) {
     return mainInput().map(Input::glob).filter(glob -> glob.matches(path)).isPresent();
   }
@@ -64,76 +77,28 @@ public abstract class BaseTool<A extends Artifact> {
   /**
    * Validate the inputs.
    *
-   * @deprecated Shouldn't need to call this anymore, KmSystem takes care of that
-   * @param workspace the workspace in which to find inputs and store outputs
-   * @return any validation issues
+   * @param inputs the inputs to validate
+   * @param diagnostics any validation issues found
    */
-  @Deprecated
-  public SequencedSet<Diagnostic> validate(Workspace<?> workspace) {
-    var result = new LinkedHashSet<Diagnostic>();
-    validate(resolveInputs(workspace.root(), result), result);
-    return result;
-  }
-
-  private ResolvedInputs resolveInputs(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var result = new ResolvedInputs();
-    mainInput().ifPresent(input -> resolveInput(input, resource, true, diagnostics, result));
-    additionalInputs().forEach(input -> resolveInput(input, resource, false, diagnostics, result));
-    return result;
-  }
-
-  private void resolveInput(
-      Input<?> input,
-      Resource<?> resource,
-      boolean validate,
-      Collection<Diagnostic> diagnostics,
-      ResolvedInputs inputs) {
-    inputs.put(input.name(), parse(resource, input, validate, diagnostics));
-  }
-
-  @SuppressWarnings("unused")
   public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    // For descendants to override if that have additional validation logic
-  }
-
-  private <T extends Artifact> List<T> parse(
-      Resource<?> resource, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
-    return input
-        .format()
-        .newParser()
-        .parseMatching(resource, input.glob(), input.type(), validate, diagnostics)
-        .toList();
-  }
-
-  /**
-   * Build the output from the input
-   *
-   * @deprecated Shouldn't need to call this anymore, the KmSystem should take care of this
-   * @param workspace where to retrieve input and store output
-   * @return diagnostics about building the output
-   */
-  @Deprecated
-  public List<Diagnostic> build(Workspace<?> workspace) {
-    var result = new ArrayList<Diagnostic>();
-    build(resolveInputs(workspace.root(), result), workspace.root().select("build"), result);
-    return result;
+    // For descendants to override if they have additional validation logic
   }
 
   protected void addError(Collection<Diagnostic> diagnostics, String message, Object... args) {
     diagnostics.add(new Diagnostic(ERROR, message.formatted(args)));
   }
 
-  protected Resource<?> resourceFor(Artifact object, Resource<?> base) {
+  protected Resource<?> resourceFor(Artifact artifact, Resource<?> base) {
     var path =
         allInputs().stream()
-            .filter(input -> input.type().equals(object.getClass()))
+            .filter(input -> input.type().equals(artifact.getClass()))
             .map(Input::glob)
             .map(Glob::path)
             .findFirst()
             .orElseThrow();
     return base.path().contains(path)
-        ? base.select("%s.%s".formatted(object.getName(), object.type()))
-        : toBase(base).select("%s/%s.%s".formatted(path, object.getName(), object.type()));
+        ? base.select("%s.%s".formatted(artifact.getName(), artifact.type()))
+        : toBase(base).select("%s/%s.%s".formatted(path, artifact.getName(), artifact.type()));
   }
 
   protected Resource<?> toBase(Resource<?> resource) {
@@ -153,34 +118,15 @@ public abstract class BaseTool<A extends Artifact> {
     return resource;
   }
 
-  @SuppressWarnings("unused")
+  /**
+   * Build the output from the input.
+   *
+   * @param inputs inputs to build from
+   * @param resource where to store output
+   * @param diagnostics any issues encountered during building
+   */
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {}
-
-  /**
-   * Apply a suggestion.
-   *
-   * @param suggestionCode the suggestion to apply
-   * @param workspace where to load input and store output
-   * @param location where in the input to apply the suggestion
-   * @return artifacts created/changed and diagnostics
-   */
-  public final AppliedSuggestion apply(
-      String suggestionCode, Workspace<?> workspace, Location location) {
-    var result = new AppliedSuggestion();
-    var inputs = resolveInputs(workspace.root(), new LinkedHashSet<>());
-    return apply(suggestionCode, inputs, location, workspace.root(), result);
-  }
-
-  @SuppressWarnings("unused")
-  protected AppliedSuggestion apply(
-      String suggestionCode,
-      ResolvedInputs inputs,
-      Location location,
-      Resource<?> resource,
-      AppliedSuggestion appliedSuggestion) {
-    return appliedSuggestion.with(new Diagnostic(ERROR, "Unknown suggestion: " + suggestionCode));
-  }
 
   protected Optional<Resource<?>> build(
       Artifact object, mxGraph graph, Resource<?> resource, Collection<Diagnostic> diagnostics) {
@@ -237,5 +183,29 @@ public abstract class BaseTool<A extends Artifact> {
       index = maxLength;
     }
     return text.substring(0, index) + NL + wrap(text.substring(index), maxLength);
+  }
+
+  /**
+   * Apply a suggestion.
+   *
+   * @param suggestionCode the suggestion to apply
+   * @param inputs inputs to use
+   * @param location where in the input to apply the suggestion
+   * @param output where to store outputs
+   * @return artifacts created/changed and diagnostics
+   */
+  public AppliedSuggestion apply(
+      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> output) {
+    try {
+      return doApply(suggestionCode, inputs, location, output);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
+  }
+
+  protected AppliedSuggestion doApply(
+      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> output)
+      throws Exception {
+    return AppliedSuggestion.unknown(suggestionCode);
   }
 }

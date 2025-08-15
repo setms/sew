@@ -38,7 +38,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   void shouldBuildReport() {
     var workspace = workspaceFor("valid");
 
-    var actual = getTool().build(workspace);
+    var actual = build(workspace);
 
     assertThat(actual).isEmpty();
     var output = toFile(workspace.root().select("build/report.html"));
@@ -49,7 +49,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   void shouldRejectMissingDisplay() {
     var source = workspaceFor("invalid/display");
 
-    var actual = getTool().validate(source);
+    var actual = validateAgainst(source);
 
     assertThat(actual)
         .hasSize(1)
@@ -64,7 +64,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   void shouldRejectInvalidSeeAlso() {
     var source = workspaceFor("invalid/see");
 
-    var actual = getTool().validate(source);
+    var actual = validateAgainst(source);
 
     assertThat(actual)
         .hasSize(1)

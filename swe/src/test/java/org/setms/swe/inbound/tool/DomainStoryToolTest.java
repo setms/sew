@@ -25,11 +25,4 @@ public class DomainStoryToolTest extends ToolTestCase<DomainStory> {
         .map(this::toFile)
         .forEach(file -> assertThat(file).isFile());
   }
-
-  @Test
-  @Disabled("Run whenever you need it")
-  void generateDomainStoryImages() {
-    var path = "TODO: set path";
-    getTool().build(new DirectoryWorkspace(new File(path)));
-  }
 }

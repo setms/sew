@@ -13,15 +13,15 @@ import java.util.Optional;
 import java.util.TreeSet;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.artifact.Link;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
 
 @Slf4j
-public class GlossaryTool extends BaseTool<Term> {
+public class GlossaryTool extends Tool<Term> {
 
   @Override
   public Input<Term> getMainInput() {

@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static java.util.stream.Collectors.toSet;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
@@ -34,9 +35,9 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -47,7 +48,7 @@ import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 import org.setms.swe.inbound.format.sal.SalFormat;
 
-public class DomainTool extends BaseTool<Domain> {
+public class DomainTool extends Tool<Domain> {
 
   private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";
   private static final int MAX_TEXT_LENGTH = 15;
@@ -297,24 +298,17 @@ public class DomainTool extends BaseTool<Domain> {
   }
 
   @Override
-  protected AppliedSuggestion apply(
-      String suggestionCode,
-      ResolvedInputs inputs,
-      Location location,
-      Resource<?> sink,
-      AppliedSuggestion appliedSuggestion) {
+  protected AppliedSuggestion doApply(
+      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> sink) {
     if (CREATE_MODULES.equals(suggestionCode)) {
-      return createModules(inputs, location, sink, appliedSuggestion);
+      return createModules(inputs, location, sink);
     }
-    return super.apply(suggestionCode, inputs, location, sink, appliedSuggestion);
+    return unknown(suggestionCode);
   }
 
   private AppliedSuggestion createModules(
-      ResolvedInputs inputs,
-      Location location,
-      Resource<?> resource,
-      AppliedSuggestion appliedSuggestion) {
-    var result = appliedSuggestion;
+      ResolvedInputs inputs, Location location, Resource<?> resource) {
+    var result = new AppliedSuggestion();
     for (var modules : mapDomainToModules(inputs.get(Domain.class), location)) {
       var modulesResource =
           toBase(resource).select("%s/%s.modules".formatted(PATH_ARCHITECTURE, modules.getName()));

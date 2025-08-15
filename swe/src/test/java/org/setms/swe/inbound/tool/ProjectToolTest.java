@@ -49,7 +49,7 @@ class ProjectToolTest extends ToolTestCase<Owner> {
   void shouldRejectMissingOwner() throws IOException {
     var workspace = workspaceFor("invalid/missing");
 
-    var actual = getTool().validate(workspace);
+    var actual = validateAgainst(workspace);
 
     var suggestion = assertThatToolReportsDiagnosticWithSuggestionToFix(actual);
     assertThatApplyingTheSuggestionCreatesAnOwner(suggestion, workspace);
@@ -72,7 +72,7 @@ class ProjectToolTest extends ToolTestCase<Owner> {
       Suggestion suggestion, Workspace<?> workspace) throws IOException {
     var owner = workspace.root().select("src/main/stakeholders/Some.owner");
 
-    var actual = getTool().apply(suggestion.code(), workspace, null).createdOrChanged();
+    var actual = apply(suggestion.code(), null, workspace).createdOrChanged();
 
     assertThat(actual).hasSize(1).contains(owner);
     try {
@@ -86,7 +86,7 @@ class ProjectToolTest extends ToolTestCase<Owner> {
   void shouldRejectUnknownSuggestion() {
     var workspace = workspaceFor("invalid/suggestion");
 
-    var actual = getTool().apply("unknown.suggestion", workspace, null).diagnostics();
+    var actual = apply("unknown.suggestion", null, workspace).diagnostics();
 
     assertThat(actual)
         .hasSize(1)
@@ -95,9 +95,9 @@ class ProjectToolTest extends ToolTestCase<Owner> {
 
   @Test
   void shouldRejectMultipleOwners() {
-    var source = workspaceFor("invalid/multiple");
+    var workspace = workspaceFor("invalid/multiple");
 
-    var actual = getTool().validate(source);
+    var actual = validateAgainst(workspace);
 
     assertThat(actual)
         .hasSize(1)

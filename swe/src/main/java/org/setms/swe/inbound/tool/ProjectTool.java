@@ -2,10 +2,13 @@ package org.setms.swe.inbound.tool;
 
 import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.initLower;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -13,9 +16,9 @@ import java.util.stream.Collectors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -24,7 +27,7 @@ import org.setms.swe.domain.model.sdlc.stakeholders.Owner;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.inbound.format.sal.SalFormat;
 
-public class ProjectTool extends BaseTool<Owner> {
+public class ProjectTool extends Tool<Owner> {
 
   private static final String SUGGESTION_CREATE_OWNER = "stakeholders.createOwner";
 
@@ -62,37 +65,28 @@ public class ProjectTool extends BaseTool<Owner> {
   }
 
   @Override
-  public AppliedSuggestion apply(
-      String suggestionCode,
-      ResolvedInputs inputs,
-      Location location,
-      Resource<?> resource,
-      AppliedSuggestion appliedSuggestion) {
+  protected AppliedSuggestion doApply(
+      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> resource)
+      throws IOException {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
-      return createOwner(resource, inputs, appliedSuggestion);
+      return createOwner(resource, inputs);
     }
-    return super.apply(suggestionCode, inputs, location, resource, appliedSuggestion);
+    return unknown(suggestionCode);
   }
 
-  private AppliedSuggestion createOwner(
-      Resource<?> resource, ResolvedInputs inputs, AppliedSuggestion appliedSuggestion) {
+  private AppliedSuggestion createOwner(Resource<?> resource, ResolvedInputs inputs)
+      throws IOException {
     var packages =
         inputs.get(User.class).stream().map(Artifact::getPackage).collect(Collectors.toSet());
     var stakeholdersResource = toBase(resource).select(Inputs.PATH_STAKEHOLDERS);
-    try {
-      var scope =
-          packages.size() == 1
-              ? packages.iterator().next()
-              : scopeOf(resource, stakeholdersResource);
-      var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
-      var ownerResource = stakeholdersResource.select(owner.getName() + ".owner");
-      try (var output = ownerResource.writeTo()) {
-        new SalFormat().newBuilder().build(owner, output);
-      }
-      return appliedSuggestion.with(ownerResource);
-    } catch (Exception e) {
-      return appliedSuggestion.with(e);
+    var scope =
+        packages.size() == 1 ? packages.iterator().next() : scopeOf(resource, stakeholdersResource);
+    var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
+    var ownerResource = stakeholdersResource.select(owner.getName() + ".owner");
+    try (var output = ownerResource.writeTo()) {
+      new SalFormat().newBuilder().build(owner, output);
     }
+    return created(ownerResource);
   }
 
   private String scopeOf(Resource<?> resource, Resource<?> stakeholders) {

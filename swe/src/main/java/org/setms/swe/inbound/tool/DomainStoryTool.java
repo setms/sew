@@ -3,6 +3,9 @@ package org.setms.swe.inbound.tool;
 import static java.util.function.Predicate.not;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.toFriendlyName;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
@@ -30,7 +33,7 @@ import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.DomainStoryToUseCase;
 import org.setms.swe.inbound.format.sal.SalFormat;
 
-public class DomainStoryTool extends BaseTool<DomainStory> {
+public class DomainStoryTool extends Tool<DomainStory> {
 
   private static final int ICON_SIZE = 52;
   private static final int MAX_TEXT_LENGTH = ICON_SIZE / 4;
@@ -299,12 +302,8 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
   }
 
   @Override
-  protected AppliedSuggestion apply(
-      String suggestionCode,
-      ResolvedInputs inputs,
-      Location location,
-      Resource<?> resource,
-      AppliedSuggestion appliedSuggestion) {
+  protected AppliedSuggestion doApply(
+      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> resource) {
     if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
       return findDomainStory(inputs, location)
           .map(
@@ -313,11 +312,10 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
                       domainStory,
                       extractUseCaseNameFrom(suggestionCode)
                           .flatMap(name -> find(inputs.get(UseCase.class), name)),
-                      resource,
-                      appliedSuggestion))
-          .orElse(appliedSuggestion);
+                      resource))
+          .orElseGet(() -> failedWith("Unknown domain story", location));
     }
-    return super.apply(suggestionCode, inputs, location, resource, appliedSuggestion);
+    return unknown(suggestionCode);
   }
 
   private Optional<FullyQualifiedName> extractUseCaseNameFrom(String suggestionCode) {
@@ -341,10 +339,7 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
   }
 
   private AppliedSuggestion elaborateInUseCase(
-      DomainStory domainStory,
-      Optional<UseCase> source,
-      Resource<?> resource,
-      AppliedSuggestion appliedSuggestion) {
+      DomainStory domainStory, Optional<UseCase> source, Resource<?> resource) {
     try {
       var converter = new DomainStoryToUseCase();
       var useCase =
@@ -355,9 +350,9 @@ public class DomainStoryTool extends BaseTool<DomainStory> {
       try (var output = useCaseResource.writeTo()) {
         new SalFormat().newBuilder().build(useCase, output);
       }
-      return appliedSuggestion.with(useCaseResource);
+      return created(useCaseResource);
     } catch (Exception e) {
-      return appliedSuggestion.with(e);
+      return failedWith(e);
     }
   }
 }

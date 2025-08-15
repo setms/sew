@@ -53,7 +53,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   void shouldWarnAboutMissingElementsAndCreateThem() throws IOException {
     var workspace = workspaceFor("missing");
 
-    var diagnostics = getTool().validate(workspace);
+    var diagnostics = validateAgainst(workspace);
 
     assertThat(diagnostics)
         .hasSizeGreaterThanOrEqualTo(6)
@@ -64,9 +64,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
             });
     var diagnostic = diagnostics.getFirst();
     var created =
-        getTool()
-            .apply(diagnostic.suggestions().getFirst().code(), workspace, diagnostic.location())
-            .createdOrChanged();
+        apply(diagnostic.suggestions().getFirst(), diagnostic, workspace).createdOrChanged();
     var domainStory = workspace.root().select("src/main/requirements/HappyPath.domainStory");
     assertThat(created).hasSize(1).contains(domainStory);
     var file = toFile(domainStory);
@@ -82,7 +80,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   void shouldRejectGrammarViolation() {
     var source = workspaceFor("grammar");
 
-    var diagnostics = getTool().validate(source);
+    var diagnostics = validateAgainst(source);
 
     assertThat(diagnostics)
         .filteredOn(diagnostic -> diagnostic.level() == ERROR)
@@ -106,7 +104,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   void shouldBuildComplexUseCaseWithoutProblems() {
     var workspace = workspaceFor("../domains/gdpr");
 
-    var actual = getTool().build(workspace);
+    var actual = build(workspace);
 
     assertThat(actual).isEmpty();
   }
@@ -115,7 +113,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   void shouldCreateDomain() {
     var workspace = workspaceFor("valid");
 
-    var actual = getTool().validate(workspace);
+    var actual = validateAgainst(workspace);
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
@@ -125,8 +123,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).isEqualTo("Discover subdomains");
-    var created =
-        getTool().apply(suggestion.code(), workspace, diagnostic.location()).createdOrChanged();
+    var created = apply(suggestion, diagnostic, workspace).createdOrChanged();
     assertThat(created).hasSize(1);
     workspace
         .root()
@@ -145,7 +142,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   void shouldCreateAcceptanceTest() {
     var workspace = workspaceFor("valid");
 
-    var actual = getTool().validate(workspace);
+    var actual = validateAgainst(workspace);
 
     assertThat(actual.size()).isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
@@ -155,8 +152,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(diagnostic.suggestions()).hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).startsWith("Create acceptance test");
-    var created =
-        getTool().apply(suggestion.code(), workspace, diagnostic.location()).createdOrChanged();
+    var created = apply(suggestion, diagnostic, workspace).createdOrChanged();
     assertThat(created).as("Created artifacts").hasSize(1);
     workspace
         .root()

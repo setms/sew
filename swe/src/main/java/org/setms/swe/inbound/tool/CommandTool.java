@@ -1,5 +1,8 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.entities;
@@ -9,9 +12,9 @@ import java.util.List;
 import java.util.Set;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -20,7 +23,7 @@ import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.inbound.format.sal.SalFormat;
 
-public class CommandTool extends BaseTool<Command> {
+public class CommandTool extends Tool<Command> {
 
   public static final String CREATE_PAYLOAD = "payload.create";
 
@@ -56,32 +59,24 @@ public class CommandTool extends BaseTool<Command> {
   }
 
   @Override
-  protected AppliedSuggestion apply(
-      String suggestionCode,
-      ResolvedInputs inputs,
-      Location location,
-      Resource<?> resource,
-      AppliedSuggestion appliedSuggestion) {
+  protected AppliedSuggestion doApply(
+      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> resource) {
     if (CREATE_PAYLOAD.equals(suggestionCode)) {
-      return createPayload(inputs.get(Command.class), location, resource, appliedSuggestion);
+      return createPayload(inputs.get(Command.class), location, resource);
     }
-    return super.apply(suggestionCode, inputs, location, resource, appliedSuggestion);
+    return unknown(suggestionCode);
   }
 
   private AppliedSuggestion createPayload(
-      List<Command> commands,
-      Location location,
-      Resource<?> resource,
-      AppliedSuggestion appliedSuggestion) {
+      List<Command> commands, Location location, Resource<?> resource) {
     return commands.stream()
         .filter(command1 -> command1.starts(location))
         .findFirst()
-        .map(command -> createPayloadFor(command, resource, appliedSuggestion))
-        .orElse(appliedSuggestion);
+        .map(command -> createPayloadFor(command, resource))
+        .orElseGet(AppliedSuggestion::none);
   }
 
-  private AppliedSuggestion createPayloadFor(
-      Command command, Resource<?> resource, AppliedSuggestion appliedSuggestion) {
+  private AppliedSuggestion createPayloadFor(Command command, Resource<?> resource) {
     var designResource = toBase(resource).select(Inputs.PATH_DESIGN);
     try {
       var entity =
@@ -90,9 +85,9 @@ public class CommandTool extends BaseTool<Command> {
       try (var output = entityResource.writeTo()) {
         new SalFormat().newBuilder().build(entity, output);
       }
-      return appliedSuggestion.with(entityResource);
+      return created(entityResource);
     } catch (Exception e) {
-      return appliedSuggestion.with(e);
+      return failedWith(e);
     }
   }
 }

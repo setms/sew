@@ -1,7 +1,6 @@
 package org.setms.km.domain.model.tool;
 
-
-public class BarTool extends BaseTool<Bar> {
+public class BarTool extends Tool<Bar> {
 
   @Override
   public Input<Bar> getMainInput() {

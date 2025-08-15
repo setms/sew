@@ -8,7 +8,6 @@ public class EventFileType extends SalLanguageFileType {
     super(
         "Event",
         "Something that happens that's interesting from a business perspective",
-        SewIcons.EVENT,
-        null);
+        SewIcons.EVENT);
   }
 }

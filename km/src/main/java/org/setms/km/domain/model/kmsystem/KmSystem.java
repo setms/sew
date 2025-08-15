@@ -16,9 +16,9 @@ import org.json.JSONObject;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Level;
@@ -44,7 +44,7 @@ public class KmSystem {
 
   private void cacheGlobs() {
     Tools.all()
-        .map(BaseTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .distinct()
@@ -80,7 +80,7 @@ public class KmSystem {
 
   private void addToGlobs(String path) {
     Tools.all()
-        .map(BaseTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .filter(glob -> glob.matches(path))
@@ -117,7 +117,7 @@ public class KmSystem {
   }
 
   private <T extends Artifact> void updateArtifact(
-      String path, Class<T> type, Optional<BaseTool<T>> maybeTool) {
+      String path, Class<T> type, Optional<Tool<T>> maybeTool) {
     var valid = true;
     var buildResource = reportResourceFor(path);
     if (maybeTool.isPresent()) {
@@ -148,7 +148,7 @@ public class KmSystem {
   }
 
   private void buildReports(
-      BaseTool<?> tool,
+      Tool<?> tool,
       Resource<? extends Resource<?>> buildResource,
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics) {
@@ -162,7 +162,7 @@ public class KmSystem {
   }
 
   private ResolvedInputs resolveInputs(
-      String path, BaseTool<?> tool, Collection<Diagnostic> diagnostics) {
+      String path, Tool<?> tool, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
     tool.mainInput().ifPresent(input -> resolve(path, input, true, diagnostics, result));
     // TODO: Don't add parser errors to diagnostics for this path
@@ -200,7 +200,7 @@ public class KmSystem {
     return linesOfTextIn(resourceContainingPathsFor(glob)).stream().map(workspace.root()::select);
   }
 
-  private void storeDiagnostics(String path, BaseTool<?> tool, Collection<Diagnostic> diagnostics) {
+  private void storeDiagnostics(String path, Tool<?> tool, Collection<Diagnostic> diagnostics) {
     var diagnosticsResource =
         workspace
             .root()
@@ -283,7 +283,7 @@ public class KmSystem {
 
   private void removeFromGlobs(String path) {
     Tools.all()
-        .map(BaseTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .map(Input::glob)
         .filter(glob -> glob.matches(path))
@@ -296,7 +296,7 @@ public class KmSystem {
 
   private void registerArtifactDefinitions() {
     Tools.all()
-        .map(BaseTool::mainInput)
+        .map(Tool::mainInput)
         .flatMap(Optional::stream)
         .map(
             input ->
@@ -344,7 +344,7 @@ public class KmSystem {
         return Stream.empty();
       }
       Class<T> artifactType = (Class<T>) tool.get().mainInput().orElseThrow().type();
-      Optional<BaseTool<T>> maybeTool = Optional.of((BaseTool<T>) tool.get());
+      Optional<Tool<T>> maybeTool = Optional.of((Tool<T>) tool.get());
       return Stream.of(new OutOfDateArtifact<>(artifact.path(), artifactType, maybeTool));
     }
     return Stream.empty();
@@ -380,9 +380,10 @@ public class KmSystem {
         .findFirst()
         .map(
             tool -> {
-              var result = tool.apply(code, workspace, location);
+              var inputs = resolveInputs(workspace.root().path(), tool, new LinkedHashSet<>());
+              var result = tool.apply(code, inputs, location, workspace.root());
               var type = (Class<T>) tool.mainInput().orElseThrow().type();
-              var typedTool = (BaseTool<T>) tool;
+              var typedTool = (Tool<T>) tool;
               updateArtifact(resource.path(), type, Optional.of(typedTool));
               return result;
             })

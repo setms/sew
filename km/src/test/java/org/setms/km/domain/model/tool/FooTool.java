@@ -8,7 +8,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 
-class FooTool extends BaseTool<Foo> {
+class FooTool extends Tool<Foo> {
 
   static final String MESSAGE = "Some message";
   static final String CODE = "Some code";

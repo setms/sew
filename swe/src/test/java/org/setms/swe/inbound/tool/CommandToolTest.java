@@ -25,7 +25,7 @@ class CommandToolTest extends ToolTestCase<Command> {
   void shouldCreatePayload() throws IOException {
     var workspace = workspaceFor("missing");
 
-    var actual = getTool().validate(workspace);
+    var actual = validateAgainst(workspace);
     assertThat(actual).as("Validation diagnostics").hasSize(1);
     var diagnostic = actual.getFirst();
     assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
@@ -34,13 +34,9 @@ class CommandToolTest extends ToolTestCase<Command> {
     assertThat(diagnostic.suggestions()).as("Suggestions").hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).as("Suggestion").isEqualTo("Create entity");
-    var created =
-        getTool().apply(suggestion.code(), workspace, diagnostic.location()).createdOrChanged();
+    var created = apply(suggestion, diagnostic, workspace).createdOrChanged();
     var payload = workspace.root().select("src/main/design/Payload.entity");
-    assertThat(created)
-        .as("Apply diagnostics")
-        .hasSize(1)
-        .contains(payload);
+    assertThat(created).as("Apply diagnostics").hasSize(1).contains(payload);
     try {
       assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
     } finally {

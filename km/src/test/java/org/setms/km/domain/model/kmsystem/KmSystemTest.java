@@ -134,7 +134,7 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(Set.of(mainValidationDiagnostic));
   }
 
-  private Resource<?> diagnosticsResourceFor(BaseTool<?> tool, Resource<?> diagnosticsRoot) {
+  private Resource<?> diagnosticsResourceFor(Tool<?> tool, Resource<?> diagnosticsRoot) {
     return diagnosticsRoot.select("%s.json".formatted(tool.getClass().getName()));
   }
 
@@ -154,7 +154,7 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(artifactPath)).isEmpty();
   }
 
-  private void createDiagnostic(Resource<?> diagnosticsRoot, BaseTool<?> tool) throws IOException {
+  private void createDiagnostic(Resource<?> diagnosticsRoot, Tool<?> tool) throws IOException {
     var diagnosticsResource = diagnosticsResourceFor(tool, diagnosticsRoot);
     try (var output = diagnosticsResource.writeTo()) {
       mapper.writeValue(output, Map.of("diagnostics", emptyList()));

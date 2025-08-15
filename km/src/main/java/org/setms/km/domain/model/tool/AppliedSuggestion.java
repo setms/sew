@@ -14,6 +14,26 @@ public record AppliedSuggestion(Set<Resource<?>> createdOrChanged, Set<Diagnosti
     this(emptySet(), emptySet());
   }
 
+  public static AppliedSuggestion unknown(String code) {
+    return new AppliedSuggestion().with(new Diagnostic(ERROR, "Unknown suggestion: " + code));
+  }
+
+  public static AppliedSuggestion none() {
+    return new AppliedSuggestion();
+  }
+
+  public static AppliedSuggestion created(Resource<?> resource) {
+    return new AppliedSuggestion().with(resource);
+  }
+
+  public static AppliedSuggestion failedWith(Exception e) {
+    return failedWith(e.getMessage());
+  }
+
+  public static AppliedSuggestion failedWith(String message, Object... args) {
+    return new AppliedSuggestion(emptySet(), Set.of(new Diagnostic(ERROR, message.formatted(args))));
+  }
+
   public AppliedSuggestion with(Resource<?> resource) {
     var allCreatedOrChanged = new LinkedHashSet<>(createdOrChanged);
     allCreatedOrChanged.add(resource);

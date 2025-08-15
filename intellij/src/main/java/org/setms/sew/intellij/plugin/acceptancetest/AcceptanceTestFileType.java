@@ -4,7 +4,6 @@ import org.setms.sew.intellij.lang.acceptance.AcceptanceLanguage;
 import org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition;
 import org.setms.sew.intellij.plugin.filetype.BaseLanguageFileType;
 import org.setms.sew.intellij.plugin.filetype.SewIcons;
-import org.setms.swe.inbound.tool.AcceptanceTestTool;
 
 public class AcceptanceTestFileType extends BaseLanguageFileType {
 
@@ -16,8 +15,7 @@ public class AcceptanceTestFileType extends BaseLanguageFileType {
         "AcceptanceTest",
         "Acceptance test",
         "acceptance",
-        SewIcons.ACCEPTANCE,
-        new AcceptanceTestTool());
+        SewIcons.ACCEPTANCE);
     AcceptanceParserDefinition.addFileType(this);
   }
 }

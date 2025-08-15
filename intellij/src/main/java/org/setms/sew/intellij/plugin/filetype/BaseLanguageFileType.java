@@ -7,11 +7,9 @@ import com.intellij.openapi.util.NlsSafe;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiFile;
 import javax.swing.Icon;
-import lombok.Getter;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.tool.BaseTool;
 import org.setms.sew.intellij.lang.LanguageFile;
 
 public abstract class BaseLanguageFileType extends LanguageFileType {
@@ -20,21 +18,18 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
   private final String description;
   private final String extension;
   private final Icon icon;
-  @Getter private final BaseTool<?> tool;
 
   public BaseLanguageFileType(
       @NotNull Language language,
       String name,
       String description,
       String extension,
-      Icon icon,
-      BaseTool<?> tool) {
+      Icon icon) {
     super(language);
     this.name = name;
     this.description = description;
     this.extension = extension;
     this.icon = icon;
-    this.tool = tool;
   }
 
   @Override

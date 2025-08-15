@@ -30,7 +30,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
   void shouldBuild() {
     var workspace = workspaceFor("valid");
 
-    var actual = getTool().build(workspace);
+    var actual = build(workspace);
 
     assertThat(actual).isEmpty();
     var output = toFile(workspace.root().select("build/Notifications-aggregate.html"));
