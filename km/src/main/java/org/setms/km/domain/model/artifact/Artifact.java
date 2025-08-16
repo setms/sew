@@ -6,6 +6,7 @@ import static org.setms.km.domain.model.format.Strings.toFriendlyName;
 import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,13 @@ public abstract class Artifact
     implements Comparable<Artifact>, org.setms.km.domain.model.validation.Validatable {
 
   @Getter @Valid private final FullyQualifiedName fullyQualifiedName;
+
+  public static <A extends Artifact> Optional<A> find(
+      Collection<A> artifacts, FullyQualifiedName name) {
+    return artifacts.stream()
+        .filter(artifact -> artifact.getFullyQualifiedName().equals(name))
+        .findFirst();
+  }
 
   public String type() {
     return initLower(getClass().getSimpleName());

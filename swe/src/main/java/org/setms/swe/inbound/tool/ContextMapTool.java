@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.format.Strings.wrap;
 import static org.setms.swe.inbound.tool.Inputs.domains;
 import static org.setms.swe.inbound.tool.Inputs.useCases;
 

@@ -34,8 +34,8 @@ class DomainStoryToUseCaseTest {
     assertThat(actual)
         .isEqualTo(
             new UseCase(new FullyQualifiedName("ape.Bear"))
-                .setTitle("TODO")
-                .setDescription("TODO")
+                .setTitle("Bear")
+                .setDescription("Bear")
                 .setScenarios(
                     List.of(
                         new Scenario(new FullyQualifiedName("ape.Bear"))
@@ -72,8 +72,8 @@ class DomainStoryToUseCaseTest {
     assertThat(actual)
         .isEqualTo(
             new UseCase(new FullyQualifiedName("giraffe.Hyena"))
-                .setTitle("TODO")
-                .setDescription("TODO")
+                .setTitle("Hyena")
+                .setDescription("Hyena")
                 .setScenarios(
                     List.of(
                         new Scenario(new FullyQualifiedName("giraffe.Hyena"))

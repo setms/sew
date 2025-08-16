@@ -44,13 +44,21 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       parts = [ ]
     }
     """;
+  private static final String USER =
+      """
+    package missing
+
+    user Duck {
+      display = "Duck"
+    }
+    """;
 
   public UseCaseToolTest() {
     super(new UseCaseTool(), UseCase.class, "main/requirements");
   }
 
   @Test
-  void shouldWarnAboutMissingElementsAndCreateThem() throws IOException {
+  void shouldCreateDomainStory() throws IOException {
     var workspace = workspaceFor("missing");
 
     var diagnostics = validateAgainst(workspace);
@@ -71,6 +79,34 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(file).isFile();
     try {
       assertThat(file).hasContent(DOMAIN_STORY);
+    } finally {
+      Files.delete(file.toPath());
+    }
+  }
+
+  @Test
+  void shouldCreateMissingReference() throws IOException {
+    var workspace = workspaceFor("missing");
+
+    var diagnostics = validateAgainst(workspace);
+
+    assertThat(diagnostics)
+        .hasSizeGreaterThanOrEqualTo(6)
+        .allSatisfy(
+            diagnostic -> {
+              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
+              assertThat(diagnostic.suggestions()).as("Suggestions").isNotEmpty();
+            });
+    var diagnostic =
+        diagnostics.stream().filter(d -> d.message().contains("user")).findFirst().orElseThrow();
+    var created =
+        apply(diagnostic.suggestions().getFirst(), diagnostic, workspace).createdOrChanged();
+    var user = workspace.root().select("src/main/stakeholders/Duck.user");
+    assertThat(created).hasSize(1).contains(user);
+    var file = toFile(user);
+    assertThat(file).isFile();
+    try {
+      assertThat(file).hasContent(USER);
     } finally {
       Files.delete(file.toPath());
     }

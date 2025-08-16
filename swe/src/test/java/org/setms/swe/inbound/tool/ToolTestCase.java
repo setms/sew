@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static java.util.function.Predicate.not;
 import static lombok.AccessLevel.PROTECTED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.format.Strings.initLower;
@@ -172,6 +173,14 @@ abstract class ToolTestCase<T extends Artifact> {
 
   protected AppliedSuggestion apply(String code, Location location, Workspace<?> workspace) {
     var inputs = resolveInputs(workspace.root(), new LinkedHashSet<>());
-    return tool.apply(code, inputs, location, workspace.root());
+    var resource =
+        tool.mainInput()
+            .map(Input::glob)
+            .map(glob -> workspace.root().matching(glob))
+            .filter(not(Collection::isEmpty))
+            .map(List::getFirst)
+            .map(Resource.class::cast)
+            .orElseGet(workspace::root);
+    return tool.apply(resource, code, location, inputs);
   }
 }

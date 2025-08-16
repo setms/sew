@@ -34,9 +34,6 @@ public class DesignStructureMatrix<E> {
   }
 
   public DesignStructureMatrix(Set<E> elements) {
-    if (elements == null || elements.size() < 2) {
-      throw new IllegalArgumentException("DSM must contain at least two elements");
-    }
     this.elements.addAll(elements);
   }
 

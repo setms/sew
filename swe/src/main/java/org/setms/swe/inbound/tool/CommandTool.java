@@ -60,28 +60,22 @@ public class CommandTool extends Tool<Command> {
 
   @Override
   protected AppliedSuggestion doApply(
-      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> resource) {
+      Resource<?> commandResource,
+      Command command,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs) {
     if (CREATE_PAYLOAD.equals(suggestionCode)) {
-      return createPayload(inputs.get(Command.class), location, resource);
+      return createPayloadFor(commandResource, command);
     }
     return unknown(suggestionCode);
   }
 
-  private AppliedSuggestion createPayload(
-      List<Command> commands, Location location, Resource<?> resource) {
-    return commands.stream()
-        .filter(command1 -> command1.starts(location))
-        .findFirst()
-        .map(command -> createPayloadFor(command, resource))
-        .orElseGet(AppliedSuggestion::none);
-  }
-
-  private AppliedSuggestion createPayloadFor(Command command, Resource<?> resource) {
-    var designResource = toBase(resource).select(Inputs.PATH_DESIGN);
+  private AppliedSuggestion createPayloadFor(Resource<?> commandResource, Command command) {
     try {
       var entity =
           new Entity(new FullyQualifiedName(command.getPackage(), command.getPayload().getId()));
-      var entityResource = designResource.select(entity.getName() + ".entity");
+      var entityResource = resourceFor(entity, command, commandResource);
       try (var output = entityResource.writeTo()) {
         new SalFormat().newBuilder().build(entity, output);
       }

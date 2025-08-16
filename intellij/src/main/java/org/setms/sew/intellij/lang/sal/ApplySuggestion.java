@@ -5,6 +5,7 @@ import com.intellij.codeInsight.intention.preview.IntentionPreviewInfo;
 import com.intellij.codeInspection.util.IntentionFamilyName;
 import com.intellij.codeInspection.util.IntentionName;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
@@ -43,7 +44,7 @@ public class ApplySuggestion implements IntentionAction {
 
   @Override
   public @NotNull @IntentionFamilyName String getFamilyName() {
-    return "Software Engineering Workbench";
+    return "Software engineering workbench";
   }
 
   @Override
@@ -80,9 +81,11 @@ public class ApplySuggestion implements IntentionAction {
         service
             .getKmSystem()
             .applySuggestion(service.getWorkspace().find(file), suggestion.code(), location);
-    var created = appliedSuggestion.createdOrChanged().stream().map(service.getWorkspace()::toFile)
-        .filter(File::isFile)
-        .toList();
+    var created =
+        appliedSuggestion.createdOrChanged().stream()
+            .map(service.getWorkspace()::toFile)
+            .filter(File::isFile)
+            .toList();
     reloadVirtualFileAndPsi(project, psiFile, file, created);
   }
 
@@ -97,9 +100,19 @@ public class ApplySuggestion implements IntentionAction {
               if (!toOpen.isEmpty()) {
                 var fileEditorManager = FileEditorManager.getInstance(project);
                 toOpen.stream()
-                    .map(LocalFileSystem.getInstance()::findFileByIoFile)
+                    .map(LocalFileSystem.getInstance()::refreshAndFindFileByIoFile)
                     .filter(Objects::nonNull)
-                    .forEach(virtualFile -> fileEditorManager.openFile(virtualFile, true));
+                    .forEach(
+                        virtualFile -> {
+                          WriteCommandAction.runWriteCommandAction(
+                              project,
+                              () ->
+                                  project
+                                      .getService(KmSystemService.class)
+                                      .getWorkspace()
+                                      .changed(virtualFile));
+                          fileEditorManager.openFile(virtualFile, true);
+                        });
               }
             });
   }

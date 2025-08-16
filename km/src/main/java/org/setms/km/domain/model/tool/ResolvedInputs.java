@@ -45,4 +45,8 @@ public class ResolvedInputs implements LinkResolver {
     }
     return new UnresolvedArtifact(new FullyQualifiedName(link.getId()), link.getType());
   }
+
+  public <A extends Artifact> Optional<A> find(Class<A> type, FullyQualifiedName name) {
+    return Artifact.find(get(type), name);
+  }
 }

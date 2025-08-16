@@ -1,7 +1,6 @@
 package org.setms.km.domain.model.tool;
 
 import static java.util.Collections.emptySet;
-import static org.setms.km.domain.model.format.Strings.ensureSuffix;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
@@ -21,8 +20,6 @@ import org.setms.km.domain.model.workspace.*;
  * based on the input.
  */
 public abstract class Tool<A extends Artifact> {
-
-  protected static final String NL = System.lineSeparator();
 
   /**
    * The primary input this tool consumes, if any. In other words, the artifacts it validates.
@@ -88,34 +85,32 @@ public abstract class Tool<A extends Artifact> {
     diagnostics.add(new Diagnostic(ERROR, message.formatted(args)));
   }
 
-  protected Resource<?> resourceFor(Artifact artifact, Resource<?> base) {
-    var path =
-        allInputs().stream()
-            .filter(input -> input.type().equals(artifact.getClass()))
-            .map(Input::glob)
-            .map(Glob::path)
-            .findFirst()
-            .orElseThrow();
-    return base.path().contains(path)
-        ? base.select("%s.%s".formatted(artifact.getName(), artifact.type()))
-        : toBase(base).select("%s/%s.%s".formatted(path, artifact.getName(), artifact.type()));
+  protected Resource<?> resourceFor(Artifact target, Artifact source, Resource<?> sourceResource) {
+    var sourceContainerPath = containerPathFor(source);
+    var targetContainerPath = containerPathFor(target);
+    var sourcePath = sourceResource.path();
+    var index = sourcePath.indexOf(sourceContainerPath);
+    var prefix = sourcePath.substring(0, index);
+    var suffix = sourcePath.substring(index + sourceContainerPath.length());
+    suffix = suffix.substring(0, suffix.lastIndexOf(sourceResource.name()));
+    var targetPath =
+        prefix + targetContainerPath + suffix + target.getName() + extensionFor(target);
+    return sourceResource.select(targetPath);
   }
 
-  protected Resource<?> toBase(Resource<?> resource) {
-    var input = mainInput();
-    if (input.isEmpty()) {
-      return null;
-    }
-    var glob = input.get().glob();
-    if (resource.name().endsWith(glob.extension())) {
-      var path = ensureSuffix(glob.path(), "/");
-      var current = resource;
-      while (!current.path().endsWith(path)) {
-        current = current.parent().orElseThrow();
-      }
-      return current.select(path.replaceAll("[^/]+", ".."));
-    }
-    return resource;
+  private String containerPathFor(Artifact artifact) {
+    return globFor(artifact).map(Glob::path).orElseThrow();
+  }
+
+  private Optional<Glob> globFor(Artifact artifact) {
+    return allInputs().stream()
+        .filter(input -> input.type().equals(artifact.getClass()))
+        .map(Input::glob)
+        .findFirst();
+  }
+
+  private String extensionFor(Artifact artifact) {
+    return globFor(artifact).map(Glob::extension).orElseThrow();
   }
 
   /**
@@ -171,40 +166,37 @@ public abstract class Tool<A extends Artifact> {
     graph.clearSelection();
   }
 
-  protected String wrap(String text, int maxLength) {
-    if (text.length() <= maxLength) {
-      return text;
-    }
-    var index = maxLength - 1;
-    while (index >= 0 && !Character.isUpperCase(text.charAt(index))) {
-      index--;
-    }
-    if (index <= 0) {
-      index = maxLength;
-    }
-    return text.substring(0, index) + NL + wrap(text.substring(index), maxLength);
-  }
-
   /**
    * Apply a suggestion.
    *
+   * @param resource where to store outputs
    * @param suggestionCode the suggestion to apply
-   * @param inputs inputs to use
    * @param location where in the input to apply the suggestion
-   * @param output where to store outputs
+   * @param inputs inputs to use
    * @return artifacts created/changed and diagnostics
    */
   public AppliedSuggestion apply(
-      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> output) {
+      Resource<?> resource, String suggestionCode, Location location, ResolvedInputs inputs) {
     try {
-      return doApply(suggestionCode, inputs, location, output);
+      return doApply(resource, artiFactFor(location, inputs), suggestionCode, location, inputs);
     } catch (Exception e) {
       return failedWith(e);
     }
   }
 
+  private A artiFactFor(Location location, ResolvedInputs inputs) {
+    return inputs.get(getMainInput().type()).stream()
+        .filter(artifact -> artifact.starts(location))
+        .findFirst()
+        .orElse(null);
+  }
+
   protected AppliedSuggestion doApply(
-      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> output)
+      Resource<?> resource,
+      A artifact,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
       throws Exception {
     return AppliedSuggestion.unknown(suggestionCode);
   }

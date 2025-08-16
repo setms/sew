@@ -3,26 +3,11 @@ package org.setms.swe.domain.model.dsm;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
 class DesignStructureMatrixTest {
 
   private final DesignStructureMatrix<String> dsm = new DesignStructureMatrix<>("A", "B", "C");
-
-  @Test
-  void shouldRequireAtLeastTwoElements() {
-    assertThatThrownBy(() -> new DesignStructureMatrix<>((Set) null))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("DSM must contain at least two elements");
-    assertThatThrownBy(DesignStructureMatrix::new)
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("DSM must contain at least two elements");
-    assertThatThrownBy(() -> new DesignStructureMatrix<>("a"))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("DSM must contain at least two elements");
-  }
 
   @Test
   void shouldRejectDependencyOnUnknownElement() {

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Strings {
 
+  public static final String NL = System.lineSeparator();
+
   private static final Map<String, String> REPLACEMENTS =
       Map.of("cant", "can't", "doesnt", "doesn't", "isnt", "isn't");
 
@@ -53,7 +55,17 @@ public class Strings {
     return result.get();
   }
 
-  public static String ensureSuffix(String text, String suffix) {
-    return text.endsWith(suffix) ? text : text + suffix;
+  public static String wrap(String text, int maxLength) {
+    if (text.length() <= maxLength) {
+      return text;
+    }
+    var index = maxLength - 1;
+    while (index >= 0 && !Character.isUpperCase(text.charAt(index))) {
+      index--;
+    }
+    if (index <= 0) {
+      index = maxLength;
+    }
+    return text.substring(0, index) + NL + wrap(text.substring(index), maxLength);
   }
 }

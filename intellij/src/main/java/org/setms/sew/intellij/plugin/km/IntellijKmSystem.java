@@ -20,9 +20,10 @@ public class IntellijKmSystem extends KmSystem {
   protected void validateArtifactsInBackground() {
     ApplicationManager.getApplication()
         .executeOnPooledThread(
-            () -> {
-              outOfDateArtifacts().forEach(this::update);
-            });
+            () ->
+                outOfDateArtifacts().stream()
+                    .filter(artifact -> artifact.path().startsWith("/"))
+                    .forEach(this::update));
   }
 
   private void update(OutOfDateArtifact<?> artifact) {

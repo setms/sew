@@ -234,59 +234,58 @@ public class UseCaseTool extends Tool<UseCase> {
   private void validateDomain(
       List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var domains = inputs.get(Domain.class);
-    useCases.stream()
-        .map(UseCase::getPackage)
-        .distinct()
-        .forEach(
-            packageName -> {
-              if (domains.stream().noneMatch(d -> packageName.equals(d.getPackage()))) {
-                diagnostics.add(
-                    new Diagnostic(
-                        WARN,
-                        "Missing subdomains",
-                        new Location(packageName),
-                        List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
-              }
-            });
+    useCases.forEach(
+        useCase -> {
+          if (domains.stream().noneMatch(d -> useCase.getPackage().equals(d.getPackage()))) {
+            diagnostics.add(
+                new Diagnostic(
+                    WARN,
+                    "Missing subdomains",
+                    useCase.toLocation(),
+                    List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
+          }
+        });
   }
 
   @Override
   protected AppliedSuggestion doApply(
-      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> resource)
+      Resource<?> useCaseResource,
+      UseCase useCase,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
       throws Exception {
     return switch (suggestionCode) {
-      case CREATE_DOMAIN_STORY -> createDomainStory(inputs, location, resource);
-      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, resource);
-      case CREATE_DOMAIN -> createDomain(location.segments().getLast(), inputs, resource);
-      case CREATE_ACCEPTANCE_TEST -> createAcceptanceTest(inputs, location, resource);
+      case CREATE_DOMAIN_STORY -> createDomainStory(useCaseResource, useCase, location);
+      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, useCaseResource);
+      case CREATE_DOMAIN -> createDomain(useCaseResource, useCase, inputs);
+      case CREATE_ACCEPTANCE_TEST ->
+          createAcceptanceTest(useCase, useCaseResource, location, inputs);
       case null, default -> unknown(suggestionCode);
     };
   }
 
   private AppliedSuggestion createDomainStory(
-      ResolvedInputs inputs, Location location, Resource<?> resource) {
-    return inputs.get(UseCase.class).stream()
-        .filter(useCase -> useCase.starts(location))
-        .flatMap(UseCase::scenarios)
+      Resource<?> useCaseResource, UseCase useCase, Location location) {
+    return useCase
+        .scenarios()
         .filter(scenario -> scenario.getName().equals(location.segments().get(4)))
         .map(Scenario::getElaborates)
         .filter(Objects::nonNull)
         .findFirst()
-        .map(scenario -> createDomainStoryFor(scenario, location, resource))
+        .map(domainStoryLink -> createDomainStoryFor(useCaseResource, useCase, domainStoryLink))
         .orElseGet(() -> failedWith("Unknown scenario %s", location));
   }
 
   private AppliedSuggestion createDomainStoryFor(
-      Link reference, Location location, Resource<?> resource) {
+      Resource<?> useCaseResource, UseCase useCase, Link domainStoryLink) {
     try {
-      var packageName = location.segments().getFirst();
+      var packageName = useCase.getPackage();
       var domainStory =
-          new DomainStory(new FullyQualifiedName(packageName, reference.getId()))
+          new DomainStory(new FullyQualifiedName(packageName, domainStoryLink.getId()))
               .setDescription("TODO: Add description and sentences.")
               .setSentences(List.of(dummySentence(packageName)));
-      var domainStoryResource =
-          toBase(resource)
-              .select("%s/%s.domainStory".formatted(PATH_REQUIREMENTS, domainStory.getName()));
+      var domainStoryResource = resourceFor(domainStory, useCase, useCaseResource);
       try (var output = domainStoryResource.writeTo()) {
         new SalFormat().newBuilder().build(domainStory, output);
       }
@@ -303,14 +302,14 @@ public class UseCaseTool extends Tool<UseCase> {
   }
 
   private AppliedSuggestion createMissingStep(
-      ResolvedInputs inputs, Location location, Resource<?> resource) {
+      ResolvedInputs inputs, Location location, Resource<?> useCaseResource) {
     return StepReference.find(location, inputs.get(UseCase.class))
         .map(
             stepReference ->
                 createMissingStep(
                     stepReference.useCase().getPackage(),
                     stepReference.getStep().orElseThrow(),
-                    toBase(resource)))
+                    useCaseResource.select("/")))
         .orElseGet(() -> failedWith("Unknown step reference %s", location));
   }
 
@@ -349,15 +348,14 @@ public class UseCaseTool extends Tool<UseCase> {
   }
 
   private AppliedSuggestion createDomain(
-      String packageName, ResolvedInputs inputs, Resource<?> resource) throws IOException {
+      Resource<?> useCaseResource, UseCase useCase, ResolvedInputs inputs) throws IOException {
     var domain =
         new DiscoverDomainFromUseCases()
             .apply(
                 inputs.get(UseCase.class).stream()
-                    .filter(uc -> packageName.equals(uc.getPackage()))
+                    .filter(uc -> useCase.getPackage().equals(uc.getPackage()))
                     .toList());
-    var domainResource =
-        toBase(resource).select("%s/%s.domain".formatted(PATH_ANALYSIS, domain.getName()));
+    var domainResource = resourceFor(domain, useCase, useCaseResource);
     try (var output = domainResource.writeTo()) {
       new SalFormat().newBuilder().build(domain, output);
     }
@@ -365,11 +363,10 @@ public class UseCaseTool extends Tool<UseCase> {
   }
 
   private AppliedSuggestion createAcceptanceTest(
-      ResolvedInputs inputs, Location location, Resource<?> resource) throws IOException {
+      UseCase useCase, Resource<?> useCaseResource, Location location, ResolvedInputs inputs)
+      throws IOException {
     var acceptanceTest = createAcceptanceTestFor(inputs, location);
-    var acceptanceTestResource =
-        toBase(resource)
-            .select("%s/%s.acceptance".formatted(PATH_ACCEPTANCE_TESTS, acceptanceTest.getName()));
+    var acceptanceTestResource = resourceFor(acceptanceTest, useCase, useCaseResource);
     try (var output = acceptanceTestResource.writeTo()) {
       new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
     }

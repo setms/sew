@@ -35,7 +35,10 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   @Override
   public String path() {
     var filePath = virtualFile == null ? file.getPath() : virtualFile.getPath();
-    return filePath.substring(rootPath.length());
+    if (!filePath.startsWith(rootPath)) {
+      return "<outside workspace>";
+    }
+    return filePath.equals(rootPath) ? "/" : filePath.substring(rootPath.length());
   }
 
   @Override
@@ -64,12 +67,15 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   @Override
   public VirtualFileResource select(String path) {
     if (path.startsWith(File.separator)) {
-      var found = virtualFile.getFileSystem().refreshAndFindFileByPath(rootPath + path);
-      if (found != null) {
-        return new VirtualFileResource(found, null, rootPath);
-      }
+      var found =
+          virtualFile == null
+              ? null
+              : virtualFile.getFileSystem().refreshAndFindFileByPath(rootPath + path);
+      return found == null
+          ? new VirtualFileResource(null, new File(rootPath + path), rootPath)
+          : new VirtualFileResource(found, null, rootPath);
     }
-    if (virtualFile == null || path.startsWith(File.separator)) {
+    if (virtualFile == null) {
       return new VirtualFileResource(null, new File(file, path), rootPath);
     }
     VirtualFile result = null;

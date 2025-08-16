@@ -7,10 +7,14 @@ import static org.awaitility.Awaitility.await;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.kmsystem.KmSystem;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
@@ -34,13 +38,13 @@ class EndToEndTest {
         ]
       }
       """;
-  private static final String CREATED_EVENT_STORM =
+  private static final String CREATED_USE_CASE =
       """
       package todo
 
       useCase AddTodo {
-        description = "TODO"
-        title = "TODO"
+        description = "Add todo"
+        title = "Add todo"
       }
 
       scenario AddTodo {
@@ -49,6 +53,21 @@ class EndToEndTest {
           user(User),
           command(AddTodoItem),
           aggregate(TodoItems),
+          event(TodoItemAdded)
+        ]
+      }
+      """;
+  private static final String CREATED_DOMAIN =
+      """
+      package todo
+
+      domain Todo {
+      }
+
+      subdomain TodoItems {
+        content = [
+          aggregate(TodoItems),
+          command(AddTodoItem),
           event(TodoItemAdded)
         ]
       }
@@ -65,9 +84,11 @@ class EndToEndTest {
   }
 
   @Test
+  @SuppressWarnings("unused")
   void shouldGuideSoftwareEngineering() throws IOException {
     var domainStory = assertThatExistingDomainStoryIsValidated();
-    assertThatEventStormIsCreatedFromDomainStory(domainStory);
+    var useCase = assertThatUseCaseIsCreatedFromDomainStory(domainStory);
+    var domain = assertThatDomainIsCreatedFromUseCase(useCase);
   }
 
   private Resource<?> assertThatExistingDomainStoryIsValidated() throws IOException {
@@ -85,22 +106,45 @@ class EndToEndTest {
     return result;
   }
 
-  private void assertThatEventStormIsCreatedFromDomainStory(Resource<?> domainStory) {
-    var diagnosticsWithSuggestions =
-        kmSystem.diagnosticsFor(domainStory.path()).stream()
-            .filter(d -> !d.suggestions().isEmpty())
-            .toList();
-    assertThat(diagnosticsWithSuggestions).as("Diagnostics with suggestion").hasSize(1);
-    var diagnostic = diagnosticsWithSuggestions.getFirst();
-
-    var appliedSuggestion =
-        kmSystem.applySuggestion(
-            domainStory, diagnostic.suggestions().getFirst().code(), diagnostic.location());
+  private Resource<?> assertThatUseCaseIsCreatedFromDomainStory(Resource<?> domainStory) {
+    var appliedSuggestion = applySuggestionFor("Not elaborated in use case scenario", domainStory);
 
     assertThat(appliedSuggestion.diagnostics()).isEmpty();
     var created = appliedSuggestion.createdOrChanged();
     assertThat(created).hasSize(1);
-    var eventStorm = created.iterator().next();
-    assertThat(eventStorm.contentAsString()).isEqualTo(CREATED_EVENT_STORM);
+    var result = created.iterator().next();
+    assertThat(result.contentAsString()).isEqualTo(CREATED_USE_CASE);
+    return result;
+  }
+
+  private AppliedSuggestion applySuggestionFor(String message, Resource<?> domainStory) {
+    var diagnostics = diagnosticsWithSuggestionsFor(domainStory);
+    var diagnostic = findDiagnostic(message, diagnostics);
+
+    return kmSystem.applySuggestion(
+        domainStory, diagnostic.suggestions().getFirst().code(), diagnostic.location());
+  }
+
+  private List<Diagnostic> diagnosticsWithSuggestionsFor(Resource<?> resource) {
+    return kmSystem.diagnosticsFor(resource.path()).stream()
+        .filter(d -> !d.suggestions().isEmpty())
+        .toList();
+  }
+
+  private Diagnostic findDiagnostic(String message, Collection<Diagnostic> diagnostics) {
+    var diagnostic = diagnostics.stream().filter(d -> d.message().contains(message)).findFirst();
+    assertThat(diagnostic).as("Diagnostic with message '%s'".formatted(message)).isPresent();
+    return diagnostic.get();
+  }
+
+  private Resource<?> assertThatDomainIsCreatedFromUseCase(Resource<?> useCase) {
+    var appliedSuggestion = applySuggestionFor("Missing subdomains", useCase);
+
+    assertThat(appliedSuggestion.diagnostics()).isEmpty();
+    var created = appliedSuggestion.createdOrChanged();
+    assertThat(created).hasSize(1);
+    var result = created.iterator().next();
+    assertThat(result.contentAsString()).isEqualTo(CREATED_DOMAIN);
+    return result;
   }
 }

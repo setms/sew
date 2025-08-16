@@ -66,10 +66,14 @@ public class ProjectTool extends Tool<Owner> {
 
   @Override
   protected AppliedSuggestion doApply(
-      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> resource)
+      Resource<?> ownerResource,
+      Owner owner,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
       throws IOException {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
-      return createOwner(resource, inputs);
+      return createOwner(ownerResource, inputs);
     }
     return unknown(suggestionCode);
   }
@@ -78,7 +82,7 @@ public class ProjectTool extends Tool<Owner> {
       throws IOException {
     var packages =
         inputs.get(User.class).stream().map(Artifact::getPackage).collect(Collectors.toSet());
-    var stakeholdersResource = toBase(resource).select(Inputs.PATH_STAKEHOLDERS);
+    var stakeholdersResource = resource.select(Inputs.PATH_STAKEHOLDERS);
     var scope =
         packages.size() == 1 ? packages.iterator().next() : scopeOf(resource, stakeholdersResource);
     var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");

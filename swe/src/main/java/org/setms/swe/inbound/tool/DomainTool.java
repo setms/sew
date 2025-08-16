@@ -1,6 +1,8 @@
 package org.setms.swe.inbound.tool;
 
 import static java.util.stream.Collectors.toSet;
+import static org.setms.km.domain.model.format.Strings.wrap;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
@@ -299,34 +301,26 @@ public class DomainTool extends Tool<Domain> {
 
   @Override
   protected AppliedSuggestion doApply(
-      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> sink) {
+      Resource<?> domainResource,
+      Domain domain,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
+      throws IOException {
     if (CREATE_MODULES.equals(suggestionCode)) {
-      return createModules(inputs, location, sink);
+      return createModules(domain, domainResource);
     }
     return unknown(suggestionCode);
   }
 
-  private AppliedSuggestion createModules(
-      ResolvedInputs inputs, Location location, Resource<?> resource) {
-    var result = new AppliedSuggestion();
-    for (var modules : mapDomainToModules(inputs.get(Domain.class), location)) {
-      var modulesResource =
-          toBase(resource).select("%s/%s.modules".formatted(PATH_ARCHITECTURE, modules.getName()));
-      try (var output = modulesResource.writeTo()) {
-        new SalFormat().newBuilder().build(modules, output);
-        result = result.with(modulesResource);
-      } catch (Exception e) {
-        result = result.with(e);
-      }
+  private AppliedSuggestion createModules(Domain domain, Resource<?> domainResource)
+      throws IOException {
+    var modules = mapDomainToModules(domain);
+    var modulesResource = resourceFor(modules, domain, domainResource);
+    try (var output = modulesResource.writeTo()) {
+      new SalFormat().newBuilder().build(modules, output);
+      return created(modulesResource);
     }
-    return result;
-  }
-
-  private List<Modules> mapDomainToModules(List<Domain> domains, Location location) {
-    return domains.stream()
-        .filter(domain -> domain.starts(location))
-        .map(this::mapDomainToModules)
-        .toList();
   }
 
   private Modules mapDomainToModules(Domain domain) {

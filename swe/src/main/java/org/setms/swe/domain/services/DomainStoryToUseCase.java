@@ -3,6 +3,7 @@ package org.setms.swe.domain.services;
 import static java.util.Collections.emptyList;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.initUpper;
+import static org.setms.km.domain.model.format.Strings.toFriendlyName;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,11 +22,12 @@ public class DomainStoryToUseCase {
   private final NaturalLanguage language = new English();
 
   public UseCase createUseCaseFrom(DomainStory domainStory) {
+    var friendlyName = toFriendlyName(domainStory.getName());
     return addScenarioFrom(
         domainStory,
         new UseCase(new FullyQualifiedName(domainStory.getPackage(), domainStory.getName()))
-            .setTitle("TODO")
-            .setDescription("TODO")
+            .setTitle(friendlyName)
+            .setDescription(friendlyName)
             .setScenarios(emptyList()));
   }
 

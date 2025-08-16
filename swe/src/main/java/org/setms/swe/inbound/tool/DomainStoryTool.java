@@ -1,8 +1,10 @@
 package org.setms.swe.inbound.tool;
 
 import static java.util.function.Predicate.not;
+import static org.setms.km.domain.model.format.Strings.NL;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.toFriendlyName;
+import static org.setms.km.domain.model.format.Strings.wrap;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
@@ -303,19 +305,20 @@ public class DomainStoryTool extends Tool<DomainStory> {
 
   @Override
   protected AppliedSuggestion doApply(
-      String suggestionCode, ResolvedInputs inputs, Location location, Resource<?> resource) {
+      Resource<?> domainStoryResource,
+      DomainStory domainStory,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs) {
     if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
-      return findDomainStory(inputs, location)
-          .map(
-              domainStory ->
-                  elaborateInUseCase(
-                      domainStory,
-                      extractUseCaseNameFrom(suggestionCode)
-                          .flatMap(name -> find(inputs.get(UseCase.class), name)),
-                      resource))
-          .orElseGet(() -> failedWith("Unknown domain story", location));
+      return elaborateInUseCase(
+          domainStoryResource, domainStory, extractUseCaseFrom(suggestionCode, inputs));
     }
     return unknown(suggestionCode);
+  }
+
+  private Optional<UseCase> extractUseCaseFrom(String suggestionCode, ResolvedInputs inputs) {
+    return extractUseCaseNameFrom(suggestionCode).flatMap(name -> inputs.find(UseCase.class, name));
   }
 
   private Optional<FullyQualifiedName> extractUseCaseNameFrom(String suggestionCode) {
@@ -326,27 +329,15 @@ public class DomainStoryTool extends Tool<DomainStory> {
         .map(FullyQualifiedName::new);
   }
 
-  private Optional<UseCase> find(Collection<UseCase> useCases, FullyQualifiedName name) {
-    return useCases.stream()
-        .filter(useCase -> useCase.getFullyQualifiedName().equals(name))
-        .findFirst();
-  }
-
-  private Optional<DomainStory> findDomainStory(ResolvedInputs inputs, Location location) {
-    return inputs.get(DomainStory.class).stream()
-        .filter(domainStory -> domainStory.starts(location))
-        .findFirst();
-  }
-
   private AppliedSuggestion elaborateInUseCase(
-      DomainStory domainStory, Optional<UseCase> source, Resource<?> resource) {
+      Resource<?> domainStoryResource, DomainStory domainStory, Optional<UseCase> target) {
     try {
       var converter = new DomainStoryToUseCase();
       var useCase =
-          source
+          target
               .map(uc -> converter.addScenarioFrom(domainStory, uc))
               .orElseGet(() -> converter.createUseCaseFrom(domainStory));
-      var useCaseResource = resourceFor(useCase, resource);
+      var useCaseResource = resourceFor(useCase, domainStory, domainStoryResource);
       try (var output = useCaseResource.writeTo()) {
         new SalFormat().newBuilder().build(useCase, output);
       }

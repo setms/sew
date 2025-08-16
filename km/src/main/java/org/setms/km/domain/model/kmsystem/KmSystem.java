@@ -381,7 +381,7 @@ public class KmSystem {
         .map(
             tool -> {
               var inputs = resolveInputs(workspace.root().path(), tool, new LinkedHashSet<>());
-              var result = tool.apply(code, inputs, location, workspace.root());
+              var result = tool.apply(resource, code, location, inputs);
               var type = (Class<T>) tool.mainInput().orElseThrow().type();
               var typedTool = (Tool<T>) tool;
               updateArtifact(resource.path(), type, Optional.of(typedTool));

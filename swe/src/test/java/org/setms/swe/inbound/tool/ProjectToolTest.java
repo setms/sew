@@ -72,9 +72,10 @@ class ProjectToolTest extends ToolTestCase<Owner> {
       Suggestion suggestion, Workspace<?> workspace) throws IOException {
     var owner = workspace.root().select("src/main/stakeholders/Some.owner");
 
-    var actual = apply(suggestion.code(), null, workspace).createdOrChanged();
+    var actual = apply(suggestion.code(), null, workspace);
 
-    assertThat(actual).hasSize(1).contains(owner);
+    assertThat(actual.diagnostics()).isEmpty();
+    assertThat(actual.createdOrChanged()).hasSize(1).contains(owner);
     try {
       assertThat(owner.readFrom()).hasContent(OWNER_SKELETON);
     } finally {
