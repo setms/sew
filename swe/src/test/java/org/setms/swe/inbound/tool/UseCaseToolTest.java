@@ -99,10 +99,10 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
             });
     var diagnostic =
         diagnostics.stream().filter(d -> d.message().contains("user")).findFirst().orElseThrow();
-    var created =
-        apply(diagnostic.suggestions().getFirst(), diagnostic, workspace).createdOrChanged();
+    var created = apply(diagnostic.suggestions().getFirst(), diagnostic, workspace);
+    assertThat(created.diagnostics()).isEmpty();
     var user = workspace.root().select("src/main/stakeholders/Duck.user");
-    assertThat(created).hasSize(1).contains(user);
+    assertThat(created.createdOrChanged()).hasSize(1).contains(user);
     var file = toFile(user);
     assertThat(file).isFile();
     try {

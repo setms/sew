@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.entities;
@@ -21,7 +22,6 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
-import org.setms.swe.inbound.format.sal.SalFormat;
 
 public class CommandTool extends Tool<Command> {
 
@@ -77,7 +77,7 @@ public class CommandTool extends Tool<Command> {
           new Entity(new FullyQualifiedName(command.getPackage(), command.getPayload().getId()));
       var entityResource = resourceFor(entity, command, commandResource);
       try (var output = entityResource.writeTo()) {
-        new SalFormat().newBuilder().build(entity, output);
+        builderFor(entity).build(entity, output);
       }
       return created(entityResource);
     } catch (Exception e) {

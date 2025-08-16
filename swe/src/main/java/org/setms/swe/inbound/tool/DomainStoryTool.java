@@ -8,6 +8,7 @@ import static org.setms.km.domain.model.format.Strings.wrap;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
@@ -33,7 +34,6 @@ import org.setms.swe.domain.model.sdlc.domainstory.Sentence;
 import org.setms.swe.domain.model.sdlc.usecase.Scenario;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.DomainStoryToUseCase;
-import org.setms.swe.inbound.format.sal.SalFormat;
 
 public class DomainStoryTool extends Tool<DomainStory> {
 
@@ -339,7 +339,7 @@ public class DomainStoryTool extends Tool<DomainStory> {
               .orElseGet(() -> converter.createUseCaseFrom(domainStory));
       var useCaseResource = resourceFor(useCase, domainStory, domainStoryResource);
       try (var output = useCaseResource.writeTo()) {
-        new SalFormat().newBuilder().build(useCase, output);
+        builderFor(useCase).build(useCase, output);
       }
       return created(useCaseResource);
     } catch (Exception e) {

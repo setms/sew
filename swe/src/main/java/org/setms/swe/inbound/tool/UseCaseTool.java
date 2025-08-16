@@ -5,6 +5,7 @@ import static org.setms.km.domain.model.format.Strings.*;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
@@ -52,8 +53,6 @@ import org.setms.swe.domain.model.sdlc.usecase.Scenario;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.CreateAcceptanceTest;
 import org.setms.swe.domain.services.DiscoverDomainFromUseCases;
-import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
-import org.setms.swe.inbound.format.sal.SalFormat;
 
 public class UseCaseTool extends Tool<UseCase> {
 
@@ -287,7 +286,7 @@ public class UseCaseTool extends Tool<UseCase> {
               .setSentences(List.of(dummySentence(packageName)));
       var domainStoryResource = resourceFor(domainStory, useCase, useCaseResource);
       try (var output = domainStoryResource.writeTo()) {
-        new SalFormat().newBuilder().build(domainStory, output);
+        builderFor(domainStory).build(domainStory, output);
       }
       return created(domainStoryResource);
     } catch (Exception e) {
@@ -315,7 +314,7 @@ public class UseCaseTool extends Tool<UseCase> {
     var artifact = createMissingStep(useCase.getPackage(), step);
     var artifactResource = resourceFor(artifact, useCase, useCaseResource);
     try (var output = artifactResource.writeTo()) {
-      new SalFormat().newBuilder().build(artifact, output);
+      builderFor(artifact).build(artifact, output);
     } catch (IOException e) {
       return failedWith(e);
     }
@@ -346,7 +345,7 @@ public class UseCaseTool extends Tool<UseCase> {
                     .toList());
     var domainResource = resourceFor(domain, useCase, useCaseResource);
     try (var output = domainResource.writeTo()) {
-      new SalFormat().newBuilder().build(domain, output);
+      builderFor(domain).build(domain, output);
     }
     return created(domainResource);
   }
@@ -357,7 +356,7 @@ public class UseCaseTool extends Tool<UseCase> {
     var acceptanceTest = createAcceptanceTestFor(inputs, location);
     var acceptanceTestResource = resourceFor(acceptanceTest, useCase, useCaseResource);
     try (var output = acceptanceTestResource.writeTo()) {
-      new AcceptanceFormat().newBuilder().build(acceptanceTest, output);
+      builderFor(acceptanceTest).build(acceptanceTest, output);
     }
     return created(acceptanceTestResource);
   }

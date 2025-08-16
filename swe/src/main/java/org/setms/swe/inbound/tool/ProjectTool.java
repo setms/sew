@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
@@ -25,7 +26,6 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.stakeholders.Owner;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
-import org.setms.swe.inbound.format.sal.SalFormat;
 
 public class ProjectTool extends Tool<Owner> {
 
@@ -88,7 +88,7 @@ public class ProjectTool extends Tool<Owner> {
     var owner = new Owner(new FullyQualifiedName(scope + ".Some")).setDisplay("<Some role>");
     var ownerResource = stakeholdersResource.select(owner.getName() + ".owner");
     try (var output = ownerResource.writeTo()) {
-      new SalFormat().newBuilder().build(owner, output);
+      builderFor(owner).build(owner, output);
     }
     return created(ownerResource);
   }

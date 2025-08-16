@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.setms.km.domain.model.format.Strings.wrap;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
@@ -48,7 +49,6 @@ import org.setms.swe.domain.model.sdlc.architecture.Module;
 import org.setms.swe.domain.model.sdlc.architecture.Modules;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
-import org.setms.swe.inbound.format.sal.SalFormat;
 
 public class DomainTool extends Tool<Domain> {
 
@@ -308,17 +308,17 @@ public class DomainTool extends Tool<Domain> {
       ResolvedInputs inputs)
       throws IOException {
     if (CREATE_MODULES.equals(suggestionCode)) {
-      return createModules(domain, domainResource);
+      return createModules(domainResource, domain);
     }
     return unknown(suggestionCode);
   }
 
-  private AppliedSuggestion createModules(Domain domain, Resource<?> domainResource)
+  private AppliedSuggestion createModules(Resource<?> domainResource, Domain domain)
       throws IOException {
     var modules = mapDomainToModules(domain);
     var modulesResource = resourceFor(modules, domain, domainResource);
     try (var output = modulesResource.writeTo()) {
-      new SalFormat().newBuilder().build(modules, output);
+      builderFor(modules).build(modules, output);
       return created(modulesResource);
     }
   }

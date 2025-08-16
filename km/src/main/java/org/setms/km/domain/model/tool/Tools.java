@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.stream.Stream;
 import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.format.Builder;
+import org.setms.km.domain.model.format.Format;
 
 @NoArgsConstructor(access = PRIVATE)
 public class Tools {
@@ -48,5 +50,19 @@ public class Tools {
 
   public static Stream<Tool<?>> all() {
     return tools.stream();
+  }
+
+  public static <T extends Artifact> Builder builderFor(T artifact) {
+    return all()
+        .map(Tool::allInputs)
+        .flatMap(Collection::stream)
+        .filter(input -> input.type().equals(artifact.getClass()))
+        .findFirst()
+        .map(Input::format)
+        .map(Format::newBuilder)
+        .orElseThrow(
+            () ->
+                new UnsupportedOperationException(
+                    "Can't find builder for %s".formatted(artifact.getClass().getName())));
   }
 }
