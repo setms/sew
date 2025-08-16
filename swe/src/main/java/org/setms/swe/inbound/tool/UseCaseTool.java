@@ -257,7 +257,7 @@ public class UseCaseTool extends Tool<UseCase> {
       throws Exception {
     return switch (suggestionCode) {
       case CREATE_DOMAIN_STORY -> createDomainStory(useCaseResource, useCase, location);
-      case CREATE_MISSING_STEP -> createMissingStep(inputs, location, useCaseResource);
+      case CREATE_MISSING_STEP -> createMissingStep(useCaseResource, useCase, inputs, location);
       case CREATE_DOMAIN -> createDomain(useCaseResource, useCase, inputs);
       case CREATE_ACCEPTANCE_TEST ->
           createAcceptanceTest(useCase, useCaseResource, location, inputs);
@@ -302,49 +302,38 @@ public class UseCaseTool extends Tool<UseCase> {
   }
 
   private AppliedSuggestion createMissingStep(
-      ResolvedInputs inputs, Location location, Resource<?> useCaseResource) {
+      Resource<?> useCaseResource, UseCase useCase, ResolvedInputs inputs, Location location) {
     return StepReference.find(location, inputs.get(UseCase.class))
         .map(
             stepReference ->
-                createMissingStep(
-                    stepReference.useCase().getPackage(),
-                    stepReference.getStep().orElseThrow(),
-                    useCaseResource.select("/")))
+                createMissingStep(useCaseResource, useCase, stepReference.getStep().orElseThrow()))
         .orElseGet(() -> failedWith("Unknown step reference %s", location));
   }
 
-  private AppliedSuggestion createMissingStep(String packageName, Link step, Resource<?> output) {
-    var type = step.getType();
-    var resource = output.select("src/main");
-    if ("user".equals(type)) {
-      resource = resource.select("stakeholders");
-    } else {
-      resource = resource.select("design");
-    }
-    var name = step.getId();
-    resource = resource.select("%s.%s".formatted(name, type));
-    try (var writer = new PrintWriter(resource.writeTo())) {
-      writer.printf("package %s%n%n", packageName);
-      writer.printf("%s %s {%n", type, name);
-      writeProperties(type, name, writer);
-      writer.println("}");
+  private AppliedSuggestion createMissingStep(
+      Resource<?> useCaseResource, UseCase useCase, Link step) {
+    var artifact = createMissingStep(useCase.getPackage(), step);
+    var artifactResource = resourceFor(artifact, useCase, useCaseResource);
+    try (var output = artifactResource.writeTo()) {
+      new SalFormat().newBuilder().build(artifact, output);
     } catch (IOException e) {
       return failedWith(e);
     }
-    return created(resource);
+    return created(artifactResource);
   }
 
-  private void writeProperties(String type, String name, PrintWriter writer) {
-    var nameProperty =
-        switch (type) {
-          case "aggregate", "command", "readModel", "user" -> "display";
-          case "policy" -> "title";
-          default -> null;
-        };
-    if (nameProperty == null) {
-      return;
-    }
-    writer.printf("  %s = \"%s\"%n", nameProperty, toFriendlyName(name));
+  private Artifact createMissingStep(String packageName, Link link) {
+    var qualifiedName = new FullyQualifiedName(packageName, link.getId());
+    var friendlyName = toFriendlyName(link.getId());
+    return switch (link.getType()) {
+      case "aggregate" -> new Aggregate(qualifiedName).setDisplay(friendlyName);
+      case "command" -> new Command(qualifiedName).setDisplay(friendlyName);
+      case "event" -> new Event(qualifiedName);
+      case "policy" -> new Policy(qualifiedName).setTitle(friendlyName);
+      case "readModel" -> new ReadModel(qualifiedName).setDisplay(friendlyName);
+      case "user" -> new User(qualifiedName).setDisplay(friendlyName);
+      default -> throw new UnsupportedOperationException("Unknown step reference " + link);
+    };
   }
 
   private AppliedSuggestion createDomain(
