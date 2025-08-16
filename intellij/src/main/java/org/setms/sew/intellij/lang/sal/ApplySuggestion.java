@@ -77,6 +77,15 @@ public class ApplySuggestion implements IntentionAction {
       return;
     }
     var service = project.getService(KmSystemService.class);
+    if (service.isNotReady()) {
+      service.whenReady().thenRunAsync(() -> invoke(project, editor, psiFile));
+      return;
+    }
+    applySuggestion(project, psiFile, service, file);
+  }
+
+  public void applySuggestion(
+      Project project, PsiFile psiFile, KmSystemService service, VirtualFile file) {
     var appliedSuggestion =
         service
             .getKmSystem()
