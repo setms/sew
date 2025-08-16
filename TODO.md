@@ -3,7 +3,6 @@
 ## Table of contents
 
 - [Domain story](#domain-story)
-- [IntelliJ plugin](#intellij-plugin)
 - [Use case](#use-case)
 
 
@@ -11,11 +10,6 @@
 
 - Rendering: re-use work objects at end of sentences
 - Conversion to use case scenario: handle multiple activities in single sentence
-
-
-## IntelliJ plugin
-
-- Show spinner or something for longer-running actions, like applying a suggestion
 
 
 ## Use case
