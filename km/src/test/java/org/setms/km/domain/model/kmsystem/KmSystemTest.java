@@ -11,8 +11,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -22,8 +24,8 @@ import org.setms.km.domain.model.workspace.*;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.km.test.MainArtifact;
 import org.setms.km.test.MainTool;
+import org.setms.km.test.OtherArtifact;
 import org.setms.km.test.OtherTool;
-import org.setms.km.test.TestFormat;
 
 class KmSystemTest {
 
@@ -63,16 +65,20 @@ class KmSystemTest {
   }
 
   private String storeNewMainArtifact() throws IOException {
-    var glob = mainTool.getMainInput().glob();
+    return storeNewArtifact(mainTool, MainArtifact::new);
+  }
+
+  private <A extends Artifact> String storeNewArtifact(
+      Tool<A> tool, Function<FullyQualifiedName, Artifact> artifactCreator) throws IOException {
+    var glob = tool.mainInput().orElseThrow().glob();
+    var format = tool.mainInput().map(Input::format).orElseThrow();
     var resource =
         workspace
             .root()
             .select(glob.path())
             .select("Bear." + glob.pattern().substring(1 + glob.pattern().lastIndexOf('.')));
     try (var output = resource.writeTo()) {
-      new TestFormat()
-          .newBuilder()
-          .build(new MainArtifact(new FullyQualifiedName("ape.Bear")), output);
+      format.newBuilder().build(artifactCreator.apply(new FullyQualifiedName("ape.Bear")), output);
     }
     return resource.path();
   }
@@ -204,7 +210,7 @@ class KmSystemTest {
   }
 
   @Test
-  void shouldValidationOfExistingArtifactIfItHasntChanged()
+  void shouldNotValidateExistingArtifactIfItHasntChanged()
       throws IOException, InterruptedException {
     var path = storeNewMainArtifact();
     var diagnosticsResource =
@@ -221,5 +227,21 @@ class KmSystemTest {
 
     Thread.sleep(MAX_BACKGROUND_VALIDATION_TIME);
     assertThat(mainTool.validated).as("Existing artifact re-validated").isFalse();
+  }
+
+  @Test
+  void shouldRevalidateWhenInputDeleted() throws IOException {
+    var path = storeNewMainArtifact();
+    storeNewOtherArtifact();
+    createKmSystem();
+    otherTool.init();
+
+    workspace.root().select(path).delete();
+
+    assertThat(otherTool.validated).as("Existing artifact re-validated").isTrue();
+  }
+
+  private void storeNewOtherArtifact() throws IOException {
+    storeNewArtifact(otherTool, OtherArtifact::new);
   }
 }

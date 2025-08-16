@@ -36,7 +36,13 @@ public class IntellijWorkspace extends Workspace<VirtualFile> {
     parse(find(file).path()).ifPresent(artifact -> onChanged(find(file).path(), artifact));
   }
 
+  public void deleted(Resource<?> resource) {
+    onDeleted(resource.path());
+  }
+
   public File toFile(Resource<?> resource) {
-    return resource instanceof VirtualFileResource virtualFileResource ? virtualFileResource.toFile() : null;
+    return resource instanceof VirtualFileResource virtualFileResource
+        ? virtualFileResource.toFile()
+        : null;
   }
 }

@@ -74,8 +74,15 @@ public class KmSystem {
   }
 
   private void artifactChanged(String path, Artifact artifact) {
+    if (isInternalResource(path)) {
+      return;
+    }
     addToGlobs(path);
     updateArtifact(path, artifact);
+  }
+
+  private boolean isInternalResource(String path) {
+    return path.startsWith("/.km/");
   }
 
   private void addToGlobs(String path) {
@@ -122,14 +129,7 @@ public class KmSystem {
     var buildResource = reportResourceFor(path);
     if (maybeTool.isPresent()) {
       var tool = maybeTool.get();
-      var diagnostics = new LinkedHashSet<Diagnostic>();
-      var inputs = resolveInputs(path, tool, diagnostics);
-      tool.validate(inputs, diagnostics);
-      valid = diagnostics.stream().map(Diagnostic::level).noneMatch(Level.ERROR::equals);
-      if (valid) {
-        buildReports(tool, buildResource, inputs, diagnostics);
-      }
-      storeDiagnostics(path, tool, diagnostics);
+      valid = updateArtifact(path, tool, buildResource);
     }
     if (valid) {
       Tools.dependingOn(type).stream()
@@ -141,6 +141,19 @@ public class KmSystem {
                 buildReports(tool, buildResource, inputs, diagnostics);
               });
     }
+  }
+
+  private <T extends Artifact> boolean updateArtifact(
+      String path, Tool<T> tool, Resource<? extends Resource<?>> buildResource) {
+    var diagnostics = new LinkedHashSet<Diagnostic>();
+    var inputs = resolveInputs(path, tool, diagnostics);
+    tool.validate(inputs, diagnostics);
+    var result = diagnostics.stream().map(Diagnostic::level).noneMatch(Level.ERROR::equals);
+    if (result) {
+      buildReports(tool, buildResource, inputs, diagnostics);
+    }
+    storeDiagnostics(path, tool, diagnostics);
+    return result;
   }
 
   private Resource<?> reportResourceFor(String path) {
@@ -278,7 +291,27 @@ public class KmSystem {
   }
 
   private void artifactDeleted(String path) {
+    if (isInternalResource(path)) {
+      return;
+    }
     removeFromGlobs(path);
+    deleteInternalResourcesReferencing(path);
+    revalidateArtifactsThatDependOn(path);
+  }
+
+  private void deleteInternalResourcesReferencing(String path) {
+    Stream.of("diagnostics", "reports")
+        .map(dir -> ".km/%s%s".formatted(dir, path))
+        .map(workspace.root()::select)
+        .forEach(this::deleteIgnoreExceptions);
+  }
+
+  private void deleteIgnoreExceptions(Resource<?> resource) {
+    try {
+      resource.delete();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void removeFromGlobs(String path) {
@@ -292,6 +325,22 @@ public class KmSystem {
 
   private void removeGlobPath(Glob glob, String path) {
     updateGlobPaths(glob, path, Collection::remove);
+  }
+
+  private void revalidateArtifactsThatDependOn(String path) {
+    Tools.all()
+        .filter(tool -> tool.mainInput().isPresent() && additionalInputDependsOn(tool, path))
+        .forEach(
+            tool ->
+                resourcesMatching(tool.mainInput().orElseThrow().glob())
+                    .map(Resource::path)
+                    .forEach(
+                        artifactPath ->
+                            updateArtifact(artifactPath, tool, reportResourceFor(artifactPath))));
+  }
+
+  private boolean additionalInputDependsOn(Tool<?> tool, String path) {
+    return tool.additionalInputs().stream().map(Input::glob).anyMatch(glob -> glob.matches(path));
   }
 
   private void registerArtifactDefinitions() {

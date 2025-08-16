@@ -8,7 +8,6 @@
 
 ## IntelliJ
 
-- Respond to deletes
 - Add task window
 
 
