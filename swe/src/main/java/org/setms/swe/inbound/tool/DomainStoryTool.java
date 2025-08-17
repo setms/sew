@@ -1,10 +1,8 @@
 package org.setms.swe.inbound.tool;
 
 import static java.util.function.Predicate.not;
-import static org.setms.km.domain.model.format.Strings.NL;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.toFriendlyName;
-import static org.setms.km.domain.model.format.Strings.wrap;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
@@ -12,11 +10,6 @@ import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.view.mxGraph;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,6 +17,11 @@ import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.diagram.Arrow;
+import org.setms.km.domain.model.diagram.BaseDiagramTool;
+import org.setms.km.domain.model.diagram.Box;
+import org.setms.km.domain.model.diagram.Diagram;
+import org.setms.km.domain.model.diagram.IconBox;
 import org.setms.km.domain.model.tool.*;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -37,11 +35,6 @@ import org.setms.swe.domain.services.DomainStoryToUseCase;
 
 public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
 
-  private static final int ICON_SIZE = 52;
-  private static final int MAX_TEXT_LENGTH = ICON_SIZE / 4;
-  private static final int LINE_HEIGHT = 16;
-  private static final String VERTEX_STYLE =
-      "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
   private static final String CREATE_USE_CASE_SCENARIO = "usecase.scenario.create";
 
   @Override
@@ -64,81 +57,25 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
 
   private void build(
       DomainStory domainStory, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var report = resource.select(domainStory.getName() + ".html");
-    try (var writer = new PrintWriter(report.writeTo())) {
-      writer.println("<html>");
-      writer.println("  <body>");
-      writer.printf("    <h1>%s</h1>%n", toFriendlyName(domainStory.getName()));
-      writer.printf("    <p>%s</p>%n", domainStory.getDescription());
-      build(domainStory, toGraph(domainStory.getSentences()), resource, diagnostics)
-          .ifPresent(
-              image ->
-                  writer.printf(
-                      "    <img src=\"%s\"/>%n",
-                      report.toUri().resolve(".").normalize().relativize(image.toUri())));
-      writer.println("  </body>");
-      writer.println("</html>");
-    } catch (IOException e) {
-      addError(diagnostics, e.getMessage());
+    buildHtml(
+        domainStory,
+        domainStory.getDescription(),
+        toDiagram(domainStory.getSentences()),
+        resource,
+        diagnostics);
+  }
+
+  private Diagram toDiagram(List<Sentence> sentences) {
+    var result = new Diagram();
+    for (var i = 0; i < sentences.size(); i++) {
+      addSentence(i, sentences.get(i), result);
     }
-  }
-
-  private mxGraph toGraph(List<Sentence> sentences) {
-    var result = new mxGraph();
-    var actorNodesByName = new HashMap<String, Object>();
-    var vertexTexts = wrappedVertexTextsFor(sentences);
-    var numLines = ensureSameNumberOfLinesFor(vertexTexts);
-    var height = ICON_SIZE + (numLines - 1) * LINE_HEIGHT;
-    result.getModel().beginUpdate();
-    try {
-      for (var i = 0; i < sentences.size(); i++) {
-        addSentence(i, sentences.get(i), actorNodesByName, vertexTexts, height, result);
-      }
-      layoutGraph(result, height);
-    } finally {
-      result.getModel().endUpdate();
-    }
-
     return result;
   }
 
-  private Map<Link, String> wrappedVertexTextsFor(List<Sentence> sentences) {
-    var result = new HashMap<Link, String>();
-    sentences.forEach(
-        sentence ->
-            sentence.getParts().stream()
-                .filter(p -> !p.hasType("activity"))
-                .forEach(part -> result.put(part, wrap(part.getId(), MAX_TEXT_LENGTH))));
-    return result;
-  }
-
-  @SuppressWarnings("StringConcatenationInLoop")
-  private int ensureSameNumberOfLinesFor(Map<Link, String> textsByPart) {
-    var result = textsByPart.values().stream().mapToInt(this::numLinesIn).max().orElse(1);
-    textsByPart.forEach(
-        (part, text) -> {
-          var addLines = result - numLinesIn(text);
-          for (var i = 0; i < addLines; i++) {
-            text += NL;
-          }
-          textsByPart.put(part, text);
-        });
-    return result;
-  }
-
-  private int numLinesIn(String text) {
-    return text.split(NL).length;
-  }
-
-  private void addSentence(
-      int index,
-      Sentence sentence,
-      Map<String, Object> actorNodesByName,
-      Map<Link, String> vertexTexts,
-      int height,
-      mxGraph graph) {
+  private void addSentence(int index, Sentence sentence, Diagram diagram) {
     var firstActivity = new AtomicBoolean(true);
-    var previousVertex = new AtomicReference<>();
+    var previousBox = new AtomicReference<Box>();
     var activity = new AtomicReference<String>();
     sentence
         .getParts()
@@ -146,35 +83,11 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
             part -> {
               switch (part.getType()) {
                 case "person" ->
-                    addActor(
-                        part,
-                        "material/person",
-                        actorNodesByName,
-                        vertexTexts,
-                        height,
-                        previousVertex,
-                        activity,
-                        graph);
+                    addBox(part, "material/person", diagram, "actor", previousBox, activity);
                 case "people" ->
-                    addActor(
-                        part,
-                        "material/group",
-                        actorNodesByName,
-                        vertexTexts,
-                        height,
-                        previousVertex,
-                        activity,
-                        graph);
+                    addBox(part, "material/group", diagram, "actor", previousBox, activity);
                 case "computerSystem" ->
-                    addActor(
-                        part,
-                        "material/computer",
-                        actorNodesByName,
-                        vertexTexts,
-                        height,
-                        previousVertex,
-                        activity,
-                        graph);
+                    addBox(part, "material/computer", diagram, "actor", previousBox, activity);
                 case "activity" ->
                     activity.set(
                         "%s%s"
@@ -182,88 +95,40 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
                                 firstActivity.getAndSet(false) ? "%c%n".formatted('①' + index) : "",
                                 initLower(toFriendlyName(part.getId()))));
                 case "workObject" ->
-                    addVertex(
+                    addBox(
                         part,
                         Optional.ofNullable(part.getAttributes().get("icon"))
                             .map(List::getFirst)
                             .map(p -> "%s/%s".formatted(p.getType(), initLower(p.getId())))
                             .orElse("material/folder"),
-                        vertexTexts,
-                        height,
-                        previousVertex,
-                        activity,
-                        graph);
+                        diagram,
+                        null,
+                        previousBox,
+                        activity);
                 default ->
-                    throw new UnsupportedOperationException("Can't render " + part.getType());
+                    throw new UnsupportedOperationException(
+                        "Can't add to diagram: " + part.getType());
               }
             });
   }
 
-  private void addActor(
+  private void addBox(
       Link part,
-      String type,
-      Map<String, Object> actorNodesByName,
-      Map<Link, String> vertexTexts,
-      int height,
-      AtomicReference<Object> previousVertex,
-      AtomicReference<String> activity,
-      mxGraph graph) {
-    var vertex = actorNodesByName.get(part.getId());
-    if (vertex == null) {
-      vertex = addVertex(part, type, vertexTexts, height, previousVertex, activity, graph);
-      actorNodesByName.put(part.getId(), vertex);
-    } else {
-      addEdge(previousVertex, vertex, activity.get(), graph);
-    }
-  }
-
-  private Object addVertex(
-      Link part,
-      String type,
-      Map<Link, String> vertexTexts,
-      int height,
-      AtomicReference<Object> previousVertex,
-      AtomicReference<String> activity,
-      mxGraph graph) {
-    var result = addVertex(type, vertexTexts.get(part), height, graph);
-    addEdge(previousVertex, result, activity.get(), graph);
-    return result;
-  }
-
-  private Object addVertex(String type, String name, int height, mxGraph graph) {
-    var url = loadIcon(type);
-    if (url == null) {
-      url = loadIcon("material/questionMark");
-    }
-    return graph.insertVertex(
-        graph.getDefaultParent(),
-        null,
-        toFriendlyName(name),
-        0,
-        0,
-        ICON_SIZE,
-        height,
-        VERTEX_STYLE.formatted(url.toExternalForm()));
-  }
-
-  private URL loadIcon(String type) {
-    return getClass().getClassLoader().getResource("domainStory/" + type + ".png");
-  }
-
-  private void addEdge(
-      AtomicReference<Object> fromReference, Object to, String text, mxGraph graph) {
-    var from = fromReference.getAndSet(to);
-    if (from == null) {
-      return;
-    }
-    graph.insertEdge(graph.getDefaultParent(), null, text, from, to);
-  }
-
-  private void layoutGraph(mxGraph graph, int height) {
-    var layout = new mxHierarchicalLayout(graph, 7);
-    layout.setInterRankCellSpacing(2.0 * ICON_SIZE);
-    layout.setIntraCellSpacing(height - ICON_SIZE + LINE_HEIGHT);
-    layout.execute(graph.getDefaultParent());
+      String iconPath,
+      Diagram diagram,
+      String reuseType,
+      AtomicReference<Box> previousBox,
+      AtomicReference<String> activity) {
+    var box =
+        diagram.add(
+            new IconBox(
+                toFriendlyName(part.getId()),
+                "domainStory/" + iconPath,
+                "domainStory/material/questionMark"),
+            reuseType);
+    Optional.ofNullable(previousBox.getAndSet(box))
+        .map(from -> new Arrow(from, box, activity.get()))
+        .ifPresent(diagram::add);
   }
 
   @Override

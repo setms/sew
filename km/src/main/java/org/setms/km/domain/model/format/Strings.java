@@ -68,4 +68,8 @@ public class Strings {
     }
     return text.substring(0, index) + NL + wrap(text.substring(index), maxLength);
   }
+
+  public static int numLinesIn(String text) {
+    return text.split(NL).length;
+  }
 }

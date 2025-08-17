@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import javax.swing.SwingConstants;
 import lombok.extern.slf4j.Slf4j;
-import org.setms.km.domain.model.tool.BaseDiagramTool;
+import org.setms.km.domain.model.diagram.BaseDiagramTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;

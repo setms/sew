@@ -8,6 +8,7 @@
 
 ## IntelliJ
 
+- When editor content changes, reload html preview
 - Add task window
 
 

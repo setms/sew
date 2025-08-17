@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 import java.util.*;
 import javax.swing.SwingConstants;
 import org.setms.km.domain.model.artifact.Link;
-import org.setms.km.domain.model.tool.BaseDiagramTool;
+import org.setms.km.domain.model.diagram.BaseDiagramTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
