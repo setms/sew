@@ -4,12 +4,7 @@ import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
-import com.mxgraph.util.mxCellRenderer;
-import com.mxgraph.view.mxGraph;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.*;
-import javax.imageio.ImageIO;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -85,6 +80,41 @@ public abstract class Tool<A extends Artifact> {
     diagnostics.add(new Diagnostic(ERROR, message.formatted(args)));
   }
 
+  /**
+   * Apply a suggestion.
+   *
+   * @param resource where to store outputs
+   * @param suggestionCode the suggestion to apply
+   * @param location where in the input to apply the suggestion
+   * @param inputs inputs to use
+   * @return artifacts created/changed and diagnostics
+   */
+  public AppliedSuggestion apply(
+      Resource<?> resource, String suggestionCode, Location location, ResolvedInputs inputs) {
+    try {
+      return doApply(resource, artiFactFor(location, inputs), suggestionCode, location, inputs);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
+  }
+
+  private A artiFactFor(Location location, ResolvedInputs inputs) {
+    return inputs.get(getMainInput().type()).stream()
+        .filter(artifact -> artifact.starts(location))
+        .findFirst()
+        .orElse(null);
+  }
+
+  protected AppliedSuggestion doApply(
+      Resource<?> resource,
+      A artifact,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
+      throws Exception {
+    return AppliedSuggestion.unknown(suggestionCode);
+  }
+
   protected Resource<?> resourceFor(Artifact target, Artifact source, Resource<?> sourceResource) {
     var sourceContainerPath = containerPathFor(source);
     var targetContainerPath = containerPathFor(target);
@@ -122,82 +152,4 @@ public abstract class Tool<A extends Artifact> {
    */
   public void build(
       ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {}
-
-  protected Optional<Resource<?>> build(
-      Artifact object, mxGraph graph, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    try {
-      var image = renderGraph(graph);
-      if (image == null) {
-        return Optional.empty();
-      }
-      var result = resource.select(object.getName() + ".png");
-      try (var output = result.writeTo()) {
-        ImageIO.write(image, "PNG", output);
-      }
-      return Optional.of(result);
-    } catch (IOException e) {
-      addError(diagnostics, e.getMessage());
-    }
-    return Optional.empty();
-  }
-
-  private BufferedImage renderGraph(mxGraph graph) {
-    var image = mxCellRenderer.createBufferedImage(graph, null, 1, null, true, null);
-    if (image == null) {
-      return null;
-    }
-    clear(graph);
-    var result =
-        new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-    var graphics = result.getGraphics();
-    graphics.drawImage(image, 0, 0, null);
-    graphics.dispose();
-    return result;
-  }
-
-  private void clear(mxGraph graph) {
-    graph.getModel().beginUpdate();
-    try {
-      Object[] cells = graph.getChildCells(graph.getDefaultParent(), true, true);
-      graph.removeCells(cells);
-    } finally {
-      graph.getModel().endUpdate();
-    }
-    graph.clearSelection();
-  }
-
-  /**
-   * Apply a suggestion.
-   *
-   * @param resource where to store outputs
-   * @param suggestionCode the suggestion to apply
-   * @param location where in the input to apply the suggestion
-   * @param inputs inputs to use
-   * @return artifacts created/changed and diagnostics
-   */
-  public AppliedSuggestion apply(
-      Resource<?> resource, String suggestionCode, Location location, ResolvedInputs inputs) {
-    try {
-      return doApply(resource, artiFactFor(location, inputs), suggestionCode, location, inputs);
-    } catch (Exception e) {
-      return failedWith(e);
-    }
-  }
-
-  private A artiFactFor(Location location, ResolvedInputs inputs) {
-    return inputs.get(getMainInput().type()).stream()
-        .filter(artifact -> artifact.starts(location))
-        .findFirst()
-        .orElse(null);
-  }
-
-  protected AppliedSuggestion doApply(
-      Resource<?> resource,
-      A artifact,
-      String suggestionCode,
-      Location location,
-      ResolvedInputs inputs)
-      throws Exception {
-    return AppliedSuggestion.unknown(suggestionCode);
-  }
 }

@@ -12,16 +12,16 @@ import java.io.PrintWriter;
 import java.util.*;
 import javax.swing.SwingConstants;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.tool.BaseDiagramTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
 @SuppressWarnings("unused") // At some point, we'll want a context map
-public class ContextMapTool extends Tool<Domain> {
+public class ContextMapTool extends BaseDiagramTool<Domain> {
 
   private static final String OUTPUT_PATH = "build/reports/domains";
   private static final String VERTEX_STYLE = "shape=ellipse;fontColor=#6482B9;fillColor=none;";

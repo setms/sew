@@ -32,9 +32,9 @@ import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.artifact.UnresolvedArtifact;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.tool.BaseDiagramTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -54,7 +54,7 @@ import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.CreateAcceptanceTest;
 import org.setms.swe.domain.services.DiscoverDomainFromUseCases;
 
-public class UseCaseTool extends Tool<UseCase> {
+public class UseCaseTool extends BaseDiagramTool<UseCase> {
 
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));

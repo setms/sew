@@ -35,7 +35,7 @@ import org.setms.swe.domain.model.sdlc.usecase.Scenario;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.DomainStoryToUseCase;
 
-public class DomainStoryTool extends Tool<DomainStory> {
+public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
 
   private static final int ICON_SIZE = 52;
   private static final int MAX_TEXT_LENGTH = ICON_SIZE / 4;
