@@ -18,8 +18,6 @@ import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
 public class ContextMapTool extends BaseDiagramTool<Domain> {
 
-  private static final int WIDTH = 120;
-  private static final int HEIGHT = 60;
   private static final String LABEL_UPSTREAM = "U";
   private static final String LABEL_DOWNSTREAM = "D";
 
@@ -56,9 +54,7 @@ public class ContextMapTool extends BaseDiagramTool<Domain> {
         .getSubdomains()
         .forEach(
             subdomain ->
-                result.put(
-                    subdomain,
-                    diagram.add(new ShapeBox(subdomain.getName(), ELLIPSE, WIDTH, HEIGHT))));
+                result.put(subdomain, diagram.add(new ShapeBox(subdomain.getName(), ELLIPSE))));
     return result;
   }
 

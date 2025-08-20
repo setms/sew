@@ -24,6 +24,8 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
 
   private static final int ICON_SIZE = 52;
   private static final int LINE_HEIGHT = 16;
+  private static final int SHAPE_WIDTH = 120;
+  private static final int SHAPE_HEIGHT = 60;
   private static final String COLOR = "#6482B9;";
   private static final String VERTEX_STYLE_ICON =
       "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=" + COLOR;
@@ -100,8 +102,8 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
         box.getText(),
         0,
         0,
-        box.getWidth(),
-        box.getHeight(),
+        SHAPE_WIDTH,
+        SHAPE_HEIGHT,
         styleFor(box.getShape()));
   }
 

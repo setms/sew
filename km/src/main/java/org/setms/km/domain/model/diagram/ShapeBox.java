@@ -5,13 +5,9 @@ import lombok.Getter;
 public final class ShapeBox extends Box {
 
   @Getter private final Shape shape;
-  @Getter private final int width;
-  @Getter private final int height;
 
-  public ShapeBox(String text, Shape shape, int width, int height) {
+  public ShapeBox(String text, Shape shape) {
     super(text);
     this.shape = shape;
-    this.width = width;
-    this.height = height;
   }
 }

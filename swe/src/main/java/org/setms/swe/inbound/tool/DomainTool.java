@@ -38,9 +38,7 @@ import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
 public class DomainTool extends BaseDiagramTool<Domain> {
 
-  public static final String CREATE_MODULES = "modules.create";
-  public static final int WIDTH = 120;
-  public static final int HEIGHT = 60;
+  private static final String CREATE_MODULES = "modules.create";
 
   @Override
   public Input<Domain> getMainInput() {
@@ -143,7 +141,7 @@ public class DomainTool extends BaseDiagramTool<Domain> {
   }
 
   private Box addBox(Subdomain domain, Diagram diagram) {
-    return diagram.add(new ShapeBox(domain.getName(), ELLIPSE, WIDTH, HEIGHT));
+    return diagram.add(new ShapeBox(domain.getName(), ELLIPSE));
   }
 
   private void addEdge(

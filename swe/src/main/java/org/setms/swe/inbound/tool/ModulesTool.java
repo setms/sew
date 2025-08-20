@@ -1,24 +1,23 @@
 package org.setms.swe.inbound.tool;
 
-import static org.setms.km.domain.model.format.Strings.wrap;
+import static org.setms.km.domain.model.diagram.Shape.RECTANGLE;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.swe.inbound.tool.Inputs.domains;
 import static org.setms.swe.inbound.tool.Inputs.modules;
 
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.view.mxGraph;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-import javax.swing.SwingConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.setms.km.domain.model.diagram.Arrow;
 import org.setms.km.domain.model.diagram.BaseDiagramTool;
+import org.setms.km.domain.model.diagram.Box;
+import org.setms.km.domain.model.diagram.Diagram;
+import org.setms.km.domain.model.diagram.Orientation;
+import org.setms.km.domain.model.diagram.ShapeBox;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -31,9 +30,6 @@ import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
 @Slf4j
 public class ModulesTool extends BaseDiagramTool<Modules> {
-
-  private static final String VERTEX_STYLE = "shape=rectangle;fontColor=#6482B9;fillColor=none;";
-  private static final int MAX_TEXT_LENGTH = 15;
 
   @Override
   public Input<Modules> getMainInput() {
@@ -103,47 +99,27 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
       Resource<?> resource,
       Collection<Diagnostic> diagnostics,
       List<Domain> domains) {
-    var report = resource.select(modules.getName() + ".html");
-    try (var writer = new PrintWriter(report.writeTo())) {
-      writer.println("<html>");
-      writer.println("  <body>");
-      build(modules, toGraph(modules, domains), resource, diagnostics)
-          .ifPresent(
-              image ->
-                  writer.printf(
-                      "    <img src=\"%s\" width=\"100%%\">%n",
-                      report.toUri().resolve(".").normalize().relativize(image.toUri())));
-      writer.println("  </body>");
-      writer.println("</html>");
-    } catch (IOException e) {
-      addError(diagnostics, e.getMessage());
-    }
+    buildHtml(modules, null, toDiagram(modules, domains), resource, diagnostics);
   }
 
-  private mxGraph toGraph(Modules modules, List<Domain> domains) {
-    var result = new mxGraph();
-    result.getModel().beginUpdate();
-    try {
-      buildGraph(modules, result, domains);
-      layoutGraph(result);
-    } finally {
-      result.getModel().endUpdate();
-    }
-    return result;
-  }
-
-  private void buildGraph(Modules modules, mxGraph graph, List<Domain> domains) {
-    var verticesByModule = new HashMap<Module, Object>();
-    modules.getModules().forEach(module -> verticesByModule.put(module, addVertex(module, graph)));
+  private Diagram toDiagram(Modules modules, List<Domain> domains) {
+    var result = new Diagram().setOrientation(Orientation.TOP_TO_BOTTOM);
+    var boxes = new HashMap<Module, Box>();
     modules
         .getModules()
         .forEach(
-            source ->
-                dependenciesOf(source, modules, domains)
-                    .forEach(target -> addEdge(source, target, verticesByModule, graph)));
+            module -> boxes.put(module, result.add(new ShapeBox(module.getName(), RECTANGLE))));
+    modules
+        .getModules()
+        .forEach(
+            from ->
+                dependenciesOf(from, modules, domains)
+                    .forEach(to -> result.add(new Arrow(boxes.get(from), boxes.get(to)))));
+    return result;
   }
 
-  private Stream<Module> dependenciesOf(Module module, Modules modules, List<Domain> domains) {
+  private Stream<Module> dependenciesOf(
+      Module module, Modules modules, Collection<Domain> domains) {
     return modules.getMappedTo().resolveFrom(domains).stream()
         .flatMap(
             domain ->
@@ -156,29 +132,5 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
                         link ->
                             modules.getModules().stream()
                                 .filter(m -> link.equals(m.getMappedTo()))));
-  }
-
-  private Object addVertex(Module module, mxGraph graph) {
-    return graph.insertVertex(
-        graph.getDefaultParent(),
-        null,
-        wrap(module.getName(), MAX_TEXT_LENGTH),
-        0,
-        0,
-        120,
-        60,
-        VERTEX_STYLE);
-  }
-
-  private void addEdge(
-      Module source, Module target, Map<Module, Object> verticesByModule, mxGraph graph) {
-    var from = verticesByModule.get(source);
-    var to = verticesByModule.get(target);
-    graph.insertEdge(graph.getDefaultParent(), null, "", from, to);
-  }
-
-  private void layoutGraph(mxGraph graph) {
-    var layout = new mxHierarchicalLayout(graph, SwingConstants.NORTH);
-    layout.execute(graph.getDefaultParent());
   }
 }
