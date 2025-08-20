@@ -3,7 +3,6 @@
 ## Generic
 
 - Finish `EndToEndTest`
-- Extract support for rendering graphs into separate abstract tool
 
 
 ## IntelliJ
