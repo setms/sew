@@ -2,8 +2,11 @@ package org.setms.km.outbound.diagram.jgraphx;
 
 import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.WEST;
+import static org.setms.km.domain.model.diagram.Placement.NEAR_FROM_VERTEX;
+import static org.setms.km.domain.model.diagram.Placement.NEAR_TO_VERTEX;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
 import java.awt.image.BufferedImage;
@@ -13,14 +16,27 @@ import org.setms.km.domain.model.diagram.Box;
 import org.setms.km.domain.model.diagram.Diagram;
 import org.setms.km.domain.model.diagram.IconBox;
 import org.setms.km.domain.model.diagram.Orientation;
+import org.setms.km.domain.model.diagram.Placement;
+import org.setms.km.domain.model.diagram.Shape;
 import org.setms.km.domain.model.diagram.ShapeBox;
 
 public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
 
   private static final int ICON_SIZE = 52;
   private static final int LINE_HEIGHT = 16;
-  private static final String ICON_VERTEX_STYLE =
-      "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
+  private static final String COLOR = "#6482B9;";
+  private static final String VERTEX_STYLE_ICON =
+      "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=" + COLOR;
+  private static final String VERTEX_STYLE_ELLIPSE =
+      "shape=ellipse;fillColor=none;fontColor=" + COLOR;
+  private static final String VERTEX_STYLE_RECTANGLE =
+      "shape=rectangle;fillColor=none;fontColor=" + COLOR;
+  private static final String VERTEX_STYLE_EDGE_POINT =
+      "fontSize=9;resizable=0;movable=0;rotatable=0;shape=label;align=center;verticalAlign=middle;connectable=0;strokeColor=none;fillColor=none;fontColor="
+          + COLOR;
+  private static final String EDGE_STYLE_BIDIRECTIONAL = "endArrow: none";
+  private static final String EDGE_STYLE_NORMAL = null;
+  public static final int EDGE_POINT_SIZE = 20;
 
   @Override
   public String getId() {
@@ -59,7 +75,7 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     var vertex =
         switch (box) {
           case IconBox iconBox -> addIconVertex(iconBox, context, graph);
-          case ShapeBox shapeBox -> addShapeVertex(shapeBox, context, graph);
+          case ShapeBox shapeBox -> addShapeVertex(shapeBox, graph);
         };
     context.associate(box, vertex);
   }
@@ -74,21 +90,61 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
         0,
         ICON_SIZE,
         context.getBoxHeight(),
-        ICON_VERTEX_STYLE.formatted(icon.toExternalForm()));
+        VERTEX_STYLE_ICON.formatted(icon.toExternalForm()));
   }
 
-  private Object addShapeVertex(ShapeBox shapeBox, GraphContext context, mxGraph graph) {
-    // TODO: Implement
-    return null;
+  private Object addShapeVertex(ShapeBox box, mxGraph graph) {
+    return graph.insertVertex(
+        graph.getDefaultParent(),
+        null,
+        box.getText(),
+        0,
+        0,
+        box.getWidth(),
+        box.getHeight(),
+        styleFor(box.getShape()));
+  }
+
+  private String styleFor(Shape shape) {
+    return switch (shape) {
+      case RECTANGLE -> VERTEX_STYLE_RECTANGLE;
+      case ELLIPSE -> VERTEX_STYLE_ELLIPSE;
+    };
   }
 
   private void addEdge(Arrow arrow, GraphContext context, mxGraph graph) {
-    graph.insertEdge(
-        graph.getDefaultParent(),
-        null,
-        arrow.middleText(),
-        context.vertexFor(arrow.from()),
-        context.vertexFor(arrow.to()));
+    var edge =
+        graph.insertEdge(
+            graph.getDefaultParent(),
+            null,
+            arrow.middleText(),
+            context.vertexFor(arrow.from()),
+            context.vertexFor(arrow.to()),
+            arrow.bidirectional() ? EDGE_STYLE_BIDIRECTIONAL : EDGE_STYLE_NORMAL);
+    if (arrow.fromText() != null) {
+      addEdgeLabel(edge, arrow.fromText(), NEAR_FROM_VERTEX, context, graph);
+    }
+    if (arrow.toText() != null) {
+      addEdgeLabel(edge, arrow.toText(), NEAR_TO_VERTEX, context, graph);
+    }
+  }
+
+  private void addEdgeLabel(
+      Object edge, String text, Placement placement, GraphContext context, mxGraph graph) {
+    context.addEdgeLabel(edge, createEdgeEndpointLabel(text, graph), placement);
+  }
+
+  private mxCell createEdgeEndpointLabel(String text, mxGraph graph) {
+    return (mxCell)
+        graph.insertVertex(
+            graph.getDefaultParent(),
+            null,
+            text,
+            0,
+            0,
+            EDGE_POINT_SIZE,
+            EDGE_POINT_SIZE,
+            VERTEX_STYLE_EDGE_POINT);
   }
 
   private void layoutGraph(Orientation orientation, GraphContext context, mxGraph graph) {
@@ -96,6 +152,10 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     layout.setInterRankCellSpacing(2.0 * ICON_SIZE);
     layout.setIntraCellSpacing(context.getBoxHeight() - ICON_SIZE + LINE_HEIGHT);
     layout.execute(graph.getDefaultParent());
+
+    graph.refresh();
+
+    context.getEdgeLabels().forEach(placement -> positionEdgeLabel(graph, placement));
   }
 
   private int convert(Orientation orientation) {
@@ -103,5 +163,37 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
       case LEFT_TO_RIGHT -> WEST;
       case TOP_TO_BOTTOM -> NORTH;
     };
+  }
+
+  private void positionEdgeLabel(mxGraph graph, EdgeLabel edgeLabel) {
+    var edgeState = graph.getView().getState(edgeLabel.edge());
+    if (edgeState == null || edgeState.getAbsolutePoints() == null) {
+      return;
+    }
+
+    var points = edgeState.getAbsolutePoints();
+    var base = edgeLabel.isPlacedNearFromVertex() ? points.get(0) : points.getLast();
+    var next = edgeLabel.isPlacedNearFromVertex() ? points.get(1) : points.get(points.size() - 2);
+
+    var dx = next.getX() - base.getX();
+    var dy = next.getY() - base.getY();
+    var len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
+    dx /= len;
+    dy /= len;
+    var px = -dy;
+    var py = dx;
+
+    var offsetAlong = 12;
+    var offsetPerpendicular = -5;
+    var labelX = base.getX() + dx * offsetAlong + px * offsetPerpendicular;
+    var labelY = base.getY() + dy * offsetAlong + py * offsetPerpendicular;
+    var xOffset = edgeLabel.isPlacedNearFromVertex() ? 15 : 5;
+    var yOffset = edgeLabel.isPlacedNearFromVertex() ? 8 : 18;
+
+    var geo = edgeLabel.label().getGeometry();
+    geo.setX(labelX - xOffset);
+    geo.setY(labelY - yOffset);
+    geo.setRelative(false);
+    graph.getModel().setGeometry(edgeLabel.label(), geo);
   }
 }
