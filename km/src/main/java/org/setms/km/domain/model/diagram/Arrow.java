@@ -6,7 +6,16 @@ import static org.setms.km.domain.model.diagram.Placement.NEAR_TO_VERTEX;
 
 import java.util.EnumMap;
 
-public record Arrow(Box from, Box to, EnumMap<Placement, String> texts, boolean bidirectional) {
+public record Arrow(
+    Box from, Box to, EnumMap<Placement, String> textPlacements, boolean bidirectional) {
+
+  public Arrow(Box from, Box to) {
+    this(from, to, newTextPlacements(), false);
+  }
+
+  public static EnumMap<Placement, String> newTextPlacements() {
+    return new EnumMap<>(Placement.class);
+  }
 
   public Arrow(Box from, Box to, String middleText) {
     this(from, to, textsOf(middleText), false);
@@ -28,14 +37,14 @@ public record Arrow(Box from, Box to, EnumMap<Placement, String> texts, boolean 
   }
 
   public String middleText() {
-    return texts.get(IN_MIDDLE);
+    return textPlacements.get(IN_MIDDLE);
   }
 
   public String fromText() {
-    return texts.get(NEAR_FROM_VERTEX);
+    return textPlacements.get(NEAR_FROM_VERTEX);
   }
 
   public String toText() {
-    return texts.get(NEAR_TO_VERTEX);
+    return textPlacements.get(NEAR_TO_VERTEX);
   }
 }
