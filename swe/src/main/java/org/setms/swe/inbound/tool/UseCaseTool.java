@@ -9,9 +9,6 @@ import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
-import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.model.mxCell;
-import com.mxgraph.view.mxGraph;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
@@ -30,7 +27,11 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.artifact.UnresolvedArtifact;
+import org.setms.km.domain.model.diagram.Arrow;
 import org.setms.km.domain.model.diagram.BaseDiagramTool;
+import org.setms.km.domain.model.diagram.Box;
+import org.setms.km.domain.model.diagram.Diagram;
+import org.setms.km.domain.model.diagram.IconBox;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
@@ -59,11 +60,6 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
   private static final Collection<String> DEPENDS_ON_ATTRIBUTES = List.of("reads");
-  private static final int ICON_SIZE = 52;
-  private static final int MAX_TEXT_LENGTH = ICON_SIZE / 4;
-  private static final String VERTEX_STYLE =
-      "shape=image;image=%s;verticalLabelPosition=bottom;verticalAlign=top;fontColor=#6482B9;";
-  private static final int LINE_HEIGHT = 16;
   private static final String CREATE_MISSING_STEP = "step.missing.create";
   private static final String CREATE_DOMAIN = "domain.create";
   private static final String CREATE_ACCEPTANCE_TEST = "acceptance.test.create";
@@ -433,121 +429,47 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
 
   private Optional<Resource<?>> build(
       Scenario scenario, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    return build(scenario, toGraph(scenario), resource, diagnostics);
+    return build(scenario, toDiagram(scenario), resource, diagnostics);
   }
 
-  private mxGraph toGraph(Scenario scenario) {
-    var stepTexts = wrappedStepTextsFor(scenario);
-    var numLines = ensureSameNumberOfLinesFor(stepTexts);
-    var height = ICON_SIZE + (numLines - 1) * LINE_HEIGHT;
-    var result = new mxGraph();
-    result.getModel().beginUpdate();
-    try {
-      var from =
-          new AtomicReference<>(
-              addVertex(result, scenario.getSteps().getFirst(), height, stepTexts));
-      scenario.getSteps().stream()
-          .skip(1)
-          .forEach(step -> addStepToGraph(step, result, height, stepTexts, from));
-      layoutGraph(result, height);
-    } finally {
-      result.getModel().endUpdate();
-    }
+  private Diagram toDiagram(Scenario scenario) {
+    var result = new Diagram();
+    var from = new AtomicReference<>(addBox(scenario.getSteps().getFirst(), result));
+    scenario.getSteps().stream().skip(1).forEach(step -> addStepToGraph(step, from, result));
 
     return result;
   }
 
-  private Map<Link, String> wrappedStepTextsFor(Scenario scenario) {
-    var result = new HashMap<Link, String>();
-    scenario
-        .getSteps()
-        .forEach(
-            step -> {
-              result.put(step, wrap(step.getId(), MAX_TEXT_LENGTH));
-              step.getAttributes().values().stream()
-                  .flatMap(Collection::stream)
-                  .forEach(
-                      reference -> result.put(reference, wrap(reference.getId(), MAX_TEXT_LENGTH)));
-            });
-    return result;
-  }
-
-  @SuppressWarnings("StringConcatenationInLoop")
-  private int ensureSameNumberOfLinesFor(Map<Link, String> textsByStep) {
-    var result = textsByStep.values().stream().mapToInt(this::numLinesIn).max().orElseThrow();
-    textsByStep.forEach(
-        (step, text) -> {
-          var addLines = result - numLinesIn(text);
-          for (var i = 0; i < addLines; i++) {
-            text += NL;
-          }
-          textsByStep.put(step, text);
-        });
-    return result;
-  }
-
-  private int numLinesIn(String text) {
-    return text.split(NL).length;
-  }
-
-  private void addStepToGraph(
-      Link step,
-      mxGraph graph,
-      int vertexHeight,
-      Map<Link, String> stepTexts,
-      AtomicReference<Object> lastVertex) {
-    var to = addVertex(graph, step, vertexHeight, stepTexts);
-    var previous = lastVertex.get();
-    graph.insertEdge(graph.getDefaultParent(), null, "", previous, to);
-    lastVertex.set(to);
+  private void addStepToGraph(Link step, AtomicReference<Box> lastBox, Diagram diagram) {
+    var to = addBox(step, diagram);
+    var previous = lastBox.get();
+    diagram.add(new Arrow(previous, to));
+    lastBox.set(to);
     step.getAttributes()
         .forEach(
             (name, references) -> {
-              var begin = lastVertex.get();
+              var begin = lastBox.get();
               for (var reference : references) {
                 if (DEPENDS_ON_ATTRIBUTES.contains(name)) {
-                  var edges =
-                      graph.getEdges(previous, graph.getDefaultParent(), false, true, false);
-                  var text = stepTexts.get(reference);
+                  var arrows = diagram.findArrowsTo(previous);
+                  var text = reference.getId();
                   var end =
-                      Arrays.stream(edges)
-                          .map(mxCell.class::cast)
-                          .map(mxCell::getTarget)
-                          .filter(vertex -> text.equals(vertex.getValue()))
-                          .map(Object.class::cast)
+                      arrows.stream()
+                          .map(Arrow::to)
+                          .filter(box -> text.equals(box.getText()))
                           .findFirst()
-                          .orElseGet(() -> addVertex(graph, reference, vertexHeight, stepTexts));
-                  graph.insertEdge(graph.getDefaultParent(), null, "", end, begin);
+                          .orElseGet(() -> addBox(reference, diagram));
+                  diagram.add(new Arrow(end, begin));
                 } else {
-                  var end = addVertex(graph, reference, vertexHeight, stepTexts);
-                  graph.insertEdge(graph.getDefaultParent(), null, "", begin, end);
+                  var end = addBox(reference, diagram);
+                  diagram.add(new Arrow(begin, end));
                 }
               }
             });
   }
 
-  private void layoutGraph(mxGraph graph, int height) {
-    var layout = new mxHierarchicalLayout(graph, 7);
-    layout.setInterRankCellSpacing(2.0 * ICON_SIZE / 3);
-    layout.setIntraCellSpacing(height - ICON_SIZE + LINE_HEIGHT);
-    layout.execute(graph.getDefaultParent());
-  }
-
-  private Object addVertex(
-      mxGraph graph, Link step, int vertexHeight, Map<Link, String> stepTexts) {
-    var url = getClass().getClassLoader().getResource("eventStorm/" + step.getType() + ".png");
-    if (url == null) {
-      throw new IllegalArgumentException("Icon not found for " + step.getType());
-    }
-    return graph.insertVertex(
-        graph.getDefaultParent(),
-        null,
-        stepTexts.get(step),
-        0,
-        0,
-        ICON_SIZE,
-        vertexHeight,
-        VERTEX_STYLE.formatted(url.toExternalForm()));
+  private Box addBox(Link step, Diagram diagram) {
+    return diagram.add(new IconBox(step.getId(), "eventStorm/" + step.getType()));
   }
 
   private List<Sentence> describeSteps(List<Link> steps, ResolvedInputs context) {

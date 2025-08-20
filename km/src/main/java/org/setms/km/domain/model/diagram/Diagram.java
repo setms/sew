@@ -68,4 +68,8 @@ public class Diagram {
         });
     return maxLines.get();
   }
+
+  public Collection<Arrow> findArrowsTo(Box box) {
+    return arrows.stream().filter(arrow -> arrow.to().equals(box)).toList();
+  }
 }
