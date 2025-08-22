@@ -42,7 +42,7 @@ class FileResource implements Resource<FileResource> {
 
   @Override
   public URI toUri() {
-    return file.toURI();
+    return Files.toUri(file);
   }
 
   @Override

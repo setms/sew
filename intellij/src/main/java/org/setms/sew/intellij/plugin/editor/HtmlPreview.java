@@ -152,7 +152,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
   private void showFile() {
     var service = project.getService(KmSystemService.class);
-    browser.loadURL(
+    var url =
         Optional.ofNullable(service.getWorkspace().find(file))
             .map(Resource::path)
             .map(service.getKmSystem()::mainReportFor)
@@ -160,7 +160,12 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
             .map(List::getFirst)
             .map(Resource::toUri)
             .map(Object::toString)
-            .orElse("about:blank"));
+            .orElse("about:blank");
+    if (url.equals(browser.getCefBrowser().getURL())) {
+      browser.getCefBrowser().reload();
+    } else {
+      browser.loadURL(url);
+    }
   }
 
   @Override

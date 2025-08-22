@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -56,5 +57,11 @@ public class Files {
       path = path.substring(PATH_PREFIX.length());
     }
     return new File(path);
+  }
+
+  public static URI toUri(File file) {
+    var result = file.toURI().toString();
+    result = result.replaceFirst("^file:/([^/])", "file:///$1");
+    return URI.create(result);
   }
 }
