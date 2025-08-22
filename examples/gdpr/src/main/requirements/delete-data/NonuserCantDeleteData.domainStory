@@ -8,9 +8,7 @@ sentence {
     parts = [
         person(Nonuser),
         activity(Submits),
-        workObject(Request, icon=material(Draft)),
-        activity(To),
-        workObject(DeleteData, icon=material(Delete))
+        workObject(Request, icon=material(Draft))
     ]
 }
 

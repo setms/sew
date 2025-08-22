@@ -20,9 +20,15 @@ sentence {
 sentence {
   parts = [
     computerSystem(App),
+    activity(Submits),
+    workObject(Request, icon=material(Draft))
+  ]
+}
+
+sentence {
+  parts = [
+    computerSystem(GdprMiddleware),
     activity(Starts),
-    workObject(Request, icon=material(Work)),
-    activity(In),
-    computerSystem(GdprMiddleware)
+    workObject(Request)
   ]
 }
