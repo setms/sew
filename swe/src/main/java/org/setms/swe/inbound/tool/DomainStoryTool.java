@@ -102,7 +102,7 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
                             .map(p -> "%s/%s".formatted(p.getType(), initLower(p.getId())))
                             .orElse("material/folder"),
                         diagram,
-                        null,
+                        part == sentence.getParts().getLast() ? "workObject" : null,
                         previousBox,
                         activity);
                 default ->
