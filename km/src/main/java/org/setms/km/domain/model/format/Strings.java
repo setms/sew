@@ -56,17 +56,25 @@ public class Strings {
   }
 
   public static String wrap(String text, int maxLength) {
-    if (text.length() <= maxLength) {
-      return text;
+    if (text == null) {
+      return "";
     }
-    var index = maxLength - 1;
-    while (index >= 0 && !Character.isUpperCase(text.charAt(index))) {
-      index--;
+    var capacity = text.length() + text.length() / maxLength;
+    var result = new StringBuilder(capacity);
+    result.append(text);
+    var columnEnd = maxLength;
+    while (columnEnd < result.length()) {
+      var spaceIndex = result.lastIndexOf(" ", columnEnd);
+      if (spaceIndex < columnEnd - maxLength) {
+        result.insert(columnEnd, NL);
+        columnEnd += maxLength + 1;
+      } else {
+        result.delete(spaceIndex, spaceIndex + 1);
+        result.insert(spaceIndex, NL);
+        columnEnd = spaceIndex + 1 + maxLength;
+      }
     }
-    if (index <= 0) {
-      index = maxLength;
-    }
-    return text.substring(0, index) + NL + wrap(text.substring(index), maxLength);
+    return result.toString();
   }
 
   public static int numLinesIn(String text) {
