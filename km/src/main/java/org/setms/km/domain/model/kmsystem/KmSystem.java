@@ -68,7 +68,7 @@ public class KmSystem {
     }
   }
 
-  public void registerHandlers() {
+  private void registerHandlers() {
     workspace.registerArtifactChangedHandler(this::artifactChanged);
     workspace.registerArtifactDeletedHandler(this::artifactDeleted);
   }
@@ -288,6 +288,14 @@ public class KmSystem {
 
   private Suggestion deserializeSuggestion(Map<String, String> suggestion) {
     return new Suggestion(suggestion.get("code"), suggestion.get("message"));
+  }
+
+  public Set<Diagnostic> diagnosticsWithSuggestions() {
+    return workspace.root().matching(new Glob(".km/diagnostics", "**/*.json")).stream()
+        .map(this::deserializeFrom)
+        .flatMap(Collection::stream)
+        .filter(Diagnostic::hasSuggestion)
+        .collect(toSet());
   }
 
   private void artifactDeleted(String path) {

@@ -19,4 +19,12 @@ public record Diagnostic(
     return "%s%s: %s"
         .formatted(level, location == null ? "" : " at %s".formatted(location), message);
   }
+
+  public boolean hasSuggestion() {
+    return !suggestions.isEmpty();
+  }
+
+  public boolean hasSingleSuggestion() {
+    return suggestions.size() == 1;
+  }
 }

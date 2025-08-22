@@ -7,7 +7,6 @@
 
 ## IntelliJ
 
-- When editor content changes, reload html preview
 - Add task window
 
 
@@ -15,7 +14,7 @@
 
 ### Domain story
 
-- Rendering: re-use work objects at end of sentences
+- Rendering: improve positioning of actors
 - Conversion to use case scenario: handle multiple activities in single sentence
 
 

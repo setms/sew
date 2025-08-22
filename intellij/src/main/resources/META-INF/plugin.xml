@@ -72,5 +72,13 @@
                 displayType="BALLOON"
                 isLogByDefault="true"
                 toolWindowId="Event Log"/>
+
+        <toolWindow
+                id="Tasks"
+                anchor="left"
+                secondary="true"
+                icon="/icons/tasks.svg"
+                factoryClass="org.setms.sew.intellij.plugin.TasksWindowFactory"
+        />
     </extensions>
 </idea-plugin>
