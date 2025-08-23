@@ -7,7 +7,8 @@
 
 ## IntelliJ
 
-- Add task window
+- Newly added file isn't validated/built
+- Finish task window
 
 
 ## Specific tools

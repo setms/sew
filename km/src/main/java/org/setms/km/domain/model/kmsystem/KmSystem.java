@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
@@ -29,6 +30,7 @@ import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 
+@Slf4j
 public class KmSystem {
 
   private final ObjectMapper mapper = new ObjectMapper();
@@ -170,7 +172,7 @@ public class KmSystem {
       toolReport.delete();
       tool.build(inputs, toolReport, diagnostics);
     } catch (Exception e) {
-      throw new IllegalStateException("Failed to build report", e);
+      log.error("Failed to build report", e);
     }
   }
 
