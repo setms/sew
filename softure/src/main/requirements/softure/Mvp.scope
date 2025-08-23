@@ -1,6 +1,6 @@
 package sew
 
-scope mvp {
+scope Mvp {
     dependsOn         = [ poc ]
     businessObjective = "Build the smallest marketable application that delivers value in the direction of the vision"
 }
