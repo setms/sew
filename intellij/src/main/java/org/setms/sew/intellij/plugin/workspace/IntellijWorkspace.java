@@ -2,6 +2,8 @@ package org.setms.sew.intellij.plugin.workspace;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.File;
+
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -9,6 +11,7 @@ import org.setms.km.domain.model.workspace.Workspace;
 @RequiredArgsConstructor
 public class IntellijWorkspace extends Workspace<VirtualFile> {
 
+  @Getter
   private final VirtualFile root;
 
   @Override
@@ -33,7 +36,11 @@ public class IntellijWorkspace extends Workspace<VirtualFile> {
   }
 
   public void changed(VirtualFile file) {
-    parse(find(file).path()).ifPresent(artifact -> onChanged(find(file).path(), artifact));
+    var resource = find(file);
+    if (resource == null) {
+      return;
+    }
+    parse(resource.path()).ifPresent(artifact -> onChanged(resource.path(), artifact));
   }
 
   public void deleted(Resource<?> resource) {

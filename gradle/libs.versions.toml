@@ -9,6 +9,7 @@ intellij-grammarkit = "2022.3.2.2"
 intellij-plugin = "2.7.1"
 jfreechart = "1.5.6"
 jgraphx = "4.2.2"
+jqwik = "1.9.3"
 junit5 = "5.13.4"
 junit5-launcher = "1.13.4"
 languagetool = "6.6.12-3"
@@ -34,6 +35,7 @@ directory-watcher = { module = "io.methvin:directory-watcher", version.ref = "di
 evo-inflector = { module = "org.atteo:evo-inflector", version.ref = "evo-inflector" }
 jfreechart = { module = "org.jfree:jfreechart", version.ref = "jfreechart" }
 jgraphx = { module = "com.github.vlsi.mxgraph:jgraphx", version.ref = "jgraphx" }
+jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
 junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
 junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5-launcher" }
 junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
@@ -57,7 +59,7 @@ classgraph = ["classgraph"]
 directory-watcher = ["directory-watcher"]
 language = ["evo-inflector", "languagetool"]
 visualization = ["jgraphx", "jfreechart"]
-junit = ["junit5", "junit5-params", "mockito", "mockito-junit", "assertj", "awaitility"]
+junit = ["junit5", "junit5-params", "mockito", "mockito-junit", "assertj", "awaitility", "jqwik"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
 slf4f = ["slf4j-api"]
 spring-boot = ["spring-thymeleaf", "spring-validation", "spring-web"]
