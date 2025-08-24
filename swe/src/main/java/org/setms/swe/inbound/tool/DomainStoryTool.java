@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static java.util.function.Predicate.not;
+import static org.setms.km.domain.model.diagram.Layout.LANE;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.toFriendlyName;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
@@ -66,7 +67,7 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   }
 
   private Diagram toDiagram(List<Sentence> sentences) {
-    var result = new Diagram();
+    var result = new Diagram().setLayout(LANE);
     for (var i = 0; i < sentences.size(); i++) {
       addSentence(i, sentences.get(i), result);
     }

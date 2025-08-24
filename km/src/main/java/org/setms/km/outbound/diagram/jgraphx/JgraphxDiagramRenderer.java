@@ -6,6 +6,7 @@ import static org.setms.km.domain.model.diagram.Placement.NEAR_FROM_VERTEX;
 import static org.setms.km.domain.model.diagram.Placement.NEAR_TO_VERTEX;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
+import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
@@ -15,6 +16,7 @@ import org.setms.km.domain.model.diagram.BaseDiagramRenderer;
 import org.setms.km.domain.model.diagram.Box;
 import org.setms.km.domain.model.diagram.Diagram;
 import org.setms.km.domain.model.diagram.IconBox;
+import org.setms.km.domain.model.diagram.Layout;
 import org.setms.km.domain.model.diagram.Orientation;
 import org.setms.km.domain.model.diagram.Placement;
 import org.setms.km.domain.model.diagram.Shape;
@@ -61,7 +63,7 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     result.getModel().beginUpdate();
     try {
       buildGraph(diagram, context, result);
-      layoutGraph(diagram.getOrientation(), context, result);
+      layoutGraph(diagram.getLayout(), diagram.getOrientation(), context, result);
     } finally {
       result.getModel().endUpdate();
     }
@@ -149,15 +151,29 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
             VERTEX_STYLE_EDGE_POINT);
   }
 
-  private void layoutGraph(Orientation orientation, GraphContext context, mxGraph graph) {
-    var layout = new mxHierarchicalLayout(graph, convert(orientation));
-    layout.setInterRankCellSpacing(2.0 * ICON_SIZE);
-    layout.setIntraCellSpacing(context.getBoxHeight() - ICON_SIZE + LINE_HEIGHT);
-    layout.execute(graph.getDefaultParent());
+  private void layoutGraph(
+      Layout layout, Orientation orientation, GraphContext context, mxGraph graph) {
+    newLayoutFor(layout, orientation, context, graph).execute(graph.getDefaultParent());
 
     graph.refresh();
 
     context.getEdgeLabels().forEach(placement -> positionEdgeLabel(graph, placement));
+  }
+
+  private mxGraphLayout newLayoutFor(
+      Layout layout, Orientation orientation, GraphContext context, mxGraph graph) {
+    return switch (layout) {
+      case DEFAULT -> newHierarchicalLayout(orientation, context, graph);
+      case LANE -> newLaneLayout(graph);
+    };
+  }
+
+  private mxGraphLayout newHierarchicalLayout(
+      Orientation orientation, GraphContext context, mxGraph graph) {
+    var result = new mxHierarchicalLayout(graph, convert(orientation));
+    result.setInterRankCellSpacing(2.0 * ICON_SIZE);
+    result.setIntraCellSpacing(context.getBoxHeight() - ICON_SIZE + LINE_HEIGHT);
+    return result;
   }
 
   private int convert(Orientation orientation) {
@@ -165,6 +181,10 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
       case LEFT_TO_RIGHT -> WEST;
       case TOP_TO_BOTTOM -> NORTH;
     };
+  }
+
+  private mxGraphLayout newLaneLayout(mxGraph graph) {
+    return new LaneLayout(graph);
   }
 
   private void positionEdgeLabel(mxGraph graph, EdgeLabel edgeLabel) {

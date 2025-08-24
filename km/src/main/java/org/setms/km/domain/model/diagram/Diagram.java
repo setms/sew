@@ -22,6 +22,7 @@ public class Diagram {
   private static final int MAX_TEXT_LENGTH = 13;
 
   @Getter @Setter private Orientation orientation = Orientation.LEFT_TO_RIGHT;
+  @Getter @Setter private Layout layout = Layout.DEFAULT;
   @Getter private final Collection<Box> boxes = new ArrayList<>();
   @Getter private final Collection<Arrow> arrows = new ArrayList<>();
   private final Map<String, Collection<Box>> boxesByType = new HashMap<>();
