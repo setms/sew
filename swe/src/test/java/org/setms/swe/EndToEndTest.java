@@ -95,7 +95,8 @@ class EndToEndTest {
     var result =
         workspace
             .root()
-            .select("src/main/requirements/%s.domainStory".formatted(DOMAIN_STORY_NAME));
+            .select(
+                "src/main/requirements/domain-stories/%s.domainStory".formatted(DOMAIN_STORY_NAME));
     try (var writer = new PrintWriter(result.writeTo())) {
       writer.println(DOMAIN_STORY_CONTENT.formatted(DOMAIN_STORY_NAME));
     }

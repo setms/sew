@@ -54,7 +54,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     """;
 
   public UseCaseToolTest() {
-    super(new UseCaseTool(), UseCase.class, "main/requirements");
+    super(new UseCaseTool(), UseCase.class, "main/requirements/use-cases");
   }
 
   @Test
@@ -73,7 +73,8 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     var diagnostic = diagnostics.getFirst();
     var created =
         apply(diagnostic.suggestions().getFirst(), diagnostic, workspace).createdOrChanged();
-    var domainStory = workspace.root().select("src/main/requirements/HappyPath.domainStory");
+    var domainStory =
+        workspace.root().select("src/main/requirements/domain-stories/HappyPath.domainStory");
     assertThat(created).hasSize(1).contains(domainStory);
     var file = toFile(domainStory);
     assertThat(file).isFile();

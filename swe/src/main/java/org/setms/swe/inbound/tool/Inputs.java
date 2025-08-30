@@ -27,9 +27,11 @@ import org.setms.swe.inbound.format.sal.SalFormat;
 @NoArgsConstructor(access = PRIVATE)
 class Inputs {
 
-  static final String PATH_DESIGN = "src/main/design";
-  static final String PATH_REQUIREMENTS = "src/main/requirements";
   static final String PATH_STAKEHOLDERS = "src/main/stakeholders";
+  static final String PATH_REQUIREMENTS = "src/main/requirements";
+  static final String PATH_USE_CASES = PATH_REQUIREMENTS + "/use-cases";
+  static final String PATH_DOMAIN_STORIES = PATH_REQUIREMENTS + "/domain-stories";
+  static final String PATH_DESIGN = "src/main/design";
   static final String PATH_ACCEPTANCE_TESTS = "src/test/acceptance";
   static final String PATH_ANALYSIS = "src/main/analysis";
   static final String PATH_ARCHITECTURE = "src/main/architecture";
@@ -60,7 +62,7 @@ class Inputs {
   }
 
   static Input<DomainStory> domainStories() {
-    return newInput(PATH_REQUIREMENTS, DomainStory.class);
+    return newInput(PATH_DOMAIN_STORIES, DomainStory.class);
   }
 
   static Input<Entity> entities() {
@@ -96,7 +98,7 @@ class Inputs {
   }
 
   static Input<UseCase> useCases() {
-    return newInput(PATH_REQUIREMENTS, UseCase.class);
+    return newInput(PATH_USE_CASES, UseCase.class);
   }
 
   static Input<User> users() {

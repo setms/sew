@@ -15,7 +15,6 @@
 
 ### Domain story
 
-- Rendering: improve positioning of actors
 - Conversion to use case scenario: handle multiple activities in single sentence
 
 
