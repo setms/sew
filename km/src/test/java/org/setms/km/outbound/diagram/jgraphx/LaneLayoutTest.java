@@ -20,7 +20,7 @@ class LaneLayoutTest {
   private final mxGraphLayout layout = new LaneLayout(graph);
 
   @Test
-  void shouldRenderSinglePathAsOneLane() {
+  void shouldRenderOneLaneForSinglePath() {
     var v1 = addVertex("Ape");
     var v2 = addVertex("Bear");
     insertEdge(v1, v2, "Cheetah");
@@ -96,11 +96,11 @@ class LaneLayoutTest {
       var delta = (int) (xCoordinates.get(i) - xCoordinates.get(i - 1));
       deltas.add(delta + delta % 2);
     }
-    assertThat(deltas).as("Vertices are evenly spaced").hasSize(1);
+    assertThat(deltas.size()).as("Vertices are evenly spaced").isLessThanOrEqualTo(1);
   }
 
   @Test
-  void shouldRenderTwoConvergingPathsAsOneLane() {
+  void shouldRenderOneLaneForTwoJoinedPaths() {
     var v1 = addVertex("Ape");
     var v2 = addVertex("Bear");
     insertEdge(v1, v2, "Cheetah");
@@ -140,5 +140,31 @@ class LaneLayoutTest {
     insertEdge(v5, v6, "Nightingale");
 
     assertThatLayoutLooksGood();
+    assertThatVerticesAreInHorizontalLane(List.of(v1, v2, v4, v3));
+    assertThatVerticesAreInHorizontalLane(List.of(v5, v6));
+    assertThatVerticesHaveSameSameLeft(List.of(v2, v5));
+    assertThatVerticesHaveSameSameLeft(List.of(v4, v6));
+  }
+
+  private void assertThatVerticesHaveSameSameLeft(List<mxCell> cells) {
+    assertThat(cells.stream().map(this::getBounds).mapToDouble(Rectangle::getX).distinct().count())
+        .as("# X coordinates")
+        .isEqualTo(1);
+  }
+
+  @Test
+  void shouldNotMovePlacedVertex() {
+    var v1 = addVertex("Ape");
+    var v2 = addVertex("Bear");
+    var v3 = addVertex("Cheetah");
+    var v4 = addVertex("Dingo");
+    insertEdge(v1, v2, "Elephant");
+    insertEdge(v2, v3, "Fox");
+    insertEdge(v2, v4, "Giraffe");
+
+    assertThatLayoutLooksGood();
+    assertThatVerticesAreInHorizontalLane(List.of(v1, v2, v3));
+    assertThatVerticesAreInHorizontalLane(List.of(v4));
+    assertThatVerticesHaveSameSameLeft(List.of(v3, v4));
   }
 }

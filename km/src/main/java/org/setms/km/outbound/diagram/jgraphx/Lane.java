@@ -3,38 +3,42 @@ package org.setms.km.outbound.diagram.jgraphx;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.jetbrains.annotations.NotNull;
 
-public record Lane(List<mxCell> cells) {
+public record Lane(Path path) {
 
   mxCell getFirst() {
-    return cells.getFirst();
+    return path.getFirst();
   }
 
   mxCell getSecond() {
-    return cells.get(1);
+    return path.get(1);
   }
 
   mxCell getLast() {
-    return cells.getLast();
+    return path.getLast();
   }
 
   Stream<mxCell> stream() {
-    return cells.stream();
+    return path.stream();
   }
 
   public Set<mxCell> toSet() {
-    return new LinkedHashSet<>(cells);
+    return new LinkedHashSet<>(path.toList());
   }
 
   public int size() {
-    return cells.size();
+    return path.size();
+  }
+
+  public boolean contains(mxCell cell) {
+    return path.contains(cell);
   }
 
   public double width() {
-    return cells.stream().mapToDouble(this::widthOf).sum();
+    return path.stream().mapToDouble(this::widthOf).sum();
   }
 
   private double widthOf(mxCell cell) {
@@ -42,7 +46,7 @@ public record Lane(List<mxCell> cells) {
   }
 
   public double maxY() {
-    return cells.stream()
+    return path.stream()
         .map(mxCell::getGeometry)
         .map(mxGeometry::getRectangle)
         .mapToDouble(r -> r.getY() + r.getHeight())
@@ -51,6 +55,15 @@ public record Lane(List<mxCell> cells) {
   }
 
   Lane skip(int n) {
-    return new Lane(cells.stream().skip(n).toList());
+    return new Lane(new Path(path.stream().skip(n).toList()));
+  }
+
+  @Override
+  public @NotNull String toString() {
+    return "Lane{%s}".formatted(path);
+  }
+
+  public mxCell before(mxCell cell) {
+    return path.before(cell);
   }
 }

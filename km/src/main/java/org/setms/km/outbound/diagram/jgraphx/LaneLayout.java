@@ -2,18 +2,25 @@ package org.setms.km.outbound.diagram.jgraphx;
 
 import static java.util.Comparator.comparing;
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.toList;
 import static org.setms.km.outbound.diagram.jgraphx.LanePatternType.SPLIT;
 import static org.setms.km.outbound.diagram.jgraphx.LanePatternType.STRAIGHT;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxGeometry;
 import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,6 +30,7 @@ public class LaneLayout extends mxGraphLayout {
   private List<mxCell> sources;
   private Collection<Lane> lanes;
   private Collection<LanePattern> patterns;
+  private Paths paths;
 
   public LaneLayout(mxGraph graph) {
     super(graph);
@@ -38,9 +46,10 @@ public class LaneLayout extends mxGraphLayout {
   }
 
   private void placeVertices() {
-    vertices.forEach(vertex -> place(vertex, 0, 0));
+    vertices.forEach(vertex -> place(vertex, -1, -1));
     sources = vertices.stream().filter(this::isSource).toList();
-    lanes = collectLanes();
+    paths = collectPaths();
+    lanes = combinePathsIntoLanes();
     patterns = findLanePatterns();
     placePatterns();
   }
@@ -56,13 +65,6 @@ public class LaneLayout extends mxGraphLayout {
         .toList();
   }
 
-  private List<mxCell> getOutgoingEdges(mxCell cell) {
-    return Arrays.stream(
-            getGraph().getEdges(cell, getGraph().getDefaultParent(), false, true, false))
-        .map(mxCell.class::cast)
-        .toList();
-  }
-
   private void place(mxCell cell, double x, double y) {
     var geo = cell.getGeometry();
     if (geo.getX() != x || geo.getY() != y) {
@@ -71,150 +73,194 @@ public class LaneLayout extends mxGraphLayout {
     }
   }
 
-  private Collection<Lane> collectLanes() {
-    return mergeConvergingPathsIntoLanes(collectPaths());
-  }
-
-  private Collection<List<mxCell>> collectPaths() {
-    var result = new ArrayList<List<mxCell>>();
-    sources.forEach(
-        source ->
-            getOutgoingEdges(source)
-                .forEach(
-                    edge -> {
-                      var path = new ArrayList<mxCell>();
-                      path.add(source);
-                      var target = (mxCell) edge.getTarget();
-                      path.add(target);
-                      completePath(target, path);
-                      result.add(path);
-                    }));
-    return result;
-  }
-
-  private void completePath(mxCell cell, Collection<mxCell> path) {
-    getOutgoingEdges(cell)
-        .forEach(
-            edge -> {
-              var target = (mxCell) edge.getTarget();
-              path.add(target);
-              completePath(target, path);
-            });
-  }
-
-  private Collection<Lane> mergeConvergingPathsIntoLanes(Collection<List<mxCell>> paths) {
-    var result = new ArrayList<Lane>();
-    paths.forEach(
-        path -> {
-          var last = path.getLast();
-          if (sources.contains(last)) {
-            result.add(new Lane(path));
-          } else {
-            paths.stream()
-                .filter(p -> p.getLast() == last && p.getFirst() != path.getFirst())
+  private Paths collectPaths() {
+    var result = new Paths();
+    var unused = getEdges().collect(toList());
+    var starting = unused.stream().filter(edge -> sources.contains(startOf(edge))).toList();
+    starting.forEach(
+        edge -> {
+          result.add(toPath(edge));
+          unused.remove(edge);
+        });
+    while (!unused.isEmpty()) {
+      var used = new ArrayList<mxCell>();
+      unused.forEach(
+          edge -> {
+            var start = startOf(edge);
+            result.stream()
+                .filter(path -> path.getLast() == start)
                 .findFirst()
                 .ifPresentOrElse(
-                    otherPath -> {
-                      var merged = new ArrayList<>(path);
-                      otherPath.stream()
-                          .filter(cell -> cell != last)
-                          .forEach(cell -> merged.add(path.size(), cell));
-                      if (isNewLane(merged, result)) {
-                        result.add(new Lane(merged));
-                      }
+                    path -> {
+                      used.add(edge);
+                      result.replace(path, path.join(toPath(edge)));
                     },
                     () -> {
-                      if (isNewLane(path, result)) {
-                        result.add(new Lane(path));
-                      }
+                      used.add(edge);
+                      result.add(toPath(edge));
                     });
-          }
-        });
+          });
+      if (used.isEmpty()) {
+        unused.stream().map(this::toPath).forEach(result::add);
+        unused.clear();
+      } else {
+        unused.removeAll(used);
+      }
+    }
     return result;
   }
 
-  private boolean isNewLane(Collection<mxCell> candidate, Collection<Lane> existing) {
-    return existing.stream().map(Lane::toSet).noneMatch(lane -> lane.containsAll(candidate));
+  private mxCell startOf(mxCell edge) {
+    return (mxCell) edge.getSource();
+  }
+
+  private Stream<mxCell> getEdges() {
+    return Arrays.stream(getGraph().getChildEdges(getGraph().getDefaultParent()))
+        .map(mxCell.class::cast);
+  }
+
+  private Path toPath(mxCell edge) {
+    return new Path(startOf(edge), (mxCell) edge.getTarget());
+  }
+
+  private Collection<Lane> combinePathsIntoLanes() {
+    var result = new ArrayList<Lane>();
+    var unused = new Paths(paths);
+    while (unused.hasItems()) {
+      var partialLane = toLane(unused.getFirst(), unused);
+      result.add(partialLane.toLane());
+      unused.removeAll(partialLane.sources());
+    }
+    return result;
+  }
+
+  private PartialLane toLane(Path path, Paths paths) {
+    var found =
+        paths.stream()
+            .filter(
+                candidate ->
+                    candidate != path
+                        && candidate.getLast() == path.getLast()
+                        && !path.contains(candidate.getFirst()))
+            .findFirst();
+    if (found.isEmpty()) {
+      return new PartialLane(path, new Paths(path), false);
+    }
+    var connecting = found.get();
+    return new PartialLane(
+        path.join(connecting.reverse()), new Paths(Set.of(path, connecting)), true);
   }
 
   private Collection<LanePattern> findLanePatterns() {
     var result = new ArrayList<LanePattern>();
     var unused = new ArrayList<>(lanes);
-    if (!addLanePatterns(unused, result)) {
-      log.error("Didn't place all patterns");
+    while (!unused.isEmpty()) {
+      var patterns = findLanePatternsIn(unused);
+      result.addAll(patterns);
+      patterns.stream().map(LanePattern::lanes).forEach(unused::removeAll);
     }
     return result;
   }
 
-  private boolean addLanePatterns(List<Lane> lanes, Collection<LanePattern> patterns) {
-    if (patterns.size() == 1) {
-      patterns.add(new LanePattern(STRAIGHT, lanes));
-      return true;
+  private Collection<LanePattern> findLanePatternsIn(List<Lane> lanes) {
+    if (lanes.size() == 1) {
+      return List.of(new LanePattern(STRAIGHT, new ArrayList<>(lanes)));
     }
-    if (lanes.stream().map(Lane::getFirst).distinct().count() == 1L) {
-      patterns.add(new LanePattern(SPLIT, lanes));
-      return true;
+    var first = lanes.getFirst().getFirst();
+    var same = lanes.stream().filter(lane -> lane.getFirst() == first).toList();
+    if (same.size() > 1) {
+      return List.of(new LanePattern(SPLIT, sort(same)));
     }
     if (lanes.size() == 2) {
-      lanes.forEach(lane -> addLanePatterns(List.of(lane), patterns));
-      return true;
+      return lanes.stream()
+          .map(lane -> findLanePatternsIn(List.of(lane)))
+          .flatMap(Collection::stream)
+          .toList();
     }
     log.error("Unsupported lane pattern: {}", lanes);
-    lanes.forEach(lane -> addLanePatterns(List.of(lane), patterns));
-    return false;
+    return lanes.stream()
+        .map(lane -> findLanePatternsIn(List.of(lane)))
+        .flatMap(Collection::stream)
+        .toList();
+  }
+
+  private List<Lane> sort(List<Lane> lanes) {
+    var result = new ArrayList<Lane>();
+    var first = lanes.getFirst();
+    result.add(first);
+    var numConnectionsByLane = new HashMap<Lane, Integer>();
+    lanes.stream()
+        .skip(1)
+        .forEach(lane -> numConnectionsByLane.put(lane, countConnectionsBetween(lane, first)));
+    lanes.stream()
+        .skip(1)
+        .sorted((l1, l2) -> numConnectionsByLane.get(l2) - numConnectionsByLane.get(l1))
+        .forEach(result::add);
+    return result;
+  }
+
+  private int countConnectionsBetween(Lane lane, Lane base) {
+    return (int) lane.stream().filter(base::contains).count();
   }
 
   private void placePatterns() {
-    var placed = new ArrayList<Lane>();
+    var cellDimensions =
+        new mxPoint(
+            3
+                * vertices.stream()
+                    .map(mxCell::getGeometry)
+                    .mapToDouble(mxGeometry::getWidth)
+                    .max()
+                    .orElseThrow(),
+            2.5
+                * vertices.stream()
+                    .map(mxCell::getGeometry)
+                    .mapToDouble(mxGeometry::getHeight)
+                    .max()
+                    .orElseThrow());
+    var rowTop = new AtomicDouble();
     var unplaced = new ArrayList<>(patterns);
     var pattern = biggestPatternIn(unplaced);
-    do {
-      placePattern(pattern);
-      placed.addAll(pattern.lanes());
+    while (pattern != null) {
+      placePattern(pattern, rowTop, cellDimensions);
       unplaced.remove(pattern);
-      if (!unplaced.isEmpty()) {
-        pattern = findConnectedPattern(pattern);
-        if (pattern == null) {
-          pattern = biggestPatternIn(unplaced);
-          startInNewLane(pattern, placed);
-        }
-      }
-    } while (!unplaced.isEmpty());
+      pattern = biggestPatternIn(unplaced);
+    }
   }
 
   private LanePattern biggestPatternIn(Collection<LanePattern> patterns) {
     return patterns.stream().max(comparing(LanePattern::size)).orElse(null);
   }
 
-  private void placePattern(LanePattern pattern) {
+  private void placePattern(LanePattern pattern, AtomicDouble rowTop, mxPoint cellDimensions) {
     switch (pattern.type()) {
-      case STRAIGHT -> place(pattern.lanes().getFirst());
-      case SPLIT -> placeSplit(pattern.lanes());
+      case STRAIGHT -> place(pattern.lanes().getFirst(), rowTop, cellDimensions);
+      case SPLIT -> placeSplit(pattern.lanes(), rowTop, cellDimensions);
       default -> log.error("Can't place pattern of type {}", pattern.type());
     }
   }
 
-  private void placeSplit(List<Lane> lanes) {
-    var bounds = lanes.getFirst().getFirst().getGeometry();
-    var current = new AtomicReference<>(bounds.getY());
-    lanes.forEach(
-        lane -> {
-          var geo = lane.getSecond().getGeometry();
-          geo.setX(bounds.getX() + 2 * bounds.getWidth());
-          geo.setY(current.getAndUpdate(y -> y + 2 * geo.getHeight()));
-          place(lane.skip(1));
-        });
+  private void placeSplit(List<Lane> lanes, AtomicDouble rowTop, mxPoint cellDimensions) {
+    lanes.forEach(lane -> place(lane, rowTop, cellDimensions));
   }
 
-  private void place(Lane lane) {
-    var midpoints = lane.stream().filter(not(this::isPlaced)).toList();
-    var start = lane.getFirst().getGeometry();
-    var delta = new mxPoint(2.0 * lane.width() / lane.size() - 1, 0);
-    var current = new AtomicReference<mxPoint>(start);
-    if (!midpoints.contains(lane.getFirst())) {
+  private void place(Lane lane, AtomicDouble rowTop, mxPoint cellDimensions) {
+    var toPlacePoints = lane.stream().filter(not(this::isPlaced)).toList();
+    if (toPlacePoints.isEmpty()) {
+      return;
+    }
+    var anchor =
+        Optional.ofNullable(lane.before(toPlacePoints.getFirst())).orElseGet(lane::getFirst);
+    var start =
+        new mxPoint(
+            Math.max(anchor.getGeometry().getX(), 0),
+            Math.max(anchor.getGeometry().getY(), rowTop.getAndAdd(cellDimensions.getY())));
+    var current = new AtomicReference<>(start);
+    var delta = new mxPoint(cellDimensions.getX(), 0);
+    if (!toPlacePoints.contains(anchor)) {
       step(current, delta);
     }
-    midpoints.forEach(
+    toPlacePoints.forEach(
         vertex -> {
           place(vertex, current.get().getX(), current.get().getY());
           step(current, delta);
@@ -223,26 +269,11 @@ public class LaneLayout extends mxGraphLayout {
 
   private boolean isPlaced(mxCell cell) {
     var geo = cell.getGeometry();
-    return geo.getX() != 0 || geo.getY() != 0;
+    return geo.getX() >= 0 || geo.getY() >= 0;
   }
 
   private void step(AtomicReference<mxPoint> current, mxPoint delta) {
     current.set(
         new mxPoint(current.get().getX() + delta.getX(), current.get().getY() + delta.getY()));
-  }
-
-  private mxPoint deltaBetween(mxPoint finish, mxPoint start, int numSegments) {
-    return new mxPoint(
-        (finish.getX() - start.getX()) / numSegments, (finish.getY() - start.getY()) / numSegments);
-  }
-
-  private LanePattern findConnectedPattern(LanePattern pattern) {
-    // TODO: Implement
-    return null;
-  }
-
-  private void startInNewLane(LanePattern pattern, Collection<Lane> placed) {
-    var geo = pattern.lanes().getFirst().getFirst().getGeometry();
-    geo.setY(geo.getHeight() + placed.stream().mapToDouble(Lane::maxY).max().orElse(0));
   }
 }
