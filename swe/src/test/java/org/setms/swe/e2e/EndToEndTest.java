@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +50,7 @@ class EndToEndTest {
    * 5. Go to step 2 to start a new iteration.
    */
 
+  private final Collection<String> created = new HashSet<>();
   private final File root = new File("build/e2e");
   private Workspace<?> workspace;
   private KmSystem kmSystem;
@@ -110,7 +113,7 @@ class EndToEndTest {
                   "outputs/%s".formatted(output.substring(1 + output.lastIndexOf("/")))),
               FileInputStream::new);
       assertThat(actual).as(output).isEqualTo(expected);
-      System.out.printf("- Verified output %s%n", output);
+      System.out.printf("- Verified %s%n", output);
     }
   }
 
@@ -130,7 +133,11 @@ class EndToEndTest {
           source.transferTo(target);
         }
       }
-      System.out.printf("- Created input %s%n", input.getFile());
+      System.out.printf(
+          "- %s %s/%s%n",
+          created.contains(input.getFile()) ? "Updated" : "Created",
+          input.getLocation(),
+          input.getFile());
     }
   }
 
@@ -167,9 +174,10 @@ class EndToEndTest {
                             "Diagnostics for applying suggestion %s at %s"
                                 .formatted(suggestion.code(), diagnostic.location()))
                         .isEmpty();
+                    applied.createdOrChanged().stream().map(Resource::name).forEach(created::add);
                     System.out.printf(
-                        "- Applied suggestion %s at %s%n",
-                        suggestion.code(), diagnostic.location());
+                        "- Applied suggestion `%s` at %s%n",
+                        suggestion.message(), diagnostic.location());
                   });
         });
   }
