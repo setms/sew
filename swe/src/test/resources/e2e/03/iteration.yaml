@@ -1,3 +1,6 @@
 outputs:
-  - location: src/main/analysis/Todo.domain
-    matches: Todo.domain
+  - src/main/analysis/Todo.domain
+  - src/main/design/TodoItems.aggregate
+  - src/main/design/AddTodoItem.command
+  - src/main/design/TodoItemAdded.event
+  - src/main/stakeholders/User.user

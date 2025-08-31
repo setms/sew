@@ -1,6 +1,5 @@
 outputs:
-  - location: src/main/requirements/use-cases/AddTodo.useCase
-    matches: AddTodo.useCase
+  - src/main/requirements/use-cases/AddTodo.useCase
 
 diagnostics:
   - Missing subdomains

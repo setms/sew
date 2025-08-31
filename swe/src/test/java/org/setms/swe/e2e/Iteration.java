@@ -12,7 +12,7 @@ public class Iteration {
   private File directory;
   private List<Input> inputs;
   private List<String> diagnostics;
-  private List<Output> outputs;
+  private List<String> outputs;
 
   @Override
   public String toString() {

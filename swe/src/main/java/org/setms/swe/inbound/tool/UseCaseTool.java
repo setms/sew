@@ -502,8 +502,6 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
           .map(this::validate)
           .ifPresentOrElse(
               result::add, () -> System.err.printf("Unhandled final step %s%n", inputs.getFirst()));
-    } else if (!inputs.isEmpty()) {
-      System.err.printf("Additional unhandled steps: %s%n", inputs);
     }
     return result;
   }

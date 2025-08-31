@@ -1,0 +1,5 @@
+package todo
+
+aggregate TodoItems {
+  display = "Todo items"
+}

@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
@@ -29,7 +28,6 @@ import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.yaml.snakeyaml.Yaml;
 
-@Slf4j
 class EndToEndTest {
 
   private static final String NL = System.lineSeparator();
@@ -64,6 +62,7 @@ class EndToEndTest {
   @Test
   void shouldGuideSoftwareEngineering() throws IOException {
     for (var iteration : loadIterations()) {
+      System.out.printf("Iteration %s%n", iteration);
       assertThatIterationIsCorrect(iteration);
     }
   }
@@ -99,10 +98,15 @@ class EndToEndTest {
 
   private void assertThatOutputsWereCreated(Iteration iteration) throws IOException {
     for (var output : iteration.getOutputs()) {
-      var actual = readText(workspace.root().select(output.getLocation()), Resource::readFrom);
+      var actual = readText(workspace.root().select(output), Resource::readFrom);
       var expected =
-          readText(new File(iteration.getDirectory(), output.getMatches()), FileInputStream::new);
-      assertThat(actual).as(output.getLocation()).isEqualTo(expected);
+          readText(
+              new File(
+                  iteration.getDirectory(),
+                  "outputs/%s".formatted(output.substring(1 + output.lastIndexOf("/")))),
+              FileInputStream::new);
+      assertThat(actual).as(output).isEqualTo(expected);
+      System.out.printf("- Verified output %s%n", output);
     }
   }
 
@@ -114,12 +118,15 @@ class EndToEndTest {
 
   private void copyInputs(Iteration iteration) throws IOException {
     for (var input : iteration.getInputs()) {
-      try (var source = new FileInputStream(new File(iteration.getDirectory(), input.getFile()))) {
+      try (var source =
+          new FileInputStream(
+              new File(iteration.getDirectory(), "inputs/%s".formatted(input.getFile())))) {
         try (var target =
             workspace.root().select(input.getLocation()).select(input.getFile()).writeTo()) {
           source.transferTo(target);
         }
       }
+      System.out.printf("- Created input %s%n", input.getFile());
     }
   }
 
@@ -156,6 +163,9 @@ class EndToEndTest {
                             "Diagnostics for applying suggestion %s at %s"
                                 .formatted(suggestion.code(), diagnostic.location()))
                         .isEmpty();
+                    System.out.printf(
+                        "- Applied suggestion %s at %s%n",
+                        suggestion.code(), diagnostic.location());
                   });
         });
   }
@@ -163,7 +173,7 @@ class EndToEndTest {
   private String toPath(Location location) {
     var segments = location.segments();
     if (segments.size() < 3) {
-      log.error("Unknown path for location {}", location);
+      System.err.printf("Unknown path for location %s%n", location);
       return "/";
     }
     var type = segments.get(1);
