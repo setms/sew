@@ -65,6 +65,10 @@ class EndToEndTest {
       System.out.printf("Iteration %s%n", iteration);
       assertThatIterationIsCorrect(iteration);
     }
+    System.out.printf("%nDone iterating%n");
+    kmSystem
+        .diagnosticsWithSuggestions()
+        .forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
   }
 
   private List<Iteration> loadIterations() {

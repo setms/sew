@@ -1,0 +1,15 @@
+| type      | name           |
+| --------- | -------------- |
+| aggregate | todo.TodoItems |
+
+| variable      | type                 | definition                 |
+| ------------- | -------------------- | -------------------------- |
+| task          | text                 | nonempty                   |
+| dueDate       | datetime             |                            |
+| addTodoItem   | command(AddTodoItem) | Task=task, DueDate=dueDate |
+| todoItemAdded | event(TodoItemAdded) | Task=task, DueDate=dueDate |
+| todoItem      | entity(TodoItem)     | Task=task, DueDate=dueDate |
+
+| scenario                                    | init | command     | state        | emitted       |
+| ------------------------------------------- | ---- | ----------- | ------------ | ------------- |
+| "Accept AddTodoItem and emit TodoItemAdded" | [ ]  | addTodoItem | [ todoItem ] | todoItemAdded |

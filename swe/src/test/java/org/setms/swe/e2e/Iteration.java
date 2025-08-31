@@ -2,6 +2,7 @@ package org.setms.swe.e2e;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,6 @@ public class Iteration {
 
   @Override
   public String toString() {
-    return directory.getName();
+    return Optional.ofNullable(directory).map(File::getName).orElse("???");
   }
 }

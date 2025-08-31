@@ -23,3 +23,7 @@
   - If so, then fix the cases where description doesn't currently work
 - Create acceptance test scenario for policy
 - Create acceptance test scenario for read model
+
+### Acceptance test
+
+- Parse aggregate state

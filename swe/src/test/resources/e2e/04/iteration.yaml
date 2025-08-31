@@ -1,3 +1,7 @@
 outputs:
   - src/test/acceptance/TodoItemsAggregate.acceptance
   - src/main/architecture/Todo.modules
+
+inputs:
+  - location: src/test/acceptance
+    file: TodoItemsAggregate.acceptance
