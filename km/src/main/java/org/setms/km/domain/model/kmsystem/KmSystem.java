@@ -356,8 +356,8 @@ public class KmSystem {
 
   private void registerArtifactDefinitions() {
     Tools.all()
-        .map(Tool::mainInput)
-        .flatMap(Optional::stream)
+        .map(Tool::allInputs)
+        .flatMap(Collection::stream)
         .map(
             input ->
                 new ArtifactDefinition(

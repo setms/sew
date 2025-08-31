@@ -4,3 +4,17 @@ outputs:
   - src/main/design/AddTodoItem.command
   - src/main/design/TodoItemAdded.event
   - src/main/stakeholders/User.user
+
+inputs:
+  - file: TodoItem.entity
+    location: src/main/design
+  - file: AddTodoItem.command
+    location: src/main/design
+  - file: TodoItemAdded.event
+    location: src/main/design
+  - file: TodoItems.aggregate
+    location: src/main/design
+
+diagnostics:
+  - Missing acceptance test for aggregate TodoItems
+  - Subdomains aren't mapped to modules

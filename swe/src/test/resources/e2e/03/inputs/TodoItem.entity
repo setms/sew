@@ -1,0 +1,13 @@
+package todo
+
+entity TodoItem {
+}
+
+field Task {
+  type        = text
+  constraints = [ nonEmpty ]
+}
+
+field DueDate {
+  type = datetime
+}

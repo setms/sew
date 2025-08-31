@@ -1,0 +1,3 @@
+outputs:
+  - src/test/acceptance/TodoItemsAggregate.acceptance
+  - src/main/architecture/Todo.modules

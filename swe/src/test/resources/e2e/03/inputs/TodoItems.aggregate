@@ -1,0 +1,6 @@
+package todo
+
+aggregate TodoItems {
+  display = "Todo items"
+  root    = entity(TodoItem)
+}

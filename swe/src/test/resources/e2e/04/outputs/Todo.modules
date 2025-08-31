@@ -1,0 +1,9 @@
+package todo
+
+modules Todo {
+  mappedTo = domain(Todo)
+}
+
+module TodoItems {
+  mappedTo = subdomain(TodoItems)
+}
