@@ -7,7 +7,6 @@
 
 ## IntelliJ
 
-- Newly added file isn't validated/built
 - Finish task window
 
 

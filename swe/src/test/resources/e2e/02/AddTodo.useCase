@@ -1,0 +1,16 @@
+package todo
+
+useCase AddTodo {
+  description = "Add todo"
+  title = "Add todo"
+}
+
+scenario AddTodo {
+  elaborates = domainStory(AddTodo)
+  steps = [
+    user(User),
+    command(AddTodoItem),
+    aggregate(TodoItems),
+    event(TodoItemAdded)
+  ]
+}

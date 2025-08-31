@@ -1,0 +1,12 @@
+package todo
+
+domain Todo {
+}
+
+subdomain TodoItems {
+  content = [
+    aggregate(TodoItems),
+    command(AddTodoItem),
+    event(TodoItemAdded)
+  ]
+}

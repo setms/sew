@@ -20,6 +20,8 @@ dependencies {
     runtimeOnly libs.bundles.validation.runtime
 
     testImplementation libs.bundles.junit
+    testImplementation libs.bundles.yaml
+
     testRuntimeOnly libs.bundles.junit.runtime
 }
 

@@ -2,6 +2,7 @@ package org.setms.km.domain.model.kmsystem;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -446,6 +447,6 @@ public class KmSystem {
               updateArtifact(resource.path(), type, Optional.of(typedTool));
               return result;
             })
-        .orElseGet(AppliedSuggestion::new);
+        .orElseGet(() -> failedWith("Unknown resource: %s", resource.path()));
   }
 }

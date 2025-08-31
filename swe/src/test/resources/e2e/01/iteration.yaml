@@ -1,0 +1,6 @@
+inputs:
+  - file: AddTodo.domainStory
+    location: src/main/requirements/domain-stories
+
+diagnostics:
+  - Not elaborated in use case scenario

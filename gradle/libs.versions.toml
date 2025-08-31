@@ -19,6 +19,7 @@ mockito = "5.19.0"
 pitest-plugin = "1.15.0"
 pitest-junit5 = "1.2.1"
 slf4j = "2.0.17"
+snakeyaml = "2.4"
 spotless-plugin = "7.2.1"
 spring-boot-plugin = "3.5.5"
 validation = "3.1.1"
@@ -44,6 +45,7 @@ languagetool = { module = "org.languagetool:language-en", version.ref = "languag
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 spring-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
@@ -66,6 +68,7 @@ spring-boot = ["spring-thymeleaf", "spring-validation", "spring-web"]
 spring-test = ["spring-test"]
 validation = ["validation"]
 validation-runtime = ["validation-runtime", "validation-el"]
+yaml = ["snakeyaml"]
 
 [plugins]
 intellij = { id = "org.jetbrains.intellij.platform", version.ref = "intellij-plugin" }

@@ -1,0 +1,3 @@
+outputs:
+  - location: src/main/analysis/Todo.domain
+    matches: Todo.domain

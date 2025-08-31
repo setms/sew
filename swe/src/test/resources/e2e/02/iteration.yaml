@@ -1,0 +1,10 @@
+outputs:
+  - location: src/main/requirements/use-cases/AddTodo.useCase
+    matches: AddTodo.useCase
+
+diagnostics:
+  - Missing subdomains
+  - Unknown aggregate 'TodoItems'
+  - Unknown command 'AddTodoItem'
+  - Unknown event 'TodoItemAdded'
+  - Unknown user 'User'

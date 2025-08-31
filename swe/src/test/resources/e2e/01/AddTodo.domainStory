@@ -1,0 +1,13 @@
+package todo
+
+domainStory AddTodo {
+  description = "Add a todo item."
+}
+
+sentence {
+  parts = [
+    person(User),
+    activity(Adds),
+    workObject(TodoItem)
+  ]
+}
