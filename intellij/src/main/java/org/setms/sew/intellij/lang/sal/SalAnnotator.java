@@ -111,6 +111,12 @@ public class SalAnnotator implements Annotator {
       var rootObject = rootObjectOf(psiElement);
       return toLocation(rootObject, psiElement);
     }
+    if (psiElement.getNode().getElementType() == SalElementTypes.PROPERTY_NAME) {
+      var propertyName = propertyNameOf(psiElement);
+      var containingObject = containingObjectOf(psiElement);
+      var rootObject = rootObjectOf(psiElement);
+      return toLocation(rootObject, containingObject, propertyName);
+    }
     if (psiElement.getNode().getElementType() == SalElementTypes.LIST_ITEM) {
       var propertyName = propertyNameOf(psiElement);
       var containingObject = containingObjectOf(psiElement);

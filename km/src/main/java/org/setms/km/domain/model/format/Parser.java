@@ -75,34 +75,41 @@ public interface Parser {
 
   default void setProperties(DataObject<?> source, Object target, boolean validate) {
     source.properties(
-        (name, value) -> setProperty(name, convert(name, value, target, validate), target));
+        (name, value) ->
+            setProperty(name, convert(name, value, target, validate), target, validate));
   }
 
   default Object convert(String name, DataItem value, Object target, boolean validate) {
-    return switch (value) {
-      case null -> null;
-      case DataString string -> string.getValue();
-      case DataEnum dataEnum -> dataEnum.getName();
-      case DataList list ->
-          list.map(item -> convert(name, item, target, validate)).filter(Objects::nonNull).toList();
-      case NestedObject object -> createObject(object, name, target, validate);
-      case Reference reference -> {
-        var attributes = new HashMap<String, List<Link>>();
-        reference
-            .getAttributes()
-            .forEach(
-                (key, references) ->
-                    attributes.put(
-                        key,
-                        references.stream()
-                            .map(ref -> new Link(ref.getType(), ref.getId()))
-                            .toList()));
-        yield new Link(reference.getType(), reference.getId(), attributes);
-      }
-      default ->
-          throw new UnsupportedOperationException(
-              "Unexpected value of type " + value.getClass().getSimpleName());
-    };
+    try {
+      return switch (value) {
+        case null -> null;
+        case DataString string -> string.getValue();
+        case DataEnum dataEnum -> dataEnum.getName();
+        case DataList list ->
+            list.map(item -> convert(name, item, target, validate))
+                .filter(Objects::nonNull)
+                .toList();
+        case NestedObject object -> createObject(object, name, target, validate);
+        case Reference reference -> {
+          var attributes = new HashMap<String, List<Link>>();
+          reference
+              .getAttributes()
+              .forEach(
+                  (key, references) ->
+                      attributes.put(
+                          key,
+                          references.stream()
+                              .map(ref -> new Link(ref.getType(), ref.getId()))
+                              .toList()));
+          yield new Link(reference.getType(), reference.getId(), attributes);
+        }
+        default ->
+            throw new UnsupportedOperationException(
+                "Unexpected value of type " + value.getClass().getSimpleName());
+      };
+    } catch (InvalidPropertyException e) {
+      throw new InvalidPropertyException(e, target);
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -138,29 +145,33 @@ public interface Parser {
         || language.plural(name).equalsIgnoreCase(candidate);
   }
 
-  default void setProperty(String name, Object targetValue, Object target) {
+  default void setProperty(String name, Object targetValue, Object target, boolean validate) {
     var setter = "set%s".formatted(initUpper(name));
     try {
       var method = findMethod(setter, targetValue, target.getClass());
-      if (method != null) {
-        var parameterType = method.getParameters()[0].getType();
-        if (targetValue != null
-            && Collection.class.isAssignableFrom(parameterType)
-            && !parameterType.isAssignableFrom(targetValue.getClass())) {
-          method.invoke(target, toCollection(targetValue, parameterType, target, name));
-        } else if (targetValue != null && parameterType.isEnum()) {
-          method.invoke(target, toEnum(targetValue, parameterType));
-        } else if (targetValue != null && parameterType.equals(Boolean.class)
-            || parameterType.equals(boolean.class)) {
-          var booleanValue = Boolean.parseBoolean(targetValue.toString());
-          method.invoke(target, booleanValue);
-        } else {
-          method.invoke(target, targetValue);
+      if (method == null) {
+        if (validate) {
+          throw new InvalidPropertyException(target, name, "Unknown property %s", name);
         }
+        return;
+      }
+      var parameterType = method.getParameters()[0].getType();
+      if (targetValue != null
+          && Collection.class.isAssignableFrom(parameterType)
+          && !parameterType.isAssignableFrom(targetValue.getClass())) {
+        method.invoke(target, toCollection(targetValue, parameterType, target, name));
+      } else if (targetValue != null && parameterType.isEnum()) {
+        method.invoke(target, toEnum(targetValue, parameterType));
+      } else if (targetValue != null && parameterType.equals(Boolean.class)
+          || parameterType.equals(boolean.class)) {
+        var booleanValue = Boolean.parseBoolean(targetValue.toString());
+        method.invoke(target, booleanValue);
+      } else {
+        method.invoke(target, targetValue);
       }
     } catch (ReflectiveOperationException e) {
-      throw new IllegalArgumentException(
-          "Failed to set %s.%s".formatted(target.getClass(), name), e);
+      throw new InvalidPropertyException(
+          target, name, "Failed to set %s to %s: %s", name, targetValue, e.getMessage());
     }
   }
 
@@ -243,7 +254,8 @@ public interface Parser {
       return parse(inputStream, type, validate);
     } catch (ValidationException e) {
       diagnostics.addAll(e.getDiagnostics());
-      return null;
+    } catch (InvalidPropertyException e) {
+      diagnostics.add(new Diagnostic(ERROR, e.getMessage(), e.toLocation()));
     } catch (Exception e) {
       diagnostics.add(
           new Diagnostic(
@@ -255,7 +267,7 @@ public interface Parser {
                   .map(a -> new String[] {a[1], a[0]})
                   .map(Location::new)
                   .orElse(null)));
-      return null;
     }
+    return null;
   }
 }

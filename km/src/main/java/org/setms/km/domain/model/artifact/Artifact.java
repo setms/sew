@@ -12,11 +12,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Validatable;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public abstract class Artifact
-    implements Comparable<Artifact>, org.setms.km.domain.model.validation.Validatable {
+public abstract class Artifact implements Comparable<Artifact>, Validatable {
 
   @Getter @Valid private final FullyQualifiedName fullyQualifiedName;
 

@@ -2,11 +2,7 @@ package org.setms.km.domain.model.validation;
 
 import java.util.Collection;
 
-public interface Validatable {
-
-  Location toLocation();
-
-  Location appendTo(Location location);
+public interface Validatable extends Locatable {
 
   boolean starts(Location location);
 
