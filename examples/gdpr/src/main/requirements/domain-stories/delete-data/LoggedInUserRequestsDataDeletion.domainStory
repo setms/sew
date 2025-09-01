@@ -24,11 +24,3 @@ sentence {
     workObject(Request, icon=material(Draft))
   ]
 }
-
-sentence {
-  parts = [
-    computerSystem(GdprMiddleware),
-    activity(Starts),
-    workObject(Request)
-  ]
-}
