@@ -2,6 +2,7 @@ package org.setms.km.domain.model.diagram;
 
 import static org.setms.km.domain.model.format.Strings.NL;
 import static org.setms.km.domain.model.format.Strings.numLinesIn;
+import static org.setms.km.domain.model.format.Strings.toFriendlyName;
 import static org.setms.km.domain.model.format.Strings.wrap;
 
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class Diagram {
     var maxLines = new AtomicInteger();
     boxes.forEach(
         box -> {
-          box.setText(wrap(box.getText(), MAX_TEXT_LENGTH));
+          box.setText(wrap(toFriendlyName(box.getText()), MAX_TEXT_LENGTH));
           var numLines = numLinesIn(box.getText());
           if (maxLines.get() < numLines) {
             maxLines.set(numLines);
