@@ -1,5 +1,0 @@
-package velocityehs
-
-aggregate Approval {
-  display = "Approval"
-}

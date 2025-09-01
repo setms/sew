@@ -1,5 +1,0 @@
-package velocityehs
-
-event ApprovalRequested {
-    payload = ApprovalRequest
-}

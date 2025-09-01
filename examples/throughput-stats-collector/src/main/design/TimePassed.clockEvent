@@ -1,6 +1,0 @@
-package velocityehs
-
-clockEvent TimePassed {
-    display = "an hour has passed on a weekday"
-    cron    = "*/60 7-18 * * mon-fri"
-}

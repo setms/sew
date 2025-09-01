@@ -1,5 +1,0 @@
-package velocityehs
-
-policy CheckActiveSprint {
-  title = "Check active sprint"
-}
