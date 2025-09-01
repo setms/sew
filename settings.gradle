@@ -4,4 +4,4 @@ plugins {
 
 rootProject.name = 'sew'
 
-include('km', 'swe', 'intellij-lang-sal', 'intellij-lang-acceptance', 'intellij', 'softure', 'examples:gdpr', 'examples:throughput-stats-collector')
+include('km', 'swe', 'intellij-lang-sal', 'intellij-lang-acceptance', 'intellij', 'softure', 'examples:gdpr-middleware')
