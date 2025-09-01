@@ -5,7 +5,6 @@ useCase JustDoIt {
 }
 
 scenario HappyPath {
-    title = "All's well that ends well"
     steps = [
         user(Duck),
         event(ItWasDone),
