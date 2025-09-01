@@ -2,9 +2,14 @@ package gdpr
 
 domainStory NotifyUserThatRequestIsComplete {
   description = "Once all services have deleted the user's data, the system notifies the user."
-  granularity = fine
-  pointInTime = tobe
-  purity = pure
+}
+
+sentence {
+  parts = [
+    computerSystem(GdprMiddleware),
+    activity(NoticesComplete),
+    workObject(ServiceRequest, icon=material(WorkUpdate))
+  ]
 }
 
 sentence {

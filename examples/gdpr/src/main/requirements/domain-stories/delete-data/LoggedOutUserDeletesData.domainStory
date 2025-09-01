@@ -2,9 +2,6 @@ package gdpr
 
 domainStory LoggedOutUserDeletesData {
   description = "A user who isn't logged in to one of our apps requests deletion of their data."
-  granularity = fine
-  pointInTime = tobe
-  purity = pure
 }
 
 sentence {
@@ -29,14 +26,6 @@ sentence {
     parts = [
         person(CustomerSupportAgent),
         activity(Approves),
-        workObject(Request, icon=material(Draft))
-    ]
-}
-
-sentence {
-    parts = [
-        computerSystem(GdprMiddleware),
-        activity(Starts),
         workObject(Request, icon=material(Draft))
     ]
 }

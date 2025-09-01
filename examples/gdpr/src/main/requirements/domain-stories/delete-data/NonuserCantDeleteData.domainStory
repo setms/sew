@@ -15,9 +15,9 @@ sentence {
 sentence {
     parts = [
         person(CustomerSupportAgent),
-        activity(Compares),
+        activity(Checks),
         workObject(Request, icon=material(Draft)),
-        activity(With),
+        activity(Against),
         workObject(Users, icon=material(Group))
     ]
 }
