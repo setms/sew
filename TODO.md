@@ -8,7 +8,9 @@
 ## IntelliJ
 
 - Finish task window
-
+- Autocomplete
+  - Keywords
+  - Terms from glossary
 
 ## Specific tools
 
@@ -19,6 +21,7 @@
 
 ### Use case
 
+- Do scenarios need title/description?
 - Do we still need to describe steps now that we have domain stories?
   - If so, then fix the cases where description doesn't currently work
 - Create acceptance test scenario for policy
@@ -26,4 +29,4 @@
 
 ### Acceptance test
 
-- Parse aggregate state
+- Parse initial/expected state of aggregate
