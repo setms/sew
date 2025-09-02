@@ -8,6 +8,6 @@
 | notifyUser   | command(NotifyUser) | Message=message |
 | userNotified | event(UserNotified) | Message=message |
 
-| scenario                                  | init | command    | state | emitted      |
+| scenario                                  | init | accepts    | state | emitted      |
 | ----------------------------------------- | ---- | ---------- | ----- | ------------ |
 | "Accept NotifyUser and emit UserNotified" |      | notifyUser |       | userNotified |

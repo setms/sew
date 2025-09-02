@@ -15,7 +15,10 @@ import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.acceptance.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.ElementVariable;
+import org.setms.swe.domain.model.sdlc.acceptance.PolicyScenario;
+import org.setms.swe.domain.model.sdlc.acceptance.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.Scenario;
 
 public class AcceptanceTestTool extends Tool<AcceptanceTest> {
@@ -53,14 +56,27 @@ public class AcceptanceTestTool extends Tool<AcceptanceTest> {
   }
 
   private void build(Scenario scenario, AcceptanceTest acceptanceTest, PrintWriter writer) {
-    var name = acceptanceTest.getSut().getId();
     writer.printf("    <h2>%s</h2>%n", scenario.getName());
+    switch (scenario) {
+      case AggregateScenario aggregateScenario ->
+          buildScenario(aggregateScenario, acceptanceTest, writer);
+      case PolicyScenario policyScenario -> buildScenario(policyScenario, acceptanceTest, writer);
+      case ReadModelScenario readModelScenario ->
+          buildScenario(readModelScenario, acceptanceTest, writer);
+      default ->
+          throw new UnsupportedOperationException("Unknown acceptance test scenario: " + scenario);
+    }
+  }
+
+  private void buildScenario(
+      AggregateScenario scenario, AcceptanceTest acceptanceTest, PrintWriter writer) {
+    var name = acceptanceTest.getSut().getId();
     writer.printf(
         "    <strong>Given</strong> <code>%s</code> %s<br/>%n",
         name, stateOf(scenario.getInit(), acceptanceTest));
     writer.printf(
         "    <strong>When</strong> <code>%s</code> accepts <code>%s</code><br/>%n",
-        name, format(scenario.getCommand(), acceptanceTest).orElse("?"));
+        name, format(scenario.getAccepts(), acceptanceTest).orElse("?"));
     writer.printf(
         "    <strong>Then</strong> <code>%s</code> %s<br/>%n",
         name, stateOf(scenario.getState(), acceptanceTest));
@@ -92,5 +108,33 @@ public class AcceptanceTestTool extends Tool<AcceptanceTest> {
                     .append(" $")
                     .append(definition.getFieldName()));
     return result.append(" }").toString();
+  }
+
+  private void buildScenario(
+      PolicyScenario scenario, AcceptanceTest acceptanceTest, PrintWriter writer) {
+    var name = acceptanceTest.getSut().getId();
+    writer.printf(
+        "    <strong>Given</strong> <code>%s</code> %s<br/>%n",
+        name, stateOf(scenario.getInit(), acceptanceTest));
+    writer.printf(
+        "    <strong>When</strong> <code>%s</code> handles <code>%s</code><br/>%n",
+        name, format(scenario.getHandles(), acceptanceTest).orElse("?"));
+    writer.printf(
+        "    <strong>Then</strong> <code>%s</code> issues <code>%s</code><br/>%n",
+        name, format(scenario.getIssued(), acceptanceTest).orElse("?"));
+  }
+
+  private void buildScenario(
+      ReadModelScenario scenario, AcceptanceTest acceptanceTest, PrintWriter writer) {
+    var name = acceptanceTest.getSut().getId();
+    writer.printf(
+        "    <strong>Given</strong> <code>%s</code> %s<br/>%n",
+        name, stateOf(scenario.getInit(), acceptanceTest));
+    writer.printf(
+        "    <strong>When</strong> <code>%s</code> handles <code>%s</code><br/>%n",
+        name, format(scenario.getHandles(), acceptanceTest).orElse("?"));
+    writer.printf(
+        "    <strong>Then</strong> <code>%s</code> <code>%s</code><br/>%n",
+        name, stateOf(scenario.getState(), acceptanceTest));
   }
 }

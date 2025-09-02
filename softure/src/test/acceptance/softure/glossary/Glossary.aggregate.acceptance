@@ -36,7 +36,7 @@ And Glossary emits TermAdditionRejected{ Reason = "Term $Phrase is already defin
 | termAdded            | event(TermAdded)            | Phrase=phrase, Definition=definition                     |
 | termAdditionRejected | event(TermAdditionRejected) | Reason="Term $Phrase is already defined as $Definition." |
 
-| scenario               | init | command         | state | emitted              |
+| scenario               | init | accepts         | state | emitted              |
 |------------------------|------|-----------------|-------|----------------------|
 | Add non-existing term  |      | addTerm         | term  | termAdded            |
 | Add existing term      | term | addTerm         | term  |                      |

@@ -216,7 +216,7 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
     if (acceptanceTests.stream().map(AcceptanceTest::getSut).noneMatch(step::equals)) {
       var scenario =
           useCase.scenarios().filter(s -> s.getSteps().contains(step)).findFirst().orElseThrow();
-      Location location = useCase.toLocation();
+      var location = useCase.toLocation();
       diagnostics.add(
           new Diagnostic(
               WARN,

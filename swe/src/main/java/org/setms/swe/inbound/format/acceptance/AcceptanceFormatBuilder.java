@@ -87,20 +87,64 @@ class AcceptanceFormatBuilder implements Builder {
   }
 
   private void buildScenarios(DataList scenarios, PrintWriter writer) {
-    var table = new Table("scenario", "init", "command", "state", "emitted");
     if (scenarios != null && scenarios.hasItems()) {
-      scenarios
-          .map(NestedObject.class::cast)
-          .forEach(
-              object -> {
-                var name = '"' + object.getName() + '"';
-                var init = "";
-                var command = object.property("command", Reference.class).getId();
-                var state = "";
-                var emitted = object.property("emitted", Reference.class).getId();
-                table.addRow(name, init, command, state, emitted);
-              });
+      var scenario = (NestedObject) scenarios.getFirst();
+      var properties = scenario.propertyNames();
+      Table table;
+      if (properties.contains("accepts")) {
+        table = aggregateScenariosTableFrom(scenarios);
+      } else if (properties.contains("issued")) {
+        table = policyScenariosTableFrom(scenarios);
+      } else {
+        table = readModelScenariosTableFrom(scenarios);
+      }
+      table.printTo(writer);
     }
-    table.printTo(writer);
+  }
+
+  private Table aggregateScenariosTableFrom(DataList scenarios) {
+    var result = new Table("scenario", "init", "accepts", "state", "emitted");
+    scenarios
+        .map(NestedObject.class::cast)
+        .forEach(
+            object -> {
+              var name = '"' + object.getName() + '"';
+              var init = "";
+              var command = object.property("accepts", Reference.class).getId();
+              var state = "";
+              var emitted = object.property("emitted", Reference.class).getId();
+              result.addRow(name, init, command, state, emitted);
+            });
+    return result;
+  }
+
+  private Table policyScenariosTableFrom(DataList scenarios) {
+    var result = new Table("scenario", "init", "handles", "issued");
+    scenarios
+        .map(NestedObject.class::cast)
+        .forEach(
+            object -> {
+              var name = '"' + object.getName() + '"';
+              var init = "";
+              var event = object.property("handles", Reference.class).getId();
+              var issues = object.property("issued", Reference.class).getId();
+              result.addRow(name, init, event, issues);
+            });
+    return result;
+  }
+
+  private Table readModelScenariosTableFrom(DataList scenarios) {
+    var result = new Table("scenario", "init", "handles", "state");
+    scenarios
+        .map(NestedObject.class::cast)
+        .forEach(
+            object -> {
+              var name = '"' + object.getName() + '"';
+              var init = "";
+              var event = object.property("handles", Reference.class).getId();
+              var state = "";
+              result.addRow(name, init, event, state);
+            });
+    return result;
   }
 }

@@ -24,9 +24,7 @@
 - Do scenarios need title/description?
 - Do we still need to describe steps now that we have domain stories?
   - If so, then fix the cases where description doesn't currently work
-- Create acceptance test scenario for policy
-- Create acceptance test scenario for read model
 
 ### Acceptance test
 
-- Parse initial/expected state of aggregate
+- Parse multiple items in initial/expected state of aggregate and read model

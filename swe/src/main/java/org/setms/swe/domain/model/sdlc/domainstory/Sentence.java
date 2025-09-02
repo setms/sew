@@ -66,4 +66,8 @@ public class Sentence extends Artifact {
   private boolean isActor(Link link) {
     return Stream.of("person", "people", "computerSystem").anyMatch(link::hasType);
   }
+
+  public Stream<Link> parts() {
+    return parts.stream();
+  }
 }

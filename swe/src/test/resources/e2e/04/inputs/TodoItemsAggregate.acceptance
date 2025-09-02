@@ -10,6 +10,6 @@
 | todoItemAdded | event(TodoItemAdded) | Task=task, DueDate=dueDate |
 | todoItem      | entity(TodoItem)     | Task=task, DueDate=dueDate |
 
-| scenario                                    | init | command     | state        | emitted       |
-| ------------------------------------------- | ---- | ----------- | ------------ | ------------- |
-| "Accept AddTodoItem and emit TodoItemAdded" | [ ]  | addTodoItem | [ todoItem ] | todoItemAdded |
+| scenario                                    | init | accepts     | state    | emitted       |
+| ------------------------------------------- | ---- | ----------- | -------- | ------------- |
+| "Accept AddTodoItem and emit TodoItemAdded" |      | addTodoItem | todoItem | todoItemAdded |

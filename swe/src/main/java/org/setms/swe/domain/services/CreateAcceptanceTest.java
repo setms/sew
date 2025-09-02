@@ -19,10 +19,12 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.artifact.LinkResolver;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.acceptance.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.swe.domain.model.sdlc.acceptance.FieldAssignment;
 import org.setms.swe.domain.model.sdlc.acceptance.FieldVariable;
-import org.setms.swe.domain.model.sdlc.acceptance.Scenario;
+import org.setms.swe.domain.model.sdlc.acceptance.PolicyScenario;
+import org.setms.swe.domain.model.sdlc.acceptance.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.Variable;
 import org.setms.swe.domain.model.sdlc.ddd.EventStorm;
 import org.setms.swe.domain.model.sdlc.ddd.ResolvedSequence;
@@ -94,8 +96,8 @@ public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
   private void addAggregateScenarioTo(ResolvedSequence sequence, AcceptanceTest test) {
     var commandAggregateEvent = sequence.items();
     var scenario =
-        new Scenario(scenarioName(sequence, test.getPackage()))
-            .setCommand(
+        new AggregateScenario(scenarioName(sequence, test.getPackage()))
+            .setAccepts(
                 linkToVariable(
                     ensureVariableFor(test.getVariables(), commandAggregateEvent.getFirst())))
             .setEmitted(
@@ -194,7 +196,25 @@ public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
     return variable;
   }
 
-  private void addPolicyScenarioTo(ResolvedSequence eventPolicyCommand, AcceptanceTest test) {}
+  private void addPolicyScenarioTo(ResolvedSequence sequence, AcceptanceTest test) {
+    var eventPolicyCommand = sequence.items();
+    var scenario =
+        new PolicyScenario(scenarioName(sequence, test.getPackage()))
+            .setHandles(
+                linkToVariable(
+                    ensureVariableFor(test.getVariables(), eventPolicyCommand.getFirst())))
+            .setIssued(
+                linkToVariable(
+                    ensureVariableFor(test.getVariables(), eventPolicyCommand.getLast())));
+    test.getScenarios().add(scenario);
+  }
 
-  private void addReadModelScenarioTo(ResolvedSequence eventReadModel, AcceptanceTest test) {}
+  private void addReadModelScenarioTo(ResolvedSequence sequence, AcceptanceTest test) {
+    var eventReadModel = sequence.items();
+    var scenario =
+        new ReadModelScenario(scenarioName(sequence, test.getPackage()))
+            .setHandles(
+                linkToVariable(ensureVariableFor(test.getVariables(), eventReadModel.getFirst())));
+    test.getScenarios().add(scenario);
+  }
 }

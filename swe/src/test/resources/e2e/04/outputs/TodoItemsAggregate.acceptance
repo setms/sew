@@ -9,6 +9,6 @@
 | addTodoItem   | command(AddTodoItem) | Task=task, DueDate=dueDate |
 | todoItemAdded | event(TodoItemAdded) | Task=task, DueDate=dueDate |
 
-| scenario                                    | init | command     | state | emitted       |
+| scenario                                    | init | accepts     | state | emitted       |
 | ------------------------------------------- | ---- | ----------- | ----- | ------------- |
 | "Accept AddTodoItem and emit TodoItemAdded" |      | addTodoItem |       | todoItemAdded |

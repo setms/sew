@@ -8,7 +8,7 @@ import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
 
 class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
 
-  private static final String ACCEPTANCE_TEST_HTML =
+  private static final String AGGREGATE_ACCEPTANCE_TEST_HTML =
       """
     <html>
       <body>
@@ -34,6 +34,6 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
 
     assertThat(actual).isEmpty();
     var output = toFile(workspace.root().select("build/Notifications-aggregate.html"));
-    assertThat((output)).isFile().hasContent(ACCEPTANCE_TEST_HTML);
+    assertThat((output)).isFile().hasContent(AGGREGATE_ACCEPTANCE_TEST_HTML);
   }
 }

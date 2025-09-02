@@ -6,8 +6,11 @@ import static org.setms.km.domain.model.format.Strings.stripQuotesFrom;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.DataEnum;
 import org.setms.km.domain.model.format.DataItem;
 import org.setms.km.domain.model.format.DataList;
@@ -16,7 +19,6 @@ import org.setms.km.domain.model.format.NestedObject;
 import org.setms.km.domain.model.format.Parser;
 import org.setms.km.domain.model.format.Reference;
 import org.setms.km.domain.model.format.RootObject;
-import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.sew.lang.acceptance.AcceptanceLexer;
 import org.setms.sew.lang.acceptance.AcceptanceParser;
 
@@ -139,13 +141,31 @@ class AcceptanceFormatParser implements Parser {
 
   private DataList parseScenarios(AcceptanceParser.ScenariosContext scenarios, DataList variables) {
     var result = new DataList();
-    scenarios.scenario_row().forEach(row -> addScenario(row, variables, result));
+    var columnNames =
+        scenarios.scenario_header().item().stream()
+            .map(
+                itemContext ->
+                    Optional.ofNullable(itemContext.IDENTIFIER()).orElseGet(itemContext::TYPE))
+            .map(TerminalNode::getText)
+            .toList();
+    ScenarioType type;
+    if (columnNames.contains("accepts")) {
+      type = ScenarioType.AGGREGATE;
+    } else if (columnNames.contains("issued")) {
+      type = ScenarioType.POLICY;
+    } else {
+      type = ScenarioType.READ_MODEL;
+    }
+    scenarios.scenario_row().forEach(row -> addScenario(row, type, variables, result));
     return result;
   }
 
   private void addScenario(
-      AcceptanceParser.Scenario_rowContext row, DataList variables, DataList scenarios) {
-    if (row.STRING() == null || row.item() == null || row.item().size() < 2) {
+      AcceptanceParser.Scenario_rowContext row,
+      ScenarioType type,
+      DataList variables,
+      DataList scenarios) {
+    if (row.STRING() == null || row.item() == null || row.item().isEmpty()) {
       return;
     }
     var name = stripQuotesFrom(row.STRING().getText());
@@ -158,8 +178,8 @@ class AcceptanceFormatParser implements Parser {
       var property =
           switch (variableTypeOf(variableName, variables)) {
             case "entity" -> initialized ? "state" : "init";
-            case "command" -> "command";
-            case "event" -> "emitted";
+            case "command" -> type == ScenarioType.AGGREGATE ? "accepts" : "issued";
+            case "event" -> type == ScenarioType.AGGREGATE ? "emitted" : "handles";
             default -> null;
           };
       if (property == null) {
@@ -190,7 +210,22 @@ class AcceptanceFormatParser implements Parser {
       type = source.property("type") instanceof DataEnum ? "fieldVariable" : "elementVariable";
     } else if ("definitions".equals(name)) {
       type = "fieldAssignment";
+    } else if ("scenarios".equals(name)) {
+      var properties = source.propertyNames();
+      if (properties.contains("accepts")) {
+        type = "aggregateScenario";
+      } else if (properties.contains("issued")) {
+        type = "policyScenario";
+      } else {
+        type = "readModelScenario";
+      }
     }
     return Parser.super.createObject(source, type, parent, validate);
+  }
+
+  private enum ScenarioType {
+    AGGREGATE,
+    POLICY,
+    READ_MODEL
   }
 }
