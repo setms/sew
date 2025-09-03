@@ -12,19 +12,15 @@
   - Keywords
   - Terms from glossary
 
+
 ## Specific tools
 
 ### Domain story
 
 - Conversion to use case scenario: handle multiple activities in single sentence
 
-
 ### Use case
 
 - Do scenarios need title/description?
 - Do we still need to describe steps now that we have domain stories?
   - If so, then fix the cases where description doesn't currently work
-
-### Acceptance test
-
-- Parse multiple items in initial/expected state of aggregate and read model

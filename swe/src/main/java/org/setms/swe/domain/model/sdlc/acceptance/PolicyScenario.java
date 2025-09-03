@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.acceptance;
 
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +19,7 @@ import org.setms.km.domain.model.artifact.Link;
 public class PolicyScenario extends Scenario {
 
   @HasType("variable")
-  private Link init;
+  private List<Link> init;
 
   @NotNull
   @HasType("variable")

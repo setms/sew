@@ -61,7 +61,9 @@ scenario_header:
     (PIPE item)+ PIPE NEWLINE;
 
 scenario_row:
-    PIPE STRING PIPE (item? PIPE)* NEWLINE;
+    PIPE STRING PIPE (list? PIPE)* NEWLINE;
+
+list: item (COMMA item)*;
 
 
 PIPE        : '|';
@@ -96,7 +98,7 @@ TYPE         : 'aggregate'
              | 'valueObject';
 
 OBJECT_NAME  : [A-Z] [a-zA-Z0-9]*;
-IDENTIFIER   : [a-z] [a-zA-Z_]*;
+IDENTIFIER   : [a-z] [a-zA-Z0-9]*;
 STRING       : '"' (~["\r\n])* '"';
 
 COMMA        : ',';

@@ -5,6 +5,7 @@ import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -85,8 +86,21 @@ public class AcceptanceTestTool extends Tool<AcceptanceTest> {
         name, format(scenario.getEmitted(), acceptanceTest).orElse("?"));
   }
 
-  private String stateOf(Link state, AcceptanceTest acceptanceTest) {
-    return format(state, acceptanceTest).map("contains %s"::formatted).orElse("is empty");
+  private String stateOf(List<Link> state, AcceptanceTest acceptanceTest) {
+    var items =
+        Optional.ofNullable(state).stream()
+            .flatMap(Collection::stream)
+            .map(item -> format(item, acceptanceTest))
+            .flatMap(Optional::stream)
+            .toList();
+    return switch (items.size()) {
+      case 0 -> "is empty";
+      case 1 -> "contains " + items.getFirst();
+      case 2 -> "contains %s and %s".formatted(items.getFirst(), items.getLast());
+      default ->
+          "contains %s, and %s"
+              .formatted(String.join(", ", items.subList(0, items.size() - 1)), items.getLast());
+    };
   }
 
   private Optional<String> format(Link linkToVariable, AcceptanceTest acceptanceTest) {

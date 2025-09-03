@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.setms.km.domain.model.format.Builder;
 import org.setms.km.domain.model.format.DataEnum;
 import org.setms.km.domain.model.format.DataItem;
@@ -109,13 +110,20 @@ class AcceptanceFormatBuilder implements Builder {
         .forEach(
             object -> {
               var name = '"' + object.getName() + '"';
-              var init = "";
+              var init = buildItems(object, "init");
               var command = object.property("accepts", Reference.class).getId();
-              var state = "";
+              var state = buildItems(object, "state");
               var emitted = object.property("emitted", Reference.class).getId();
               result.addRow(name, init, command, state, emitted);
             });
     return result;
+  }
+
+  private String buildItems(NestedObject object, String property) {
+    return Stream.ofNullable(object.property(property, DataList.class))
+        .flatMap(dl -> dl.map(Reference.class::cast))
+        .map(Reference::getId)
+        .collect(joining(","));
   }
 
   private Table policyScenariosTableFrom(DataList scenarios) {
@@ -125,7 +133,7 @@ class AcceptanceFormatBuilder implements Builder {
         .forEach(
             object -> {
               var name = '"' + object.getName() + '"';
-              var init = "";
+              var init = buildItems(object, "init");
               var event = object.property("handles", Reference.class).getId();
               var issues = object.property("issued", Reference.class).getId();
               result.addRow(name, init, event, issues);
@@ -140,9 +148,9 @@ class AcceptanceFormatBuilder implements Builder {
         .forEach(
             object -> {
               var name = '"' + object.getName() + '"';
-              var init = "";
+              var init = buildItems(object, "init");
               var event = object.property("handles", Reference.class).getId();
-              var state = "";
+              var state = buildItems(object, "state");
               result.addRow(name, init, event, state);
             });
     return result;

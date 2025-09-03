@@ -6,7 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.format.DataEnum;
 import org.setms.km.domain.model.format.DataList;
 import org.setms.km.domain.model.format.DataString;
@@ -14,6 +17,9 @@ import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.format.NestedObject;
 import org.setms.km.domain.model.format.Reference;
 import org.setms.km.domain.model.format.RootObject;
+import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.acceptance.AggregateScenario;
+import org.setms.swe.domain.model.sdlc.acceptance.ElementVariable;
 
 class AcceptanceFormatTest {
 
@@ -146,6 +152,7 @@ class AcceptanceFormatTest {
                   .add(
                       new NestedObject("Happy path")
                           .set("handles", new Reference("variable", "event"))));
+
   private final Format format = new AcceptanceFormat();
   private final ByteArrayOutputStream output = new ByteArrayOutputStream();
 
@@ -195,5 +202,39 @@ class AcceptanceFormatTest {
     format.newBuilder().build(READ_MODEL_SCENARIO_OBJECT, output);
 
     assertThat(output).hasToString(READ_MODEL_SCENARIO);
+  }
+
+  @Test
+  void shouldSupportMultipleEntitiesInState() throws IOException {
+    var acceptanceTest =
+        new AcceptanceTest(new FullyQualifiedName("todo.TodosAggregate"))
+            .setSut(new Link("aggregate", "Todos"))
+            .setVariables(
+                List.of(
+                    new ElementVariable(new FullyQualifiedName("elementVariable.todo1"))
+                        .setType(new Link("entity", "Todo")),
+                    new ElementVariable(new FullyQualifiedName("elementVariable.todo2"))
+                        .setType(new Link("entity", "Todo")),
+                    new ElementVariable(new FullyQualifiedName("elementVariable.command"))
+                        .setType(new Link("command", "Command")),
+                    new ElementVariable(new FullyQualifiedName("elementVariable.event"))
+                        .setType(new Link("event", "Event"))))
+            .setScenarios(
+                List.of(
+                    new AggregateScenario(
+                            new FullyQualifiedName("aggregateScenario.AddAnotherTodo"))
+                        .setInit(List.of(new Link("variable", "todo1")))
+                        .setAccepts(new Link("variable", "command"))
+                        .setState(
+                            List.of(new Link("variable", "todo1"), new Link("variable", "todo2")))
+                        .setEmitted(new Link("variable", "event"))));
+    format.newBuilder().build(acceptanceTest, output);
+
+    var actual =
+        format
+            .newParser()
+            .parse(new ByteArrayInputStream(output.toByteArray()), acceptanceTest.getClass(), true);
+
+    assertThat(actual).isEqualTo(acceptanceTest);
   }
 }

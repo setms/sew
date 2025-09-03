@@ -165,27 +165,44 @@ class AcceptanceFormatParser implements Parser {
       ScenarioType type,
       DataList variables,
       DataList scenarios) {
-    if (row.STRING() == null || row.item() == null || row.item().isEmpty()) {
+    if (row.STRING() == null || row.list() == null || row.list().isEmpty()) {
       return;
     }
     var name = stripQuotesFrom(row.STRING().getText());
     var scenario = new NestedObject(name);
-    var numCells = row.item().size();
+    var numCells = row.list().size();
     var initialized = false;
     for (var index = 0; index < numCells; index++) {
-      var variableName = row.item(index).getText();
-      var reference = new Reference("variable", variableName);
-      var property =
-          switch (variableTypeOf(variableName, variables)) {
-            case "entity" -> initialized ? "state" : "init";
-            case "command" -> type == ScenarioType.AGGREGATE ? "accepts" : "issued";
-            case "event" -> type == ScenarioType.AGGREGATE ? "emitted" : "handles";
-            default -> null;
-          };
-      if (property == null) {
-        return;
+      var variableReferences = row.list(index);
+      DataItem propertyValue = null;
+      String propertyName = null;
+      for (var variableReference : variableReferences.item()) {
+        var variableName = variableReference.getText();
+        var reference = new Reference("variable", variableName);
+        if (propertyName == null) {
+          propertyName =
+              switch (variableTypeOf(variableName, variables)) {
+                case "entity" -> initialized ? "state" : "init";
+                case "command" -> type == ScenarioType.AGGREGATE ? "accepts" : "issued";
+                case "event" -> type == ScenarioType.AGGREGATE ? "emitted" : "handles";
+                default -> null;
+              };
+          if (propertyName == null) {
+            return;
+          }
+        }
+        if (propertyValue == null) {
+          propertyValue =
+              switch (propertyName) {
+                case "init", "state" -> new DataList();
+                default -> reference;
+              };
+        }
+        if (propertyValue instanceof DataList references) {
+          references.add(reference);
+        }
       }
-      scenario.set(property, reference);
+      scenario.set(propertyName, propertyValue);
       initialized = true;
     }
     scenarios.add(scenario);
