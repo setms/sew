@@ -61,8 +61,14 @@
         <lang.parserDefinition language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalParserDefinition"/>
         <postStartupActivity implementation="org.setms.sew.intellij.plugin.structure.SalStartupActivity"/>
         <annotator language="Sal" implementationClass="org.setms.sew.intellij.lang.sal.SalAnnotator"/>
+        <completion.contributor
+                language="Sal"
+                implementationClass="org.setms.sew.intellij.plugin.CompletionContributor"/>
         <!-- Acceptance -->
         <lang.parserDefinition language="Acceptance" implementationClass="org.setms.sew.intellij.lang.acceptance.AcceptanceParserDefinition"/>
+        <completion.contributor
+                language="Acceptance"
+                implementationClass="org.setms.sew.intellij.plugin.CompletionContributor"/>
 
         <!-- KM -->
         <postStartupActivity implementation="org.setms.sew.intellij.plugin.km.KmStartupActivity"/>

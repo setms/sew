@@ -9,7 +9,6 @@
 
 - Finish task window
 - Autocomplete
-  - Keywords
   - Terms from glossary
 
 
