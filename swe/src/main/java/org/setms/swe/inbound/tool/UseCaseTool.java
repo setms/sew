@@ -13,16 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.languagetool.JLanguageTool;
-import org.languagetool.Languages;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
@@ -32,7 +23,6 @@ import org.setms.km.domain.model.diagram.BaseDiagramTool;
 import org.setms.km.domain.model.diagram.Box;
 import org.setms.km.domain.model.diagram.Diagram;
 import org.setms.km.domain.model.diagram.IconBox;
-import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -43,10 +33,10 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.domainstory.DomainStory;
+import org.setms.swe.domain.model.sdlc.domainstory.Sentence;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
-import org.setms.swe.domain.model.sdlc.eventstorming.ExternalSystem;
 import org.setms.swe.domain.model.sdlc.eventstorming.Policy;
 import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
@@ -66,8 +56,6 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   private static final Collection<String> ACTIVE_ELEMENTS =
       List.of("aggregate", "policy", "readModel");
   private static final String CREATE_DOMAIN_STORY = "domainstory.create";
-
-  private JLanguageTool languageTool;
 
   @Override
   public Input<UseCase> getMainInput() {
@@ -395,6 +383,17 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
                   if (isNotBlank(domainStory.getDescription())) {
                     writer.printf("    <p>%s</p>%n", domainStory.getDescription());
                   }
+                  writer.println("    <ol>");
+                  domainStory
+                      .sentences()
+                      .map(Sentence::toHumanReadable)
+                      .forEach(
+                          sentence -> {
+                            writer.print("      <li");
+                            writer.printf(">%s", sentence);
+                            writer.println("</li>");
+                          });
+                  writer.println("    </ol>");
                 } else {
                   writer.printf("    <h2>%s</h2>%n", scenario.friendlyName());
                 }
@@ -407,18 +406,6 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
                             writer.printf(
                                 "    <img src=\"%s\"/>%n",
                                 report.toUri().resolve(".").normalize().relativize(image.toUri())));
-                writer.println("    <ol>");
-                describeSteps(scenario.getSteps(), inputs)
-                    .forEach(
-                        sentence -> {
-                          writer.print("      <li");
-                          if (!sentence.valid()) {
-                            writer.print(" style='color: #d32f2f;'");
-                          }
-                          writer.printf(">%s", sentence.text());
-                          writer.println("</li>");
-                        });
-                writer.println("    </ol>");
               });
       writer.println("  </body>");
       writer.println("</html>");
@@ -471,303 +458,6 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   private Box addBox(Link step, Diagram diagram) {
     return diagram.add(new IconBox(step.getId(), "eventStorm/" + step.getType()));
   }
-
-  private List<Sentence> describeSteps(List<Link> steps, ResolvedInputs context) {
-    var result = new ArrayList<Sentence>();
-    var inputs = new ArrayList<Artifact>();
-    Optional<Actor> actor = Optional.empty();
-    var resolvedSteps = steps.stream().map(context::resolve).toList();
-    for (var step : resolvedSteps) {
-      if (actor.isPresent()) {
-        var description = actor.get().getDescription(step);
-        if (description.isPresent()) {
-          var sentence = validate(description.get());
-          result.add(sentence);
-          inputs.clear();
-          actor = Optional.empty();
-        }
-      } else {
-        actor = Actor.from(step, false);
-        if (actor.isEmpty()) {
-          inputs.add(step);
-        } else {
-          actor.get().setInput(inputs);
-        }
-      }
-    }
-    actor.map(Actor::finishDescription).map(this::validate).ifPresent(result::add);
-    if (inputs.size() == 1) {
-      Actor.from(inputs.getFirst(), true)
-          .map(Actor::finishDescription)
-          .map(this::validate)
-          .ifPresentOrElse(
-              result::add, () -> System.err.printf("Unhandled final step %s%n", inputs.getFirst()));
-    }
-    return result;
-  }
-
-  private Sentence validate(String text) {
-    var sentence = text;
-    var valid = true;
-    var langTool = getLanguageTool();
-    try {
-      var matches = langTool.check(sentence);
-      for (var match : matches) {
-        if (match.getSuggestedReplacements().isEmpty()) {
-          continue;
-        }
-        var replacement = match.getSuggestedReplacements().getFirst();
-        if (replacement.equalsIgnoreCase(
-            sentence.substring(match.getFromPos(), match.getToPos()))) {
-          // Ignore changes in case only
-          continue;
-        }
-        var improvement =
-            validate(
-                sentence.substring(0, match.getFromPos())
-                    + replacement
-                    + sentence.substring(match.getToPos()));
-        if (improvement.valid()) {
-          sentence = improvement.text();
-        } else {
-          valid = false;
-        }
-      }
-    } catch (IOException e) {
-      System.err.println("Error checking grammar: " + e.getMessage());
-    }
-    return new Sentence(sentence, valid);
-  }
-
-  private JLanguageTool getLanguageTool() {
-    if (languageTool == null) {
-      languageTool = new JLanguageTool(Languages.getLanguageForShortCode("en-US"));
-    }
-    return languageTool;
-  }
-
-  @Getter(AccessLevel.PROTECTED)
-  @RequiredArgsConstructor
-  private abstract static class Actor {
-
-    private final String name;
-    @Setter private List<Artifact> input;
-
-    public static Optional<Actor> from(Artifact step, boolean atEnd) {
-      if (isType(step, User.class)) {
-        var userName = friendlyName(step, User.class, User::getDisplay);
-        return Optional.of(new UserActor(userName));
-      }
-      if (isType(step, ExternalSystem.class)) {
-        var externalSystemName =
-            friendlyName(step, ExternalSystem.class, ExternalSystem::getDisplay);
-        return Optional.of(new ExternalSystemActor(externalSystemName));
-      }
-      if (isType(step, Aggregate.class) || isType(step, Policy.class)) {
-        return Optional.of(new SystemActor());
-      }
-      if (atEnd && isType(step, ReadModel.class)) {
-        var readModelName = friendlyName(step, ReadModel.class, ReadModel::getDisplay);
-        return Optional.of(new ReadModelActor(readModelName));
-      }
-      return Optional.empty();
-    }
-
-    protected static <T extends Artifact> boolean isType(Artifact object, Class<T> type) {
-      return type.isInstance(object)
-          || (object instanceof UnresolvedArtifact unresolvedObject
-              && type.getSimpleName().equals(initUpper(unresolvedObject.type())));
-    }
-
-    protected static <T extends Artifact> String friendlyName(
-        Artifact source, Class<T> type, Function<T, String> extractor) {
-      var result = type.isInstance(source) ? extractor.apply(type.cast(source)) : null;
-      return friendlyName(result == null ? source.getName() : result);
-    }
-
-    protected static String friendlyName(String name) {
-      var result = new StringBuilder(name);
-      for (var i = 1; i < result.length(); i++) {
-        if (Character.isUpperCase(result.charAt(i))) {
-          result.setCharAt(i, Character.toLowerCase(result.charAt(i)));
-          result.insert(i, ' ');
-        }
-      }
-      return result.toString();
-    }
-
-    public abstract Optional<String> getDescription(Artifact eventStormElement);
-
-    public String finishDescription() {
-      return null;
-    }
-
-    private static class UserActor extends Actor {
-
-      public UserActor(String name) {
-        super(name);
-      }
-
-      @Override
-      public Optional<String> getDescription(Artifact eventStormElement) {
-        if (isType(eventStormElement, Command.class)) {
-          var command = friendlyName(eventStormElement, Command.class, Command::getDisplay);
-          return Optional.of(userIssues(command));
-        }
-        getInput().add(eventStormElement);
-        return Optional.empty();
-      }
-
-      private String userIssues(String command) {
-        var user = initLower(getName());
-        return "%s %s%s %s."
-            .formatted(indefiniteArticleFor(user), user, describeInputs(), commandToText(command));
-      }
-
-      private String indefiniteArticleFor(String noun) {
-        // Not 100%, but sentence validation will correct exceptions
-        return Stream.of("a", "e", "i", "o").anyMatch(noun::startsWith) ? "An" : "A";
-      }
-
-      private String describeInputs() {
-        if (getInput().isEmpty()) {
-          return "";
-        }
-        var input = getInput().getFirst();
-        if (isType(input, ReadModel.class)) {
-          var readModelText = friendlyName(input, ReadModel.class, ReadModel::getDisplay);
-          return ", looking at the %s,".formatted(initLower(readModelText));
-        }
-        if (isType(input, ExternalSystem.class)) {
-          var externalSystemText =
-              friendlyName(input, ExternalSystem.class, ExternalSystem::getDisplay);
-          return ", via the %s,".formatted(initLower(externalSystemText));
-        }
-        return "";
-      }
-    }
-
-    private static String commandToText(String command) {
-      var words =
-          Arrays.stream(command.split("\\s"))
-              .map(Strings::initLower)
-              .map(word -> word.equals("my") ? "their" : word)
-              .collect(Collectors.toCollection(ArrayList::new));
-      words.set(0, inflect(words.getFirst()));
-      if (words.size() > 1 && !"the".equals(words.get(1)) && !"it".equals(words.get(1))) {
-        words.add(1, "the");
-      }
-      return String.join(" ", words);
-    }
-
-    private static String inflect(String verb) {
-      var result = verb;
-      if (result.endsWith("y")) {
-        result = result.substring(0, result.length() - 1) + "ies";
-      } else if (result.endsWith("o") || result.endsWith("sh")) {
-        result = result + "es";
-      } else if (!result.endsWith("s")) {
-        result = result + "s";
-      }
-      return result;
-    }
-
-    private static class SystemActor extends Actor {
-
-      private final List<Artifact> actions = new ArrayList<>();
-
-      public SystemActor() {
-        super("The system");
-      }
-
-      @Override
-      public Optional<String> getDescription(Artifact eventStormElement) {
-        actions.add(eventStormElement);
-        if (isType(eventStormElement, ReadModel.class)
-            || isType(eventStormElement, Command.class)) {
-          return Optional.of(describeActions());
-        }
-        return Optional.empty();
-      }
-
-      @Override
-      public String finishDescription() {
-        if (actions.isEmpty()) {
-          return null;
-        }
-        var action = actions.getLast();
-        if (isType(action, Event.class)) {
-          var response =
-              friendlyName(
-                  action,
-                  Event.class,
-                  event -> Optional.ofNullable(event.getPayload()).map(Link::getId).orElse(""));
-          return "%s responds that the %s.".formatted(getName(), initLower(response));
-        }
-        return actions.isEmpty() ? null : "%s does nothing.".formatted(getName());
-      }
-
-      private String describeActions() {
-        var last = actions.getLast();
-        if (isType(last, Command.class)) {
-          var command = friendlyName(last, Command.class, Command::getDisplay);
-          return "%s %s.".formatted(getName(), commandToText(command));
-        }
-        if (isType(last, ReadModel.class)) {
-          var readModelText = friendlyName(last, ReadModel.class, ReadModel::getDisplay);
-          return "%s updates the %s.".formatted(getName(), initLower(readModelText));
-        }
-        throw new IllegalStateException("Unknown last action: " + last.getClass().getSimpleName());
-      }
-    }
-
-    private static class ExternalSystemActor extends Actor {
-
-      public ExternalSystemActor(String externalSystemName) {
-        super(externalSystemName);
-      }
-
-      @Override
-      public Optional<String> getDescription(Artifact eventStormElement) {
-        if (isType(eventStormElement, Event.class)) {
-          var event = initLower(friendlyName(eventStormElement.getName()));
-          return Optional.of(
-              "The %s notifies the system that the %s."
-                  .formatted(initLower(getName()), eventToText(event)));
-        }
-        getInput().add(eventStormElement);
-        return Optional.empty();
-      }
-
-      private String eventToText(String event) {
-        var words =
-            Arrays.stream(event.split("\\s"))
-                .map(Strings::initLower)
-                .collect(Collectors.toCollection(ArrayList::new));
-        words.add(words.size() - 1, "is");
-        return String.join(" ", words);
-      }
-    }
-
-    private static class ReadModelActor extends Actor {
-
-      public ReadModelActor(String name) {
-        super(name);
-      }
-
-      @Override
-      public Optional<String> getDescription(Artifact eventStormElement) {
-        return Optional.empty();
-      }
-
-      @Override
-      public String finishDescription() {
-        return "The system updates the %s.".formatted(initLower(getName()));
-      }
-    }
-  }
-
-  private record Sentence(String text, boolean valid) {}
 
   private record StepReference(UseCase useCase, String scenarioName, int stepIndex) {
 

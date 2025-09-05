@@ -1,5 +1,7 @@
 package org.setms.swe.domain.model.sdlc.domainstory;
 
+import static java.util.stream.Collectors.joining;
+import static org.setms.km.domain.model.format.Strings.initUpper;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -14,6 +16,7 @@ import lombok.experimental.Accessors;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 
@@ -69,5 +72,15 @@ public class Sentence extends Artifact {
 
   public Stream<Link> parts() {
     return parts.stream();
+  }
+
+  public String toHumanReadable() {
+    return initUpper(
+        parts()
+                .map(Link::getId)
+                .map(Strings::toFriendlyName)
+                .map(Strings::initLower)
+                .collect(joining(" "))
+            + ".");
   }
 }

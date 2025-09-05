@@ -21,12 +21,10 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
         <p>A sample use case for demonstration purposes.</p>
         <h2>Just do it</h2>
         <p>This is the happy path scenario, where everything goes according to plan.</p>
-        <img src="HappyPath.png"/>
         <ol>
-          <li>A donald, looking at the info, does it.</li>
-          <li>The system does it again.</li>
-          <li>The system updates the info.</li>
+          <li>Duck does it.</li>
         </ol>
+        <img src="HappyPath.png"/>
       </body>
     </html>
     """;

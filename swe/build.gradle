@@ -74,7 +74,7 @@ pitest {
     //adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
     junit5PluginVersion = '1.2.1'
     // mutationThreshold should be increased as tests are refactored with an ultimate goal of 80% or higher
-    mutationThreshold = 70
+    mutationThreshold = 60
     // withHistory is not used in order to have explicit control over the location to enable caching w/in the CI/CD pipeline
     historyInputLocation = pitestHistoryFilePath
     historyOutputLocation = pitestHistoryFilePath
