@@ -3,6 +3,7 @@ package org.setms.swe.domain.services;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
@@ -13,7 +14,7 @@ import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 
 class DomainStoryToUseCaseTest {
 
-  private final DomainStoryToUseCase converter = new DomainStoryToUseCase();
+  private final DomainStoryToUseCase converter = new DomainStoryToUseCase(Optional.empty());
 
   @Test
   void shouldConvertSingleSentence() {

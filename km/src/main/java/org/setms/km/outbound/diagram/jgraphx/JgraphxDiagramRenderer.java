@@ -6,9 +6,10 @@ import static org.setms.km.domain.model.diagram.Placement.NEAR_FROM_VERTEX;
 import static org.setms.km.domain.model.diagram.Placement.NEAR_TO_VERTEX;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
-import com.mxgraph.layout.mxGraphLayout;
+import com.mxgraph.layout.mxIGraphLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxCellRenderer;
+import com.mxgraph.util.mxPoint;
 import com.mxgraph.view.mxGraph;
 import java.awt.image.BufferedImage;
 import org.setms.km.domain.model.diagram.Arrow;
@@ -36,11 +37,12 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
   private static final String VERTEX_STYLE_RECTANGLE =
       "shape=rectangle;fillColor=none;fontColor=" + COLOR;
   private static final String VERTEX_STYLE_EDGE_POINT =
-      "fontSize=9;resizable=0;movable=0;rotatable=0;shape=label;align=center;verticalAlign=middle;connectable=0;strokeColor=none;fillColor=none;fontColor="
+      "fontSize=16;resizable=0;movable=0;rotatable=0;shape=label;align=center;verticalAlign=middle;connectable=0;strokeColor=none;fillColor=none;fontStyle=1;fontColor="
           + COLOR;
   private static final String EDGE_STYLE_BIDIRECTIONAL = "endArrow: none";
   private static final String EDGE_STYLE_NORMAL = null;
-  public static final int EDGE_POINT_SIZE = 20;
+  private static final int EDGE_POINT_SIZE = 20;
+  private static final int MARGIN = 3;
 
   @Override
   public String getId() {
@@ -160,7 +162,7 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     context.getEdgeLabels().forEach(placement -> positionEdgeLabel(graph, placement));
   }
 
-  private mxGraphLayout newLayoutFor(
+  private mxIGraphLayout newLayoutFor(
       Layout layout, Orientation orientation, GraphContext context, mxGraph graph) {
     return switch (layout) {
       case DEFAULT -> newHierarchicalLayout(orientation, context, graph);
@@ -168,7 +170,7 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     };
   }
 
-  private mxGraphLayout newHierarchicalLayout(
+  private mxIGraphLayout newHierarchicalLayout(
       Orientation orientation, GraphContext context, mxGraph graph) {
     var result = new mxHierarchicalLayout(graph, convert(orientation));
     result.setInterRankCellSpacing(2.0 * ICON_SIZE);
@@ -183,7 +185,7 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     };
   }
 
-  private mxGraphLayout newLaneLayout(mxGraph graph) {
+  private mxIGraphLayout newLaneLayout(mxGraph graph) {
     return new LaneLayout(graph);
   }
 
@@ -197,8 +199,23 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     var base = edgeLabel.isPlacedNearFromVertex() ? points.get(0) : points.getLast();
     var next = edgeLabel.isPlacedNearFromVertex() ? points.get(1) : points.get(points.size() - 2);
 
+    var height = edgeState.getLabelBounds().getHeight() / 2.0;
+    var labelPoint = new mxPoint(base.getX() + height + MARGIN, base.getY() - height - MARGIN);
+
     var dx = next.getX() - base.getX();
     var dy = next.getY() - base.getY();
+    var rad = Math.atan2(dy, dx);
+
+    dx = labelPoint.getX() - base.getX();
+    dy = labelPoint.getY() - base.getY();
+    labelPoint.setX(base.getX() + dx * Math.cos(rad) - dy * Math.sin(rad));
+    labelPoint.setY(base.getY() + dx * Math.sin(rad) + dy * Math.cos(rad));
+
+    var geo = edgeLabel.label().getGeometry();
+    geo.setX(labelPoint.getX() - height);
+    geo.setY(labelPoint.getY() - height);
+
+    /*
     var len = Math.max(1, Math.sqrt(dx * dx + dy * dy));
     dx /= len;
     dy /= len;
@@ -217,5 +234,6 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     geo.setY(labelY - yOffset);
     geo.setRelative(false);
     graph.getModel().setGeometry(edgeLabel.label(), geo);
+     */
   }
 }
