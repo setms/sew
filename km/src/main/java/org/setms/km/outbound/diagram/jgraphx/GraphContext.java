@@ -13,7 +13,7 @@ import org.setms.km.domain.model.diagram.Placement;
 @RequiredArgsConstructor
 public class GraphContext {
 
-  @Getter private final int boxHeight;
+  @Getter private final int boxLabelHeight;
   private final Map<Box, Object> verticesByBox = new HashMap<>();
   @Getter private final Collection<EdgeLabel> edgeLabels = new ArrayList<>();
 
@@ -25,7 +25,7 @@ public class GraphContext {
     return verticesByBox.get(box);
   }
 
-  public void addEdgeLabel(Object edge, mxCell label, Placement placement) {
+  public void addEdgeLabel(mxCell edge, mxCell label, Placement placement) {
     edgeLabels.add(new EdgeLabel(edge, label, placement));
   }
 }

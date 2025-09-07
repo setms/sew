@@ -212,7 +212,7 @@ public class LaneLayout extends mxGraphLayout {
                     .mapToDouble(mxGeometry::getWidth)
                     .max()
                     .orElseThrow(),
-            2.5
+            2
                 * vertices.stream()
                     .map(mxCell::getGeometry)
                     .mapToDouble(mxGeometry::getHeight)
