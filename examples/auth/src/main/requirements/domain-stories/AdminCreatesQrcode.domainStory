@@ -8,9 +8,9 @@ sentence {
   parts = [
     person(Admin),
     activity(Enters),
-    workObject(Data, icon=material(Draft)),
-    activity(AndCreates),
-    workObject(AnonymousRecordSubmission, icon=material(Work))
+    workObject(Data, icon=material(DataTable)),
+    activity(ToDefine),
+    workObject(PublicForm, icon=material(Public))
   ]
 }
 
@@ -18,9 +18,9 @@ sentence {
   parts = [
     computerSystem(Accelerate),
     activity(Generates),
-    workObject(Url),
+    workObject(URL, icon=material(Link)),
     activity(For),
-    workObject(AnonymousRecordSubmission, icon=material(Work))
+    workObject(PublicForm, icon=material(Public))
   ]
 }
 
@@ -28,9 +28,11 @@ sentence {
   parts = [
     person(Admin),
     activity(Downloads),
-    workObject(QRCode, icon=material(CodeBlocks)),
+    workObject(QRCode, icon=material(QrCode2)),
     activity(For),
-    workObject(AnonymousRecordSubmission, icon=material(Work))
+    workObject(URL, icon=material(Link)),
+    activity(To),
+    workObject(PublicForm, icon=material(Public))
   ]
 }
 
@@ -38,8 +40,8 @@ sentence {
   parts = [
     person(Admin),
     activity(Posts),
-    workObject(QRCode, icon=material(CodeBlocks)),
+    workObject(QRCode, icon=material(QrCode2)),
     activity(At),
-    workObject(Facility, icon=material(OtherHouses))
+    workObject(Facility, icon=material(Factory))
   ]
 }

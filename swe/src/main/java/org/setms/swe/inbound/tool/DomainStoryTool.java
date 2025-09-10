@@ -113,9 +113,7 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
     var box =
         diagram.add(
             new IconBox(
-                toFriendlyName(part.getId()),
-                "domainStory/" + iconPath,
-                "domainStory/material/questionMark"),
+                part.getId(), "domainStory/" + iconPath, "domainStory/material/questionMark"),
             reuseType);
     Optional.ofNullable(context.addBox(box))
         .map(

@@ -206,10 +206,10 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
 
   private void placeEdgeLabels(GraphContext context, mxGraph graph) {
     context.getEdgeLabels().forEach(placement -> placeEdgeLabel(graph, placement));
-    var alignLeft = new AtomicBoolean(true);
+    var leftOfEdge = new AtomicBoolean(false);
     Arrays.stream(graph.getChildEdges(graph.getDefaultParent()))
         .map(mxCell.class::cast)
-        .forEach(edge -> placeEdgeMiddleLabel(graph, edge, alignLeft));
+        .forEach(edge -> placeEdgeMiddleLabel(graph, edge, leftOfEdge));
   }
 
   private void placeEdgeLabel(mxGraph graph, EdgeLabel edgeLabel) {
@@ -248,7 +248,7 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     geo.setY(labelPoint.getY());
   }
 
-  private void placeEdgeMiddleLabel(mxGraph graph, mxCell edge, AtomicBoolean alignLeft) {
+  private void placeEdgeMiddleLabel(mxGraph graph, mxCell edge, AtomicBoolean leftOnEdge) {
     var edgeState = graph.getView().getState(edge);
     if (edgeState == null || edgeState.getAbsolutePoints() == null) {
       return;
@@ -266,7 +266,7 @@ public class JgraphxDiagramRenderer extends BaseDiagramRenderer {
     } else if (abs(dx) < 0.1) {
       offset.setX(0.5 * bounds.getWidth());
       offset.setY(MARGIN);
-    } else if (alignLeft.getAndSet(!alignLeft.get())) {
+    } else if (leftOnEdge.getAndSet(!leftOnEdge.get())) {
       offset.setX(-0.5 * bounds.getWidth());
     } else {
       offset.setX(0.5 * bounds.getWidth());

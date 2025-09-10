@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
@@ -133,5 +134,34 @@ class DomainStoryToUseCaseTest {
                                     new Link("command", "RhinoSnake"),
                                     new Link("aggregate", "Snakes"),
                                     new Link("event", "SnakeRhinoed"))))));
+  }
+
+  @Disabled("TODO: Make this work")
+  @Test
+  void shouldConvertSentenceWithExternalSystem() {
+    var domainStory =
+        new DomainStory(new FullyQualifiedName("ape.Bear"))
+            .setSentences(
+                List.of(
+                    new Sentence(new FullyQualifiedName("ape.Sentence1"))
+                        .setParts(
+                            List.of(
+                                new Link("person", "Cheetah"),
+                                new Link("activity", "Dingos"),
+                                new Link("workObject", "Elephant"),
+                                new Link("activity", "Foxes"),
+                                new Link("computerSystem", "Hyena")))));
+
+    var actual = converter.createUseCaseFrom(domainStory);
+
+    assertThat(actual.getScenarios())
+        .hasSize(1)
+        .allSatisfy(
+            scenario ->
+                assertThat(scenario.getSteps())
+                    .containsExactly(
+                        new Link("user", "Cheetah"),
+                        new Link("command", "DingosElephant"),
+                        new Link("externalSystem", "Hyena")));
   }
 }

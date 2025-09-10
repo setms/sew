@@ -1,5 +1,7 @@
 package org.setms.km.domain.model.format;
 
+import static java.lang.Character.isUpperCase;
+
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.AccessLevel;
@@ -43,8 +45,8 @@ public class Strings {
       return "";
     }
     var builder = new StringBuilder(name);
-    for (var i = 1; i < builder.length(); i++) {
-      if (Character.isUpperCase(builder.charAt(i))) {
+    for (var i = 1; i < builder.length() - 1; i++) {
+      if (isUpperCase(builder.charAt(i)) && !isUpperCase(builder.charAt(i + 1))) {
         builder.setCharAt(i, Character.toLowerCase(builder.charAt(i)));
         builder.insert(i, ' ');
       }
