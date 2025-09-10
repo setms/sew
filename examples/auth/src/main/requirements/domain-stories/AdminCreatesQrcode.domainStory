@@ -1,0 +1,45 @@
+package qr
+
+domainStory AdminCreatesQrcode {
+  description = "The customer's administrator creates a QR Code."
+}
+
+sentence {
+  parts = [
+    person(Admin),
+    activity(Enters),
+    workObject(Data, icon=material(Draft)),
+    activity(AndCreates),
+    workObject(AnonymousRecordSubmission, icon=material(Work))
+  ]
+}
+
+sentence {
+  parts = [
+    computerSystem(Accelerate),
+    activity(Generates),
+    workObject(Url),
+    activity(For),
+    workObject(AnonymousRecordSubmission, icon=material(Work))
+  ]
+}
+
+sentence {
+  parts = [
+    person(Admin),
+    activity(Downloads),
+    workObject(QRCode, icon=material(CodeBlocks)),
+    activity(For),
+    workObject(AnonymousRecordSubmission, icon=material(Work))
+  ]
+}
+
+sentence {
+  parts = [
+    person(Admin),
+    activity(Posts),
+    workObject(QRCode, icon=material(CodeBlocks)),
+    activity(At),
+    workObject(Facility, icon=material(OtherHouses))
+  ]
+}
