@@ -16,7 +16,6 @@
 
 ### Domain story
 
-- Rendering
-  - lay out edges to not cross text
-  - make sequence numbers more prominent
-- Conversion to use case scenario: handle multiple activities in single sentence
+- Conversion to use case scenario:
+  - handle multiple activities in single sentence
+  - handle computerSystem as System-under-Design vs external system

@@ -2,9 +2,6 @@ package gdpr
 
 domainStory LoggedInUserRequestsDataDeletion {
   description = "A user who is logged in to one of our apps requests deletion of their data."
-  granularity = fine
-  pointInTime = tobe
-  purity = pure
 }
 
 sentence {

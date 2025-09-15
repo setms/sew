@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
 import jakarta.validation.constraints.NotEmpty;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +41,8 @@ public class Link implements Comparable<Link> {
         .findFirst();
   }
 
-  public boolean hasType(String type) {
-    return this.type != null && this.type.equals(type);
+  public boolean hasType(String... types) {
+    return this.type != null && Arrays.asList(types).contains((this.type));
   }
 
   public static Predicate<Link> testType(String type) {

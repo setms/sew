@@ -1,7 +1,12 @@
 package org.setms.swe.inbound.tool;
 
+import static java.util.Comparator.comparing;
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.groupingBy;
+import static org.setms.km.domain.model.diagram.Arrow.newTextPlacements;
 import static org.setms.km.domain.model.diagram.Layout.LANE;
+import static org.setms.km.domain.model.diagram.Placement.IN_MIDDLE;
+import static org.setms.km.domain.model.diagram.Placement.NEAR_FROM_VERTEX;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.toFriendlyName;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
@@ -12,9 +17,8 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.*;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
+import lombok.Getter;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
@@ -75,26 +79,18 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   }
 
   private void addSentence(int index, Sentence sentence, Diagram diagram) {
-    var firstActivity = new AtomicBoolean(true);
-    var previousBox = new AtomicReference<Box>();
-    var activity = new AtomicReference<String>();
+    var context = new SentenceContext();
     sentence
         .getParts()
         .forEach(
             part -> {
               switch (part.getType()) {
-                case "person" ->
-                    addBox(part, "material/person", diagram, "actor", previousBox, activity);
-                case "people" ->
-                    addBox(part, "material/group", diagram, "actor", previousBox, activity);
+                case "person" -> addBox(part, "material/person", diagram, "actor", context);
+                case "people" -> addBox(part, "material/group", diagram, "actor", context);
                 case "computerSystem" ->
-                    addBox(part, "material/computer", diagram, "actor", previousBox, activity);
+                    addBox(part, "material/computer", diagram, "actor", context);
                 case "activity" ->
-                    activity.set(
-                        "%s%s"
-                            .formatted(
-                                firstActivity.getAndSet(false) ? "%c%n".formatted('①' + index) : "",
-                                initLower(toFriendlyName(part.getId()))));
+                    context.addActivity(index, initLower(toFriendlyName(part.getId())));
                 case "workObject" ->
                     addBox(
                         part,
@@ -104,8 +100,7 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
                             .orElse("material/folder"),
                         diagram,
                         part == sentence.getParts().getLast() ? "workObject" : null,
-                        previousBox,
-                        activity);
+                        context);
                 default ->
                     throw new UnsupportedOperationException(
                         "Can't add to diagram: " + part.getType());
@@ -114,21 +109,23 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   }
 
   private void addBox(
-      Link part,
-      String iconPath,
-      Diagram diagram,
-      String reuseType,
-      AtomicReference<Box> previousBox,
-      AtomicReference<String> activity) {
+      Link part, String iconPath, Diagram diagram, String reuseType, SentenceContext context) {
     var box =
         diagram.add(
             new IconBox(
-                toFriendlyName(part.getId()),
-                "domainStory/" + iconPath,
-                "domainStory/material/questionMark"),
+                part.getId(), "domainStory/" + iconPath, "domainStory/material/questionMark"),
             reuseType);
-    Optional.ofNullable(previousBox.getAndSet(box))
-        .map(from -> new Arrow(from, box, activity.get()))
+    Optional.ofNullable(context.addBox(box))
+        .map(
+            from -> {
+              var textPlacements = newTextPlacements();
+              textPlacements.put(IN_MIDDLE, context.getActivity());
+              context
+                  .sequenceNumber()
+                  .ifPresent(
+                      sequenceNumber -> textPlacements.put(NEAR_FROM_VERTEX, sequenceNumber));
+              return new Arrow(from, box, textPlacements, false);
+            })
         .ifPresent(diagram::add);
   }
 
@@ -178,9 +175,24 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
       ResolvedInputs inputs) {
     if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
       return elaborateInUseCase(
-          domainStoryResource, domainStory, extractUseCaseFrom(suggestionCode, inputs));
+          domainStoryResource,
+          domainStory,
+          extractUseCaseFrom(suggestionCode, inputs),
+          determineSystemToDesign(domainStory.getPackage(), inputs.get(DomainStory.class)));
     }
     return unknown(suggestionCode);
+  }
+
+  private Optional<String> determineSystemToDesign(
+      String packageName, Collection<DomainStory> domainStories) {
+    var computerSystems =
+        domainStories.stream()
+            .filter(domainStory -> domainStory.getPackage().equals(packageName))
+            .flatMap(DomainStory::sentences)
+            .flatMap(Sentence::parts)
+            .filter(Link.testType("computerSystem"))
+            .collect(groupingBy(Link::getId));
+    return computerSystems.keySet().stream().max(comparing(key -> computerSystems.get(key).size()));
   }
 
   private Optional<UseCase> extractUseCaseFrom(String suggestionCode, ResolvedInputs inputs) {
@@ -196,9 +208,12 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   }
 
   private AppliedSuggestion elaborateInUseCase(
-      Resource<?> domainStoryResource, DomainStory domainStory, Optional<UseCase> target) {
+      Resource<?> domainStoryResource,
+      DomainStory domainStory,
+      Optional<UseCase> target,
+      Optional<String> systemToDesign) {
     try {
-      var converter = new DomainStoryToUseCase();
+      var converter = new DomainStoryToUseCase(systemToDesign);
       var useCase =
           target
               .map(uc -> converter.addScenarioFrom(domainStory, uc))
@@ -210,6 +225,34 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
       return created(useCaseResource);
     } catch (Exception e) {
       return failedWith(e);
+    }
+  }
+
+  private static class SentenceContext {
+
+    private boolean showSequenceNumber = true;
+    private String sequenceNumber;
+    @Getter private String activity;
+    @Getter private Box box;
+
+    public void addActivity(int index, String activity) {
+      if (showSequenceNumber) {
+        sequenceNumber = Character.toString((char) ('①' + index));
+        showSequenceNumber = false;
+      } else {
+        sequenceNumber = null;
+      }
+      this.activity = activity;
+    }
+
+    public Box addBox(Box box) {
+      var result = this.box;
+      this.box = box;
+      return result;
+    }
+
+    public Optional<String> sequenceNumber() {
+      return Optional.ofNullable(sequenceNumber);
     }
   }
 }

@@ -8,6 +8,8 @@ import static org.setms.km.domain.model.format.Strings.toFriendlyName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.nlp.English;
@@ -17,9 +19,11 @@ import org.setms.swe.domain.model.sdlc.domainstory.Sentence;
 import org.setms.swe.domain.model.sdlc.usecase.Scenario;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 
+@RequiredArgsConstructor
 public class DomainStoryToUseCase {
 
   private final NaturalLanguage language = new English();
+  private final Optional<String> systemToDesign;
 
   public UseCase createUseCaseFrom(DomainStory domainStory) {
     var friendlyName = toFriendlyName(domainStory.getName());
@@ -48,13 +52,14 @@ public class DomainStoryToUseCase {
     var result = new ArrayList<Link>();
     sentences.forEach(
         sentence -> {
-          for (var i = 0; i < sentence.getParts().size(); i++) {
-            var part = sentence.getParts().get(i);
+          var parts = sentence.getParts();
+          for (var i = 0; i < parts.size(); i++) {
+            var part = parts.get(i);
             result.addAll(
                 switch (part.getType()) {
                   case "person", "people" -> convertPerson(part, result);
                   case "computerSystem" -> convertComputerSystem(part);
-                  case "activity" -> convertActivity(part.getId(), sentence.getParts(), i);
+                  case "activity" -> convertActivity(part.getId(), parts, i);
                   case "workObject" -> convertWorkObject(part.getId(), result);
                   default -> emptyList();
                 });
@@ -80,7 +85,7 @@ public class DomainStoryToUseCase {
   private List<Link> convertActivity(String activity, List<Link> parts, int index) {
     var result = new ArrayList<Link>();
     var previous = parts.get(index - 1);
-    if (previous.hasType("person") || previous.hasType("people")) {
+    if (previous.hasType("person", "people", "computerSystem")) {
       var next = parts.get(index + 1);
       var command = "%s%s".formatted(language.base(activity), next.getId());
       result.add(new Link("command", command));

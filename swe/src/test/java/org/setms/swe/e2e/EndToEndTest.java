@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.setms.km.domain.model.file.Files.childrenOf;
+import static org.setms.km.domain.model.format.Strings.NL;
 import static org.setms.km.domain.model.format.Strings.initLower;
 
 import java.io.BufferedReader;
@@ -32,8 +33,6 @@ import org.yaml.snakeyaml.Yaml;
 
 class EndToEndTest {
 
-  private static final String NL = System.lineSeparator();
-
   /*
    * Software engineering happens in iterations:
    * 1. Human creates initial artifact.
@@ -54,6 +53,7 @@ class EndToEndTest {
   private final File root = new File("build/e2e");
   private Workspace<?> workspace;
   private KmSystem kmSystem;
+  private final Chat chat = new Chat("Human", "SEW");
 
   @BeforeEach
   void init() {
@@ -65,10 +65,10 @@ class EndToEndTest {
   @Test
   void shouldGuideSoftwareEngineering() throws IOException {
     for (var iteration : loadIterations()) {
-      System.out.printf("Iteration %s%n", iteration);
+      chat.topic(iteration.getDirectory().getName());
       assertThatIterationIsCorrect(iteration);
     }
-    System.out.printf("%nDone iterating%n");
+    chat.topic("The End");
     kmSystem
         .diagnosticsWithSuggestions()
         .forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
@@ -113,7 +113,7 @@ class EndToEndTest {
                   "outputs/%s".formatted(output.substring(1 + output.lastIndexOf("/")))),
               FileInputStream::new);
       assertThat(actual).as(output).isEqualTo(expected);
-      System.out.printf("- Verified %s%n", output);
+      chat.add(false, "Created " + output);
     }
   }
 
@@ -133,11 +133,13 @@ class EndToEndTest {
           source.transferTo(target);
         }
       }
-      System.out.printf(
-          "- %s %s/%s%n",
-          created.contains(input.getFile()) ? "Updated" : "Created",
-          input.getLocation(),
-          input.getFile());
+      chat.add(
+          true,
+          "%s %s/%s"
+              .formatted(
+                  created.contains(input.getFile()) ? "Updated" : "Created",
+                  input.getLocation(),
+                  input.getFile()));
     }
   }
 
@@ -160,6 +162,11 @@ class EndToEndTest {
         .isEqualTo(expected);
 
     diagnostics.forEach(
+        diagnostic ->
+            chat.add(
+                false,
+                "Found issue `%s` in %s".formatted(diagnostic.message(), diagnostic.location())));
+    diagnostics.forEach(
         diagnostic -> {
           var resource = workspace.root().select(toPath(diagnostic.location()));
           diagnostic
@@ -175,9 +182,10 @@ class EndToEndTest {
                                 .formatted(suggestion.code(), diagnostic.location()))
                         .isEmpty();
                     applied.createdOrChanged().stream().map(Resource::name).forEach(created::add);
-                    System.out.printf(
-                        "- Applied suggestion `%s` at %s%n",
-                        suggestion.message(), diagnostic.location());
+                    chat.add(
+                        true,
+                        "Applied suggestion `%s` to %s"
+                            .formatted(suggestion.message(), diagnostic.location()));
                   });
         });
   }

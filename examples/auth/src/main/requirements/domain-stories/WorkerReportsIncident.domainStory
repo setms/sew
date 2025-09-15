@@ -1,0 +1,57 @@
+package qr
+
+domainStory WorkerReportsIncident {
+  description = "A worker reports an incident using the QR code."
+}
+
+sentence {
+  parts = [
+    person(Worker),
+    activity(Scans),
+    workObject(QRCode, icon=material(QrCode2))
+  ]
+}
+
+sentence {
+  parts = [
+    computerSystem(Accelerate),
+    activity(Presents),
+    workObject(Captcha, icon=material(PersonCheck))
+  ]
+}
+
+sentence {
+  parts = [
+    person(Worker),
+    activity(Solves),
+    workObject(Captcha, icon=material(PersonCheck))
+  ]
+}
+
+sentence {
+  parts = [
+    computerSystem(Accelerate),
+    activity(Presents),
+    workObject(Form, icon=material(Wysiwyg))
+  ]
+}
+
+sentence {
+  parts = [
+    person(Worker),
+    activity(Enters),
+    workObject(Data, icon=material(DataTable)),
+    activity(InTo),
+    workObject(Form, icon=material(Wysiwyg))
+  ]
+}
+
+sentence {
+  parts = [
+    computerSystem(Accelerate),
+    activity(Submits),
+    workObject(Data, icon=material(DataTable)),
+    activity(To),
+    computerSystem(EHS)
+  ]
+}
