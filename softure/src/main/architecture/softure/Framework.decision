@@ -1,6 +1,7 @@
 package sew.backend
 
 decision Framework {
-    choice    = SpringBoot
+    topic     = framework
+    choices   = [ "SpringBoot" ]
     rationale = "Powerful framework with large adoption"
 }

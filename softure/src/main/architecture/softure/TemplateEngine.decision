@@ -1,6 +1,7 @@
 package sew.frontend
 
 decision TemplateEngine {
-    choice    = ThymeLeaf
+    topic     = templateEngine
+    choices   = [ "ThymeLeaf" ]
     rationale = "Most common for Spring Boot"
 }

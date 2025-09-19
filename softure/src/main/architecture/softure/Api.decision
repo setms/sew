@@ -1,0 +1,6 @@
+package sew.backend
+
+decision Api {
+    topic   = api
+    choices = [ "JsonOverHttp" ]
+}

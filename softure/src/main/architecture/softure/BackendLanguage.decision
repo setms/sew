@@ -1,0 +1,7 @@
+package sew.backend
+
+decision BackendLanguage {
+    topic     = programmingLanguage
+    choice    = ["Java"]
+    rationale = "Familiar to developers"
+}

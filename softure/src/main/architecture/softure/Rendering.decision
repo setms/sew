@@ -1,7 +1,8 @@
 package sew.frontend
 
 decision Rendering {
-    choice = ServerSide
+    topic   = rendering
+    choices = [ "ServerSide" ]
 }
 
 alternative ServerSide {
@@ -11,13 +12,13 @@ alternative ServerSide {
 }
 
 alternative ClientSide {
-    description = "Render HTML on the client"
+    description = "Render HTML on the client."
     pros        = [ "Optimal user experience" ]
     cons        = [ "Longer initial time to market", "Additional technology to learn" ]
 }
 
 alternative Hybrid {
-    description = "Render HTML on the server and send it to the client. The HTML includes client-side technologies"
+    description = "Render HTML on the server and send it to the client. The HTML includes client-side technologies."
     pros        = [ "Fast initial time to market", "Optional user experience" ]
     cons        = [ "Additional technology to learn" ]
 }

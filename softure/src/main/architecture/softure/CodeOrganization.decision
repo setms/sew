@@ -1,6 +1,7 @@
 package sew.backend
 
 decision CodeOrganization {
-    choice    = OnionArchitecture
+    topic     = codeOrganization
+    choices   = [ "OnionArchitecture" ]
     rationale = "Keep business logic separated from frameworks and external dependencies like databases"
 }

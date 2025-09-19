@@ -1,6 +1,7 @@
 package sew.backend
 
 decision BuildTool {
-    choice    = Gradle
+    topic     = buildTool
+    choices   = "Gradle"
     rationale = "Most flexible tool for Java"
 }
