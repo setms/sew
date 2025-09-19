@@ -1,5 +1,9 @@
 package org.setms.swe.domain.model.sdlc.architecture;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.util.Collection;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,20 +13,22 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
 import org.setms.km.domain.model.artifact.Link;
-import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
-/** Implementation of a {@linkplain Subdomain}. */
+/** Collection of {@linkplain Component}s that deploy {@linkplain Module}s. */
 @Getter
 @Setter
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Module extends Artifact {
+public class Components extends Artifact {
 
-  @HasType("subdomain")
-  private Link mappedTo;
+  @NotNull
+  @HasType("modules")
+  private Link deploys;
 
-  public Module(FullyQualifiedName fullyQualifiedName) {
+  @NotEmpty @Valid private Collection<Component> components;
+
+  public Components(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

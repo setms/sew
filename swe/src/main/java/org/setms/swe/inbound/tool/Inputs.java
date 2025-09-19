@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.architecture.Components;
 import org.setms.swe.domain.model.sdlc.architecture.Modules;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
@@ -55,6 +56,10 @@ class Inputs {
 
   static Input<Command> commands() {
     return newInput(PATH_DESIGN, Command.class);
+  }
+
+  static Input<Components> components() {
+    return newInput(PATH_ARCHITECTURE, Components.class);
   }
 
   static Input<Domain> domains() {

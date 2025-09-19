@@ -1,5 +1,6 @@
 package org.setms.swe.domain.model.sdlc.architecture;
 
+import java.util.Collection;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,20 +10,19 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
 import org.setms.km.domain.model.artifact.Link;
-import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
-/** Implementation of a {@linkplain Subdomain}. */
+/** Deployable container of one or more {@linkplain Module}s. */
 @Getter
 @Setter
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Module extends Artifact {
+public class Component extends Artifact {
 
-  @HasType("subdomain")
-  private Link mappedTo;
+  @HasType("module")
+  private Collection<Link> deploys;
 
-  public Module(FullyQualifiedName fullyQualifiedName) {
+  public Component(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

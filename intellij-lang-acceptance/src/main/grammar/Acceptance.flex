@@ -18,7 +18,7 @@ import static org.setms.sew.intellij.lang.acceptance.AcceptanceElementTypes.*;
 IDENTIFIER=[a-z][a-zA-Z_]*
 OBJECT_NAME=[A-Z][a-zA-Z0-9]*
 STRING=\"([^\"\r\n]*)\"
-TYPE=(aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|decision|domain|entity|event|externalSystem|field|hotspot|module|modules|owner|policy|readModel|scenario|screen|scope|subdomain|term|useCase|user|userRequirement|valueObject)
+TYPE=(aggregate|alternative|businessRequirement|calendarEvent|clockEvent|command|component|components|decision|domain|entity|event|externalSystem|field|hotspot|module|modules|owner|policy|readModel|scenario|screen|scope|subdomain|term|useCase|user|userRequirement|valueObject)
 
 WHITE_SPACE=[ \t]+
 NEWLINE=[\r\n]

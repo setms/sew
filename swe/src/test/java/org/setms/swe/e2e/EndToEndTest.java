@@ -7,6 +7,7 @@ import static org.awaitility.Awaitility.await;
 import static org.setms.km.domain.model.file.Files.childrenOf;
 import static org.setms.km.domain.model.format.Strings.NL;
 import static org.setms.km.domain.model.format.Strings.initLower;
+import static org.setms.km.domain.model.validation.Validation.validate;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +61,9 @@ class EndToEndTest {
     Files.delete(root);
     workspace = new DirectoryWorkspace(root);
     kmSystem = new KmSystem(workspace);
+
+    // Force initialization of Hibernate, to keep its output from interfering with our chat output
+    validate(new Object());
   }
 
   @Test

@@ -5,3 +5,6 @@ outputs:
 inputs:
   - location: src/test/acceptance
     file: TodoItemsAggregate.acceptance
+
+diagnostics:
+  - Modules aren't deployed in components
