@@ -89,6 +89,8 @@ graph
     ScreenTool([ScreenTool])
     InfraTool([InfraTool])
     ProjectTool([ProjectTool])
+    BusinessRequirementTool([BusinessRequirementTool])
+    UserRequirementTool([UserRequirementTool])
     
     ProjectTool <--> Vision
     ProjectTool <--> BusinessRequirement
@@ -176,7 +178,7 @@ graph
     class Schema todo;
     class ModuleTool wip;
     class Component done;
-    class AcceptanceTestTool todo;
+    class AcceptanceTestTool wip;
     class UnitTest todo;
     class UnitTestTool todo;
     class CiCdTool todo;
