@@ -23,6 +23,8 @@ public class CompletionContributor
           "calendarEvent",
           "clockEvent",
           "command",
+          "component",
+          "components",
           "computerSystem",
           "decision",
           "domain",
