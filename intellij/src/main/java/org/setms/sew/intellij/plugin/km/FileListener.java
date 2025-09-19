@@ -40,7 +40,7 @@ final class FileListener implements BulkFileListener {
     var service = DumbService.getInstance(project);
     for (var event : events) {
       var file = toFile(event);
-      if (file == null) {
+      if (file == null || !file.exists() || !file.isInLocalFileSystem()) {
         continue;
       }
       var path = file.toNioPath().toString();
