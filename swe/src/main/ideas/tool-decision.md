@@ -49,6 +49,7 @@ Obvious decision:
 
 ```
 decision Api {
+    context = "We want to expose a backend API to our frontends."
     topic   = api
     choices = [ "JsonOverHttp" ]
 }
@@ -70,7 +71,7 @@ More deliberate weighing of alternatives:
 
 ```
 decision Rendering {
-    topic   = ""
+    topic   = webUiRendering
     choices = [ "ServerSide" ]
 }
 
@@ -97,7 +98,7 @@ High-stake decision:
 
 ```
 decision Rendering {
-    topic   = ""
+    topic   = webUiRendering
     choices = [ "ServerSide" ]
 }
 
