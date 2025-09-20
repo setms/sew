@@ -1,6 +1,6 @@
 [versions]
 antlr = "4.13.2"
-assertj = "3.27.4"
+assertj = "3.27.5"
 awaitility = "4.3.0"
 classgraph = "4.8.181"
 directory-watcher = "0.19.1"
