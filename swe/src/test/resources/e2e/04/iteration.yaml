@@ -8,3 +8,4 @@ inputs:
 
 diagnostics:
   - Modules aren't deployed in components
+  - Missing decision on programming language

@@ -1,5 +1,6 @@
 org.setms.swe.inbound.tool.AcceptanceTestTool
 org.setms.swe.inbound.tool.ContextMapTool
+org.setms.swe.inbound.tool.DecisionTool
 org.setms.swe.inbound.tool.DomainStoryTool
 org.setms.swe.inbound.tool.DomainTool
 org.setms.swe.inbound.tool.EntityTool

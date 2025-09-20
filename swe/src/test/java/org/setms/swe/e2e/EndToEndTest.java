@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -95,19 +96,13 @@ class EndToEndTest {
   }
 
   private void assertThatIterationIsCorrect(Iteration iteration) throws IOException {
-    if (iteration.getOutputs() != null) {
-      assertThatOutputsWereCreated(iteration);
-    }
-    if (iteration.getInputs() != null) {
-      copyInputs(iteration);
-    }
-    if (iteration.getDiagnostics() != null) {
-      assertThatDiagnosticsMatch(iteration);
-    }
+    assertThatOutputsWereCreatedFor(iteration);
+    copyInputsFrom(iteration);
+    assertThatDiagnosticsMatch(iteration);
   }
 
-  private void assertThatOutputsWereCreated(Iteration iteration) throws IOException {
-    for (var output : iteration.getOutputs()) {
+  private void assertThatOutputsWereCreatedFor(Iteration iteration) throws IOException {
+    for (var output : listOf(iteration.getOutputs())) {
       var actual = readText(workspace.root().select(output), Resource::readFrom);
       var expected =
           readText(
@@ -120,14 +115,18 @@ class EndToEndTest {
     }
   }
 
+  private <T> List<T> listOf(List<T> values) {
+    return Optional.ofNullable(values).orElseGet(Collections::emptyList);
+  }
+
   private <T> String readText(T source, InputStreamProvider<T> toInputStream) throws IOException {
     try (var reader = new BufferedReader(new InputStreamReader(toInputStream.apply(source)))) {
       return reader.lines().collect(joining(NL));
     }
   }
 
-  private void copyInputs(Iteration iteration) throws IOException {
-    for (var input : iteration.getInputs()) {
+  private void copyInputsFrom(Iteration iteration) throws IOException {
+    for (var input : listOf(iteration.getInputs())) {
       try (var source =
           new FileInputStream(
               new File(iteration.getDirectory(), "inputs/%s".formatted(input.getFile())))) {
@@ -147,23 +146,22 @@ class EndToEndTest {
   }
 
   private void assertThatDiagnosticsMatch(Iteration iteration) {
-    var expected = iteration.getDiagnostics();
+    var expected = listOf(iteration.getDiagnostics());
     await()
         .atMost(5, SECONDS)
         .untilAsserted(
             () ->
                 assertThat(kmSystem.diagnosticsWithSuggestions())
                     .as(
-                        "# diagnostics for iteration %s"
+                        "Diagnostics for iteration %s"
                             .formatted(iteration.getDirectory().getName()))
-                    .hasSize(expected.size()));
+                    .map(Diagnostic::message)
+                    .containsExactlyInAnyOrderElementsOf(expected));
 
     var diagnostics = kmSystem.diagnosticsWithSuggestions();
-    var actual = diagnostics.stream().map(Diagnostic::message).sorted().toList();
-    assertThat(actual)
-        .as("Diagnostics for iteration %s".formatted(iteration.getDirectory().getName()))
-        .isEqualTo(expected);
-
+    var allDiagnostics = kmSystem.diagnostics();
+    allDiagnostics.removeAll(diagnostics);
+    assertThat(allDiagnostics).as("Diagnostics without suggestions").isEmpty();
     diagnostics.forEach(
         diagnostic ->
             chat.add(

@@ -1,19 +1,30 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
+import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
+import static org.setms.swe.inbound.tool.Inputs.decisions;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
+import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptance.AggregateScenario;
@@ -21,12 +32,71 @@ import org.setms.swe.domain.model.sdlc.acceptance.ElementVariable;
 import org.setms.swe.domain.model.sdlc.acceptance.PolicyScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.Scenario;
+import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.lang.ProgrammingLanguage;
 
 public class AcceptanceTestTool extends Tool<AcceptanceTest> {
+
+  private static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
 
   @Override
   public Input<AcceptanceTest> getMainInput() {
     return acceptanceTests();
+  }
+
+  @Override
+  public Set<Input<? extends Artifact>> additionalInputs() {
+    return Set.of(decisions());
+  }
+
+  @Override
+  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var acceptanceTests = inputs.get(AcceptanceTest.class);
+    var decisions = inputs.get(Decision.class);
+    acceptanceTests.forEach(
+        acceptanceTest -> {
+          if (decisions.stream()
+              .filter(decision -> decision.getPackage().equals(acceptanceTest.getPackage()))
+              .map(Decision::getTopic)
+              .noneMatch(ProgrammingLanguage.TOPIC::equals)) {
+            diagnostics.add(
+                new Diagnostic(
+                    WARN,
+                    "Missing decision on programming language",
+                    acceptanceTest.toLocation(),
+                    new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")));
+          }
+        });
+  }
+
+  @Override
+  protected AppliedSuggestion doApply(
+      Resource<?> resource,
+      AcceptanceTest acceptanceTest,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
+      throws Exception {
+    if (suggestionCode.equals(PICK_PROGRAMMING_LANGUAGE)) {
+      return pickProgrammingLanguage(resource, acceptanceTest);
+    }
+    return super.doApply(resource, acceptanceTest, suggestionCode, location, inputs);
+  }
+
+  private AppliedSuggestion pickProgrammingLanguage(
+      Resource<?> resource, AcceptanceTest acceptanceTest) {
+    try {
+      var decision =
+          new Decision(new FullyQualifiedName(acceptanceTest.getPackage(), "ProgrammingLanguage"))
+              .setTopic(ProgrammingLanguage.TOPIC);
+      var decisionResource = resourceFor(decision, acceptanceTest, resource);
+      try (var output = decisionResource.writeTo()) {
+        builderFor(decision).build(decision, output);
+      }
+      return created(decisionResource);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
   }
 
   @Override

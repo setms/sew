@@ -1,0 +1,6 @@
+outputs:
+  - src/main/architecture/ProgrammingLanguage.decision
+
+inputs:
+  - location: src/main/architecture
+    file: ProgrammingLanguage.decision

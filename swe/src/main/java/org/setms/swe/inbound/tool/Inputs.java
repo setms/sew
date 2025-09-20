@@ -8,6 +8,7 @@ import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.architecture.Components;
+import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Modules;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
@@ -61,6 +62,10 @@ class Inputs {
 
   static Input<Components> components() {
     return newInput(PATH_ARCHITECTURE, Components.class);
+  }
+
+  static Input<Decision> decisions() {
+    return newInput(PATH_ARCHITECTURE, Decision.class);
   }
 
   static Input<Domain> domains() {

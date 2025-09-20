@@ -300,6 +300,13 @@ public class KmSystem {
     return new Suggestion(suggestion.get("code"), suggestion.get("message"));
   }
 
+  public Set<Diagnostic> diagnostics() {
+    return workspace.root().matching(".km/diagnostics", "json").stream()
+        .map(this::deserializeFrom)
+        .flatMap(Collection::stream)
+        .collect(toSet());
+  }
+
   public Set<Diagnostic> diagnosticsWithSuggestions() {
     return workspace.root().matching(".km/diagnostics", "json").stream()
         .map(this::deserializeFrom)
