@@ -74,8 +74,8 @@ class FileResource implements Resource<FileResource> {
   }
 
   @Override
-  public List<FileResource> matching(Glob glob) {
-    return Files.matching(file, glob).stream()
+  public List<FileResource> matching(String path, String extension) {
+    return Files.matching(file, Glob.of(path, extension)).stream()
         .map(matching -> new FileResource(matching, workspace))
         .toList();
   }

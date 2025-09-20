@@ -4,7 +4,11 @@ import java.util.regex.Pattern;
 
 public record Glob(String path, String pattern) {
 
-  public static final String PATTERN_PREFIX = "**/*";
+  public static final String PATTERN_PREFIX = "**/*.";
+
+  public static Glob of(String path, String extension) {
+    return new Glob(path, PATTERN_PREFIX + extension);
+  }
 
   public String extension() {
     return pattern.startsWith(PATTERN_PREFIX) ? pattern.substring(PATTERN_PREFIX.length()) : null;

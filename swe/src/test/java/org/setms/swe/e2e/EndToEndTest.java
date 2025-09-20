@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.kmsystem.KmSystem;
-import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -206,9 +205,8 @@ class EndToEndTest {
         .map(Tool::mainInput)
         .flatMap(Optional::stream)
         .filter(input -> type.equals(initLower(input.type().getSimpleName())))
-        .map(Input::glob)
         .findFirst()
-        .map(glob -> "%s/%s%s".formatted(glob.path(), name, glob.extension()))
+        .map(input -> "%s/%s.%s".formatted(input.path(), name, input.extension()))
         .orElse("/");
   }
 }

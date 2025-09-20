@@ -38,9 +38,8 @@ class ProjectToolTest extends ToolTestCase<Owner> {
         .allSatisfy(
             input -> {
               assertThat(input.format()).isInstanceOf(SalFormat.class);
-              assertThat(input.glob().path()).isEqualTo("src/main/stakeholders");
-              assertThat(input.glob().pattern())
-                  .isEqualTo("**/*." + User.class.getSimpleName().toLowerCase());
+              assertThat(input.path()).isEqualTo("src/main/stakeholders");
+              assertThat(input.extension()).isEqualTo(User.class.getSimpleName().toLowerCase());
               assertThat(input.type()).isEqualTo(User.class);
             });
   }

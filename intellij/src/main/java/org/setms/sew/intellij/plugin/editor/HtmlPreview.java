@@ -28,7 +28,6 @@ import org.cef.browser.CefFrame;
 import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.sew.intellij.plugin.km.KmSystemService;
 
@@ -38,7 +37,6 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
       """
           document.body.style.backgroundColor = '%s';
           document.body.style.color = '%s';""";
-  private static final Glob HTML_GLOB = new Glob("", "**/*.html");
 
   private final JBCefBrowser browser;
   private final JPanel panel;
@@ -156,7 +154,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
         Optional.ofNullable(service.getWorkspace().find(file))
             .map(Resource::path)
             .map(service.getKmSystem()::mainReportFor)
-            .map(report -> report.matching(HTML_GLOB))
+            .map(report -> report.matching("", "html"))
             .map(List::getFirst)
             .map(Resource::toUri)
             .map(Object::toString)

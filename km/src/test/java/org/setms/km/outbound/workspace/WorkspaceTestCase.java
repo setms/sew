@@ -170,7 +170,7 @@ public abstract class WorkspaceTestCase {
     createChild(workspace.root(), "ape/hyena.iguana");
     createChild(workspace.root(), "jaguar/koala/ape/leopard/mule.dingo");
 
-    assertThat(workspace.root().matching(new Glob("ape", "**/*.dingo"))).hasSize(3);
+    assertThat(workspace.root().matching("ape", "dingo")).hasSize(3);
   }
 
   @Test
@@ -178,7 +178,7 @@ public abstract class WorkspaceTestCase {
     var format = new TestFormat();
     workspace.registerArtifactDefinition(
         new ArtifactDefinition(
-            MainArtifact.class, new Glob("main", "**/*.mainArtifact"), format.newParser()));
+            MainArtifact.class, Glob.of("main", "mainArtifact"), format.newParser()));
     var artifact = new MainArtifact(new FullyQualifiedName("ape.Bear"));
     var path = "/main/ape/Bear.mainArtifact";
     var changed = new AtomicBoolean();

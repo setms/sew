@@ -27,7 +27,6 @@ import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.ValidationException;
-import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 
 public interface Parser {
@@ -239,11 +238,12 @@ public interface Parser {
 
   default <T extends Artifact> Stream<T> parseMatching(
       Resource<?> resource,
-      Glob glob,
+      String path,
+      String extension,
       Class<T> type,
       boolean validate,
       Collection<Diagnostic> diagnostics) {
-    return resource.matching(glob).stream()
+    return resource.matching(path, extension).stream()
         .map(matchingResource -> parse(matchingResource, type, validate, diagnostics))
         .filter(Objects::nonNull);
   }

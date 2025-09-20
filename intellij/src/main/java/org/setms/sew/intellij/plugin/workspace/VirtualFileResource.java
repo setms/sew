@@ -92,13 +92,14 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   }
 
   @Override
-  public List<VirtualFileResource> matching(Glob glob) {
+  public List<VirtualFileResource> matching(String path, String extension) {
     if (virtualFile == null) {
-      return Files.matching(file, glob).stream()
+      return Files.matching(file, Glob.of(path, extension)).stream()
           .map(found -> new VirtualFileResource(null, found, rootPath))
           .toList();
     }
-    return new VirtualFileResource(null, virtualFile.toNioPath().toFile(), rootPath).matching(glob);
+    return new VirtualFileResource(null, virtualFile.toNioPath().toFile(), rootPath)
+        .matching(path, extension);
   }
 
   @Override

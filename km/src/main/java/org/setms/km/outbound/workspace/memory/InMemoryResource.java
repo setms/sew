@@ -102,10 +102,10 @@ record InMemoryResource(
   }
 
   @Override
-  public List<InMemoryResource> matching(Glob glob) {
+  public List<InMemoryResource> matching(String path, String extension) {
     return new LinkedHashSet<>(artifactsByPath.keySet())
         .stream()
-            .filter(glob::matches)
+            .filter(Glob.of(path, extension)::matches)
             .map(
                 match ->
                     new InMemoryResource(

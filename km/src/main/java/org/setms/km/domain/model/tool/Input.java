@@ -16,8 +16,24 @@ public record Input<T extends Artifact>(String name, Glob glob, Format format, C
   public Input(String path, Format format, Class<T> type, String extension) {
     this(
         initLower(new English().plural(type.getSimpleName())),
-        new Glob(path, "**/*.%s".formatted(extension)),
+        Glob.of(path, extension),
         format,
         type);
+  }
+
+  public boolean targets(Artifact artifact) {
+    return type.equals(artifact.getClass());
+  }
+
+  public boolean matches(String path) {
+    return glob.matches(path);
+  }
+
+  public String path() {
+    return glob.path();
+  }
+
+  public String extension() {
+    return glob.extension();
   }
 }

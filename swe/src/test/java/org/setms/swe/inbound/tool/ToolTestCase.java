@@ -66,7 +66,8 @@ abstract class ToolTestCase<T extends Artifact> {
     var actual = tool.mainInput();
     if (actual.isPresent()) {
       var input = actual.get();
-      assertThat(input.glob()).hasToString("src/%s/**/*.%s".formatted(sourceLocation, extension));
+      assertThat(input.path()).isEqualTo("src/%s".formatted(sourceLocation));
+      assertThat(input.extension()).isEqualTo(extension);
       assertThat(input.format()).isInstanceOf(formatType);
     }
   }
@@ -87,7 +88,7 @@ abstract class ToolTestCase<T extends Artifact> {
       return;
     }
     var input = maybeInput.get();
-    var matchingObjects = workspace.root().matching(input.glob());
+    var matchingObjects = workspace.root().matching(input.path(), input.extension());
     assertThat(matchingObjects).as("Missing objects at").isNotEmpty();
     for (var source : matchingObjects) {
       try (var sutStream = source.readFrom()) {
@@ -139,7 +140,8 @@ abstract class ToolTestCase<T extends Artifact> {
     return input
         .format()
         .newParser()
-        .parseMatching(resource, input.glob(), input.type(), validate, diagnostics)
+        .parseMatching(
+            resource, input.path(), input.extension(), input.type(), validate, diagnostics)
         .toList();
   }
 
@@ -175,8 +177,7 @@ abstract class ToolTestCase<T extends Artifact> {
     var inputs = resolveInputs(workspace.root(), new LinkedHashSet<>());
     var resource =
         tool.mainInput()
-            .map(Input::glob)
-            .map(glob -> workspace.root().matching(glob))
+            .map(input -> workspace.root().matching(input.path(), input.extension()))
             .filter(not(Collection::isEmpty))
             .map(List::getFirst)
             .map(Resource.class::cast)

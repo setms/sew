@@ -63,7 +63,7 @@ public abstract class Tool<A extends Artifact> {
    * @return whether the path matches the main input
    */
   public boolean matchesMainInput(String path) {
-    return mainInput().map(Input::glob).filter(glob -> glob.matches(path)).isPresent();
+    return mainInput().filter(input -> input.matches(path)).isPresent();
   }
 
   /**
@@ -124,23 +124,20 @@ public abstract class Tool<A extends Artifact> {
     var suffix = sourcePath.substring(index + sourceContainerPath.length());
     suffix = suffix.substring(0, suffix.lastIndexOf(sourceResource.name()));
     var targetPath =
-        prefix + targetContainerPath + suffix + target.getName() + extensionFor(target);
+        prefix + targetContainerPath + suffix + target.getName() + "." + extensionFor(target);
     return sourceResource.select(targetPath);
   }
 
   private String containerPathFor(Artifact artifact) {
-    return globFor(artifact).map(Glob::path).orElseThrow();
+    return inputFor(artifact).map(Input::path).orElseThrow();
   }
 
-  private Optional<Glob> globFor(Artifact artifact) {
-    return allInputs().stream()
-        .filter(input -> input.type().equals(artifact.getClass()))
-        .map(Input::glob)
-        .findFirst();
+  private Optional<Input<?>> inputFor(Artifact artifact) {
+    return allInputs().stream().filter(input -> input.targets(artifact)).findFirst();
   }
 
   private String extensionFor(Artifact artifact) {
-    return globFor(artifact).map(Glob::extension).orElseThrow();
+    return inputFor(artifact).map(Input::extension).orElseThrow();
   }
 
   /**

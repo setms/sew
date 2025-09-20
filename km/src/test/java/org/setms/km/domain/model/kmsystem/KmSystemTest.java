@@ -70,13 +70,9 @@ class KmSystemTest {
 
   private <A extends Artifact> String storeNewArtifact(
       Tool<A> tool, Function<FullyQualifiedName, Artifact> artifactCreator) throws IOException {
-    var glob = tool.mainInput().orElseThrow().glob();
+    var input = tool.mainInput().orElseThrow();
     var format = tool.mainInput().map(Input::format).orElseThrow();
-    var resource =
-        workspace
-            .root()
-            .select(glob.path())
-            .select("Bear." + glob.pattern().substring(1 + glob.pattern().lastIndexOf('.')));
+    var resource = workspace.root().select(input.path()).select("Bear." + input.extension());
     try (var output = resource.writeTo()) {
       format.newBuilder().build(artifactCreator.apply(new FullyQualifiedName("ape.Bear")), output);
     }
@@ -104,12 +100,15 @@ class KmSystemTest {
 
     var path = storeNewMainArtifact();
 
-    assertThat(globsForMainTool()).hasSize(1).containsExactlyInAnyOrder(path);
+    assertThat(inputsForMainTool()).hasSize(1).containsExactlyInAnyOrder(path);
   }
 
-  private List<String> globsForMainTool() throws IOException {
+  private List<String> inputsForMainTool() throws IOException {
+    var input = mainTool.getMainInput();
     var globPaths =
-        workspace.root().select(".km/globs/%s.glob".formatted(mainTool.getMainInput().glob()));
+        workspace
+            .root()
+            .select(".km/inputs/%s/%s.paths".formatted(input.path(), input.extension()));
     try (var reader = new BufferedReader(new InputStreamReader(globPaths.readFrom()))) {
       return reader.lines().toList();
     }
@@ -119,11 +118,11 @@ class KmSystemTest {
   void shouldUpdateCachedGlobsWhenMatchingArtifactDeleted() throws IOException {
     var path = storeNewMainArtifact();
     createKmSystem();
-    assertThat(globsForMainTool()).hasSize(1);
+    assertThat(inputsForMainTool()).hasSize(1);
 
     workspace.root().select(path).delete();
 
-    assertThat(globsForMainTool()).isEmpty();
+    assertThat(inputsForMainTool()).isEmpty();
   }
 
   @Test

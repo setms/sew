@@ -34,40 +34,48 @@ import org.setms.km.domain.model.workspace.Workspace;
 @Slf4j
 public class KmSystem {
 
+  private static final String INPUTS = "inputs";
+  private static final String PATHS = "paths";
+
   private final ObjectMapper mapper = new ObjectMapper();
   @Getter private final Workspace<?> workspace;
 
   public KmSystem(Workspace<?> workspace) {
     this.workspace = workspace;
-    cacheGlobs();
+    cacheInputs();
     registerHandlers();
     registerArtifactDefinitions();
     validateArtifactsInBackground();
   }
 
-  private void cacheGlobs() {
+  private void cacheInputs() {
     Tools.all()
         .map(Tool::allInputs)
         .flatMap(Collection::stream)
-        .map(Input::glob)
         .distinct()
-        .forEach(this::cacheGlob);
+        .forEach(this::cacheInput);
   }
 
-  private void cacheGlob(Glob glob) {
-    var paths = workspace.root().matching(glob).stream().map(Resource::path).collect(toSet());
-    writeGlobPaths(resourceContainingPathsFor(glob), paths);
+  private void cacheInput(Input<?> input) {
+    var paths =
+        workspace.root().matching(input.path(), input.extension()).stream()
+            .map(Resource::path)
+            .collect(toSet());
+    writeInputPaths(resourceContainingPathsFor(input), paths);
   }
 
-  private Resource<?> resourceContainingPathsFor(Glob glob) {
-    return workspace.root().select(".km/globs/%s.glob".formatted(glob));
+  private Resource<?> resourceContainingPathsFor(Input<?> input) {
+    return workspace
+        .root()
+        .select(".km/%s/%s/%s.%s".formatted(INPUTS, input.path(), input.extension(), PATHS));
   }
 
-  private void writeGlobPaths(Resource<? extends Resource<?>> globPath, Collection<String> paths) {
-    try (var writer = new PrintWriter(globPath.writeTo())) {
+  private void writeInputPaths(
+      Resource<? extends Resource<?>> inputResource, Collection<String> paths) {
+    try (var writer = new PrintWriter(inputResource.writeTo())) {
       paths.forEach(writer::println);
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to update globs", e);
+      throw new IllegalStateException("Failed to update input paths", e);
     }
   }
 
@@ -92,21 +100,20 @@ public class KmSystem {
     Tools.all()
         .map(Tool::allInputs)
         .flatMap(Collection::stream)
-        .map(Input::glob)
-        .filter(glob -> glob.matches(path))
-        .forEach(glob -> addGlobPath(glob, path));
+        .filter(input -> input.matches(path))
+        .forEach(input -> addInputPath(input, path));
   }
 
-  private void addGlobPath(Glob glob, String path) {
-    updateGlobPaths(glob, path, Collection::add);
+  private void addInputPath(Input<?> input, String path) {
+    updateInputPaths(input, path, Collection::add);
   }
 
-  private void updateGlobPaths(
-      Glob glob, String path, BiFunction<Collection<String>, String, Boolean> updater) {
-    var globPath = resourceContainingPathsFor(glob);
+  private void updateInputPaths(
+      Input<?> input, String path, BiFunction<Collection<String>, String, Boolean> updater) {
+    var globPath = resourceContainingPathsFor(input);
     var paths = linesOfTextIn(globPath);
     if (updater.apply(paths, path)) {
-      writeGlobPaths(globPath, paths);
+      writeInputPaths(globPath, paths);
     }
   }
 
@@ -202,18 +209,18 @@ public class KmSystem {
       boolean validate,
       Collection<Diagnostic> diagnostics) {
     var parser = input.format().newParser();
-    if (input.glob().matches(path)) {
+    if (input.matches(path)) {
       var result = parser.parse(resource.select(path), input.type(), validate, diagnostics);
       return result == null ? emptyList() : List.of(result);
     }
-    return resourcesMatching(input.glob())
+    return resourcesMatching(input)
         .map(match -> parser.parse(match, input.type(), validate, diagnostics))
         .filter(Objects::nonNull)
         .toList();
   }
 
-  private Stream<Resource<?>> resourcesMatching(Glob glob) {
-    return linesOfTextIn(resourceContainingPathsFor(glob)).stream().map(workspace.root()::select);
+  private Stream<Resource<?>> resourcesMatching(Input<?> input) {
+    return linesOfTextIn(resourceContainingPathsFor(input)).stream().map(workspace.root()::select);
   }
 
   private void storeDiagnostics(String path, Tool<?> tool, Collection<Diagnostic> diagnostics) {
@@ -294,7 +301,7 @@ public class KmSystem {
   }
 
   public Set<Diagnostic> diagnosticsWithSuggestions() {
-    return workspace.root().matching(new Glob(".km/diagnostics", "**/*.json")).stream()
+    return workspace.root().matching(".km/diagnostics", "json").stream()
         .map(this::deserializeFrom)
         .flatMap(Collection::stream)
         .filter(Diagnostic::hasSuggestion)
@@ -329,13 +336,12 @@ public class KmSystem {
     Tools.all()
         .map(Tool::allInputs)
         .flatMap(Collection::stream)
-        .map(Input::glob)
-        .filter(glob -> glob.matches(path))
-        .forEach(glob -> removeGlobPath(glob, path));
+        .filter(input -> input.matches(path))
+        .forEach(input -> removeInputPath(input, path));
   }
 
-  private void removeGlobPath(Glob glob, String path) {
-    updateGlobPaths(glob, path, Collection::remove);
+  private void removeInputPath(Input<?> input, String path) {
+    updateInputPaths(input, path, Collection::remove);
   }
 
   private void revalidateArtifactsThatDependOn(String path) {
@@ -343,7 +349,7 @@ public class KmSystem {
         .filter(tool -> tool.mainInput().isPresent() && additionalInputDependsOn(tool, path))
         .forEach(
             tool ->
-                resourcesMatching(tool.mainInput().orElseThrow().glob())
+                resourcesMatching(tool.mainInput().orElseThrow())
                     .map(Resource::path)
                     .forEach(
                         artifactPath ->
@@ -351,7 +357,7 @@ public class KmSystem {
   }
 
   private boolean additionalInputDependsOn(Tool<?> tool, String path) {
-    return tool.additionalInputs().stream().map(Input::glob).anyMatch(glob -> glob.matches(path));
+    return tool.additionalInputs().stream().anyMatch(input -> input.matches(path));
   }
 
   private void registerArtifactDefinitions() {
@@ -362,7 +368,7 @@ public class KmSystem {
             input ->
                 new ArtifactDefinition(
                     input.type(),
-                    input.glob(),
+                    Glob.of(input.path(), input.extension()),
                     Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
         .distinct()
         .forEach(workspace::registerArtifactDefinition);
@@ -379,7 +385,7 @@ public class KmSystem {
   }
 
   protected List<OutOfDateArtifact<?>> outOfDateArtifacts() {
-    return workspace.root().matching(new Glob(".km/globs", "**/*.glob")).stream()
+    return workspace.root().matching(".km/" + INPUTS, PATHS).stream()
         .map(this::linesOfTextIn)
         .flatMap(Collection::stream)
         .toList()
@@ -393,9 +399,7 @@ public class KmSystem {
   @SuppressWarnings("unchecked")
   private <T extends Artifact> Stream<OutOfDateArtifact<?>> checkOutOfDate(Resource<?> artifact) {
     var diagnosticsResources =
-        workspace
-            .root()
-            .matching(new Glob("/.km/diagnostics%s".formatted(artifact.path()), "**/*.json"));
+        workspace.root().matching("/.km/diagnostics%s".formatted(artifact.path()), "json");
     var lastValidated =
         diagnosticsResources.isEmpty() ? null : diagnosticsResources.getFirst().lastModifiedAt();
     if (lastValidated == null || lastValidated.isBefore(artifact.lastModifiedAt())) {

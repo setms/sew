@@ -160,9 +160,10 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(suggestion.message()).isEqualTo("Discover subdomains");
     var created = apply(suggestion, diagnostic, workspace).createdOrChanged();
     assertThat(created).hasSize(1);
+    var domainsInput = Inputs.domains();
     workspace
         .root()
-        .matching(Inputs.domains().glob())
+        .matching(domainsInput.path(), domainsInput.extension())
         .forEach(
             resource -> {
               try {
@@ -189,9 +190,10 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(suggestion.message()).startsWith("Create acceptance test");
     var created = apply(suggestion, diagnostic, workspace).createdOrChanged();
     assertThat(created).as("Created artifacts").hasSize(1);
+    var acceptanceTestInput = Inputs.acceptanceTests();
     workspace
         .root()
-        .matching(Inputs.acceptanceTests().glob())
+        .matching(acceptanceTestInput.path(), acceptanceTestInput.extension())
         .forEach(
             resource -> {
               try {

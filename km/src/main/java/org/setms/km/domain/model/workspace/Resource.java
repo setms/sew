@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +29,7 @@ public interface Resource<T extends Resource<T>> {
 
   T select(String path);
 
-  List<T> matching(Glob glob);
+  List<T> matching(String path, String extension);
 
   InputStream readFrom() throws IOException;
 
@@ -39,12 +38,4 @@ public interface Resource<T extends Resource<T>> {
   void delete() throws IOException;
 
   LocalDateTime lastModifiedAt();
-
-  default String contentAsString() {
-    try (var input = readFrom()) {
-      return new String(input.readAllBytes(), StandardCharsets.UTF_8);
-    } catch (Exception ignored) {
-      return null;
-    }
-  }
 }
