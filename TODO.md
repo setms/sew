@@ -27,7 +27,7 @@
 - Other deployment forms than monolith
 
 
-### Acceptance tests
+### Architecture
 
 - Check for unit test framework
 - Check for build tool

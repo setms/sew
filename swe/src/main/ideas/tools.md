@@ -173,8 +173,8 @@ graph
     class Module done;
     class AcceptanceTest done;
     class Entity done;
-    class Decision todo;
-    class EntityTool todo;
+    class Decision wip;
+    class EntityTool wip;
     class Schema todo;
     class ModuleTool wip;
     class Component done;
@@ -186,7 +186,7 @@ graph
     class CiCdPipeline todo;
     class Term done;
     class GlossaryTool wip;
-    class DecisionTool todo;
+    class DecisionTool wip;
     class ComponentTool todo;
     class ArchitectureTool todo;
     class Screen todo;
