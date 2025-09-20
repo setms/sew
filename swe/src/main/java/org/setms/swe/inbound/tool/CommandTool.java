@@ -11,6 +11,7 @@ import static org.setms.swe.inbound.tool.Inputs.entities;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
@@ -33,7 +34,7 @@ public class CommandTool extends Tool<Command> {
   }
 
   @Override
-  public Set<Input<?>> additionalInputs() {
+  public Set<Input<? extends Artifact>> additionalInputs() {
     return Set.of(entities());
   }
 

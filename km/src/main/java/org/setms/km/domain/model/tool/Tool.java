@@ -40,7 +40,7 @@ public abstract class Tool<A extends Artifact> {
    *
    * @return any additional inputs
    */
-  public Set<Input<?>> additionalInputs() {
+  public Set<Input<? extends Artifact>> additionalInputs() {
     return emptySet();
   }
 
@@ -49,8 +49,8 @@ public abstract class Tool<A extends Artifact> {
    *
    * @return all inputs that this tool consumes
    */
-  public Set<Input<?>> allInputs() {
-    var result = new LinkedHashSet<Input<?>>();
+  public Set<Input<? extends Artifact>> allInputs() {
+    var result = new LinkedHashSet<Input<? extends Artifact>>();
     mainInput().ifPresent(result::add);
     result.addAll(additionalInputs());
     return result;
@@ -132,7 +132,7 @@ public abstract class Tool<A extends Artifact> {
     return inputFor(artifact).map(Input::path).orElseThrow();
   }
 
-  private Optional<Input<?>> inputFor(Artifact artifact) {
+  private Optional<Input<? extends Artifact>> inputFor(Artifact artifact) {
     return allInputs().stream().filter(input -> input.targets(artifact)).findFirst();
   }
 

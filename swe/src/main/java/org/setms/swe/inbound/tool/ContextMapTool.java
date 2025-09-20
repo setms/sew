@@ -4,6 +4,7 @@ import static org.setms.km.domain.model.diagram.Shape.ELLIPSE;
 import static org.setms.swe.inbound.tool.Inputs.domains;
 
 import java.util.*;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.diagram.Arrow;
 import org.setms.km.domain.model.diagram.BaseDiagramTool;
 import org.setms.km.domain.model.diagram.Box;
@@ -27,7 +28,7 @@ public class ContextMapTool extends BaseDiagramTool<Domain> {
   }
 
   @Override
-  public Set<Input<?>> additionalInputs() {
+  public Set<Input<? extends Artifact>> additionalInputs() {
     return Set.of(domains());
   }
 

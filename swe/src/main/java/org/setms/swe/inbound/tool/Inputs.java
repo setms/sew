@@ -4,6 +4,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.architecture.Components;
@@ -38,7 +39,7 @@ class Inputs {
   static final String PATH_ARCHITECTURE = "src/main/architecture";
 
   static Input<AcceptanceTest> acceptanceTests() {
-    return new Input<>(
+    return new GlobInput<>(
         PATH_ACCEPTANCE_TESTS, new AcceptanceFormat(), AcceptanceTest.class, "acceptance");
   }
 
@@ -47,7 +48,7 @@ class Inputs {
   }
 
   private static <T extends Artifact> Input<T> newInput(String path, Class<T> type) {
-    return new Input<>(path, new SalFormat(), type);
+    return new GlobInput<>(path, new SalFormat(), type);
   }
 
   static Input<ClockEvent> clockEvents() {

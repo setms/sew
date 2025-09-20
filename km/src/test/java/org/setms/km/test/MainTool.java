@@ -5,6 +5,7 @@ import static org.setms.km.domain.model.validation.Level.ERROR;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -14,7 +15,7 @@ public class MainTool extends TestTool<MainArtifact> {
 
   @Override
   public Input<MainArtifact> getMainInput() {
-    return new Input<>("main", new TestFormat(), MainArtifact.class);
+    return new GlobInput<>("main", new TestFormat(), MainArtifact.class);
   }
 
   @Override

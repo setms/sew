@@ -76,7 +76,7 @@ abstract class ToolTestCase<T extends Artifact> {
     assertInputs(tool.additionalInputs());
   }
 
-  protected void assertInputs(Set<Input<?>> inputs) {
+  protected void assertInputs(Set<Input<? extends Artifact>> inputs) {
     // For descendants to override, if needed
   }
 
@@ -127,7 +127,7 @@ abstract class ToolTestCase<T extends Artifact> {
   }
 
   private void resolveInput(
-      Input<?> input,
+      Input<? extends Artifact> input,
       Resource<?> resource,
       boolean validate,
       Collection<Diagnostic> diagnostics,

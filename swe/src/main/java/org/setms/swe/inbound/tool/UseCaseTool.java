@@ -63,7 +63,7 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   }
 
   @Override
-  public Set<Input<?>> additionalInputs() {
+  public Set<Input<? extends Artifact>> additionalInputs() {
     return Set.of(
         domainStories(),
         aggregates(),

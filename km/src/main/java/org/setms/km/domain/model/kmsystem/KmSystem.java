@@ -195,7 +195,7 @@ public class KmSystem {
 
   private void resolve(
       String path,
-      Input<?> input,
+      Input<? extends Artifact> input,
       boolean validate,
       Collection<Diagnostic> diagnostics,
       ResolvedInputs inputs) {

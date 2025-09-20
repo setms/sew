@@ -48,7 +48,7 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   }
 
   @Override
-  public Set<Input<?>> additionalInputs() {
+  public Set<Input<? extends Artifact>> additionalInputs() {
     return Set.of(useCases());
   }
 

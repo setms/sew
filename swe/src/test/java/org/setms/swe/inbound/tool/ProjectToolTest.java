@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.SequencedCollection;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -32,7 +33,7 @@ class ProjectToolTest extends ToolTestCase<Owner> {
   }
 
   @Override
-  protected void assertInputs(Set<Input<?>> inputs) {
+  protected void assertInputs(Set<Input<? extends Artifact>> inputs) {
     assertThat(inputs).hasSize(1);
     assertThat(inputs)
         .allSatisfy(

@@ -4,6 +4,6 @@ public class BarTool extends Tool<Bar> {
 
   @Override
   public Input<Bar> getMainInput() {
-    return new Input<>("bar", null, Bar.class);
+    return new GlobInput<>("bar", null, Bar.class);
   }
 }

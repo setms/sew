@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.diagram.Arrow;
 import org.setms.km.domain.model.diagram.BaseDiagramTool;
 import org.setms.km.domain.model.diagram.Box;
@@ -48,7 +49,7 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
   }
 
   @Override
-  public Set<Input<?>> additionalInputs() {
+  public Set<Input<? extends Artifact>> additionalInputs() {
     return Set.of(domains(), components());
   }
 

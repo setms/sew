@@ -16,7 +16,7 @@ class FooTool extends Tool<Foo> {
 
   @Override
   public Input<Foo> getMainInput() {
-    return new Input<>("foo", null, Foo.class);
+    return new GlobInput<>("foo", null, Foo.class);
   }
 
   @Override
