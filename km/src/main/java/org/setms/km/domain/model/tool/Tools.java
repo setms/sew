@@ -12,7 +12,7 @@ import org.setms.km.domain.model.format.Format;
 @NoArgsConstructor(access = PRIVATE)
 public class Tools {
 
-  private static final Collection<ArtifactTool> tools = new HashSet<>();
+  private static final Collection<Tool> tools = new HashSet<>();
 
   static {
     reload();
@@ -20,8 +20,8 @@ public class Tools {
 
   public static void reload() {
     clear();
-    var classLoader = ArtifactTool.class.getClassLoader();
-    for (var tool : ServiceLoader.load(ArtifactTool.class, classLoader)) {
+    var classLoader = Tool.class.getClassLoader();
+    for (var tool : ServiceLoader.load(Tool.class, classLoader)) {
       add(tool);
     }
   }
@@ -30,12 +30,14 @@ public class Tools {
     tools.clear();
   }
 
-  public static void add(ArtifactTool tool) {
+  public static void add(Tool tool) {
     tools.add(tool);
   }
 
   public static <T extends Artifact> Collection<ArtifactTool> validating(Class<T> type) {
     return tools.stream()
+        .filter(ArtifactTool.class::isInstance)
+        .map(ArtifactTool.class::cast)
         .filter(tool -> hasInputOfType(type, Stream.of(tool.validationTarget())))
         .toList();
   }
@@ -45,19 +47,19 @@ public class Tools {
     return inputs.map(Input::type).anyMatch(type::equals);
   }
 
-  public static Collection<ArtifactTool> buildingReportsFor(Class<? extends Artifact> type) {
+  public static Collection<Tool> buildingReportsFor(Class<? extends Artifact> type) {
     return tools.stream()
         .filter(tool -> hasInputOfType(type, tool.reportingContext().stream()))
         .toList();
   }
 
-  public static Stream<ArtifactTool> all() {
+  public static Stream<Tool> all() {
     return tools.stream();
   }
 
   public static <T extends Artifact> Builder builderFor(T artifact) {
     return all()
-        .map(ArtifactTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .filter(input -> input.type().equals(artifact.getClass()))
         .findFirst()

@@ -23,6 +23,8 @@ import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.tool.StandaloneTool;
+import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Level;
@@ -53,7 +55,7 @@ public class KmSystem {
 
   private void cacheInputs() {
     Tools.all()
-        .map(ArtifactTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .distinct()
         .forEach(this::cacheInput);
@@ -101,7 +103,7 @@ public class KmSystem {
 
   private void addToInputs(String path) {
     Tools.all()
-        .map(ArtifactTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .distinct()
         .filter(input -> input.matches(path))
@@ -180,8 +182,13 @@ public class KmSystem {
             tool -> {
               var inputs = resolveInputs(tool.reportingContext());
               var diagnostics = new LinkedHashSet<Diagnostic>();
-              tool.buildReportsFor(
-                  artifact, inputs, buildResource.select(tool.getClass().getName()), diagnostics);
+              var output = buildResource.select(tool.getClass().getName());
+              if (tool instanceof ArtifactTool artifactTool) {
+                artifactTool.buildReportsFor(artifact, inputs, output, diagnostics);
+              }
+              if (tool instanceof StandaloneTool standaloneTool) {
+                standaloneTool.buildReports(inputs, output, diagnostics);
+              }
             });
   }
 
@@ -197,8 +204,7 @@ public class KmSystem {
     return linesOfTextIn(resourceContainingPathsFor(input)).stream().map(workspace.root()::select);
   }
 
-  private void storeDiagnostics(
-      String path, ArtifactTool tool, Collection<Diagnostic> diagnostics) {
+  private void storeDiagnostics(String path, Tool tool, Collection<Diagnostic> diagnostics) {
     var diagnosticsResource =
         workspace
             .root()
@@ -316,7 +322,7 @@ public class KmSystem {
 
   private void removeFromInputs(String path) {
     Tools.all()
-        .map(ArtifactTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .filter(input -> input.matches(path))
         .forEach(input -> removeInputPath(input, path));
@@ -329,7 +335,18 @@ public class KmSystem {
   private void revalidateArtifactsThatDependOn(String path) {
     Tools.all()
         .filter(tool -> tool.validationContext().stream().anyMatch(input -> input.matches(path)))
-        .forEach(tool -> validate(tool, tool.validationTarget()));
+        .forEach(tool -> validate(tool, path));
+  }
+
+  private void validate(Tool tool, String path) {
+    var resolvedInputs = resolveInputs(tool.validationContext());
+    var diagnostics = new LinkedHashSet<Diagnostic>();
+    switch (tool) {
+      case ArtifactTool artifactTool ->
+          artifactTool.validate(workspace.root().select(path), resolvedInputs, diagnostics);
+      case StandaloneTool standaloneTool -> standaloneTool.validate(resolvedInputs, diagnostics);
+    }
+    storeDiagnostics(path, tool, diagnostics);
   }
 
   private void validate(ArtifactTool tool, Input<? extends Artifact> input) {
@@ -350,7 +367,7 @@ public class KmSystem {
 
   private void registerArtifactDefinitions() {
     Tools.all()
-        .map(ArtifactTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .map(
             input ->
@@ -405,7 +422,7 @@ public class KmSystem {
   protected void updateOutOfDateArtifact(OutOfDateArtifact outOfDate) {
     var path = outOfDate.path();
     Tools.all()
-        .map(ArtifactTool::allInputs)
+        .map(Tool::allInputs)
         .flatMap(Collection::stream)
         .distinct()
         .filter(input -> input.matches(path))
@@ -425,8 +442,9 @@ public class KmSystem {
   public Resource<?> mainReportFor(String path) {
     var maybeTool =
         Tools.all()
-            .filter(tool -> tool.validates(path))
-            .filter(tool -> tool.reportingContext().stream().anyMatch(input -> input.matches(path)))
+            .filter(ArtifactTool.class::isInstance)
+            .map(ArtifactTool.class::cast)
+            .filter(tool -> tool.reportingTarget().map(input -> input.matches(path)).orElse(false))
             .findFirst();
     if (maybeTool.isEmpty()) {
       return null;
@@ -445,7 +463,12 @@ public class KmSystem {
     if (resource == null) {
       return none();
     }
-    for (var tool : Tools.all().filter(t -> t.validates(resource.path())).toList()) {
+    for (var tool :
+        Tools.all()
+            .filter(ArtifactTool.class::isInstance)
+            .map(ArtifactTool.class::cast)
+            .filter(t -> t.validates(resource.path()))
+            .toList()) {
       var inputs = resolveInputs(tool.validationContext());
       var artifact = parse(resource.path(), tool.validationTarget());
       if (artifact == null) {

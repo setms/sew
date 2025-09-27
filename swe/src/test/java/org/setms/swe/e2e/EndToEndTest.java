@@ -200,6 +200,8 @@ class EndToEndTest {
     var type = segments.get(1);
     var name = segments.get(2);
     return Tools.all()
+        .filter(ArtifactTool.class::isInstance)
+        .map(ArtifactTool.class::cast)
         .map(ArtifactTool::validationTarget)
         .filter(input -> type.equals(initLower(input.type().getSimpleName())))
         .findFirst()

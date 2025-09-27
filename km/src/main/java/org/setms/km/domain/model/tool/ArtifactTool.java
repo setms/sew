@@ -1,6 +1,7 @@
 package org.setms.km.domain.model.tool;
 
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import java.util.*;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -27,7 +28,33 @@ public abstract non-sealed class ArtifactTool extends Tool {
   }
 
   /**
-   * Validate the inputs.
+   * Validate an artifact stored at a resource.
+   *
+   * @param resource the input to validate
+   * @param context additional inputs required for validation
+   * @param diagnostics where to any validation issues
+   */
+  public Artifact validate(
+      Resource<?> resource, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
+    var input = validationTarget();
+    try (var sutStream = resource.readFrom()) {
+      var result = input.format().newParser().parse(sutStream, input.type(), true);
+      validate(result, context, diagnostics);
+      return result;
+    } catch (Exception e) {
+      diagnostics.add(
+          new Diagnostic(
+              ERROR,
+              e.getMessage(),
+              new Location(
+                  resource.parent().map(Resource::name).orElse(null),
+                  resource.name().substring(0, resource.name().lastIndexOf('.')))));
+    }
+    return null;
+  }
+
+  /**
+   * Validate an artifact.
    *
    * @param artifact the input to validate
    * @param context additional inputs required for validation
@@ -76,9 +103,10 @@ public abstract non-sealed class ArtifactTool extends Tool {
     var targetContainerPath = containerPathFor(target);
     var sourcePath = sourceResource.path();
     var index = sourcePath.indexOf(sourceContainerPath);
-    var prefix = sourcePath.substring(0, index);
-    var suffix = sourcePath.substring(index + sourceContainerPath.length());
-    suffix = suffix.substring(0, suffix.lastIndexOf(sourceResource.name()));
+    var prefix = index < 0 ? "" : sourcePath.substring(0, index);
+    var suffix = index < 0 ? "" : sourcePath.substring(index + sourceContainerPath.length());
+    suffix =
+        suffix.isEmpty() ? "/" : suffix.substring(0, suffix.lastIndexOf(sourceResource.name()));
     var targetPath =
         prefix + targetContainerPath + suffix + target.getName() + "." + extensionFor(target);
     return sourceResource.select(targetPath);
@@ -92,7 +120,7 @@ public abstract non-sealed class ArtifactTool extends Tool {
     if (validationTarget().targets(artifact)) {
       return Optional.of(validationTarget());
     }
-    return Optional.empty();
+    return validationContext().stream().filter(input -> input.targets(artifact)).findFirst();
   }
 
   private String extensionFor(Artifact artifact) {

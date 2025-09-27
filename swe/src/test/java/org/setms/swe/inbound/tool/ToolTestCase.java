@@ -89,12 +89,13 @@ abstract class ToolTestCase<T extends Artifact> {
     // For descendants to override, if needed
   }
 
+  @SuppressWarnings("unused")
   protected void assertReportingContext(Set<Input<? extends Artifact>> inputs) {
     // For descendants to override, if needed
   }
 
   @Test
-  void shouldValidate() throws IOException {
+  void shouldValidate() {
     var diagnostics = validateAgainst(workspaceFor("valid"));
     assertThat(diagnostics).isEmpty();
   }
@@ -107,38 +108,37 @@ abstract class ToolTestCase<T extends Artifact> {
     return new File(baseDir, name);
   }
 
-  protected SequencedSet<Diagnostic> validateAgainst(Workspace<?> workspace) throws IOException {
+  protected SequencedSet<Diagnostic> validateAgainst(Workspace<?> workspace) {
     return switch (tool) {
       case ArtifactTool artifactTool -> validate(workspace, artifactTool);
       case StandaloneTool standaloneTool -> validate(workspace, standaloneTool);
     };
   }
 
-  private SequencedSet<Diagnostic> validate(Workspace<?> workspace, ArtifactTool artifactTool)
-      throws IOException {
+  private SequencedSet<Diagnostic> validate(Workspace<?> workspace, ArtifactTool artifactTool) {
     var input = artifactTool.validationTarget();
     var matchingObjects = workspace.root().matching(input.path(), input.extension());
-    assertThat(matchingObjects).as("Missing objects at").isNotEmpty();
+    assertThat(matchingObjects).as("Missing artifact resources").isNotEmpty();
     var result = new LinkedHashSet<Diagnostic>();
+    var resolvedInputs =
+        resolveValidationInputs(artifactTool, workspace.root(), new LinkedHashSet<>());
     for (var source : matchingObjects) {
-      var artifact = parse(source, input, true);
-      assertThat(artifact).isNotNull();
-      assertThatParsedObjectMatchesExpectations(artifact);
-
-      artifactTool.validate(
-          artifact, resolveValidationInputs(artifactTool, workspace.root(), result), result);
+      var artifact = artifactTool.validate(source, resolvedInputs, result);
+      if (artifact != null) {
+        assertThatParsedObjectMatchesExpectations(artifact);
+      }
     }
     return result;
   }
 
-  private Artifact parse(Resource<? extends Resource<?>> source, Input<?> input, boolean validate) {
-    Artifact artifact;
+  private Artifact parse(Resource<? extends Resource<?>> source, Input<?> input) {
+    Artifact result;
     try (var sutStream = source.readFrom()) {
-      artifact = input.format().newParser().parse(sutStream, input.type(), validate);
+      result = input.format().newParser().parse(sutStream, input.type(), false);
     } catch (IOException e) {
       return null;
     }
-    return artifact;
+    return result;
   }
 
   protected void assertThatParsedObjectMatchesExpectations(Artifact artifact) {
@@ -204,7 +204,7 @@ abstract class ToolTestCase<T extends Artifact> {
   private Artifact toArtifact(
       Workspace<?> workspace, Location location, Input<? extends Artifact> input) {
     return workspace.root().matching(input.path(), input.extension()).stream()
-        .map(resource -> parse(resource, input, false))
+        .map(resource -> parse(resource, input))
         .filter(Objects::nonNull)
         .filter(artifact -> artifact.starts(location))
         .findFirst()
@@ -228,14 +228,14 @@ abstract class ToolTestCase<T extends Artifact> {
     return Files.get(resource.toUri().toString());
   }
 
-  protected List<Diagnostic> build(Workspace<?> workspace) throws IOException {
+  protected List<Diagnostic> build(Workspace<?> workspace) {
     return switch (tool) {
       case ArtifactTool artifactTool -> build(workspace, artifactTool);
       case StandaloneTool standaloneTool -> build(workspace, standaloneTool);
     };
   }
 
-  private List<Diagnostic> build(Workspace<?> workspace, ArtifactTool tool) throws IOException {
+  private List<Diagnostic> build(Workspace<?> workspace, ArtifactTool tool) {
     var result = new ArrayList<Diagnostic>();
     var target = tool.reportingTarget();
     if (target.isEmpty()) {
@@ -245,7 +245,7 @@ abstract class ToolTestCase<T extends Artifact> {
     var output = workspace.root().select("build");
     var input = target.get();
     for (var resource : workspace.root().matching(input.path(), input.extension())) {
-      var artifact = parse(resource, input, false);
+      var artifact = parse(resource, input);
       assertThat(artifact).isNotNull();
       tool.buildReportsFor(artifact, resolvedInputs, output, result);
     }
