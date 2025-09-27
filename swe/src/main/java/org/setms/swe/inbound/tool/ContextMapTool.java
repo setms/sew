@@ -17,25 +17,28 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
-public class ContextMapTool extends BaseDiagramTool<Domain> {
+public class ContextMapTool extends BaseDiagramTool {
 
   private static final String LABEL_UPSTREAM = "U";
   private static final String LABEL_DOWNSTREAM = "D";
 
   @Override
-  public Input<Domain> getMainInput() {
-    return null;
-  }
-
-  @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> reportingContext() {
     return Set.of(domains());
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    inputs.get(Domain.class).forEach(domain -> build(domain, resource, diagnostics));
+  public Input<? extends Artifact> validationTarget() {
+    return domains();
+  }
+
+  @Override
+  public void buildReportsFor(
+      Artifact domain,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build((Domain) domain, resource, diagnostics);
   }
 
   private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {

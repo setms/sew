@@ -12,7 +12,7 @@ import org.setms.km.domain.model.format.Format;
 @NoArgsConstructor(access = PRIVATE)
 public class Tools {
 
-  private static final Collection<Tool<?>> tools = new HashSet<>();
+  private static final Collection<ArtifactTool> tools = new HashSet<>();
 
   static {
     reload();
@@ -20,8 +20,8 @@ public class Tools {
 
   public static void reload() {
     clear();
-    var classLoader = Tool.class.getClassLoader();
-    for (var tool : ServiceLoader.load(Tool.class, classLoader)) {
+    var classLoader = ArtifactTool.class.getClassLoader();
+    for (var tool : ServiceLoader.load(ArtifactTool.class, classLoader)) {
       add(tool);
     }
   }
@@ -30,31 +30,34 @@ public class Tools {
     tools.clear();
   }
 
-  public static void add(Tool<?> tool) {
+  public static void add(ArtifactTool tool) {
     tools.add(tool);
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T extends Artifact> Optional<Tool<T>> targeting(Class<T> type) {
+  public static <T extends Artifact> Collection<ArtifactTool> validating(Class<T> type) {
     return tools.stream()
-        .filter(tool -> tool.mainInput().map(Input::type).filter(type::equals).isPresent())
-        .map(tool -> (Tool<T>) tool)
-        .findFirst();
-  }
-
-  public static Collection<Tool<?>> dependingOn(Class<? extends Artifact> type) {
-    return tools.stream()
-        .filter(tool -> tool.additionalInputs().stream().map(Input::type).anyMatch(type::equals))
+        .filter(tool -> hasInputOfType(type, Stream.of(tool.validationTarget())))
         .toList();
   }
 
-  public static Stream<Tool<?>> all() {
+  private static <T extends Artifact> boolean hasInputOfType(
+      Class<T> type, Stream<Input<? extends Artifact>> inputs) {
+    return inputs.map(Input::type).anyMatch(type::equals);
+  }
+
+  public static Collection<ArtifactTool> buildingReportsFor(Class<? extends Artifact> type) {
+    return tools.stream()
+        .filter(tool -> hasInputOfType(type, tool.reportingContext().stream()))
+        .toList();
+  }
+
+  public static Stream<ArtifactTool> all() {
     return tools.stream();
   }
 
   public static <T extends Artifact> Builder builderFor(T artifact) {
     return all()
-        .map(Tool::allInputs)
+        .map(ArtifactTool::allInputs)
         .flatMap(Collection::stream)
         .filter(input -> input.type().equals(artifact.getClass()))
         .findFirst()

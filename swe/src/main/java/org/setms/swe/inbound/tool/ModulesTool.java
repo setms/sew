@@ -39,32 +39,29 @@ import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 import org.setms.swe.domain.services.DeployModulesInComponents;
 
 @Slf4j
-public class ModulesTool extends BaseDiagramTool<Modules> {
+public class ModulesTool extends BaseDiagramTool {
 
   private static final String SUGGESTION_DEPLOY_IN_COMPONENTS = "modules.deploy.in.components";
 
   @Override
-  public Input<Modules> getMainInput() {
+  public Input<? extends Artifact> validationTarget() {
     return modules();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(domains(), components());
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(
+      Artifact artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var modules = (Modules) artifact;
     var domains = inputs.get(Domain.class);
     var components = inputs.get(Components.class);
-    inputs
-        .get(Modules.class)
-        .forEach(
-            modules -> {
-              var location = modules.toLocation();
-              validateByDomain(modules, domains, location, diagnostics);
-              validateByComponents(modules, components, location, diagnostics);
-            });
+    var location = modules.toLocation();
+    validateByDomain(modules, domains, location, diagnostics);
+    validateByComponents(modules, components, location, diagnostics);
   }
 
   private void validateByDomain(
@@ -126,13 +123,13 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> resource,
-      Modules modules,
+      Artifact modules,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
       throws Exception {
     if (SUGGESTION_DEPLOY_IN_COMPONENTS.equals(suggestionCode)) {
-      return deployInComponents(resource, modules);
+      return deployInComponents(resource, (Modules) modules);
     }
     return super.doApply(resource, modules, suggestionCode, location, inputs);
   }
@@ -151,10 +148,17 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var domains = inputs.get(Domain.class);
-    inputs.get(Modules.class).forEach(modules -> build(modules, resource, diagnostics, domains));
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(domains(), modules());
+  }
+
+  @Override
+  public void buildReportsFor(
+      Artifact modules,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build((Modules) modules, resource, diagnostics, inputs.get(Domain.class));
   }
 
   private void build(

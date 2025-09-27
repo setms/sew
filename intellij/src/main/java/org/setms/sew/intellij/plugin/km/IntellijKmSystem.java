@@ -26,7 +26,7 @@ public class IntellijKmSystem extends KmSystem {
                     .forEach(this::update));
   }
 
-  private void update(OutOfDateArtifact<?> artifact) {
+  private void update(OutOfDateArtifact artifact) {
     ApplicationManager.getApplication()
         .invokeLater(
             () ->

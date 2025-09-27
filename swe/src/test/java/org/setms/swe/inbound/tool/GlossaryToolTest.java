@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -35,7 +36,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   }
 
   @Test
-  void shouldBuildReport() {
+  void shouldBuildReport() throws IOException {
     var workspace = workspaceFor("valid");
 
     var actual = build(workspace);
@@ -46,7 +47,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   }
 
   @Test
-  void shouldRejectMissingDisplay() {
+  void shouldRejectMissingDisplay() throws IOException {
     var source = workspaceFor("invalid/display");
 
     var actual = validateAgainst(source);
@@ -61,7 +62,7 @@ class GlossaryToolTest extends ToolTestCase<Term> {
   }
 
   @Test
-  void shouldRejectInvalidSeeAlso() {
+  void shouldRejectInvalidSeeAlso() throws IOException {
     var source = workspaceFor("invalid/see");
 
     var actual = validateAgainst(source);

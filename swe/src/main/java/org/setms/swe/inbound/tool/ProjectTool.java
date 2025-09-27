@@ -3,7 +3,6 @@ package org.setms.swe.inbound.tool;
 import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
-import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
@@ -19,7 +18,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.StandaloneTool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -27,27 +26,21 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.stakeholders.Owner;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
 
-public class ProjectTool extends Tool<Owner> {
+public class ProjectTool extends StandaloneTool {
 
   private static final String SUGGESTION_CREATE_OWNER = "stakeholders.createOwner";
 
   @Override
-  public Input<Owner> getMainInput() {
-    return owners();
-  }
-
-  @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
-    return Set.of(users());
+  public Set<Input<? extends Artifact>> validationContext() {
+    return Set.of(owners(), users());
   }
 
   @Override
   public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var owners = inputs.get(Owner.class);
-    validateOwner(owners, diagnostics);
+    validateOwner(inputs.get(Owner.class), diagnostics);
   }
 
-  public void validateOwner(List<Owner> owners, Collection<Diagnostic> diagnostics) {
+  private void validateOwner(List<Owner> owners, Collection<Diagnostic> diagnostics) {
     if (owners.isEmpty()) {
       diagnostics.add(
           new Diagnostic(
@@ -66,16 +59,12 @@ public class ProjectTool extends Tool<Owner> {
 
   @Override
   protected AppliedSuggestion doApply(
-      Resource<?> ownerResource,
-      Owner owner,
-      String suggestionCode,
-      Location location,
-      ResolvedInputs inputs)
-      throws IOException {
+      String suggestionCode, Location location, ResolvedInputs inputs, Resource<?> ownerResource)
+      throws Exception {
     if (SUGGESTION_CREATE_OWNER.equals(suggestionCode)) {
       return createOwner(ownerResource, inputs);
     }
-    return unknown(suggestionCode);
+    return super.doApply(suggestionCode, location, inputs, ownerResource);
   }
 
   private AppliedSuggestion createOwner(Resource<?> resource, ResolvedInputs inputs)

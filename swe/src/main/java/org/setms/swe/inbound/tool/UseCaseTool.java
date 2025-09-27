@@ -45,7 +45,7 @@ import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.CreateAcceptanceTest;
 import org.setms.swe.domain.services.DiscoverDomainFromUseCases;
 
-public class UseCaseTool extends BaseDiagramTool<UseCase> {
+public class UseCaseTool extends BaseDiagramTool {
 
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
@@ -58,12 +58,12 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   private static final String CREATE_DOMAIN_STORY = "domainstory.create";
 
   @Override
-  public Input<UseCase> getMainInput() {
+  public Input<? extends Artifact> validationTarget() {
     return useCases();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(
         domainStories(),
         aggregates(),
@@ -80,15 +80,14 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get(UseCase.class);
-    useCases.forEach(useCase -> validateUseCase(useCase, inputs, diagnostics));
+  public void validate(
+      Artifact artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var useCase = (UseCase) artifact;
+    validateUseCase(useCase, inputs, diagnostics);
     if (diagnostics.isEmpty()) {
-      validateAcceptanceTests(useCases, inputs, diagnostics);
+      validateAcceptanceTestsFor(useCase, inputs.get(AcceptanceTest.class), diagnostics);
     }
-    if (!useCases.isEmpty()) {
-      validateDomain(useCases, inputs, diagnostics);
-    }
+    validateDomainsFor(useCase, inputs.get(Domain.class), diagnostics);
   }
 
   private void validateUseCase(
@@ -182,18 +181,15 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
     }
   }
 
-  private void validateAcceptanceTests(
-      List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var acceptanceTests = inputs.get(AcceptanceTest.class);
-    useCases.forEach(
-        useCase ->
-            useCase.getScenarios().stream()
-                .flatMap(Scenario::steps)
-                .distinct()
-                .filter(step -> ACTIVE_ELEMENTS.contains(step.getType()))
-                .forEach(
-                    step ->
-                        validateAcceptanceTestFor(useCase, step, acceptanceTests, diagnostics)));
+  private void validateAcceptanceTestsFor(
+      UseCase useCase,
+      Collection<AcceptanceTest> acceptanceTests,
+      Collection<Diagnostic> diagnostics) {
+    useCase.getScenarios().stream()
+        .flatMap(Scenario::steps)
+        .distinct()
+        .filter(step -> ACTIVE_ELEMENTS.contains(step.getType()))
+        .forEach(step -> validateAcceptanceTestFor(useCase, step, acceptanceTests, diagnostics));
   }
 
   private void validateAcceptanceTestFor(
@@ -214,30 +210,27 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
     }
   }
 
-  private void validateDomain(
-      List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var domains = inputs.get(Domain.class);
-    useCases.forEach(
-        useCase -> {
-          if (domains.stream().noneMatch(d -> useCase.getPackage().equals(d.getPackage()))) {
-            diagnostics.add(
-                new Diagnostic(
-                    WARN,
-                    "Missing subdomains",
-                    useCase.toLocation(),
-                    List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
-          }
-        });
+  private void validateDomainsFor(
+      UseCase useCase, List<Domain> domains, Collection<Diagnostic> diagnostics) {
+    if (domains.stream().noneMatch(d -> useCase.getPackage().equals(d.getPackage()))) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing subdomains",
+              useCase.toLocation(),
+              List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
+    }
   }
 
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> useCaseResource,
-      UseCase useCase,
+      Artifact artifact,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
       throws Exception {
+    var useCase = (UseCase) artifact;
     return switch (suggestionCode) {
       case CREATE_DOMAIN_STORY -> createDomainStory(useCaseResource, useCase, location);
       case CREATE_MISSING_STEP -> createMissingStep(useCaseResource, useCase, inputs, location);
@@ -353,11 +346,17 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get(UseCase.class);
-    useCases.forEach(
-        useCase -> build(useCase, inputs, resource.select(useCase.getName()), diagnostics));
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(domainStories(), useCases());
+  }
+
+  @Override
+  public void buildReportsFor(
+      Artifact useCase,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build((UseCase) useCase, inputs, resource.select(useCase.getName()), diagnostics);
   }
 
   private void build(

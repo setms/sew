@@ -2,6 +2,8 @@ package org.setms.km.domain.model.tool;
 
 import static org.setms.km.domain.model.format.Strings.initLower;
 
+import java.util.Objects;
+import java.util.Optional;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.nlp.English;
@@ -40,5 +42,27 @@ public record GlobInput<T extends Artifact>(String name, Glob glob, Format forma
   @Override
   public String extension() {
     return glob.extension();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other
+        instanceof
+        GlobInput<?>(String thatName, Glob thatGlob, Format thatFormat, Class<?> thatType)) {
+      return Objects.equals(this.name, thatName)
+          && Objects.equals(this.glob, thatGlob)
+          && Objects.equals(typeOf(this.format), typeOf(thatFormat))
+          && Objects.equals(this.type, thatType);
+    }
+    return false;
+  }
+
+  private String typeOf(Format format) {
+    return Optional.ofNullable(format).map(Object::getClass).map(Class::getName).orElse(null);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, glob, typeOf(format), type);
   }
 }

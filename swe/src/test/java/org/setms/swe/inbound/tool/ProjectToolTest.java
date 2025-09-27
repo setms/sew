@@ -14,7 +14,6 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.swe.domain.model.sdlc.stakeholders.Owner;
-import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.inbound.format.sal.SalFormat;
 
 class ProjectToolTest extends ToolTestCase<Owner> {
@@ -33,15 +32,13 @@ class ProjectToolTest extends ToolTestCase<Owner> {
   }
 
   @Override
-  protected void assertInputs(Set<Input<? extends Artifact>> inputs) {
-    assertThat(inputs).hasSize(1);
+  protected void assertValidationContext(Set<Input<? extends Artifact>> inputs) {
     assertThat(inputs)
+        .hasSize(2)
         .allSatisfy(
             input -> {
               assertThat(input.format()).isInstanceOf(SalFormat.class);
               assertThat(input.path()).isEqualTo("src/main/stakeholders");
-              assertThat(input.extension()).isEqualTo(User.class.getSimpleName().toLowerCase());
-              assertThat(input.type()).isEqualTo(User.class);
             });
   }
 
@@ -95,7 +92,7 @@ class ProjectToolTest extends ToolTestCase<Owner> {
   }
 
   @Test
-  void shouldRejectMultipleOwners() {
+  void shouldRejectMultipleOwners() throws IOException {
     var workspace = workspaceFor("invalid/multiple");
 
     var actual = validateAgainst(workspace);

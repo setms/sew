@@ -4,3 +4,6 @@ outputs:
 inputs:
   - location: src/main/architecture
     file: ProgrammingLanguage.decision
+
+diagnostics:
+  - Missing decision on Java build tool

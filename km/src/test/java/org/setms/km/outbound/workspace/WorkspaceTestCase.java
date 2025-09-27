@@ -175,7 +175,7 @@ public abstract class WorkspaceTestCase {
 
   @Test
   void shouldReportChangedArtifact() throws IOException {
-    var format = new TestFormat();
+    var format = TestFormat.INSTANCE;
     workspace.registerArtifactDefinition(
         new ArtifactDefinition(
             MainArtifact.class, Glob.of("main", "mainArtifact"), format.newParser()));

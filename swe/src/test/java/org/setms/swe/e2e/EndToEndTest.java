@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.kmsystem.KmSystem;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -200,8 +200,7 @@ class EndToEndTest {
     var type = segments.get(1);
     var name = segments.get(2);
     return Tools.all()
-        .map(Tool::mainInput)
-        .flatMap(Optional::stream)
+        .map(ArtifactTool::validationTarget)
         .filter(input -> type.equals(initLower(input.type().getSimpleName())))
         .findFirst()
         .map(input -> "%s/%s.%s".formatted(input.path(), name, input.extension()))

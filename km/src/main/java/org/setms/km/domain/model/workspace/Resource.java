@@ -29,6 +29,7 @@ public interface Resource<T extends Resource<T>> {
 
   T select(String path);
 
+  // TODO: Replace path+extension by Glob, since that's what all implementations use
   List<T> matching(String path, String extension);
 
   InputStream readFrom() throws IOException;

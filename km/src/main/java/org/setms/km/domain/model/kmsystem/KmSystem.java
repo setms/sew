@@ -2,13 +2,15 @@ package org.setms.km.domain.model.kmsystem;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
-import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.none;
+import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -18,9 +20,9 @@ import org.json.JSONObject;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Level;
@@ -36,6 +38,7 @@ public class KmSystem {
 
   private static final String INPUTS = "inputs";
   private static final String PATHS = "paths";
+  public static final LocalDateTime LONG_AGO = LocalDateTime.of(0, 1, 1, 0, 0);
 
   private final ObjectMapper mapper = new ObjectMapper();
   @Getter private final Workspace<?> workspace;
@@ -50,7 +53,7 @@ public class KmSystem {
 
   private void cacheInputs() {
     Tools.all()
-        .map(Tool::allInputs)
+        .map(ArtifactTool::allInputs)
         .flatMap(Collection::stream)
         .distinct()
         .forEach(this::cacheInput);
@@ -88,18 +91,19 @@ public class KmSystem {
     if (isInternalResource(path)) {
       return;
     }
-    addToGlobs(path);
-    updateArtifact(path, artifact);
+    addToInputs(path);
+    validateAndBuildArtifact(path, artifact);
   }
 
   private boolean isInternalResource(String path) {
     return path.startsWith("/.km/");
   }
 
-  private void addToGlobs(String path) {
+  private void addToInputs(String path) {
     Tools.all()
-        .map(Tool::allInputs)
+        .map(ArtifactTool::allInputs)
         .flatMap(Collection::stream)
+        .distinct()
         .filter(input -> input.matches(path))
         .forEach(input -> addInputPath(input, path));
   }
@@ -127,42 +131,41 @@ public class KmSystem {
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  private <T extends Artifact> void updateArtifact(String path, T artifact) {
-    var aClass = (Class<T>) artifact.getClass();
-    updateArtifact(path, aClass, Tools.targeting(aClass));
-  }
-
-  private <T extends Artifact> void updateArtifact(
-      String path, Class<T> type, Optional<Tool<T>> maybeTool) {
-    var valid = true;
-    var buildResource = reportResourceFor(path);
-    if (maybeTool.isPresent()) {
-      var tool = maybeTool.get();
-      valid = updateArtifact(path, tool, buildResource);
-    }
-    if (valid) {
-      Tools.dependingOn(type).stream()
-          .filter(tool -> maybeTool.isEmpty() || !tool.equals(maybeTool.get()))
-          .forEach(
-              tool -> {
-                var diagnostics = new LinkedHashSet<Diagnostic>();
-                var inputs = resolveInputs(path, tool, diagnostics);
-                buildReports(tool, buildResource, inputs, diagnostics);
-              });
+  private void validateAndBuildArtifact(String path, Artifact artifact) {
+    if (validate(path, artifact)) {
+      revalidateArtifactsThatDependOn(path);
+      var buildResource = reportResourceFor(path);
+      rebuildReportsThatDependOn(artifact, buildResource);
     }
   }
 
-  private <T extends Artifact> boolean updateArtifact(
-      String path, Tool<T> tool, Resource<? extends Resource<?>> buildResource) {
-    var diagnostics = new LinkedHashSet<Diagnostic>();
-    var inputs = resolveInputs(path, tool, diagnostics);
-    tool.validate(inputs, diagnostics);
-    var result = diagnostics.stream().map(Diagnostic::level).noneMatch(Level.ERROR::equals);
-    if (result) {
-      buildReports(tool, buildResource, inputs, diagnostics);
+  private boolean validate(String path, Artifact artifact) {
+    var result = true;
+    for (var tool : Tools.validating(artifact.getClass())) {
+      var inputs = resolveInputs(tool.validationContext());
+      var diagnostics = new LinkedHashSet<Diagnostic>();
+      tool.validate(artifact, inputs, diagnostics);
+      storeDiagnostics(path, tool, diagnostics);
+      if (result && diagnostics.stream().map(Diagnostic::level).anyMatch(ERROR::equals)) {
+        result = false;
+      }
     }
-    storeDiagnostics(path, tool, diagnostics);
+    return result;
+  }
+
+  private ResolvedInputs resolveInputs(Set<Input<? extends Artifact>> inputs) {
+    var result = new ResolvedInputs();
+    var diagnostics = new ArrayList<Diagnostic>();
+    inputs.forEach(
+        input -> {
+          var parser = input.format().newParser();
+          result.put(
+              input.name(),
+              resourcesMatching(input)
+                  .map(resource -> parser.parse(resource, input.type(), false, diagnostics))
+                  .filter(Objects::nonNull)
+                  .toList());
+        });
     return result;
   }
 
@@ -170,60 +173,32 @@ public class KmSystem {
     return workspace.root().select(".km/reports%s".formatted(path));
   }
 
-  private void buildReports(
-      Tool<?> tool,
-      Resource<? extends Resource<?>> buildResource,
-      ResolvedInputs inputs,
-      Collection<Diagnostic> diagnostics) {
+  private void rebuildReportsThatDependOn(Artifact artifact, Resource<?> buildResource) {
+    deleteReports(buildResource);
+    Tools.buildingReportsFor(artifact.getClass())
+        .forEach(
+            tool -> {
+              var inputs = resolveInputs(tool.reportingContext());
+              var diagnostics = new LinkedHashSet<Diagnostic>();
+              tool.buildReportsFor(
+                  artifact, inputs, buildResource.select(tool.getClass().getName()), diagnostics);
+            });
+  }
+
+  private void deleteReports(Resource<?> buildResource) {
     try {
-      var toolReport = buildResource.select(tool.getClass().getName());
-      toolReport.delete();
-      tool.build(inputs, toolReport, diagnostics);
-    } catch (Exception e) {
-      log.error("Failed to build report", e);
+      buildResource.delete();
+    } catch (IOException e) {
+      log.error("Failed to delete reports at {}", buildResource.path());
     }
-  }
-
-  private ResolvedInputs resolveInputs(
-      String path, Tool<?> tool, Collection<Diagnostic> diagnostics) {
-    var result = new ResolvedInputs();
-    tool.mainInput().ifPresent(input -> resolve(path, input, true, diagnostics, result));
-    // TODO: Don't add parser errors to diagnostics for this path
-    tool.additionalInputs().forEach(input -> resolve(path, input, false, diagnostics, result));
-    return result;
-  }
-
-  private void resolve(
-      String path,
-      Input<? extends Artifact> input,
-      boolean validate,
-      Collection<Diagnostic> diagnostics,
-      ResolvedInputs inputs) {
-    inputs.put(input.name(), parse(workspace.root(), path, input, validate, diagnostics));
-  }
-
-  private <T extends Artifact> List<T> parse(
-      Resource<?> resource,
-      String path,
-      Input<T> input,
-      boolean validate,
-      Collection<Diagnostic> diagnostics) {
-    var parser = input.format().newParser();
-    if (input.matches(path)) {
-      var result = parser.parse(resource.select(path), input.type(), validate, diagnostics);
-      return result == null ? emptyList() : List.of(result);
-    }
-    return resourcesMatching(input)
-        .map(match -> parser.parse(match, input.type(), validate, diagnostics))
-        .filter(Objects::nonNull)
-        .toList();
   }
 
   private Stream<Resource<?>> resourcesMatching(Input<?> input) {
     return linesOfTextIn(resourceContainingPathsFor(input)).stream().map(workspace.root()::select);
   }
 
-  private void storeDiagnostics(String path, Tool<?> tool, Collection<Diagnostic> diagnostics) {
+  private void storeDiagnostics(
+      String path, ArtifactTool tool, Collection<Diagnostic> diagnostics) {
     var diagnosticsResource =
         workspace
             .root()
@@ -319,7 +294,7 @@ public class KmSystem {
     if (isInternalResource(path)) {
       return;
     }
-    removeFromGlobs(path);
+    removeFromInputs(path);
     deleteInternalResourcesReferencing(path);
     revalidateArtifactsThatDependOn(path);
   }
@@ -339,9 +314,9 @@ public class KmSystem {
     }
   }
 
-  private void removeFromGlobs(String path) {
+  private void removeFromInputs(String path) {
     Tools.all()
-        .map(Tool::allInputs)
+        .map(ArtifactTool::allInputs)
         .flatMap(Collection::stream)
         .filter(input -> input.matches(path))
         .forEach(input -> removeInputPath(input, path));
@@ -353,23 +328,29 @@ public class KmSystem {
 
   private void revalidateArtifactsThatDependOn(String path) {
     Tools.all()
-        .filter(tool -> tool.mainInput().isPresent() && additionalInputDependsOn(tool, path))
-        .forEach(
-            tool ->
-                resourcesMatching(tool.mainInput().orElseThrow())
-                    .map(Resource::path)
-                    .forEach(
-                        artifactPath ->
-                            updateArtifact(artifactPath, tool, reportResourceFor(artifactPath))));
+        .filter(tool -> tool.validationContext().stream().anyMatch(input -> input.matches(path)))
+        .forEach(tool -> validate(tool, tool.validationTarget()));
   }
 
-  private boolean additionalInputDependsOn(Tool<?> tool, String path) {
-    return tool.additionalInputs().stream().anyMatch(input -> input.matches(path));
+  private void validate(ArtifactTool tool, Input<? extends Artifact> input) {
+    var inputs = resolveInputs(tool.validationContext());
+    resourcesMatching(input)
+        .map(Resource::path)
+        .forEach(
+            path -> {
+              var artifact = parse(path, input);
+              if (artifact == null) {
+                return;
+              }
+              var diagnostics = new LinkedHashSet<Diagnostic>();
+              tool.validate(artifact, inputs, diagnostics);
+              storeDiagnostics(path, tool, diagnostics);
+            });
   }
 
   private void registerArtifactDefinitions() {
     Tools.all()
-        .map(Tool::allInputs)
+        .map(ArtifactTool::allInputs)
         .flatMap(Collection::stream)
         .map(
             input ->
@@ -391,7 +372,7 @@ public class KmSystem {
     outOfDateArtifacts().forEach(this::updateOutOfDateArtifact);
   }
 
-  protected List<OutOfDateArtifact<?>> outOfDateArtifacts() {
+  protected List<OutOfDateArtifact> outOfDateArtifacts() {
     return workspace.root().matching(".km/" + INPUTS, PATHS).stream()
         .map(this::linesOfTextIn)
         .flatMap(Collection::stream)
@@ -403,30 +384,50 @@ public class KmSystem {
         .toList();
   }
 
-  @SuppressWarnings("unchecked")
-  private <T extends Artifact> Stream<OutOfDateArtifact<?>> checkOutOfDate(Resource<?> artifact) {
-    var diagnosticsResources =
-        workspace.root().matching("/.km/diagnostics%s".formatted(artifact.path()), "json");
-    var lastValidated =
-        diagnosticsResources.isEmpty() ? null : diagnosticsResources.getFirst().lastModifiedAt();
-    if (lastValidated == null || lastValidated.isBefore(artifact.lastModifiedAt())) {
-      var tool = Tools.all().filter(t -> t.matchesMainInput(artifact.path())).findFirst();
-      if (tool.isEmpty()) {
-        return Stream.empty();
-      }
-      Class<T> artifactType = (Class<T>) tool.get().mainInput().orElseThrow().type();
-      Optional<Tool<T>> maybeTool = Optional.of((Tool<T>) tool.get());
-      return Stream.of(new OutOfDateArtifact<>(artifact.path(), artifactType, maybeTool));
-    }
-    return Stream.empty();
+  private Stream<OutOfDateArtifact> checkOutOfDate(Resource<?> artifact) {
+    return Stream.of(artifact)
+        .filter(a -> isBefore(lastValidated(a.path()), a.lastModifiedAt()))
+        .map(Resource::path)
+        .map(OutOfDateArtifact::new);
   }
 
-  protected <T extends Artifact> void updateOutOfDateArtifact(OutOfDateArtifact<T> artifact) {
-    updateArtifact(artifact.path(), artifact.artifactType(), artifact.maybeTool());
+  private LocalDateTime lastValidated(String path) {
+    return workspace.root().matching("/.km/diagnostics%s".formatted(path), "json").stream()
+        .map(Resource::lastModifiedAt)
+        .min(LocalDateTime::compareTo)
+        .orElse(LONG_AGO);
+  }
+
+  private boolean isBefore(LocalDateTime dt1, LocalDateTime dt2) {
+    return dt1 == null || dt2 == null || dt1.isBefore(dt2);
+  }
+
+  protected void updateOutOfDateArtifact(OutOfDateArtifact outOfDate) {
+    var path = outOfDate.path();
+    Tools.all()
+        .map(ArtifactTool::allInputs)
+        .flatMap(Collection::stream)
+        .distinct()
+        .filter(input -> input.matches(path))
+        .map(input -> parse(path, input))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .ifPresent(artifact -> artifactChanged(path, artifact));
+  }
+
+  private Artifact parse(String path, Input<? extends Artifact> input) {
+    return input
+        .format()
+        .newParser()
+        .parse(workspace.root().select(path), input.type(), false, new LinkedHashSet<>());
   }
 
   public Resource<?> mainReportFor(String path) {
-    var maybeTool = Tools.all().filter(tool -> tool.matchesMainInput(path)).findFirst();
+    var maybeTool =
+        Tools.all()
+            .filter(tool -> tool.validates(path))
+            .filter(tool -> tool.reportingContext().stream().anyMatch(input -> input.matches(path)))
+            .findFirst();
     if (maybeTool.isEmpty()) {
       return null;
     }
@@ -440,24 +441,21 @@ public class KmSystem {
     return result.children().getFirst();
   }
 
-  @SuppressWarnings("unchecked")
-  public <T extends Artifact> AppliedSuggestion applySuggestion(
-      Resource<?> resource, String code, Location location) {
+  public AppliedSuggestion applySuggestion(Resource<?> resource, String code, Location location) {
     if (resource == null) {
-      return new AppliedSuggestion();
+      return none();
     }
-    return Tools.all()
-        .filter(tool -> tool.matchesMainInput(resource.path()))
-        .findFirst()
-        .map(
-            tool -> {
-              var inputs = resolveInputs(workspace.root().path(), tool, new LinkedHashSet<>());
-              var result = tool.apply(resource, code, location, inputs);
-              var type = (Class<T>) tool.mainInput().orElseThrow().type();
-              var typedTool = (Tool<T>) tool;
-              updateArtifact(resource.path(), type, Optional.of(typedTool));
-              return result;
-            })
-        .orElseGet(() -> failedWith("Unknown resource: %s", resource.path()));
+    for (var tool : Tools.all().filter(t -> t.validates(resource.path())).toList()) {
+      var inputs = resolveInputs(tool.validationContext());
+      var artifact = parse(resource.path(), tool.validationTarget());
+      if (artifact == null) {
+        continue;
+      }
+      var result = tool.applySuggestion(artifact, code, location, inputs, resource);
+      if (!result.createdOrChanged().isEmpty()) {
+        return result;
+      }
+    }
+    return none();
   }
 }

@@ -8,12 +8,12 @@ import java.util.ServiceLoader;
 import javax.imageio.ImageIO;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
 @RequiredArgsConstructor
-public abstract class BaseDiagramTool<A extends Artifact> extends Tool<A> {
+public abstract class BaseDiagramTool extends ArtifactTool {
 
   private final DiagramRenderer renderer;
 
@@ -40,7 +40,7 @@ public abstract class BaseDiagramTool<A extends Artifact> extends Tool<A> {
   }
 
   protected void buildHtml(
-      A artifact,
+      Artifact artifact,
       String description,
       Diagram diagram,
       Resource<?> parent,

@@ -16,7 +16,7 @@ class BaseDiagramToolTest {
     var tool = new FooDiagramTool();
     var diagnostics = new ArrayList<Diagnostic>();
 
-    tool.build(null, workspace.root(), diagnostics);
+    tool.buildReportsFor(null, null, workspace.root(), diagnostics);
 
     assertThat(diagnostics).as("Diagnostics").isEmpty();
     assertThat(workspace.root().children())

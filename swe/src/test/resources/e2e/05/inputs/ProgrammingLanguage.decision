@@ -1,7 +1,7 @@
 package todo
 
 decision ProgrammingLanguage {
-  topic     = "urn:setms:swe:decision:topic:programming-language"
+  topic     = "ProgrammingLanguage"
   choice    = "Java"
   rationale = "Team is familiar with it."
 }

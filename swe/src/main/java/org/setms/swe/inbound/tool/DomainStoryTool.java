@@ -38,26 +38,129 @@ import org.setms.swe.domain.model.sdlc.usecase.Scenario;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.DomainStoryToUseCase;
 
-public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
+public class DomainStoryTool extends BaseDiagramTool {
 
   private static final String CREATE_USE_CASE_SCENARIO = "usecase.scenario.create";
 
   @Override
-  public Input<DomainStory> getMainInput() {
+  public Input<? extends Artifact> validationTarget() {
     return domainStories();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(useCases());
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var domainStories = inputs.get(DomainStory.class);
-    domainStories.forEach(
-        domainStory -> build(domainStory, resource.select(domainStory.getName()), diagnostics));
+  public void validate(
+      Artifact domainStory, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate((DomainStory) domainStory, inputs.get(UseCase.class), diagnostics);
+  }
+
+  private void validate(
+      DomainStory domainStory, Collection<UseCase> useCases, Collection<Diagnostic> diagnostics) {
+    if (useCases.stream()
+        .flatMap(UseCase::scenarios)
+        .map(Scenario::getElaborates)
+        .filter(Objects::nonNull)
+        .noneMatch(elaborates -> elaborates.pointsTo(domainStory))) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Not elaborated in use case scenario",
+              domainStory.toLocation(),
+              elaborationSuggestions(useCases)));
+    }
+  }
+
+  private List<Suggestion> elaborationSuggestions(Collection<UseCase> useCases) {
+    return Stream.concat(
+            Stream.of(new Suggestion(CREATE_USE_CASE_SCENARIO, "Elaborate in new use case")),
+            useCases.stream()
+                .map(Artifact::getFullyQualifiedName)
+                .map(
+                    name ->
+                        new Suggestion(
+                            "%s.%s".formatted(CREATE_USE_CASE_SCENARIO, name),
+                            "Elaborate in use case %s".formatted(name))))
+        .toList();
+  }
+
+  @Override
+  protected AppliedSuggestion doApply(
+      Resource<?> domainStoryResource,
+      Artifact domainStory,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs) {
+    if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
+      return elaborateInUseCase(
+          domainStoryResource,
+          (DomainStory) domainStory,
+          extractUseCaseFrom(suggestionCode, inputs),
+          determineSystemToDesign(domainStory.getPackage(), inputs.get(DomainStory.class)));
+    }
+    return unknown(suggestionCode);
+  }
+
+  private Optional<String> determineSystemToDesign(
+      String packageName, Collection<DomainStory> domainStories) {
+    var computerSystems =
+        domainStories.stream()
+            .filter(domainStory -> domainStory.getPackage().equals(packageName))
+            .flatMap(DomainStory::sentences)
+            .flatMap(Sentence::parts)
+            .filter(Link.testType("computerSystem"))
+            .collect(groupingBy(Link::getId));
+    return computerSystems.keySet().stream().max(comparing(key -> computerSystems.get(key).size()));
+  }
+
+  private Optional<UseCase> extractUseCaseFrom(String suggestionCode, ResolvedInputs inputs) {
+    return extractUseCaseNameFrom(suggestionCode).flatMap(name -> inputs.find(UseCase.class, name));
+  }
+
+  private Optional<FullyQualifiedName> extractUseCaseNameFrom(String suggestionCode) {
+    return Optional.of(suggestionCode)
+        .map(code -> code.substring(CREATE_USE_CASE_SCENARIO.length()))
+        .filter(not(String::isEmpty))
+        .map(code -> code.substring(1))
+        .map(FullyQualifiedName::new);
+  }
+
+  private AppliedSuggestion elaborateInUseCase(
+      Resource<?> domainStoryResource,
+      DomainStory domainStory,
+      Optional<UseCase> target,
+      Optional<String> systemToDesign) {
+    try {
+      var converter = new DomainStoryToUseCase(systemToDesign);
+      var useCase =
+          target
+              .map(uc -> converter.addScenarioFrom(domainStory, uc))
+              .orElseGet(() -> converter.createUseCaseFrom(domainStory));
+      var useCaseResource = resourceFor(useCase, domainStory, domainStoryResource);
+      try (var output = useCaseResource.writeTo()) {
+        builderFor(useCase).build(useCase, output);
+      }
+      return created(useCaseResource);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
+  }
+
+  @Override
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(domainStories(), useCases());
+  }
+
+  @Override
+  public void buildReportsFor(
+      Artifact domainStory,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build((DomainStory) domainStory, resource.select(domainStory.getName()), diagnostics);
   }
 
   private void build(
@@ -127,105 +230,6 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
               return new Arrow(from, box, textPlacements, false);
             })
         .ifPresent(diagram::add);
-  }
-
-  @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get(UseCase.class);
-    inputs
-        .get(DomainStory.class)
-        .forEach(domainStory -> validate(domainStory, useCases, diagnostics));
-  }
-
-  private void validate(
-      DomainStory domainStory, Collection<UseCase> useCases, Collection<Diagnostic> diagnostics) {
-    if (useCases.stream()
-        .flatMap(UseCase::scenarios)
-        .map(Scenario::getElaborates)
-        .filter(Objects::nonNull)
-        .noneMatch(elaborates -> elaborates.pointsTo(domainStory))) {
-      diagnostics.add(
-          new Diagnostic(
-              WARN,
-              "Not elaborated in use case scenario",
-              domainStory.toLocation(),
-              elaborationSuggestions(useCases)));
-    }
-  }
-
-  private List<Suggestion> elaborationSuggestions(Collection<UseCase> useCases) {
-    return Stream.concat(
-            Stream.of(new Suggestion(CREATE_USE_CASE_SCENARIO, "Elaborate in new use case")),
-            useCases.stream()
-                .map(Artifact::getFullyQualifiedName)
-                .map(
-                    name ->
-                        new Suggestion(
-                            "%s.%s".formatted(CREATE_USE_CASE_SCENARIO, name),
-                            "Elaborate in use case %s".formatted(name))))
-        .toList();
-  }
-
-  @Override
-  protected AppliedSuggestion doApply(
-      Resource<?> domainStoryResource,
-      DomainStory domainStory,
-      String suggestionCode,
-      Location location,
-      ResolvedInputs inputs) {
-    if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
-      return elaborateInUseCase(
-          domainStoryResource,
-          domainStory,
-          extractUseCaseFrom(suggestionCode, inputs),
-          determineSystemToDesign(domainStory.getPackage(), inputs.get(DomainStory.class)));
-    }
-    return unknown(suggestionCode);
-  }
-
-  private Optional<String> determineSystemToDesign(
-      String packageName, Collection<DomainStory> domainStories) {
-    var computerSystems =
-        domainStories.stream()
-            .filter(domainStory -> domainStory.getPackage().equals(packageName))
-            .flatMap(DomainStory::sentences)
-            .flatMap(Sentence::parts)
-            .filter(Link.testType("computerSystem"))
-            .collect(groupingBy(Link::getId));
-    return computerSystems.keySet().stream().max(comparing(key -> computerSystems.get(key).size()));
-  }
-
-  private Optional<UseCase> extractUseCaseFrom(String suggestionCode, ResolvedInputs inputs) {
-    return extractUseCaseNameFrom(suggestionCode).flatMap(name -> inputs.find(UseCase.class, name));
-  }
-
-  private Optional<FullyQualifiedName> extractUseCaseNameFrom(String suggestionCode) {
-    return Optional.of(suggestionCode)
-        .map(code -> code.substring(CREATE_USE_CASE_SCENARIO.length()))
-        .filter(not(String::isEmpty))
-        .map(code -> code.substring(1))
-        .map(FullyQualifiedName::new);
-  }
-
-  private AppliedSuggestion elaborateInUseCase(
-      Resource<?> domainStoryResource,
-      DomainStory domainStory,
-      Optional<UseCase> target,
-      Optional<String> systemToDesign) {
-    try {
-      var converter = new DomainStoryToUseCase(systemToDesign);
-      var useCase =
-          target
-              .map(uc -> converter.addScenarioFrom(domainStory, uc))
-              .orElseGet(() -> converter.createUseCaseFrom(domainStory));
-      var useCaseResource = resourceFor(useCase, domainStory, domainStoryResource);
-      try (var output = useCaseResource.writeTo()) {
-        builderFor(useCase).build(useCase, output);
-      }
-      return created(useCaseResource);
-    } catch (Exception e) {
-      return failedWith(e);
-    }
   }
 
   private static class SentenceContext {

@@ -14,15 +14,16 @@ class ToolsTest {
 
   @Test
   void shouldRegisterTool() {
-    assertThat(Tools.targeting(Foo.class)).isEmpty();
+    assertThat(Tools.validating(Foo.class)).isEmpty();
 
     var tool = new FooTool();
     Tools.add(tool);
-    assertThat(Tools.targeting(Foo.class)).isPresent().hasValue(tool);
+    assertThat(Tools.validating(Foo.class)).containsExactly(tool);
   }
 
   @Test
   void shouldRegisterToolsViaServiceLoader() {
-    assertThat(Tools.targeting(Bar.class)).isPresent().containsInstanceOf(BarTool.class);
+    assertThat(Tools.validating(Bar.class))
+        .anySatisfy(tool -> assertThat(tool).isInstanceOf(BarTool.class));
   }
 }

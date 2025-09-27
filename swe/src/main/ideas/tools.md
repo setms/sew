@@ -55,6 +55,32 @@ about a client.
 The social worker adds those details, which prompts the system to suggest adding information about the client's problem, 
 etc, etc.
 
+### Use cases
+
+- Get started: check that there is some artifact to kick things off
+  - Suggest to create it if not
+- Validate a specific artifact, potentially against other input
+  - May suggest creating other artifacts
+- Build reports for a specific artifact
+- Build reports for a collection of artifacts (e.g. C4 model)
+
+### Implementation
+
+```mermaid
+classDiagram
+    Tool <|-- StandaloneTool
+    Tool <|-- ArtifactTool
+    Tool : +validationContext()
+    Tool : +reportingContext()
+    ArtifactTool: +validationTarget()
+    ArtifactTool: +validateArtifact()
+    ArtifactTool : +applySuggestionToArtifact()
+    ArtifactTool: +reportingTarget()
+    ArtifactTool: +buildReportsForArtifact()
+    StandaloneTool: +validate()
+    StandaloneTool: +applySuggestion()
+    StandaloneTool: +buildReports()
+```
 
 ## Software development tools and artifacts
 
@@ -160,7 +186,7 @@ graph
     class UseCase done;
     class UseCaseTool wip;
     class Command done;
-    class CommandTool done;
+    class CommandTool wip;
     class Aggregate done;
     class AggregateTool todo;
     class Event done;

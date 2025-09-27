@@ -1,0 +1,138 @@
+package org.setms.km.domain.model.tool;
+
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+
+import java.util.*;
+import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.workspace.*;
+
+/** {@linkplain Tool} that operates on a specific {@linkplain Artifact artifact}. */
+public abstract non-sealed class ArtifactTool extends Tool {
+
+  /**
+   * The input that this tool validates.
+   *
+   * @return the validation targets
+   */
+  public abstract Input<? extends Artifact> validationTarget();
+
+  /**
+   * @param path the path to an artifact
+   * @return whether this tool can validate the artifact at the given path
+   */
+  public boolean validates(String path) {
+    return validationTarget().matches(path);
+  }
+
+  /**
+   * Validate the inputs.
+   *
+   * @param artifact the input to validate
+   * @param context additional inputs required for validation
+   * @param diagnostics where to any validation issues
+   */
+  public void validate(
+      Artifact artifact, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
+    // For descendants to override
+  }
+
+  /**
+   * Apply a suggestion.
+   *
+   * @param artifact the artifact to apply the suggestion to
+   * @param suggestionCode the suggestion to apply
+   * @param location where in the input to apply the suggestion
+   * @param inputs inputs to use
+   * @param resource where to store outputs
+   * @return artifacts created/changed and diagnostics
+   */
+  public AppliedSuggestion applySuggestion(
+      Artifact artifact,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs,
+      Resource<?> resource) {
+    try {
+      return doApply(resource, artifact, suggestionCode, location, inputs);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
+  }
+
+  protected AppliedSuggestion doApply(
+      Resource<?> resource,
+      Artifact artifact,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
+      throws Exception {
+    return AppliedSuggestion.unknown(suggestionCode);
+  }
+
+  protected Resource<?> resourceFor(Artifact target, Artifact source, Resource<?> sourceResource) {
+    var sourceContainerPath = containerPathFor(source);
+    var targetContainerPath = containerPathFor(target);
+    var sourcePath = sourceResource.path();
+    var index = sourcePath.indexOf(sourceContainerPath);
+    var prefix = sourcePath.substring(0, index);
+    var suffix = sourcePath.substring(index + sourceContainerPath.length());
+    suffix = suffix.substring(0, suffix.lastIndexOf(sourceResource.name()));
+    var targetPath =
+        prefix + targetContainerPath + suffix + target.getName() + "." + extensionFor(target);
+    return sourceResource.select(targetPath);
+  }
+
+  private String containerPathFor(Artifact artifact) {
+    return inputFor(artifact).map(Input::path).orElseThrow();
+  }
+
+  private Optional<Input<? extends Artifact>> inputFor(Artifact artifact) {
+    if (validationTarget().targets(artifact)) {
+      return Optional.of(validationTarget());
+    }
+    return Optional.empty();
+  }
+
+  private String extensionFor(Artifact artifact) {
+    return inputFor(artifact).map(Input::extension).orElseThrow();
+  }
+
+  /**
+   * The input that this tool build reports for, if any.
+   *
+   * @return the reporting targets
+   */
+  public Optional<Input<? extends Artifact>> reportingTarget() {
+    return Optional.ofNullable(reportingTargetInput());
+  }
+
+  protected Input<? extends Artifact> reportingTargetInput() {
+    return null;
+  }
+
+  /**
+   * Build reports for an artifact.
+   *
+   * @param artifact the artifact to build reports for
+   * @param inputs additional inputs needed to build reports
+   * @param output where to store output
+   * @param diagnostics where to any issues
+   */
+  public void buildReportsFor(
+      Artifact artifact,
+      ResolvedInputs inputs,
+      Resource<?> output,
+      Collection<Diagnostic> diagnostics) {
+    // For descendants to override
+  }
+
+  @Override
+  public Set<Input<? extends Artifact>> allInputs() {
+    var result = new LinkedHashSet<>(super.allInputs());
+    result.add(validationTarget());
+    reportingTarget().ifPresent(result::add);
+    return result;
+  }
+}

@@ -112,7 +112,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldRejectGrammarViolation() {
+  void shouldRejectGrammarViolation() throws IOException {
     var source = workspaceFor("grammar");
 
     var diagnostics = validateAgainst(source);
@@ -136,7 +136,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldBuildComplexUseCaseWithoutProblems() {
+  void shouldBuildComplexUseCaseWithoutProblems() throws IOException {
     var workspace = workspaceFor("../domains/gdpr");
 
     var actual = build(workspace);
@@ -145,7 +145,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldCreateDomain() {
+  void shouldCreateDomain() throws IOException {
     var workspace = workspaceFor("valid");
 
     var actual = validateAgainst(workspace);
@@ -175,7 +175,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldCreateAcceptanceTest() {
+  void shouldCreateAcceptanceTest() throws IOException {
     var workspace = workspaceFor("valid");
 
     var actual = validateAgainst(workspace);

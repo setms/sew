@@ -10,32 +10,39 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
 import lombok.extern.slf4j.Slf4j;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
 
 @Slf4j
-public class GlossaryTool extends Tool<Term> {
+public class GlossaryTool extends ArtifactTool {
 
   @Override
-  public Input<Term> getMainInput() {
+  public Input<? extends Artifact> validationTarget() {
     return terms();
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public Set<Input<? extends Artifact>> validationContext() {
+    return Set.of(terms());
+  }
+
+  @Override
+  public void validate(
+      Artifact artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var term = (Term) artifact;
     var terms = inputs.get(Term.class);
-    terms.forEach(
-        term ->
-            Optional.ofNullable(term.getSeeAlso()).stream()
-                .flatMap(Collection::stream)
-                .forEach(link -> validateSeeAlso(term, link, terms, diagnostics)));
+    Optional.ofNullable(term.getSeeAlso()).stream()
+        .flatMap(Collection::stream)
+        .forEach(link -> validateSeeAlso(term, link, terms, diagnostics));
   }
 
   private void validateSeeAlso(
@@ -50,8 +57,16 @@ public class GlossaryTool extends Tool<Term> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(terms());
+  }
+
+  @Override
+  public void buildReportsFor(
+      Artifact ignored,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
     var terms = inputs.get(Term.class);
     var termsByPackage = terms.stream().collect(groupingBy(Term::getPackage));
     termsByPackage.forEach(

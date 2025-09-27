@@ -36,24 +36,23 @@ import org.setms.swe.domain.model.sdlc.architecture.Modules;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
-public class DomainTool extends BaseDiagramTool<Domain> {
+public class DomainTool extends BaseDiagramTool {
 
   private static final String CREATE_MODULES = "modules.create";
 
   @Override
-  public Input<Domain> getMainInput() {
+  public Input<? extends Artifact> validationTarget() {
     return domains();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
-    return Set.of(useCases(), modules());
+  public Set<Input<? extends Artifact>> validationContext() {
+    return Set.of(modules());
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var modules = inputs.get(Modules.class);
-    inputs.get(Domain.class).forEach(domain -> validate(domain, modules, diagnostics));
+  public void validate(Artifact domain, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate((Domain) domain, inputs.get(Modules.class), diagnostics);
   }
 
   private void validate(
@@ -80,13 +79,13 @@ public class DomainTool extends BaseDiagramTool<Domain> {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> domainResource,
-      Domain domain,
+      Artifact domain,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
       throws IOException {
     if (CREATE_MODULES.equals(suggestionCode)) {
-      return createModules(domainResource, domain);
+      return createModules(domainResource, (Domain) domain);
     }
     return unknown(suggestionCode);
   }
@@ -119,9 +118,17 @@ public class DomainTool extends BaseDiagramTool<Domain> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    inputs.get(Domain.class).forEach(domain -> build(domain, resource, diagnostics));
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(domains());
+  }
+
+  @Override
+  public void buildReportsFor(
+      Artifact domain,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build((Domain) domain, resource, diagnostics);
   }
 
   private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {
