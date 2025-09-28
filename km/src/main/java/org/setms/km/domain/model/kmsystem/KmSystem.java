@@ -142,6 +142,7 @@ public class KmSystem {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private boolean validate(String path, Artifact artifact) {
     var result = true;
     for (var tool : Tools.validating(artifact.getClass())) {
@@ -185,7 +186,7 @@ public class KmSystem {
               var diagnostics = new LinkedHashSet<Diagnostic>();
               var output = buildResource.select(tool.getClass().getName());
               switch (tool) {
-                case ArtifactTool artifactTool ->
+                case ArtifactTool<?> artifactTool ->
                     buildReportsFor(artifact, artifactTool, inputs, output, diagnostics);
                 case StandaloneTool standaloneTool ->
                     standaloneTool.buildReports(inputs, output, diagnostics);
@@ -201,31 +202,34 @@ public class KmSystem {
     }
   }
 
-  private void buildReportsFor(
+  @SuppressWarnings("unchecked")
+  private <A extends Artifact> void buildReportsFor(
       Artifact artifact,
-      ArtifactTool artifactTool,
+      ArtifactTool<A> artifactTool,
       ResolvedInputs inputs,
       Resource<? extends Resource<?>> output,
       LinkedHashSet<Diagnostic> diagnostics) {
-    if (artifactTool
+    artifactTool
         .reportingTarget()
         .map(Input::type)
         .filter(artifact.getClass()::equals)
-        .isPresent()) {
-      artifactTool.buildReportsFor(artifact, inputs, output, diagnostics);
-    } else {
-      artifactTool
-          .reportingTarget()
-          .ifPresent(
-              input ->
-                  resourcesMatching(input)
-                      .forEach(
-                          reportResource -> {
-                            var reportArtifact = parse(reportResource.path(), input);
-                            artifactTool.buildReportsFor(
-                                reportArtifact, inputs, output, diagnostics);
-                          }));
-    }
+        .ifPresentOrElse(
+            type -> {
+              A typedArtifact = (A) artifact;
+              artifactTool.buildReportsFor(typedArtifact, inputs, output, diagnostics);
+            },
+            () ->
+                artifactTool
+                    .reportingTarget()
+                    .ifPresent(
+                        input ->
+                            resourcesMatching(input)
+                                .forEach(
+                                    reportResource -> {
+                                      var reportArtifact = (A) parse(reportResource.path(), input);
+                                      artifactTool.buildReportsFor(
+                                          reportArtifact, inputs, output, diagnostics);
+                                    })));
   }
 
   private Stream<Resource<?>> resourcesMatching(Input<?> input) {
@@ -369,7 +373,7 @@ public class KmSystem {
   private void validateDependent(Tool tool, String path) {
     var resolvedInputs = resolveInputs(tool.validationContext());
     switch (tool) {
-      case ArtifactTool artifactTool -> validateDependent(path, artifactTool, resolvedInputs);
+      case ArtifactTool<?> artifactTool -> validateDependent(path, artifactTool, resolvedInputs);
       case StandaloneTool standaloneTool -> {
         var diagnostics = new LinkedHashSet<Diagnostic>();
         standaloneTool.validate(resolvedInputs, diagnostics);
@@ -379,7 +383,7 @@ public class KmSystem {
   }
 
   private void validateDependent(
-      String path, ArtifactTool artifactTool, ResolvedInputs resolvedInputs) {
+      String path, ArtifactTool<?> artifactTool, ResolvedInputs resolvedInputs) {
     if (artifactTool.validationTarget().matches(path)) {
       var diagnostics = new LinkedHashSet<Diagnostic>();
       artifactTool.validate(workspace.root().select(path), resolvedInputs, diagnostics);
@@ -474,7 +478,7 @@ public class KmSystem {
         Tools.all()
             .filter(ArtifactTool.class::isInstance)
             .map(ArtifactTool.class::cast)
-            .filter(tool -> tool.reportingTarget().map(input -> input.matches(path)).orElse(false))
+            .filter(tool -> tool.reportsOn(path))
             .findFirst();
     if (maybeTool.isEmpty()) {
       return null;
@@ -489,6 +493,7 @@ public class KmSystem {
     return result.children().getFirst();
   }
 
+  @SuppressWarnings("unchecked")
   public AppliedSuggestion applySuggestion(Resource<?> resource, String code, Location location) {
     if (resource == null) {
       return none();

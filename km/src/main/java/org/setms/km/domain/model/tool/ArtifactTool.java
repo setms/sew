@@ -11,7 +11,7 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.*;
 
 /** {@linkplain Tool} that operates on a specific {@linkplain Artifact artifact}. */
-public abstract non-sealed class ArtifactTool extends Tool {
+public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
 
   private static final Pattern VALIDATION_ERROR =
       Pattern.compile("[A-Z]+\\sat\\s[^:]+:\\s(?<message>.+)");
@@ -21,7 +21,7 @@ public abstract non-sealed class ArtifactTool extends Tool {
    *
    * @return the validation targets
    */
-  public abstract Input<? extends Artifact> validationTarget();
+  public abstract Input<A> validationTarget();
 
   /**
    * @param path the path to an artifact
@@ -38,7 +38,7 @@ public abstract non-sealed class ArtifactTool extends Tool {
    * @param context additional inputs required for validation
    * @param diagnostics where to any validation issues
    */
-  public Artifact validate(
+  public A validate(
       Resource<?> resource, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
     var input = validationTarget();
     try (var sutStream = resource.readFrom()) {
@@ -73,8 +73,7 @@ public abstract non-sealed class ArtifactTool extends Tool {
    * @param context additional inputs required for validation
    * @param diagnostics where to any validation issues
    */
-  public void validate(
-      Artifact artifact, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
+  public void validate(A artifact, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
     // For descendants to override
   }
 
@@ -89,7 +88,7 @@ public abstract non-sealed class ArtifactTool extends Tool {
    * @return artifacts created/changed and diagnostics
    */
   public AppliedSuggestion applySuggestion(
-      Artifact artifact,
+      A artifact,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs,
@@ -103,7 +102,7 @@ public abstract non-sealed class ArtifactTool extends Tool {
 
   protected AppliedSuggestion doApply(
       Resource<?> resource,
-      Artifact artifact,
+      A artifact,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
@@ -153,6 +152,10 @@ public abstract non-sealed class ArtifactTool extends Tool {
     return null;
   }
 
+  public boolean reportsOn(String path) {
+    return reportingTarget().map(input -> input.matches(path)).orElse(false);
+  }
+
   /**
    * Build reports for an artifact.
    *
@@ -162,10 +165,7 @@ public abstract non-sealed class ArtifactTool extends Tool {
    * @param diagnostics where to any issues
    */
   public void buildReportsFor(
-      Artifact artifact,
-      ResolvedInputs inputs,
-      Resource<?> output,
-      Collection<Diagnostic> diagnostics) {
+      A artifact, ResolvedInputs inputs, Resource<?> output, Collection<Diagnostic> diagnostics) {
     // For descendants to override
   }
 

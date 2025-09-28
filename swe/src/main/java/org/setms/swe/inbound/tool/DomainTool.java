@@ -36,12 +36,12 @@ import org.setms.swe.domain.model.sdlc.architecture.Modules;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 
-public class DomainTool extends BaseDiagramTool {
+public class DomainTool extends BaseDiagramTool<Domain> {
 
   private static final String CREATE_MODULES = "modules.create";
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<Domain> validationTarget() {
     return domains();
   }
 
@@ -51,8 +51,8 @@ public class DomainTool extends BaseDiagramTool {
   }
 
   @Override
-  public void validate(Artifact domain, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    validate((Domain) domain, inputs.get(Modules.class), diagnostics);
+  public void validate(Domain domain, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate(domain, inputs.get(Modules.class), diagnostics);
   }
 
   private void validate(
@@ -79,13 +79,13 @@ public class DomainTool extends BaseDiagramTool {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> domainResource,
-      Artifact domain,
+      Domain domain,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
       throws IOException {
     if (CREATE_MODULES.equals(suggestionCode)) {
-      return createModules(domainResource, (Domain) domain);
+      return createModules(domainResource, domain);
     }
     return unknown(suggestionCode);
   }
@@ -124,14 +124,10 @@ public class DomainTool extends BaseDiagramTool {
 
   @Override
   public void buildReportsFor(
-      Artifact domain,
+      Domain domain,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
-    build((Domain) domain, resource, diagnostics);
-  }
-
-  private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     buildHtml(domain, null, toDiagram(domain), resource, diagnostics);
   }
 

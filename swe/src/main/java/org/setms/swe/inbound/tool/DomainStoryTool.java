@@ -38,12 +38,12 @@ import org.setms.swe.domain.model.sdlc.usecase.Scenario;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.DomainStoryToUseCase;
 
-public class DomainStoryTool extends BaseDiagramTool {
+public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
 
   private static final String CREATE_USE_CASE_SCENARIO = "usecase.scenario.create";
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<DomainStory> validationTarget() {
     return domainStories();
   }
 
@@ -54,8 +54,8 @@ public class DomainStoryTool extends BaseDiagramTool {
 
   @Override
   public void validate(
-      Artifact domainStory, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    validate((DomainStory) domainStory, inputs.get(UseCase.class), diagnostics);
+      DomainStory domainStory, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate(domainStory, inputs.get(UseCase.class), diagnostics);
   }
 
   private void validate(
@@ -90,14 +90,14 @@ public class DomainStoryTool extends BaseDiagramTool {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> domainStoryResource,
-      Artifact domainStory,
+      DomainStory domainStory,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs) {
     if (suggestionCode.startsWith(CREATE_USE_CASE_SCENARIO)) {
       return elaborateInUseCase(
           domainStoryResource,
-          (DomainStory) domainStory,
+          domainStory,
           extractUseCaseFrom(suggestionCode, inputs),
           determineSystemToDesign(domainStory.getPackage(), inputs.get(DomainStory.class)));
     }
@@ -156,11 +156,11 @@ public class DomainStoryTool extends BaseDiagramTool {
 
   @Override
   public void buildReportsFor(
-      Artifact domainStory,
+      DomainStory domainStory,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
-    build((DomainStory) domainStory, resource.select(domainStory.getName()), diagnostics);
+    build(domainStory, resource.select(domainStory.getName()), diagnostics);
   }
 
   private void build(

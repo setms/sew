@@ -24,12 +24,12 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 
-public class CommandTool extends ArtifactTool {
+public class CommandTool extends ArtifactTool<Command> {
 
   public static final String CREATE_PAYLOAD = "payload.create";
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<Command> validationTarget() {
     return commands();
   }
 
@@ -39,9 +39,8 @@ public class CommandTool extends ArtifactTool {
   }
 
   @Override
-  public void validate(
-      Artifact command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    validate((Command) command, inputs.get(Entity.class), diagnostics);
+  public void validate(Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate(command, inputs.get(Entity.class), diagnostics);
   }
 
   private void validate(
@@ -62,12 +61,12 @@ public class CommandTool extends ArtifactTool {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> commandResource,
-      Artifact command,
+      Command command,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs) {
     if (CREATE_PAYLOAD.equals(suggestionCode)) {
-      return createPayloadFor(commandResource, (Command) command);
+      return createPayloadFor(commandResource, command);
     }
     return unknown(suggestionCode);
   }

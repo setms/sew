@@ -9,7 +9,7 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
-public abstract class TestTool extends ArtifactTool {
+public abstract class TestTool<A extends Artifact> extends ArtifactTool<A> {
 
   private final SequencedSet<Diagnostic> validationDiagnostics = new LinkedHashSet<>();
   private final SequencedSet<Diagnostic> buildDiagnostics = new LinkedHashSet<>();
@@ -34,18 +34,14 @@ public abstract class TestTool extends ArtifactTool {
   }
 
   @Override
-  public void validate(
-      Artifact artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(A artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     diagnostics.addAll(validationDiagnostics);
     validated = true;
   }
 
   @Override
   public void buildReportsFor(
-      Artifact artifact,
-      ResolvedInputs inputs,
-      Resource<?> output,
-      Collection<Diagnostic> diagnostics) {
+      A artifact, ResolvedInputs inputs, Resource<?> output, Collection<Diagnostic> diagnostics) {
     diagnostics.addAll(buildDiagnostics);
     built = true;
   }

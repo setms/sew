@@ -45,7 +45,7 @@ import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.domain.services.CreateAcceptanceTest;
 import org.setms.swe.domain.services.DiscoverDomainFromUseCases;
 
-public class UseCaseTool extends BaseDiagramTool {
+public class UseCaseTool extends BaseDiagramTool<UseCase> {
 
   private static final Map<String, List<String>> ALLOWED_ATTRIBUTES =
       Map.of("event", List.of("updates"), "policy", List.of("reads"), "user", List.of("reads"));
@@ -58,7 +58,7 @@ public class UseCaseTool extends BaseDiagramTool {
   private static final String CREATE_DOMAIN_STORY = "domainstory.create";
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<UseCase> validationTarget() {
     return useCases();
   }
 
@@ -81,9 +81,7 @@ public class UseCaseTool extends BaseDiagramTool {
   }
 
   @Override
-  public void validate(
-      Artifact artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var useCase = (UseCase) artifact;
+  public void validate(UseCase useCase, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     validateUseCase(useCase, inputs, diagnostics);
     if (diagnostics.isEmpty()) {
       validateAcceptanceTestsFor(useCase, inputs.get(AcceptanceTest.class), diagnostics);
@@ -226,12 +224,11 @@ public class UseCaseTool extends BaseDiagramTool {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> useCaseResource,
-      Artifact artifact,
+      UseCase useCase,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
       throws Exception {
-    var useCase = (UseCase) artifact;
     return switch (suggestionCode) {
       case CREATE_DOMAIN_STORY -> createDomainStory(useCaseResource, useCase, location);
       case CREATE_MISSING_STEP -> createMissingStep(useCaseResource, useCase, inputs, location);
@@ -353,11 +350,11 @@ public class UseCaseTool extends BaseDiagramTool {
 
   @Override
   public void buildReportsFor(
-      Artifact useCase,
+      UseCase useCase,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
-    build((UseCase) useCase, inputs, resource.select(useCase.getName()), diagnostics);
+    build(useCase, inputs, resource.select(useCase.getName()), diagnostics);
   }
 
   private void build(

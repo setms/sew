@@ -34,7 +34,7 @@ import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.swe.inbound.format.sal.SalFormat;
 
 @RequiredArgsConstructor
-abstract class ToolTestCase<T extends Artifact> {
+abstract class ToolTestCase<A extends Artifact> {
 
   @Getter(PROTECTED)
   private final Tool tool;
@@ -44,12 +44,12 @@ abstract class ToolTestCase<T extends Artifact> {
   private final String extension;
   private final File baseDir;
 
-  protected ToolTestCase(Tool tool, Class<T> type, String sourceLocation) {
+  protected ToolTestCase(Tool tool, Class<A> type, String sourceLocation) {
     this(tool, SalFormat.class, sourceLocation, type);
   }
 
   protected ToolTestCase(
-      Tool tool, Class<? extends Format> formatType, String sourceLocation, Class<T> type) {
+      Tool tool, Class<? extends Format> formatType, String sourceLocation, Class<A> type) {
     this(tool, formatType, sourceLocation, initLower(type.getSimpleName()));
   }
 
@@ -60,17 +60,17 @@ abstract class ToolTestCase<T extends Artifact> {
 
   @Test
   void shouldDefineInputs() {
-    if (tool instanceof ArtifactTool artifactTool) {
+    if (tool instanceof ArtifactTool<?> artifactTool) {
       assertValidationTarget(artifactTool);
     }
     assertValidationContext(tool.validationContext());
-    if (tool instanceof ArtifactTool artifactTool) {
+    if (tool instanceof ArtifactTool<?> artifactTool) {
       assertReportingTarget(artifactTool);
     }
     assertReportingContext(tool.reportingContext());
   }
 
-  private void assertValidationTarget(ArtifactTool tool) {
+  private void assertValidationTarget(ArtifactTool<?> tool) {
     var input = tool.validationTarget();
     assertThat(input.path()).isEqualTo("src/%s".formatted(sourceLocation));
     assertThat(input.extension()).isEqualTo(extension);
@@ -81,7 +81,7 @@ abstract class ToolTestCase<T extends Artifact> {
     // For descendants to override, if needed
   }
 
-  private void assertReportingTarget(ArtifactTool tool) {
+  private void assertReportingTarget(ArtifactTool<?> tool) {
     tool.reportingTarget().ifPresent(this::assertReportingTarget);
   }
 
@@ -110,12 +110,12 @@ abstract class ToolTestCase<T extends Artifact> {
 
   protected SequencedSet<Diagnostic> validateAgainst(Workspace<?> workspace) {
     return switch (tool) {
-      case ArtifactTool artifactTool -> validate(workspace, artifactTool);
+      case ArtifactTool<?> artifactTool -> validate(workspace, artifactTool);
       case StandaloneTool standaloneTool -> validate(workspace, standaloneTool);
     };
   }
 
-  private SequencedSet<Diagnostic> validate(Workspace<?> workspace, ArtifactTool artifactTool) {
+  private SequencedSet<Diagnostic> validate(Workspace<?> workspace, ArtifactTool<?> artifactTool) {
     var input = artifactTool.validationTarget();
     var matchingObjects = workspace.root().matching(input.path(), input.extension());
     assertThat(matchingObjects).as("Missing artifact resources").isNotEmpty();
@@ -148,7 +148,7 @@ abstract class ToolTestCase<T extends Artifact> {
   private ResolvedInputs resolveValidationInputs(
       Tool tool, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
-    if (tool instanceof ArtifactTool artifactTool) {
+    if (tool instanceof ArtifactTool<?> artifactTool) {
       resolveInput(artifactTool.validationTarget(), resource, true, diagnostics, result);
     }
     tool.validationContext()
@@ -165,8 +165,8 @@ abstract class ToolTestCase<T extends Artifact> {
     inputs.put(input.name(), parse(resource, input, validate, diagnostics));
   }
 
-  private <A extends Artifact> List<A> parse(
-      Resource<?> resource, Input<A> input, boolean validate, Collection<Diagnostic> diagnostics) {
+  private <T extends Artifact> List<T> parse(
+      Resource<?> resource, Input<T> input, boolean validate, Collection<Diagnostic> diagnostics) {
     return input
         .format()
         .newParser()
@@ -192,22 +192,31 @@ abstract class ToolTestCase<T extends Artifact> {
   protected AppliedSuggestion apply(String code, Location location, Workspace<?> workspace) {
     var inputs = resolveValidationInputs(tool, workspace.root(), new LinkedHashSet<>());
     return switch (tool) {
-      case ArtifactTool artifactTool ->
-          artifactTool.applySuggestion(
-              toArtifact(workspace, location, artifactTool.validationTarget()),
-              code,
-              location,
-              inputs,
-              workspace.root());
+      case ArtifactTool<?> artifactTool -> apply(code, location, artifactTool, workspace, inputs);
       case StandaloneTool standaloneTool ->
           standaloneTool.applySuggestion(code, location, inputs, workspace.root());
     };
   }
 
-  private Artifact toArtifact(
-      Workspace<?> workspace, Location location, Input<? extends Artifact> input) {
+  private <T extends Artifact> AppliedSuggestion apply(
+      String code,
+      Location location,
+      ArtifactTool<T> artifactTool,
+      Workspace<?> workspace,
+      ResolvedInputs inputs) {
+    return artifactTool.applySuggestion(
+        toArtifact(workspace, location, artifactTool.validationTarget()),
+        code,
+        location,
+        inputs,
+        workspace.root());
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends Artifact> T toArtifact(
+      Workspace<?> workspace, Location location, Input<T> input) {
     return workspace.root().matching(input.path(), input.extension()).stream()
-        .map(resource -> parse(resource, input))
+        .map(resource -> (T) parse(resource, input))
         .filter(Objects::nonNull)
         .filter(artifact -> artifact.starts(location))
         .findFirst()
@@ -233,12 +242,14 @@ abstract class ToolTestCase<T extends Artifact> {
 
   protected List<Diagnostic> build(Workspace<?> workspace) {
     return switch (tool) {
-      case ArtifactTool artifactTool -> build(workspace, artifactTool);
+      case ArtifactTool<?> artifactTool -> build(workspace, artifactTool);
       case StandaloneTool standaloneTool -> build(workspace, standaloneTool);
     };
   }
 
-  private List<Diagnostic> build(Workspace<?> workspace, ArtifactTool tool) {
+  @SuppressWarnings("unchecked")
+  private <T extends Artifact> List<Diagnostic> build(
+      Workspace<?> workspace, ArtifactTool<T> tool) {
     var result = new ArrayList<Diagnostic>();
     var target = tool.reportingTarget();
     if (target.isEmpty()) {
@@ -248,7 +259,7 @@ abstract class ToolTestCase<T extends Artifact> {
     var output = workspace.root().select("build");
     var input = target.get();
     for (var resource : workspace.root().matching(input.path(), input.extension())) {
-      var artifact = parse(resource, input);
+      var artifact = (T) parse(resource, input);
       assertThat(artifact).isNotNull();
       tool.buildReportsFor(artifact, resolvedInputs, output, result);
     }

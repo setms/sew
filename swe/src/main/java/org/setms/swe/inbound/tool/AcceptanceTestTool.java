@@ -35,12 +35,12 @@ import org.setms.swe.domain.model.sdlc.acceptance.Scenario;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
 
-public class AcceptanceTestTool extends ArtifactTool {
+public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
 
   private static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<AcceptanceTest> validationTarget() {
     return acceptanceTests();
   }
 
@@ -56,7 +56,7 @@ public class AcceptanceTestTool extends ArtifactTool {
 
   @Override
   public void validate(
-      Artifact acceptanceTest, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+      AcceptanceTest acceptanceTest, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (inputs.get(Decision.class).stream()
         .filter(decision -> decision.getPackage().equals(acceptanceTest.getPackage()))
         .map(Decision::getTopic)
@@ -73,13 +73,13 @@ public class AcceptanceTestTool extends ArtifactTool {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> resource,
-      Artifact acceptanceTest,
+      AcceptanceTest acceptanceTest,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
       throws Exception {
     if (suggestionCode.equals(PICK_PROGRAMMING_LANGUAGE)) {
-      return pickProgrammingLanguage(resource, (AcceptanceTest) acceptanceTest);
+      return pickProgrammingLanguage(resource, acceptanceTest);
     }
     return super.doApply(resource, acceptanceTest, suggestionCode, location, inputs);
   }
@@ -102,15 +102,10 @@ public class AcceptanceTestTool extends ArtifactTool {
 
   @Override
   public void buildReportsFor(
-      Artifact acceptanceTest,
+      AcceptanceTest acceptanceTest,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
-    build((AcceptanceTest) acceptanceTest, resource, diagnostics);
-  }
-
-  private void build(
-      AcceptanceTest acceptanceTest, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var report =
         resource.select(
             "%s-%s.html"

@@ -23,10 +23,10 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
 
 @Slf4j
-public class GlossaryTool extends ArtifactTool {
+public class GlossaryTool extends ArtifactTool<Term> {
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<Term> validationTarget() {
     return terms();
   }
 
@@ -36,9 +36,7 @@ public class GlossaryTool extends ArtifactTool {
   }
 
   @Override
-  public void validate(
-      Artifact artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var term = (Term) artifact;
+  public void validate(Term term, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var terms = inputs.get(Term.class);
     Optional.ofNullable(term.getSeeAlso()).stream()
         .flatMap(Collection::stream)
@@ -63,7 +61,7 @@ public class GlossaryTool extends ArtifactTool {
 
   @Override
   public void buildReportsFor(
-      Artifact ignored,
+      Term ignored,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {

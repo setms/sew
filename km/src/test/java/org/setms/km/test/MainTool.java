@@ -12,7 +12,7 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
-public class MainTool extends TestTool {
+public class MainTool extends TestTool<MainArtifact> {
 
   static final GlobInput<MainArtifact> INPUT =
       new GlobInput<>("main", TestFormat.INSTANCE, MainArtifact.class);
@@ -29,7 +29,7 @@ public class MainTool extends TestTool {
 
   @Override
   public void buildReportsFor(
-      Artifact artifact,
+      MainArtifact artifact,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {

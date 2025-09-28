@@ -1,11 +1,10 @@
 package org.setms.km.domain.model.tool;
 
-import org.setms.km.domain.model.artifact.Artifact;
 
-public class BarTool extends ArtifactTool {
+public class BarTool extends ArtifactTool<Bar> {
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<Bar> validationTarget() {
     return new GlobInput<>("bar", null, Bar.class);
   }
 }

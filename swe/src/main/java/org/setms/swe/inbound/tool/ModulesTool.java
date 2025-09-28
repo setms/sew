@@ -39,12 +39,12 @@ import org.setms.swe.domain.model.sdlc.ddd.Subdomain;
 import org.setms.swe.domain.services.DeployModulesInComponents;
 
 @Slf4j
-public class ModulesTool extends BaseDiagramTool {
+public class ModulesTool extends BaseDiagramTool<Modules> {
 
   private static final String SUGGESTION_DEPLOY_IN_COMPONENTS = "modules.deploy.in.components";
 
   @Override
-  public Input<? extends Artifact> validationTarget() {
+  public Input<Modules> validationTarget() {
     return modules();
   }
 
@@ -54,9 +54,7 @@ public class ModulesTool extends BaseDiagramTool {
   }
 
   @Override
-  public void validate(
-      Artifact artifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var modules = (Modules) artifact;
+  public void validate(Modules modules, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var domains = inputs.get(Domain.class);
     var components = inputs.get(Components.class);
     var location = modules.toLocation();
@@ -123,13 +121,13 @@ public class ModulesTool extends BaseDiagramTool {
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> resource,
-      Artifact modules,
+      Modules modules,
       String suggestionCode,
       Location location,
       ResolvedInputs inputs)
       throws Exception {
     if (SUGGESTION_DEPLOY_IN_COMPONENTS.equals(suggestionCode)) {
-      return deployInComponents(resource, (Modules) modules);
+      return deployInComponents(resource, modules);
     }
     return super.doApply(resource, modules, suggestionCode, location, inputs);
   }
@@ -154,11 +152,11 @@ public class ModulesTool extends BaseDiagramTool {
 
   @Override
   public void buildReportsFor(
-      Artifact modules,
+      Modules modules,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
-    build((Modules) modules, resource, diagnostics, inputs.get(Domain.class));
+    build(modules, resource, diagnostics, inputs.get(Domain.class));
   }
 
   private void build(

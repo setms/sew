@@ -13,7 +13,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
 @RequiredArgsConstructor
-public abstract class BaseDiagramTool extends ArtifactTool {
+public abstract class BaseDiagramTool<A extends Artifact> extends ArtifactTool<A> {
 
   private final DiagramRenderer renderer;
 
@@ -40,7 +40,7 @@ public abstract class BaseDiagramTool extends ArtifactTool {
   }
 
   protected void buildHtml(
-      Artifact artifact,
+      A artifact,
       String description,
       Diagram diagram,
       Resource<?> parent,
@@ -65,8 +65,8 @@ public abstract class BaseDiagramTool extends ArtifactTool {
   }
 
   protected Optional<Resource<?>> build(
-      Artifact object, Diagram diagram, Resource<?> parent, Collection<Diagnostic> diagnostics) {
-    return build(diagram, object.getName(), parent, diagnostics);
+      Artifact artifact, Diagram diagram, Resource<?> parent, Collection<Diagnostic> diagnostics) {
+    return build(diagram, artifact.getName(), parent, diagnostics);
   }
 
   protected Optional<Resource<?>> build(

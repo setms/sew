@@ -12,7 +12,7 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
-public class OtherTool extends TestTool {
+public class OtherTool extends TestTool<OtherArtifact> {
 
   @Override
   public Input<OtherArtifact> validationTarget() {
@@ -31,7 +31,7 @@ public class OtherTool extends TestTool {
 
   @Override
   public void buildReportsFor(
-      Artifact artifact,
+      OtherArtifact artifact,
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
