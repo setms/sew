@@ -101,9 +101,10 @@ class EndToEndTest {
     assertThatDiagnosticsMatch(iteration);
   }
 
-  private void assertThatOutputsWereCreatedFor(Iteration iteration) throws IOException {
+  private void assertThatOutputsWereCreatedFor(Iteration iteration) {
     for (var output : listOf(iteration.getOutputs())) {
       var actual = readText(workspace.root().select(output), Resource::readFrom);
+      assertThat(actual).as("Missing " + output).isNotNull();
       var expected =
           readText(
               new File(
@@ -119,9 +120,11 @@ class EndToEndTest {
     return Optional.ofNullable(values).orElseGet(Collections::emptyList);
   }
 
-  private <T> String readText(T source, InputStreamProvider<T> toInputStream) throws IOException {
+  private <T> String readText(T source, InputStreamProvider<T> toInputStream) {
     try (var reader = new BufferedReader(new InputStreamReader(toInputStream.apply(source)))) {
       return reader.lines().collect(joining(NL));
+    } catch (Exception e) {
+      return null;
     }
   }
 

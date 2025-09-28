@@ -115,11 +115,13 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   void shouldRejectGrammarViolation() throws IOException {
     var source = workspaceFor("grammar");
 
-    var diagnostics = validateAgainst(source);
+    var actual =
+        validateAgainst(source).stream()
+            .filter(diagnostic -> diagnostic.level() == ERROR)
+            .map(Diagnostic::message)
+            .toList();
 
-    assertThat(diagnostics)
-        .filteredOn(diagnostic -> diagnostic.level() == ERROR)
-        .map(Diagnostic::message)
+    assertThat(actual)
         .containsExactlyInAnyOrder(
             "Users can't emit events",
             "Events can't precede aggregates",

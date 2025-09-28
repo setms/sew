@@ -134,8 +134,9 @@ public class KmSystem {
   }
 
   private void validateAndBuildArtifact(String path, Artifact artifact) {
-    if (validate(path, artifact)) {
-      revalidateArtifactsThatDependOn(path);
+    var valid = validate(path, artifact);
+    revalidateArtifactsThatDependOn(path);
+    if (valid) {
       var buildResource = reportResourceFor(path);
       rebuildReportsThatDependOn(artifact, buildResource);
     }
@@ -183,11 +184,11 @@ public class KmSystem {
               var inputs = resolveInputs(tool.reportingContext());
               var diagnostics = new LinkedHashSet<Diagnostic>();
               var output = buildResource.select(tool.getClass().getName());
-              if (tool instanceof ArtifactTool artifactTool) {
-                artifactTool.buildReportsFor(artifact, inputs, output, diagnostics);
-              }
-              if (tool instanceof StandaloneTool standaloneTool) {
-                standaloneTool.buildReports(inputs, output, diagnostics);
+              switch (tool) {
+                case ArtifactTool artifactTool ->
+                    buildReportsFor(artifact, artifactTool, inputs, output, diagnostics);
+                case StandaloneTool standaloneTool ->
+                    standaloneTool.buildReports(inputs, output, diagnostics);
               }
             });
   }
@@ -197,6 +198,33 @@ public class KmSystem {
       buildResource.delete();
     } catch (IOException e) {
       log.error("Failed to delete reports at {}", buildResource.path());
+    }
+  }
+
+  private void buildReportsFor(
+      Artifact artifact,
+      ArtifactTool artifactTool,
+      ResolvedInputs inputs,
+      Resource<? extends Resource<?>> output,
+      LinkedHashSet<Diagnostic> diagnostics) {
+    if (artifactTool
+        .reportingTarget()
+        .map(Input::type)
+        .filter(artifact.getClass()::equals)
+        .isPresent()) {
+      artifactTool.buildReportsFor(artifact, inputs, output, diagnostics);
+    } else {
+      artifactTool
+          .reportingTarget()
+          .ifPresent(
+              input ->
+                  resourcesMatching(input)
+                      .forEach(
+                          reportResource -> {
+                            var reportArtifact = parse(reportResource.path(), input);
+                            artifactTool.buildReportsFor(
+                                reportArtifact, inputs, output, diagnostics);
+                          }));
     }
   }
 
@@ -335,34 +363,36 @@ public class KmSystem {
   private void revalidateArtifactsThatDependOn(String path) {
     Tools.all()
         .filter(tool -> tool.validationContext().stream().anyMatch(input -> input.matches(path)))
-        .forEach(tool -> validate(tool, path));
+        .forEach(tool -> validateDependent(tool, path));
   }
 
-  private void validate(Tool tool, String path) {
+  private void validateDependent(Tool tool, String path) {
     var resolvedInputs = resolveInputs(tool.validationContext());
-    var diagnostics = new LinkedHashSet<Diagnostic>();
     switch (tool) {
-      case ArtifactTool artifactTool ->
-          artifactTool.validate(workspace.root().select(path), resolvedInputs, diagnostics);
-      case StandaloneTool standaloneTool -> standaloneTool.validate(resolvedInputs, diagnostics);
+      case ArtifactTool artifactTool -> validateDependent(path, artifactTool, resolvedInputs);
+      case StandaloneTool standaloneTool -> {
+        var diagnostics = new LinkedHashSet<Diagnostic>();
+        standaloneTool.validate(resolvedInputs, diagnostics);
+        storeDiagnostics(path, tool, diagnostics);
+      }
     }
-    storeDiagnostics(path, tool, diagnostics);
   }
 
-  private void validate(ArtifactTool tool, Input<? extends Artifact> input) {
-    var inputs = resolveInputs(tool.validationContext());
-    resourcesMatching(input)
-        .map(Resource::path)
-        .forEach(
-            path -> {
-              var artifact = parse(path, input);
-              if (artifact == null) {
-                return;
-              }
-              var diagnostics = new LinkedHashSet<Diagnostic>();
-              tool.validate(artifact, inputs, diagnostics);
-              storeDiagnostics(path, tool, diagnostics);
-            });
+  private void validateDependent(
+      String path, ArtifactTool artifactTool, ResolvedInputs resolvedInputs) {
+    if (artifactTool.validationTarget().matches(path)) {
+      var diagnostics = new LinkedHashSet<Diagnostic>();
+      artifactTool.validate(workspace.root().select(path), resolvedInputs, diagnostics);
+      storeDiagnostics(path, artifactTool, diagnostics);
+    } else {
+      resourcesMatching(artifactTool.validationTarget())
+          .forEach(
+              resource -> {
+                var diagnostics = new LinkedHashSet<Diagnostic>();
+                artifactTool.validate(resource, resolvedInputs, diagnostics);
+                storeDiagnostics(resource.path(), artifactTool, diagnostics);
+              });
+    }
   }
 
   private void registerArtifactDefinitions() {

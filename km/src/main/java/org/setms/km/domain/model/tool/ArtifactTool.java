@@ -4,6 +4,7 @@ import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -11,6 +12,9 @@ import org.setms.km.domain.model.workspace.*;
 
 /** {@linkplain Tool} that operates on a specific {@linkplain Artifact artifact}. */
 public abstract non-sealed class ArtifactTool extends Tool {
+
+  private static final Pattern VALIDATION_ERROR =
+      Pattern.compile("[A-Z]+\\sat\\s[^:]+:\\s(?<message>.+)");
 
   /**
    * The input that this tool validates.
@@ -42,15 +46,24 @@ public abstract non-sealed class ArtifactTool extends Tool {
       validate(result, context, diagnostics);
       return result;
     } catch (Exception e) {
-      diagnostics.add(
-          new Diagnostic(
-              ERROR,
-              e.getMessage(),
-              new Location(
-                  resource.parent().map(Resource::name).orElse(null),
-                  resource.name().substring(0, resource.name().lastIndexOf('.')))));
+      Arrays.stream(e.getMessage().split("\n"))
+          .map(this::normalize)
+          .forEach(
+              message ->
+                  diagnostics.add(
+                      new Diagnostic(
+                          ERROR,
+                          message,
+                          new Location(
+                              resource.parent().map(Resource::name).orElse(null),
+                              resource.name().substring(0, resource.name().lastIndexOf('.'))))));
     }
     return null;
+  }
+
+  private String normalize(String message) {
+    var matcher = VALIDATION_ERROR.matcher(message);
+    return matcher.matches() ? matcher.group("message") : message;
   }
 
   /**

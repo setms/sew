@@ -65,18 +65,19 @@ public class UseCaseTool extends BaseDiagramTool {
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(
-        domainStories(),
+        acceptanceTests(),
         aggregates(),
         clockEvents(),
         commands(),
+        domains(),
+        domainStories(),
+        entities(),
         events(),
         externalSystems(),
         policies(),
         readModels(),
-        users(),
-        entities(),
-        domains(),
-        acceptanceTests());
+        useCases(),
+        users());
   }
 
   @Override
