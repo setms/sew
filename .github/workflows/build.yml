@@ -1,4 +1,4 @@
-name: Build and Release IntelliJ Plugin
+name: Build
 
 concurrency: build
 
