@@ -49,7 +49,15 @@ public class Tools {
 
   public static Collection<Tool> buildingReportsFor(Class<? extends Artifact> type) {
     return tools.stream()
-        .filter(tool -> hasInputOfType(type, tool.reportingContext().stream()))
+        .filter(
+            tool ->
+                hasInputOfType(
+                    type,
+                    Stream.concat(
+                        tool.reportingContext().stream(),
+                        tool instanceof ArtifactTool artifactTool
+                            ? artifactTool.reportingTarget().stream()
+                            : Stream.empty())))
         .toList();
   }
 

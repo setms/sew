@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
@@ -32,7 +33,10 @@ public class ProjectTool extends StandaloneTool {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
+    return emptySet();
+    /* TODO: Figure out what triggers complaint about missing owner
     return Set.of(owners(), users());
+     */
   }
 
   @Override

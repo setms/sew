@@ -1,0 +1,13 @@
+package valid
+
+domainStory JustDoIt {
+    description = "This is the happy path scenario, where everything goes according to plan."
+}
+
+sentence {
+  parts = [
+    person(Duck),
+    activity(Does),
+    workObject(It)
+  ]
+}

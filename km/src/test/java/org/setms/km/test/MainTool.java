@@ -14,14 +14,17 @@ import org.setms.km.domain.model.workspace.Resource;
 
 public class MainTool extends TestTool {
 
+  static final GlobInput<MainArtifact> INPUT =
+      new GlobInput<>("main", TestFormat.INSTANCE, MainArtifact.class);
+
   @Override
   public Input<MainArtifact> validationTarget() {
-    return new GlobInput<>("main", TestFormat.INSTANCE, MainArtifact.class);
+    return INPUT;
   }
 
   @Override
-  public Set<Input<? extends Artifact>> reportingContext() {
-    return Set.of(new GlobInput<>("main", TestFormat.INSTANCE, MainArtifact.class));
+  public Optional<Input<? extends Artifact>> reportingTarget() {
+    return Optional.of(INPUT);
   }
 
   @Override

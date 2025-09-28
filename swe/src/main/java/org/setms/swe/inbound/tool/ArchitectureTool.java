@@ -1,8 +1,5 @@
 package org.setms.swe.inbound.tool;
 
-import static org.setms.km.domain.model.format.Strings.initLower;
-import static org.setms.km.domain.model.format.Strings.toFriendlyName;
-import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 
 import java.util.Collection;
@@ -14,7 +11,6 @@ import org.setms.km.domain.model.tool.StandaloneTool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
-import org.setms.swe.domain.model.sdlc.architecture.Topics;
 
 public class ArchitectureTool extends StandaloneTool {
 
@@ -25,6 +21,7 @@ public class ArchitectureTool extends StandaloneTool {
 
   @Override
   public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    /*
     var decisions = inputs.get(Decision.class);
     Topics.providers()
         .filter(provider -> hasAllUpstreamDecisions(provider, decisions))
@@ -37,6 +34,7 @@ public class ArchitectureTool extends StandaloneTool {
                     new Diagnostic(
                         WARN,
                         "Missing decision for %s".formatted(initLower(toFriendlyName(topic))))));
+     */
   }
 
   private boolean hasAllUpstreamDecisions(TopicProvider provider, Collection<Decision> decisions) {

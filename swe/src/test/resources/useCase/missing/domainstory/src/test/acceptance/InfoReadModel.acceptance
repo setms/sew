@@ -1,0 +1,11 @@
+| type      | name       |
+| --------- | ---------- |
+| readModel | valid.Info |
+
+| variable  | type             | definition |
+| --------- | -----------------| ---------- |
+| itWasDone | event(ItWasDone) |            |
+
+| scenario     | init | handles   | state |
+| ------------ | ---- | --------- | ----- |
+| "Happy path" |      | itWasDone |       |

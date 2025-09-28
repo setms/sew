@@ -1,0 +1,22 @@
+package missing
+
+useCase JustDoIt {
+    title       = "Just do it"
+    description = "A sample use case for demonstration purposes."
+}
+
+scenario HappyPath {
+    elaborates = domainStory(JustDoIt)
+    steps      = [
+        readModel(Info),
+        user(Duck),
+        command(DoIt),
+        aggregate(System),
+        event(ItWasDone),
+        policy(WheneverItWasDone, reads=readModel(DecisionSupport)),
+        command(DoItAgain),
+        aggregate(System),
+        event(ItWasDoneAgain, updates=readModel(DecisionSupport)),
+        readModel(Info)
+    ]
+}

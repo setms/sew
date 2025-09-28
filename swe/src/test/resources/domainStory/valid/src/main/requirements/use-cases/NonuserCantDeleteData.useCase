@@ -1,0 +1,12 @@
+package gpdr
+
+useCase NonuserCantDeleteData {
+  title = "Whatever"
+}
+
+scenario WhatIf {
+  elaborates = domainStory(NonuserCantDeleteData)
+  steps = [
+    user(Nonuser)
+  ]
+}

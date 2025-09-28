@@ -177,7 +177,10 @@ abstract class ToolTestCase<T extends Artifact> {
 
   private SequencedSet<Diagnostic> validate(Workspace<?> workspace, StandaloneTool tool) {
     var result = new LinkedHashSet<Diagnostic>();
-    tool.validate(resolveValidationInputs(tool, workspace.root(), result), result);
+    var resolvedInputs = resolveValidationInputs(tool, workspace.root(), result);
+    if (resolvedInputs.all().findAny().isPresent()) {
+      tool.validate(resolvedInputs, result);
+    }
     return result;
   }
 

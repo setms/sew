@@ -1,0 +1,17 @@
+package valid
+
+domain DoingIt {
+}
+
+subDomain DoingIt {
+  content = [
+        aggregate(System),
+        command(DoIt),
+        command(DoItAgain),
+        event(ItWasDone),
+        event(ItWasDoneAgain),
+        policy(WheneverItWasDone)
+        readModel(DecisionSupport),
+        readModel(Info)
+  ]
+}

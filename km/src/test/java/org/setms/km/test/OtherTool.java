@@ -21,12 +21,12 @@ public class OtherTool extends TestTool {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of(new GlobInput<>("main", TestFormat.INSTANCE, MainArtifact.class));
+    return Set.of(MainTool.INPUT);
   }
 
   @Override
   public Set<Input<? extends Artifact>> reportingContext() {
-    return Set.of(new GlobInput<>("main", TestFormat.INSTANCE, MainArtifact.class));
+    return Set.of(MainTool.INPUT);
   }
 
   @Override

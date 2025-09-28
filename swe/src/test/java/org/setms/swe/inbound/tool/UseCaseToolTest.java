@@ -32,7 +32,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       """
     package missing
 
-    domainStory HappyPath {
+    domainStory JustDoIt {
       description = "TODO: Add description and sentences."
       granularity = fine
       pointInTime = tobe
@@ -57,12 +57,12 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateDomainStory() throws IOException {
-    var workspace = workspaceFor("missing");
+    var workspace = workspaceFor("missing/domainstory");
 
     var diagnostics = validateAgainst(workspace);
 
     assertThat(diagnostics)
-        .hasSizeGreaterThanOrEqualTo(6)
+        .hasSize(1)
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
@@ -72,7 +72,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     var created =
         apply(diagnostic.suggestions().getFirst(), diagnostic, workspace).createdOrChanged();
     var domainStory =
-        workspace.root().select("src/main/requirements/domain-stories/HappyPath.domainStory");
+        workspace.root().select("src/main/requirements/domain-stories/JustDoIt.domainStory");
     assertThat(created).hasSize(1).contains(domainStory);
     var file = toFile(domainStory);
     assertThat(file).isFile();
@@ -85,7 +85,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateMissingReference() throws IOException {
-    var workspace = workspaceFor("missing");
+    var workspace = workspaceFor("missing/reference");
 
     var diagnostics = validateAgainst(workspace);
 
@@ -112,7 +112,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldRejectGrammarViolation() throws IOException {
+  void shouldRejectGrammarViolation() {
     var source = workspaceFor("grammar");
 
     var actual =
@@ -138,7 +138,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldBuildComplexUseCaseWithoutProblems() throws IOException {
+  void shouldBuildComplexUseCaseWithoutProblems() {
     var workspace = workspaceFor("../domains/gdpr");
 
     var actual = build(workspace);
@@ -147,8 +147,8 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldCreateDomain() throws IOException {
-    var workspace = workspaceFor("valid");
+  void shouldCreateDomain() {
+    var workspace = workspaceFor("missing/domain");
 
     var actual = validateAgainst(workspace);
 
@@ -177,8 +177,8 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   }
 
   @Test
-  void shouldCreateAcceptanceTest() throws IOException {
-    var workspace = workspaceFor("valid");
+  void shouldCreateAcceptanceTest() {
+    var workspace = workspaceFor("missing/acceptancetest");
 
     var actual = validateAgainst(workspace);
 
