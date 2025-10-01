@@ -32,7 +32,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
       """
     package missing
 
-    domainStory HappyPath {
+    domainStory JustDoIt {
       description = "TODO: Add description and sentences."
       granularity = fine
       pointInTime = tobe
@@ -57,12 +57,12 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateDomainStory() throws IOException {
-    var workspace = workspaceFor("missing");
+    var workspace = workspaceFor("missing/domainstory");
 
     var diagnostics = validateAgainst(workspace);
 
     assertThat(diagnostics)
-        .hasSizeGreaterThanOrEqualTo(6)
+        .hasSize(1)
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
@@ -72,7 +72,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     var created =
         apply(diagnostic.suggestions().getFirst(), diagnostic, workspace).createdOrChanged();
     var domainStory =
-        workspace.root().select("src/main/requirements/domain-stories/HappyPath.domainStory");
+        workspace.root().select("src/main/requirements/domain-stories/JustDoIt.domainStory");
     assertThat(created).hasSize(1).contains(domainStory);
     var file = toFile(domainStory);
     assertThat(file).isFile();
@@ -85,7 +85,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateMissingReference() throws IOException {
-    var workspace = workspaceFor("missing");
+    var workspace = workspaceFor("missing/reference");
 
     var diagnostics = validateAgainst(workspace);
 
@@ -115,11 +115,13 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
   void shouldRejectGrammarViolation() {
     var source = workspaceFor("grammar");
 
-    var diagnostics = validateAgainst(source);
+    var actual =
+        validateAgainst(source).stream()
+            .filter(diagnostic -> diagnostic.level() == ERROR)
+            .map(Diagnostic::message)
+            .toList();
 
-    assertThat(diagnostics)
-        .filteredOn(diagnostic -> diagnostic.level() == ERROR)
-        .map(Diagnostic::message)
+    assertThat(actual)
         .containsExactlyInAnyOrder(
             "Users can't emit events",
             "Events can't precede aggregates",
@@ -146,7 +148,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateDomain() {
-    var workspace = workspaceFor("valid");
+    var workspace = workspaceFor("missing/domain");
 
     var actual = validateAgainst(workspace);
 
@@ -176,7 +178,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @Test
   void shouldCreateAcceptanceTest() {
-    var workspace = workspaceFor("valid");
+    var workspace = workspaceFor("missing/acceptancetest");
 
     var actual = validateAgainst(workspace);
 

@@ -2,11 +2,13 @@ package org.setms.km.domain.model.tool;
 
 import static org.setms.km.domain.model.format.Strings.initLower;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.*;
 import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.nlp.NaturalLanguage;
@@ -48,5 +50,9 @@ public class ResolvedInputs implements LinkResolver {
 
   public <A extends Artifact> Optional<A> find(Class<A> type, FullyQualifiedName name) {
     return Artifact.find(get(type), name);
+  }
+
+  public Stream<? extends Artifact> all() {
+    return values.values().stream().flatMap(Collection::stream).distinct();
   }
 }

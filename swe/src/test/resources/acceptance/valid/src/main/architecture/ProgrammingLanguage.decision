@@ -1,0 +1,7 @@
+package gdpr
+
+decision ProgrammingLanguage {
+  topic     = "ProgrammingLanguage"
+  choice    = "Java"
+  rationale = "Team is familiar with it."
+}

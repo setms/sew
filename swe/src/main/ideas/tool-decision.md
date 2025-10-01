@@ -28,6 +28,12 @@ From an architecture perspective, any decision is just that: a decision.
 From the perspective of supportive tooling, however, we need to understand what a given decision is about: its topic.
 For instance, a decision about a programming language impacts how a tool generates unit tests from acceptance tests.
 
+A programming language is thus a _topic provider_: something that provides topics and their valid choices.
+Some topic providers don't provide new topics, but additional valid choices for existing topics.
+For instance, AWS provides some valid choices for a message broker topic, like SQS+SNS, EventBridge, and MKS.
+GCP would provide different valid choices for the same message broker topic, like Pub/Sub.
+
+
 ```mermaid
 graph
     Decision -- constrains --> Decision;

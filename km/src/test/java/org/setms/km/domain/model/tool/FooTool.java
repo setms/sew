@@ -8,19 +8,19 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 
-class FooTool extends Tool<Foo> {
+class FooTool extends ArtifactTool<Foo> {
 
   static final String MESSAGE = "Some message";
   static final String CODE = "Some code";
   static final String SUGGESTION = "Some suggestion";
 
   @Override
-  public Input<Foo> getMainInput() {
+  public Input<Foo> validationTarget() {
     return new GlobInput<>("foo", null, Foo.class);
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(Foo foo, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     diagnostics.add(
         new Diagnostic(
             WARN, MESSAGE, new Location("foo", "Baz"), List.of(new Suggestion(CODE, SUGGESTION))));

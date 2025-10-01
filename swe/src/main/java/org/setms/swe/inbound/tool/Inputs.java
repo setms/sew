@@ -41,7 +41,7 @@ class Inputs {
 
   static Input<AcceptanceTest> acceptanceTests() {
     return new GlobInput<>(
-        PATH_ACCEPTANCE_TESTS, new AcceptanceFormat(), AcceptanceTest.class, "acceptance");
+        PATH_ACCEPTANCE_TESTS, AcceptanceFormat.INSTANCE, AcceptanceTest.class, "acceptance");
   }
 
   static Input<Aggregate> aggregates() {
@@ -49,7 +49,7 @@ class Inputs {
   }
 
   private static <T extends Artifact> Input<T> newInput(String path, Class<T> type) {
-    return new GlobInput<>(path, new SalFormat(), type);
+    return new GlobInput<>(path, SalFormat.INSTANCE, type);
   }
 
   static Input<ClockEvent> clockEvents() {

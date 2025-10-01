@@ -23,22 +23,21 @@ public class ContextMapTool extends BaseDiagramTool<Domain> {
   private static final String LABEL_DOWNSTREAM = "D";
 
   @Override
-  public Input<Domain> getMainInput() {
-    return null;
+  public Input<Domain> validationTarget() {
+    return domains();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> reportingContext() {
     return Set.of(domains());
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    inputs.get(Domain.class).forEach(domain -> build(domain, resource, diagnostics));
-  }
-
-  private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  public void buildReportsFor(
+      Domain domain,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
     buildHtml(domain, null, toDiagram(domain), resource, diagnostics);
   }
 

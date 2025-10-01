@@ -68,13 +68,16 @@ class KmSystemTest {
     return storeNewArtifact(mainTool, MainArtifact::new);
   }
 
-  private <A extends Artifact> String storeNewArtifact(
-      Tool<A> tool, Function<FullyQualifiedName, Artifact> artifactCreator) throws IOException {
-    var input = tool.mainInput().orElseThrow();
-    var format = tool.mainInput().map(Input::format).orElseThrow();
+  private String storeNewArtifact(
+      ArtifactTool tool, Function<FullyQualifiedName, Artifact> artifactCreator)
+      throws IOException {
+    var input = tool.validationTarget();
     var resource = workspace.root().select(input.path()).select("Bear." + input.extension());
     try (var output = resource.writeTo()) {
-      format.newBuilder().build(artifactCreator.apply(new FullyQualifiedName("ape.Bear")), output);
+      input
+          .format()
+          .newBuilder()
+          .build(artifactCreator.apply(new FullyQualifiedName("ape.Bear")), output);
     }
     return resource.path();
   }
@@ -90,7 +93,7 @@ class KmSystemTest {
     assertThat(mainTool.validated).as("main validated").isTrue();
     assertThat(mainTool.built).as("main built").isTrue();
     assertThat(otherTool.validated).as("other validated").isFalse();
-    assertThat(otherTool.built).as("other built").isTrue();
+    assertThat(otherTool.built).as("other built").isFalse();
     assertThat(kmSystem.mainReportFor(path).name()).isEqualTo("report1");
   }
 
@@ -104,7 +107,7 @@ class KmSystemTest {
   }
 
   private List<String> inputsForMainTool() throws IOException {
-    var input = mainTool.getMainInput();
+    var input = mainTool.validationTarget();
     var globPaths =
         workspace
             .root()
@@ -139,7 +142,7 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(Set.of(mainValidationDiagnostic));
   }
 
-  private Resource<?> diagnosticsResourceFor(Tool<?> tool, Resource<?> diagnosticsRoot) {
+  private Resource<?> diagnosticsResourceFor(ArtifactTool tool, Resource<?> diagnosticsRoot) {
     return diagnosticsRoot.select("%s.json".formatted(tool.getClass().getName()));
   }
 
@@ -159,7 +162,7 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(artifactPath)).isEmpty();
   }
 
-  private void createDiagnostic(Resource<?> diagnosticsRoot, Tool<?> tool) throws IOException {
+  private void createDiagnostic(Resource<?> diagnosticsRoot, ArtifactTool tool) throws IOException {
     var diagnosticsResource = diagnosticsResourceFor(tool, diagnosticsRoot);
     try (var output = diagnosticsResource.writeTo()) {
       mapper.writeValue(output, Map.of("diagnostics", emptyList()));

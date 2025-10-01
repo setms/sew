@@ -19,9 +19,9 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -33,40 +33,41 @@ import org.setms.swe.domain.model.sdlc.acceptance.PolicyScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptance.Scenario;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
-import org.setms.swe.domain.model.sdlc.lang.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
 
-public class AcceptanceTestTool extends Tool<AcceptanceTest> {
+public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
 
   private static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
 
   @Override
-  public Input<AcceptanceTest> getMainInput() {
+  public Input<AcceptanceTest> validationTarget() {
     return acceptanceTests();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(decisions());
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var acceptanceTests = inputs.get(AcceptanceTest.class);
-    var decisions = inputs.get(Decision.class);
-    acceptanceTests.forEach(
-        acceptanceTest -> {
-          if (decisions.stream()
-              .filter(decision -> decision.getPackage().equals(acceptanceTest.getPackage()))
-              .map(Decision::getTopic)
-              .noneMatch(ProgrammingLanguage.TOPIC::equals)) {
-            diagnostics.add(
-                new Diagnostic(
-                    WARN,
-                    "Missing decision on programming language",
-                    acceptanceTest.toLocation(),
-                    new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")));
-          }
-        });
+  protected Input<? extends Artifact> reportingTargetInput() {
+    return acceptanceTests();
+  }
+
+  @Override
+  public void validate(
+      AcceptanceTest acceptanceTest, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    if (inputs.get(Decision.class).stream()
+        .filter(decision -> decision.getPackage().equals(acceptanceTest.getPackage()))
+        .map(Decision::getTopic)
+        .noneMatch(ProgrammingLanguage.TOPIC::equals)) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing decision on programming language",
+              acceptanceTest.toLocation(),
+              new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")));
+    }
   }
 
   @Override
@@ -100,14 +101,11 @@ public class AcceptanceTestTool extends Tool<AcceptanceTest> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var acceptanceTests = inputs.get(AcceptanceTest.class);
-    acceptanceTests.forEach(acceptanceTest -> build(acceptanceTest, resource, diagnostics));
-  }
-
-  private void build(
-      AcceptanceTest acceptanceTest, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  public void buildReportsFor(
+      AcceptanceTest acceptanceTest,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
     var report =
         resource.select(
             "%s-%s.html"

@@ -44,27 +44,22 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
   private static final String SUGGESTION_DEPLOY_IN_COMPONENTS = "modules.deploy.in.components";
 
   @Override
-  public Input<Modules> getMainInput() {
+  public Input<Modules> validationTarget() {
     return modules();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(domains(), components());
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(Modules modules, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var domains = inputs.get(Domain.class);
     var components = inputs.get(Components.class);
-    inputs
-        .get(Modules.class)
-        .forEach(
-            modules -> {
-              var location = modules.toLocation();
-              validateByDomain(modules, domains, location, diagnostics);
-              validateByComponents(modules, components, location, diagnostics);
-            });
+    var location = modules.toLocation();
+    validateByDomain(modules, domains, location, diagnostics);
+    validateByComponents(modules, components, location, diagnostics);
   }
 
   private void validateByDomain(
@@ -151,10 +146,17 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var domains = inputs.get(Domain.class);
-    inputs.get(Modules.class).forEach(modules -> build(modules, resource, diagnostics, domains));
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(domains(), modules());
+  }
+
+  @Override
+  public void buildReportsFor(
+      Modules modules,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build(modules, resource, diagnostics, inputs.get(Domain.class));
   }
 
   private void build(

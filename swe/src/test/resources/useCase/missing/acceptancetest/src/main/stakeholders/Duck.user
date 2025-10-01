@@ -1,0 +1,5 @@
+package valid
+
+user Duck {
+    display = "Donald"
+}

@@ -1,0 +1,5 @@
+package valid
+
+owner Duck {
+    display = "Dagobert"
+}

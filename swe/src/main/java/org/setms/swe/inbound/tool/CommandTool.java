@@ -14,9 +14,9 @@ import java.util.Set;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
-import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -24,24 +24,23 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 
-public class CommandTool extends Tool<Command> {
+public class CommandTool extends ArtifactTool<Command> {
 
   public static final String CREATE_PAYLOAD = "payload.create";
 
   @Override
-  public Input<Command> getMainInput() {
+  public Input<Command> validationTarget() {
     return commands();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(entities());
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var entities = inputs.get(Entity.class);
-    inputs.get(Command.class).forEach(command -> validate(command, entities, diagnostics));
+  public void validate(Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate(command, inputs.get(Entity.class), diagnostics);
   }
 
   private void validate(

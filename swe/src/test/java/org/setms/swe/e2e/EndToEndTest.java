@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.kmsystem.KmSystem;
-import org.setms.km.domain.model.tool.Tool;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -101,9 +101,10 @@ class EndToEndTest {
     assertThatDiagnosticsMatch(iteration);
   }
 
-  private void assertThatOutputsWereCreatedFor(Iteration iteration) throws IOException {
+  private void assertThatOutputsWereCreatedFor(Iteration iteration) {
     for (var output : listOf(iteration.getOutputs())) {
       var actual = readText(workspace.root().select(output), Resource::readFrom);
+      assertThat(actual).as("Missing " + output).isNotNull();
       var expected =
           readText(
               new File(
@@ -119,9 +120,11 @@ class EndToEndTest {
     return Optional.ofNullable(values).orElseGet(Collections::emptyList);
   }
 
-  private <T> String readText(T source, InputStreamProvider<T> toInputStream) throws IOException {
+  private <T> String readText(T source, InputStreamProvider<T> toInputStream) {
     try (var reader = new BufferedReader(new InputStreamReader(toInputStream.apply(source)))) {
       return reader.lines().collect(joining(NL));
+    } catch (Exception e) {
+      return null;
     }
   }
 
@@ -200,8 +203,9 @@ class EndToEndTest {
     var type = segments.get(1);
     var name = segments.get(2);
     return Tools.all()
-        .map(Tool::mainInput)
-        .flatMap(Optional::stream)
+        .filter(ArtifactTool.class::isInstance)
+        .map(ArtifactTool.class::cast)
+        .map(ArtifactTool::validationTarget)
         .filter(input -> type.equals(initLower(input.type().getSimpleName())))
         .findFirst()
         .map(input -> "%s/%s.%s".formatted(input.path(), name, input.extension()))

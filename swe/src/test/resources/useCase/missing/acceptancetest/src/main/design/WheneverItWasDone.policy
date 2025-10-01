@@ -1,0 +1,4 @@
+package valid
+
+policy WheneverItWasDone {
+}

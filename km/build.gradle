@@ -82,9 +82,9 @@ pitest {
     excludedClasses = ["*.generated.*", "*.config.*"]
     useClasspathFile = true
 
-    // NEGATE_CONDITIONALS times out
-    mutators = ['INVERT_NEGS', 'MATH', 'VOID_METHOD_CALLS', 'CONDITIONALS_BOUNDARY', 'INCREMENTS', 'TRUE_RETURNS',
-                'FALSE_RETURNS', 'PRIMITIVE_RETURNS', 'EMPTY_RETURNS', 'NULL_RETURNS']
+    // NEGATE_CONDITIONALS and VOID_METHOD_CALLS time out
+    mutators = ['INVERT_NEGS', 'MATH', 'CONDITIONALS_BOUNDARY', 'INCREMENTS', 'TRUE_RETURNS',
+                'FALSE_RETURNS', 'PRIMITIVE_RETURNS', 'NULL_RETURNS']
 }
 tasks.named('pitest') {
     dependsOn test

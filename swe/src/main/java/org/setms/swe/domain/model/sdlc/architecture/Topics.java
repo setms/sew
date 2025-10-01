@@ -1,21 +1,18 @@
 package org.setms.swe.domain.model.sdlc.architecture;
 
-import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
-import org.setms.swe.domain.model.sdlc.lang.ProgrammingLanguage;
 
 @RequiredArgsConstructor(access = PRIVATE)
 public class Topics {
 
-  private static final Map<String, Set<String>> TOPICS = new TreeMap<>();
+  private static final Collection<TopicProvider> providers = new HashSet<>();
 
   static {
     reload();
@@ -23,24 +20,37 @@ public class Topics {
 
   public static void reload() {
     clear();
-    var classLoader = ProgrammingLanguage.class.getClassLoader();
-    var programmingLanguages = new TreeSet<String>();
-    for (var programmingLanguage : ServiceLoader.load(ProgrammingLanguage.class, classLoader)) {
-      programmingLanguages.add(programmingLanguage.getName());
-      TOPICS.putAll(programmingLanguage.getTopics());
+    var classLoader = TopicProvider.class.getClassLoader();
+    for (var provider : ServiceLoader.load(TopicProvider.class, classLoader)) {
+      add(provider);
     }
-    TOPICS.put(ProgrammingLanguage.TOPIC, programmingLanguages);
   }
 
   public static void clear() {
-    TOPICS.clear();
+    providers.clear();
   }
 
-  public static Collection<String> topics() {
-    return TOPICS.keySet();
+  private static void add(TopicProvider provider) {
+    providers.add(provider);
+  }
+
+  public static Stream<TopicProvider> providers() {
+    return providers.stream();
+  }
+
+  public static Collection<String> names() {
+    return providers.stream()
+        .map(TopicProvider::topics)
+        .flatMap(Collection::stream)
+        .collect(toSet());
   }
 
   public static Collection<String> choicesFor(String topic) {
-    return TOPICS.getOrDefault(topic, emptySet());
+    return providers.stream()
+        .map(TopicProvider::validChoices)
+        .filter(map -> map.containsKey(topic))
+        .map(map -> map.get(topic))
+        .flatMap(Collection::stream)
+        .collect(toSet());
   }
 }

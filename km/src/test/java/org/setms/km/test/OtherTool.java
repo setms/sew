@@ -15,19 +15,27 @@ import org.setms.km.domain.model.workspace.Resource;
 public class OtherTool extends TestTool<OtherArtifact> {
 
   @Override
-  public Input<OtherArtifact> getMainInput() {
-    return new GlobInput<>("other", new TestFormat(), OtherArtifact.class);
+  public Input<OtherArtifact> validationTarget() {
+    return new GlobInput<>("other", TestFormat.INSTANCE, OtherArtifact.class);
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
-    return Set.of(new GlobInput<>("main", new TestFormat(), MainArtifact.class));
+  public Set<Input<? extends Artifact>> validationContext() {
+    return Set.of(MainTool.INPUT);
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    super.build(inputs, resource, diagnostics);
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(MainTool.INPUT);
+  }
+
+  @Override
+  public void buildReportsFor(
+      OtherArtifact artifact,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    super.buildReportsFor(artifact, inputs, resource, diagnostics);
     try (var writer = new PrintWriter(resource.select("other-report.yaml").writeTo())) {
       writer.println("report:");
       writer.println("  text: Some fine report this is");

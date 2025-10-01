@@ -1,0 +1,13 @@
+| type      | name         |
+| --------- | ------------ |
+| aggregate | valid.System |
+
+| variable  | type             | definition |
+| --------- | -----------------| ---------- |
+| doIt      | command(DoIt)    |            |
+| itWasDone | event(ItWasDone) |            |
+
+| scenario     | init | accepts | state | emitted   |
+| ------------ | ---- | ------- | ----- | --------- |
+| "Happy path" |      | doIt    |       | itWasDone |
+

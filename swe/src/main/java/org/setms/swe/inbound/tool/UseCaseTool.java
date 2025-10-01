@@ -58,37 +58,35 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   private static final String CREATE_DOMAIN_STORY = "domainstory.create";
 
   @Override
-  public Input<UseCase> getMainInput() {
+  public Input<UseCase> validationTarget() {
     return useCases();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(
-        domainStories(),
+        acceptanceTests(),
         aggregates(),
         clockEvents(),
         commands(),
+        domains(),
+        domainStories(),
+        entities(),
         events(),
         externalSystems(),
         policies(),
         readModels(),
-        users(),
-        entities(),
-        domains(),
-        acceptanceTests());
+        useCases(),
+        users());
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get(UseCase.class);
-    useCases.forEach(useCase -> validateUseCase(useCase, inputs, diagnostics));
+  public void validate(UseCase useCase, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validateUseCase(useCase, inputs, diagnostics);
     if (diagnostics.isEmpty()) {
-      validateAcceptanceTests(useCases, inputs, diagnostics);
+      validateAcceptanceTestsFor(useCase, inputs.get(AcceptanceTest.class), diagnostics);
     }
-    if (!useCases.isEmpty()) {
-      validateDomain(useCases, inputs, diagnostics);
-    }
+    validateDomainsFor(useCase, inputs.get(Domain.class), diagnostics);
   }
 
   private void validateUseCase(
@@ -182,18 +180,15 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
     }
   }
 
-  private void validateAcceptanceTests(
-      List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var acceptanceTests = inputs.get(AcceptanceTest.class);
-    useCases.forEach(
-        useCase ->
-            useCase.getScenarios().stream()
-                .flatMap(Scenario::steps)
-                .distinct()
-                .filter(step -> ACTIVE_ELEMENTS.contains(step.getType()))
-                .forEach(
-                    step ->
-                        validateAcceptanceTestFor(useCase, step, acceptanceTests, diagnostics)));
+  private void validateAcceptanceTestsFor(
+      UseCase useCase,
+      Collection<AcceptanceTest> acceptanceTests,
+      Collection<Diagnostic> diagnostics) {
+    useCase.getScenarios().stream()
+        .flatMap(Scenario::steps)
+        .distinct()
+        .filter(step -> ACTIVE_ELEMENTS.contains(step.getType()))
+        .forEach(step -> validateAcceptanceTestFor(useCase, step, acceptanceTests, diagnostics));
   }
 
   private void validateAcceptanceTestFor(
@@ -214,20 +209,16 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
     }
   }
 
-  private void validateDomain(
-      List<UseCase> useCases, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var domains = inputs.get(Domain.class);
-    useCases.forEach(
-        useCase -> {
-          if (domains.stream().noneMatch(d -> useCase.getPackage().equals(d.getPackage()))) {
-            diagnostics.add(
-                new Diagnostic(
-                    WARN,
-                    "Missing subdomains",
-                    useCase.toLocation(),
-                    List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
-          }
-        });
+  private void validateDomainsFor(
+      UseCase useCase, List<Domain> domains, Collection<Diagnostic> diagnostics) {
+    if (domains.stream().noneMatch(d -> useCase.getPackage().equals(d.getPackage()))) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing subdomains",
+              useCase.toLocation(),
+              List.of(new Suggestion(CREATE_DOMAIN, "Discover subdomains"))));
+    }
   }
 
   @Override
@@ -353,11 +344,22 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get(UseCase.class);
-    useCases.forEach(
-        useCase -> build(useCase, inputs, resource.select(useCase.getName()), diagnostics));
+  protected Input<? extends Artifact> reportingTargetInput() {
+    return useCases();
+  }
+
+  @Override
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(domainStories());
+  }
+
+  @Override
+  public void buildReportsFor(
+      UseCase useCase,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build(useCase, inputs, resource.select(useCase.getName()), diagnostics);
   }
 
   private void build(

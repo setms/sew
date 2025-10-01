@@ -1,0 +1,12 @@
+| type   | name                    |
+| ------ | ----------------------- |
+| policy | valid.WheneverItWasDone |
+
+| variable  | type               | definition |
+| --------- | ------------------ | ---------- |
+| itWasDone | event(ItWasDone)   |            |
+| doItAgain | command(DoItAgain) |            |
+
+| scenario     | init | handles   | issued    |
+| ------------ | ---- | --------- | --------- |
+| "Happy path" |      | itWasDone | doItAgain |

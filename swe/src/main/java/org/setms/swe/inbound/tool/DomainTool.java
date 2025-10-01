@@ -41,19 +41,18 @@ public class DomainTool extends BaseDiagramTool<Domain> {
   private static final String CREATE_MODULES = "modules.create";
 
   @Override
-  public Input<Domain> getMainInput() {
+  public Input<Domain> validationTarget() {
     return domains();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
-    return Set.of(useCases(), modules());
+  public Set<Input<? extends Artifact>> validationContext() {
+    return Set.of(modules());
   }
 
   @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var modules = inputs.get(Modules.class);
-    inputs.get(Domain.class).forEach(domain -> validate(domain, modules, diagnostics));
+  public void validate(Domain domain, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate(domain, inputs.get(Modules.class), diagnostics);
   }
 
   private void validate(
@@ -119,12 +118,16 @@ public class DomainTool extends BaseDiagramTool<Domain> {
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    inputs.get(Domain.class).forEach(domain -> build(domain, resource, diagnostics));
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(domains());
   }
 
-  private void build(Domain domain, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  @Override
+  public void buildReportsFor(
+      Domain domain,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
     buildHtml(domain, null, toDiagram(domain), resource, diagnostics);
   }
 

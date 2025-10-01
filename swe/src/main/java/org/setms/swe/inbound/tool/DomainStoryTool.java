@@ -43,98 +43,19 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   private static final String CREATE_USE_CASE_SCENARIO = "usecase.scenario.create";
 
   @Override
-  public Input<DomainStory> getMainInput() {
+  public Input<DomainStory> validationTarget() {
     return domainStories();
   }
 
   @Override
-  public Set<Input<? extends Artifact>> additionalInputs() {
+  public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(useCases());
   }
 
   @Override
-  public void build(
-      ResolvedInputs inputs, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var domainStories = inputs.get(DomainStory.class);
-    domainStories.forEach(
-        domainStory -> build(domainStory, resource.select(domainStory.getName()), diagnostics));
-  }
-
-  private void build(
-      DomainStory domainStory, Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    buildHtml(
-        domainStory,
-        domainStory.getDescription(),
-        toDiagram(domainStory.getSentences()),
-        resource,
-        diagnostics);
-  }
-
-  private Diagram toDiagram(List<Sentence> sentences) {
-    var result = new Diagram().setLayout(LANE);
-    for (var i = 0; i < sentences.size(); i++) {
-      addSentence(i, sentences.get(i), result);
-    }
-    return result;
-  }
-
-  private void addSentence(int index, Sentence sentence, Diagram diagram) {
-    var context = new SentenceContext();
-    sentence
-        .getParts()
-        .forEach(
-            part -> {
-              switch (part.getType()) {
-                case "person" -> addBox(part, "material/person", diagram, "actor", context);
-                case "people" -> addBox(part, "material/group", diagram, "actor", context);
-                case "computerSystem" ->
-                    addBox(part, "material/computer", diagram, "actor", context);
-                case "activity" ->
-                    context.addActivity(index, initLower(toFriendlyName(part.getId())));
-                case "workObject" ->
-                    addBox(
-                        part,
-                        Optional.ofNullable(part.getAttributes().get("icon"))
-                            .map(List::getFirst)
-                            .map(p -> "%s/%s".formatted(p.getType(), initLower(p.getId())))
-                            .orElse("material/folder"),
-                        diagram,
-                        part == sentence.getParts().getLast() ? "workObject" : null,
-                        context);
-                default ->
-                    throw new UnsupportedOperationException(
-                        "Can't add to diagram: " + part.getType());
-              }
-            });
-  }
-
-  private void addBox(
-      Link part, String iconPath, Diagram diagram, String reuseType, SentenceContext context) {
-    var box =
-        diagram.add(
-            new IconBox(
-                part.getId(), "domainStory/" + iconPath, "domainStory/material/questionMark"),
-            reuseType);
-    Optional.ofNullable(context.addBox(box))
-        .map(
-            from -> {
-              var textPlacements = newTextPlacements();
-              textPlacements.put(IN_MIDDLE, context.getActivity());
-              context
-                  .sequenceNumber()
-                  .ifPresent(
-                      sequenceNumber -> textPlacements.put(NEAR_FROM_VERTEX, sequenceNumber));
-              return new Arrow(from, box, textPlacements, false);
-            })
-        .ifPresent(diagram::add);
-  }
-
-  @Override
-  public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var useCases = inputs.get(UseCase.class);
-    inputs
-        .get(DomainStory.class)
-        .forEach(domainStory -> validate(domainStory, useCases, diagnostics));
+  public void validate(
+      DomainStory domainStory, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate(domainStory, inputs.get(UseCase.class), diagnostics);
   }
 
   private void validate(
@@ -226,6 +147,94 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
     } catch (Exception e) {
       return failedWith(e);
     }
+  }
+
+  @Override
+  public Optional<Input<? extends Artifact>> reportingTarget() {
+    return Optional.of(domainStories());
+  }
+
+  @Override
+  public Set<Input<? extends Artifact>> reportingContext() {
+    return Set.of(useCases());
+  }
+
+  @Override
+  public void buildReportsFor(
+      DomainStory domainStory,
+      ResolvedInputs inputs,
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics) {
+    build(domainStory, resource.select(domainStory.getName()), diagnostics);
+  }
+
+  private void build(
+      DomainStory domainStory, Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    buildHtml(
+        domainStory,
+        domainStory.getDescription(),
+        toDiagram(domainStory.getSentences()),
+        resource,
+        diagnostics);
+  }
+
+  private Diagram toDiagram(List<Sentence> sentences) {
+    var result = new Diagram().setLayout(LANE);
+    for (var i = 0; i < sentences.size(); i++) {
+      addSentence(i, sentences.get(i), result);
+    }
+    return result;
+  }
+
+  private void addSentence(int index, Sentence sentence, Diagram diagram) {
+    var context = new SentenceContext();
+    sentence
+        .getParts()
+        .forEach(
+            part -> {
+              switch (part.getType()) {
+                case "person" -> addBox(part, "material/person", diagram, "actor", context);
+                case "people" -> addBox(part, "material/group", diagram, "actor", context);
+                case "computerSystem" ->
+                    addBox(part, "material/computer", diagram, "actor", context);
+                case "activity" ->
+                    context.addActivity(index, initLower(toFriendlyName(part.getId())));
+                case "workObject" ->
+                    addBox(
+                        part,
+                        Optional.ofNullable(part.getAttributes().get("icon"))
+                            .map(List::getFirst)
+                            .map(p -> "%s/%s".formatted(p.getType(), initLower(p.getId())))
+                            .orElse("material/folder"),
+                        diagram,
+                        part == sentence.getParts().getLast() ? "workObject" : null,
+                        context);
+                default ->
+                    throw new UnsupportedOperationException(
+                        "Can't add to diagram: " + part.getType());
+              }
+            });
+  }
+
+  private void addBox(
+      Link part, String iconPath, Diagram diagram, String reuseType, SentenceContext context) {
+    var box =
+        diagram.add(
+            new IconBox(
+                part.getId(), "domainStory/" + iconPath, "domainStory/material/questionMark"),
+            reuseType);
+    Optional.ofNullable(context.addBox(box))
+        .map(
+            from -> {
+              var textPlacements = newTextPlacements();
+              textPlacements.put(IN_MIDDLE, context.getActivity());
+              context
+                  .sequenceNumber()
+                  .ifPresent(
+                      sequenceNumber -> textPlacements.put(NEAR_FROM_VERTEX, sequenceNumber));
+              return new Arrow(from, box, textPlacements, false);
+            })
+        .ifPresent(diagram::add);
   }
 
   private static class SentenceContext {
