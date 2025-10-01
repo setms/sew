@@ -21,6 +21,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
       </body>
     </html>
     """;
+  private static final String REPORT_PATH = "build/Notifications-aggregate.html";
 
   protected AcceptanceTestToolTest() {
     super(new AcceptanceTestTool(), AcceptanceFormat.class, "test/acceptance", "acceptance");
@@ -33,7 +34,11 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     var actual = build(workspace);
 
     assertThat(actual).isEmpty();
-    var output = toFile(workspace.root().select("build/Notifications-aggregate.html"));
-    assertThat((output)).isFile().hasContent(AGGREGATE_ACCEPTANCE_TEST_HTML);
+    var output = toFile(workspace.root().select(REPORT_PATH));
+    assertThat((output))
+        .as("%s exists".formatted(REPORT_PATH))
+        .isFile()
+        .as("Contents of %s".formatted(REPORT_PATH))
+        .hasContent(AGGREGATE_ACCEPTANCE_TEST_HTML);
   }
 }
