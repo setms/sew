@@ -224,7 +224,7 @@ abstract class ToolTestCase<A extends Artifact> {
   }
 
   @Test
-  void shouldBuild() throws IOException {
+  void shouldBuild() {
     var workspace = workspaceFor("valid");
     var resource = workspace.root();
     var diagnostics = build(workspace);

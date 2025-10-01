@@ -6,6 +6,7 @@ import static org.setms.km.domain.model.validation.Level.ERROR;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
 
 class GlossaryToolTest extends ToolTestCase<Term> {
@@ -34,14 +35,9 @@ class GlossaryToolTest extends ToolTestCase<Term> {
     super(new GlossaryTool(), Term.class, "main/glossary");
   }
 
-  @Test
-  void shouldBuildReport() {
-    var workspace = workspaceFor("valid");
-
-    var actual = build(workspace);
-
-    assertThat(actual).isEmpty();
-    var output = toFile(workspace.root().select("build/report.html"));
+  @Override
+  protected void assertBuild(Resource<?> resource) {
+    var output = toFile(resource.select("build/report.html"));
     assertThat(output).isFile().content().isEqualTo(GLOSSARY);
   }
 

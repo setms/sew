@@ -55,6 +55,11 @@ public class GlossaryTool extends ArtifactTool<Term> {
   }
 
   @Override
+  protected Input<? extends Artifact> reportingTargetInput() {
+    return terms();
+  }
+
+  @Override
   public Set<Input<? extends Artifact>> reportingContext() {
     return Set.of(terms());
   }

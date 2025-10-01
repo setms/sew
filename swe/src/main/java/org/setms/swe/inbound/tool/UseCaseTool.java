@@ -344,8 +344,13 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   }
 
   @Override
+  protected Input<? extends Artifact> reportingTargetInput() {
+    return useCases();
+  }
+
+  @Override
   public Set<Input<? extends Artifact>> reportingContext() {
-    return Set.of(domainStories(), useCases());
+    return Set.of(domainStories());
   }
 
   @Override

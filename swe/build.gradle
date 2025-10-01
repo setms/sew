@@ -62,6 +62,21 @@ sourceSets {
     }
 }
 
+
+tasks.register('cleanTestResourcesBuildDirs', Delete) {
+    delete(project.provider {
+        def root = project.file('src/test/resources')
+        if (!root.exists()) return [] as Set<File>
+        def dirs = [] as Set<File>
+        root.eachDirRecurse { d ->
+            if (d.name == 'build') dirs << d
+        }
+        dirs
+    })
+}
+clean.dependsOn 'cleanTestResourcesBuildDirs'
+
+
 tasks.named('generateGrammarSource') {
     enabled = false
 }
@@ -82,7 +97,7 @@ pitest {
     // Exclude generated classes and Spring config from mutation testing as both are better suited for end-to-end and/or narrow integration tests
     // DO NOT add to this list.
     excludedClasses = ["*.generated.*", "*.config.*"]
-    excludedTestClasses = [ 'org.setms.swe.e2e.EndToEndTest' ]
+    excludedTestClasses = ['org.setms.swe.e2e.EndToEndTest']
     useClasspathFile = true
 
     // NEGATE_CONDITIONALS times out

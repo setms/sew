@@ -50,8 +50,8 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
   }
 
   @Override
-  public Set<Input<? extends Artifact>> reportingContext() {
-    return Set.of(acceptanceTests());
+  protected Input<? extends Artifact> reportingTargetInput() {
+    return acceptanceTests();
   }
 
   @Override
