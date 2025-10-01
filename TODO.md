@@ -15,6 +15,15 @@
 
 ## Specific tools
 
+### Architecture
+
+- Check for unit test framework
+- Check for build tool
+
+### Decision
+
+- Render ADR
+
 ### Domain story
 
 - Fix rendering
@@ -22,12 +31,10 @@
   - handle multiple activities in single sentence
   - handle computerSystem as System-under-Design vs external system
 
+### Glossary
+
+- Propose domain terms
+
 ### Modules
 
-- Other deployment forms than monolith
-
-
-### Architecture
-
-- Check for unit test framework
-- Check for build tool
+- Other deployment options than monolith
