@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
 
@@ -33,6 +34,8 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
 
     var actual = build(workspace);
 
+    System.out.printf("Contents of workspace rooted at %s:%n", toFile(workspace.root()));
+    logTree(workspace.root());
     assertThat(actual).isEmpty();
     var output = toFile(workspace.root().select(REPORT_PATH));
     assertThat((output))
@@ -40,5 +43,10 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
         .isFile()
         .as("Contents of %s".formatted(REPORT_PATH))
         .hasContent(AGGREGATE_ACCEPTANCE_TEST_HTML);
+  }
+
+  private void logTree(Resource<?> resource) {
+    System.out.println(resource.path());
+    resource.children().forEach(this::logTree);
   }
 }
