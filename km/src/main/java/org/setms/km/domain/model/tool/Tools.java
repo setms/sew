@@ -34,10 +34,11 @@ public class Tools {
     tools.add(tool);
   }
 
-  public static <T extends Artifact> Collection<ArtifactTool> validating(Class<T> type) {
+  public static <T extends Artifact> Collection<? extends ArtifactTool<?>> validating(
+      Class<T> type) {
     return tools.stream()
         .filter(ArtifactTool.class::isInstance)
-        .map(ArtifactTool.class::cast)
+        .map(tool -> (ArtifactTool<?>) tool)
         .filter(tool -> hasInputOfType(type, Stream.of(tool.validationTarget())))
         .toList();
   }
@@ -55,7 +56,7 @@ public class Tools {
                     type,
                     Stream.concat(
                         tool.reportingContext().stream(),
-                        tool instanceof ArtifactTool artifactTool
+                        tool instanceof ArtifactTool<?> artifactTool
                             ? artifactTool.reportingTarget().stream()
                             : Stream.empty())))
         .toList();

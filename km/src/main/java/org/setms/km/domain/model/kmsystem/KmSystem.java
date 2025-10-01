@@ -143,12 +143,14 @@ public class KmSystem {
   }
 
   @SuppressWarnings("unchecked")
-  private boolean validate(String path, Artifact artifact) {
+  private <T extends Artifact> boolean validate(String path, Artifact artifact) {
     var result = true;
     for (var tool : Tools.validating(artifact.getClass())) {
       var inputs = resolveInputs(tool.validationContext());
       var diagnostics = new LinkedHashSet<Diagnostic>();
-      tool.validate(artifact, inputs, diagnostics);
+      var typedTool = (ArtifactTool<T>) tool;
+      var typedArtifact = (T) artifact;
+      typedTool.validate(typedArtifact, inputs, diagnostics);
       storeDiagnostics(path, tool, diagnostics);
       if (result && diagnostics.stream().map(Diagnostic::level).anyMatch(ERROR::equals)) {
         result = false;

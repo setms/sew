@@ -18,7 +18,7 @@ class ToolsTest {
 
     var tool = new FooTool();
     Tools.add(tool);
-    assertThat(Tools.validating(Foo.class)).containsExactly(tool);
+    assertThat(Tools.validating(Foo.class)).map(ArtifactTool.class::cast).containsExactly(tool);
   }
 
   @Test
