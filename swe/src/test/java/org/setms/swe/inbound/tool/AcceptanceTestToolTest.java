@@ -2,7 +2,6 @@ package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
 import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
@@ -28,7 +27,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
   }
 
   @Test
-  void shouldBuild() throws IOException {
+  void shouldBuild() {
     var workspace = workspaceFor("valid");
 
     var actual = build(workspace);
