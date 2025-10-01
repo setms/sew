@@ -1,8 +1,8 @@
 # Things to do
 
-## Generic
+## End-to-end test
 
-- Finish `EndToEndTest`
+- Finish workflow
 
 
 ## IntelliJ
@@ -17,8 +17,9 @@
 
 ### Architecture
 
-- Check for unit test framework
-- Check for build tool
+- Check for decision on unit test framework
+- Check for decision on build tool
+- Check for decision on VCS repository mapping to modules
 
 ### Decision
 
