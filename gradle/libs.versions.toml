@@ -10,8 +10,7 @@ intellij-plugin = "2.9.0"
 jfreechart = "1.5.6"
 jgraphx = "4.2.2"
 jqwik = "1.9.3"
-junit5 = "5.13.4"
-junit5-launcher = "1.13.4"
+junit5 = "6.0.0"
 languagetool = "6.6.12-3"
 lombok-plugin = "9.0.0"
 mapstruct-plugin = "1.0.9"
@@ -38,7 +37,7 @@ jfreechart = { module = "org.jfree:jfreechart", version.ref = "jfreechart" }
 jgraphx = { module = "com.github.vlsi.mxgraph:jgraphx", version.ref = "jgraphx" }
 jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
 junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
-junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5-launcher" }
+junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5" }
 junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
 junit5-runtime = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
 languagetool = { module = "org.languagetool:language-en", version.ref = "languagetool" }
