@@ -2,7 +2,7 @@
 antlr = "4.13.2"
 assertj = "3.27.6"
 awaitility = "4.3.0"
-classgraph = "4.8.181"
+classgraph = "4.8.184"
 directory-watcher = "0.19.1"
 evo-inflector = "1.3"
 intellij-grammarkit = "2022.3.2.2"
