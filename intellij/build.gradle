@@ -16,7 +16,7 @@ dependencies {
     testImplementation libs.bundles.junit
 
     intellijPlatform {
-        intellijIdeaCommunity("2025.2") // Run printProductsReleases Gradle task to find acceptable versions
+        intellijIdeaCommunity("2025.2.3") // Run printProductsReleases Gradle task to find acceptable versions
         instrumentationTools()
         pluginVerifier()
         intellijPlatform.bundledPlugin 'org.intellij.plugins.markdown'
