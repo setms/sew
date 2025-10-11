@@ -43,7 +43,7 @@ public class Diagram {
     }
     boxes.add(box);
     if (reuseType != null) {
-      boxesByType.computeIfAbsent(reuseType, ignored -> new ArrayList<>()).add(box);
+      boxesByType.computeIfAbsent(reuseType, _ -> new ArrayList<>()).add(box);
     }
     return box;
   }

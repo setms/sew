@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toList;
 import static org.setms.km.outbound.diagram.jgraphx.LanePatternType.SPLIT;
 import static org.setms.km.outbound.diagram.jgraphx.LanePatternType.STRAIGHT;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import com.mxgraph.layout.mxGraphLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
@@ -218,7 +217,7 @@ public class LaneLayout extends mxGraphLayout {
                     .mapToDouble(mxGeometry::getHeight)
                     .max()
                     .orElseThrow());
-    var rowTop = new AtomicDouble();
+    var rowTop = new AtomicReference<>(0.0);
     var unplaced = new ArrayList<>(patterns);
     var pattern = biggestPatternIn(unplaced);
     while (pattern != null) {
@@ -232,7 +231,8 @@ public class LaneLayout extends mxGraphLayout {
     return patterns.stream().max(comparing(LanePattern::size)).orElse(null);
   }
 
-  private void placePattern(LanePattern pattern, AtomicDouble rowTop, mxPoint cellDimensions) {
+  private void placePattern(
+      LanePattern pattern, AtomicReference<Double> rowTop, mxPoint cellDimensions) {
     switch (pattern.type()) {
       case STRAIGHT -> place(pattern.lanes().getFirst(), rowTop, cellDimensions);
       case SPLIT -> placeSplit(pattern.lanes(), rowTop, cellDimensions);
@@ -240,11 +240,12 @@ public class LaneLayout extends mxGraphLayout {
     }
   }
 
-  private void placeSplit(List<Lane> lanes, AtomicDouble rowTop, mxPoint cellDimensions) {
+  private void placeSplit(
+      List<Lane> lanes, AtomicReference<Double> rowTop, mxPoint cellDimensions) {
     lanes.forEach(lane -> place(lane, rowTop, cellDimensions));
   }
 
-  private void place(Lane lane, AtomicDouble rowTop, mxPoint cellDimensions) {
+  private void place(Lane lane, AtomicReference<Double> rowTop, mxPoint cellDimensions) {
     var toPlacePoints = lane.stream().filter(not(this::isPlaced)).toList();
     if (toPlacePoints.isEmpty()) {
       return;
@@ -254,7 +255,9 @@ public class LaneLayout extends mxGraphLayout {
     var start =
         new mxPoint(
             Math.max(anchor.getGeometry().getX(), 0),
-            Math.max(anchor.getGeometry().getY(), rowTop.getAndAdd(cellDimensions.getY())));
+            Math.max(
+                anchor.getGeometry().getY(),
+                rowTop.getAndAccumulate(cellDimensions.getY(), Double::sum)));
     var current = new AtomicReference<>(start);
     var delta = new mxPoint(cellDimensions.getX(), 0);
     if (!toPlacePoints.contains(anchor)) {

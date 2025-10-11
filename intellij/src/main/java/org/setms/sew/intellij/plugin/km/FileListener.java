@@ -57,7 +57,7 @@ final class FileListener implements BulkFileListener {
 
   private VirtualFile toFile(VFileEvent event) {
     return switch (event) {
-      case VFilePropertyChangeEvent ignored -> null;
+      case VFilePropertyChangeEvent _ -> null;
       case VFileCopyEvent copyEvent -> copyEvent.findCreatedFile();
       default -> event.getFile();
     };

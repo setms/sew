@@ -46,7 +46,7 @@ public class DesignStructureMatrix<E> {
     if (!elements.contains(from) || !elements.contains(to)) {
       throw new IllegalArgumentException("Unknown element");
     }
-    var dependency = interactionWeights.computeIfAbsent(from, ignored -> new HashMap<>());
+    var dependency = interactionWeights.computeIfAbsent(from, _ -> new HashMap<>());
     var current = dependency.getOrDefault(to, 0.0);
     dependency.put(to, Math.max(current, weight));
     return this;

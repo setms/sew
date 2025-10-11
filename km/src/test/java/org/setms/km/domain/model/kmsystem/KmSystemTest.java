@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.setms.km.domain.model.validation.Level.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.time.Duration;
 import java.util.List;
@@ -26,6 +25,8 @@ import org.setms.km.test.MainArtifact;
 import org.setms.km.test.MainTool;
 import org.setms.km.test.OtherArtifact;
 import org.setms.km.test.OtherTool;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 class KmSystemTest {
 
@@ -37,7 +38,7 @@ class KmSystemTest {
   private final Workspace<?> workspace = new InMemoryWorkspace();
   private final MainTool mainTool = new MainTool();
   private final OtherTool otherTool = new OtherTool();
-  private final ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new JsonMapper();
 
   @BeforeEach
   void init() {
@@ -69,7 +70,7 @@ class KmSystemTest {
   }
 
   private String storeNewArtifact(
-      ArtifactTool tool, Function<FullyQualifiedName, Artifact> artifactCreator)
+      ArtifactTool<?> tool, Function<FullyQualifiedName, Artifact> artifactCreator)
       throws IOException {
     var input = tool.validationTarget();
     var resource = workspace.root().select(input.path()).select("Bear." + input.extension());
@@ -142,7 +143,7 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(Set.of(mainValidationDiagnostic));
   }
 
-  private Resource<?> diagnosticsResourceFor(ArtifactTool tool, Resource<?> diagnosticsRoot) {
+  private Resource<?> diagnosticsResourceFor(ArtifactTool<?> tool, Resource<?> diagnosticsRoot) {
     return diagnosticsRoot.select("%s.json".formatted(tool.getClass().getName()));
   }
 
@@ -162,7 +163,8 @@ class KmSystemTest {
     assertThat(kmSystem.diagnosticsFor(artifactPath)).isEmpty();
   }
 
-  private void createDiagnostic(Resource<?> diagnosticsRoot, ArtifactTool tool) throws IOException {
+  private void createDiagnostic(Resource<?> diagnosticsRoot, ArtifactTool<?> tool)
+      throws IOException {
     var diagnosticsResource = diagnosticsResourceFor(tool, diagnosticsRoot);
     try (var output = diagnosticsResource.writeTo()) {
       mapper.writeValue(output, Map.of("diagnostics", emptyList()));

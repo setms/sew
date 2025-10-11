@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.none;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,6 +33,8 @@ import org.setms.km.domain.model.workspace.ArtifactDefinition;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 public class KmSystem {
@@ -42,7 +43,7 @@ public class KmSystem {
   private static final String PATHS = "paths";
   public static final LocalDateTime LONG_AGO = LocalDateTime.of(0, 1, 1, 0, 0);
 
-  private final ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new JsonMapper();
   @Getter private final Workspace<?> workspace;
 
   public KmSystem(Workspace<?> workspace) {
@@ -127,7 +128,7 @@ public class KmSystem {
     var result = new TreeSet<String>();
     try (var reader = new BufferedReader(new InputStreamReader(resource.readFrom()))) {
       reader.lines().forEach(result::add);
-    } catch (IOException ignored) {
+    } catch (IOException _) {
       // Ignore
     }
     return result;
@@ -216,7 +217,7 @@ public class KmSystem {
         .map(Input::type)
         .filter(artifact.getClass()::equals)
         .ifPresentOrElse(
-            type -> {
+            _ -> {
               A typedArtifact = (A) artifact;
               artifactTool.buildReportsFor(typedArtifact, inputs, output, diagnostics);
             },

@@ -50,7 +50,7 @@ class SalFormatParser implements Parser {
         .forEach(
             object -> {
               var type = object.TYPE().getText();
-              var objectsOfType = nestedObjects.computeIfAbsent(type, ignored -> new DataList());
+              var objectsOfType = nestedObjects.computeIfAbsent(type, _ -> new DataList());
               index.getAndIncrement();
               var name =
                   Optional.ofNullable(object.OBJECT_NAME())
@@ -139,7 +139,7 @@ class SalFormatParser implements Parser {
                 && value != null
                 && value.TYPE() != null
                 && value.OBJECT_NAME() != null) {
-              map.computeIfAbsent(attribute.IDENTIFIER().getText(), ignored -> new ArrayList<>())
+              map.computeIfAbsent(attribute.IDENTIFIER().getText(), _ -> new ArrayList<>())
                   .add(new Reference(value.TYPE().getText(), value.OBJECT_NAME().getText()));
             }
           });

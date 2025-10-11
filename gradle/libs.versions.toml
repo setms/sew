@@ -2,16 +2,17 @@
 antlr = "4.13.2"
 assertj = "3.27.6"
 awaitility = "4.3.0"
-classgraph = "4.8.181"
+classgraph = "4.8.184"
 directory-watcher = "0.19.1"
 evo-inflector = "1.3"
 intellij-grammarkit = "2022.3.2.2"
 intellij-plugin = "2.9.0"
+jackson = "3.0.0"
 jfreechart = "1.5.6"
 jgraphx = "4.2.2"
+json = "20250517"
 jqwik = "1.9.3"
 junit5 = "6.0.0"
-languagetool = "6.6.12-3"
 lombok-plugin = "9.0.0"
 mapstruct-plugin = "1.0.9"
 mockito = "5.20.0"
@@ -33,14 +34,15 @@ awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitility"}
 classgraph = { module = "io.github.classgraph:classgraph", version.ref = "classgraph" }
 directory-watcher = { module = "io.methvin:directory-watcher", version.ref = "directory-watcher" }
 evo-inflector = { module = "org.atteo:evo-inflector", version.ref = "evo-inflector" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
 jfreechart = { module = "org.jfree:jfreechart", version.ref = "jfreechart" }
 jgraphx = { module = "com.github.vlsi.mxgraph:jgraphx", version.ref = "jgraphx" }
+json = { module = "org.json:json", version.ref = "json" }
 jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
 junit5 = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit5" }
 junit5-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit5" }
 junit5-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit5" }
 junit5-runtime = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit5" }
-languagetool = { module = "org.languagetool:language-en", version.ref = "languagetool" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
@@ -58,8 +60,10 @@ antlr = ["antlr"]
 antlr-runtime = ["antlr-runtime"]
 classgraph = ["classgraph"]
 directory-watcher = ["directory-watcher"]
-language = ["evo-inflector", "languagetool"]
+language = ["evo-inflector"]
 visualization = ["jgraphx", "jfreechart"]
+jackson = ["jackson-databind"]
+json = ["json"]
 junit = ["junit5", "junit5-params", "mockito", "mockito-junit", "assertj", "awaitility", "jqwik"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
 slf4f = ["slf4j-api"]

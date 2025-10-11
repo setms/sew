@@ -81,7 +81,7 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
     VirtualFile result = null;
     try {
       result = virtualFile.findFileByRelativePath(path);
-    } catch (Exception ignored) {
+    } catch (Exception _) {
       // Nothing to do
     }
     if (result != null) {
