@@ -38,6 +38,7 @@ public class Files {
     try {
       try (var paths = java.nio.file.Files.walk(file.toPath())) {
         return paths
+            .filter(java.nio.file.Files::exists)
             .filter(java.nio.file.Files::isRegularFile)
             .filter(java.nio.file.Files::isReadable)
             .filter(path -> glob.matches(path.toString()))
