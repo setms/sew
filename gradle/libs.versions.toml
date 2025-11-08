@@ -24,7 +24,7 @@ spotless-plugin = "8.0.0"
 spring-boot-plugin = "3.5.7"
 validation = "3.1.1"
 validation-el = "4.0.2"
-validation-runtime = "9.0.1.Final"
+validation-runtime = "9.1.0.Final"
 
 [libraries]
 antlr = { module = "org.antlr:antlr4", version.ref = "antlr" }
