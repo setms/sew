@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Git pre-commit hook that runs spotlessApply to format code before committing.
+# This hook is automatically installed by Gradle (see root build.gradle).
+#
+
+echo "Running spotlessApply to format code..."
+
+# Run spotlessApply
+./gradlew spotlessApply --quiet
+
+# Check if spotlessApply made any changes
+if [ -n "$(git diff --name-only)" ]; then
+    echo "Code formatting applied. Staging formatted files..."
+
+    # Stage all modified files that were already staged
+    # This ensures we only re-stage files that were part of the original commit
+    git diff --name-only | while read -r file; do
+        if git diff --cached --name-only | grep -q "^${file}$"; then
+            git add "$file"
+            echo "  Staged: $file"
+        fi
+    done
+
+    echo "Formatting complete. Proceeding with commit."
+fi
+
+exit 0

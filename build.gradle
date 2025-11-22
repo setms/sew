@@ -1,3 +1,36 @@
+// Task to install git hooks
+task installGitHooks {
+    description = 'Installs git pre-commit hook that runs spotlessApply'
+    group = 'git hooks'
+
+    def sourceFile = file('gradle/hooks/pre-commit')
+    def targetFile = file('.git/hooks/pre-commit')
+    def gitDir = file('.git')
+
+    inputs.file(sourceFile)
+    outputs.file(targetFile)
+
+    onlyIf {
+        gitDir.exists()
+    }
+
+    doLast {
+        targetFile.parentFile.mkdirs()
+        targetFile.text = sourceFile.text
+        targetFile.setExecutable(true, false)
+        logger.quiet('Git pre-commit hook installed successfully')
+    }
+}
+
+// Automatically run installGitHooks before any task execution
+gradle.projectsEvaluated {
+    rootProject.tasks.all { task ->
+        if (task != rootProject.tasks.installGitHooks) {
+            task.dependsOn(rootProject.tasks.installGitHooks)
+        }
+    }
+}
+
 subprojects {
     apply plugin: 'java'
 
