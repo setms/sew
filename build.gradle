@@ -1,5 +1,4 @@
-// Task to install git hooks
-task installGitHooks {
+tasks.register('installGitHooks') {
     description = 'Installs git pre-commit hook that runs spotlessApply'
     group = 'git hooks'
 
@@ -24,7 +23,7 @@ task installGitHooks {
 
 // Automatically run installGitHooks before any task execution
 gradle.projectsEvaluated {
-    rootProject.tasks.all { task ->
+    rootProject.tasks.configureEach { task ->
         if (task != rootProject.tasks.installGitHooks) {
             task.dependsOn(rootProject.tasks.installGitHooks)
         }
