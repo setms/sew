@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = PRIVATE)
 public class Enums<T extends Enum<T>> extends HashSet<T> {
 
-    // Workaround for Java not storing the item type for a generic collection at runtime:
+  // Workaround for Java not storing the item type for a generic collection at runtime:
   // make that type explicit
   private final Class<T> type;
 

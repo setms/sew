@@ -31,7 +31,8 @@ public record AppliedSuggestion(Set<Resource<?>> createdOrChanged, Set<Diagnosti
   }
 
   public static AppliedSuggestion failedWith(String message, Object... args) {
-    return new AppliedSuggestion(emptySet(), Set.of(new Diagnostic(ERROR, message.formatted(args))));
+    return new AppliedSuggestion(
+        emptySet(), Set.of(new Diagnostic(ERROR, message.formatted(args))));
   }
 
   public AppliedSuggestion with(Resource<?> resource) {

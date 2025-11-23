@@ -2,7 +2,6 @@ package org.setms.sew.intellij.plugin.workspace;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import java.io.File;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.workspace.Resource;
@@ -11,8 +10,7 @@ import org.setms.km.domain.model.workspace.Workspace;
 @RequiredArgsConstructor
 public class IntellijWorkspace extends Workspace<VirtualFile> {
 
-  @Getter
-  private final VirtualFile root;
+  @Getter private final VirtualFile root;
 
   @Override
   protected Resource<?> newRoot() {

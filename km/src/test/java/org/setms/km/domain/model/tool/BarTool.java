@@ -1,6 +1,5 @@
 package org.setms.km.domain.model.tool;
 
-
 public class BarTool extends ArtifactTool<Bar> {
 
   @Override

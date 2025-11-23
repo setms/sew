@@ -53,4 +53,14 @@ subprojects {
         useJUnitPlatform()
     }
 
+    // Configure Spotless for all projects that have the plugin applied
+    pluginManager.withPlugin('com.diffplug.spotless') {
+        spotless {
+            java {
+                target 'src/**/*.java'
+                googleJavaFormat()
+            }
+        }
+    }
+
 }

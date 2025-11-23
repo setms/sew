@@ -36,7 +36,8 @@ public final class KmSystemService implements Disposable {
             () -> {
               kmSystem = new IntellijKmSystem(project);
               var connection = project.getMessageBus().connect(this);
-              connection.subscribe(VirtualFileManager.VFS_CHANGES, new FileListener(project, getWorkspace()));
+              connection.subscribe(
+                  VirtualFileManager.VFS_CHANGES, new FileListener(project, getWorkspace()));
             });
     ready.complete(null);
   }

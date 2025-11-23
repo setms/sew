@@ -20,11 +20,7 @@ public abstract class BaseLanguageFileType extends LanguageFileType {
   private final Icon icon;
 
   public BaseLanguageFileType(
-      @NotNull Language language,
-      String name,
-      String description,
-      String extension,
-      Icon icon) {
+      @NotNull Language language, String name, String description, String extension, Icon icon) {
     super(language);
     this.name = name;
     this.description = description;

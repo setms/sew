@@ -1,6 +1,5 @@
 package org.setms.sew.intellij.plugin.filetype;
 
-
 public class UserFileType extends SalLanguageFileType {
 
   public static final UserFileType INSTANCE = new UserFileType();

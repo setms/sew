@@ -1,6 +1,5 @@
 package org.setms.km.outbound.workspace.memory;
 
-import java.util.TreeMap;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 
@@ -8,7 +7,7 @@ public class InMemoryWorkspace extends Workspace<Void> {
 
   @Override
   protected Resource<?> newRoot() {
-    return new InMemoryResource( "/", this::onChanged, this::onDeleted);
+    return new InMemoryResource("/", this::onChanged, this::onDeleted);
   }
 
   @Override

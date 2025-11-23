@@ -8,8 +8,7 @@ import org.setms.sew.intellij.lang.sal.SalParserDefinition;
 
 public abstract class SalLanguageFileType extends BaseLanguageFileType {
 
-  protected SalLanguageFileType(
-      String name, String description, String extension, Icon icon) {
+  protected SalLanguageFileType(String name, String description, String extension, Icon icon) {
     super(SalLanguage.INSTANCE, name, description, extension, icon);
     SalParserDefinition.addFileType(this);
   }

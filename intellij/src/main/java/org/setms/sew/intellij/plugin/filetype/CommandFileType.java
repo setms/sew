@@ -1,6 +1,5 @@
 package org.setms.sew.intellij.plugin.filetype;
 
-
 public class CommandFileType extends SalLanguageFileType {
 
   public static final CommandFileType INSTANCE = new CommandFileType();
