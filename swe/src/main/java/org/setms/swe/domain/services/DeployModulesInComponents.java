@@ -19,7 +19,7 @@ public class DeployModulesInComponents implements Function<Modules, Components> 
         .setComponents(divideOverComponents(modules));
   }
 
-  private @NotEmpty @Valid Collection<Component> divideOverComponents(Modules modules) {
+  private @NotEmpty Collection<@Valid Component> divideOverComponents(Modules modules) {
     // TODO: Shouldn't always be a monolith
     return List.of(
         new Component(modules.getFullyQualifiedName())

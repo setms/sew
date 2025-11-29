@@ -22,8 +22,8 @@ import org.setms.km.domain.model.artifact.Link;
 public class AcceptanceTest extends Artifact {
 
   @NotNull private Link sut;
-  @NotEmpty @Valid private List<Variable<?, ?>> variables;
-  @NotEmpty @Valid private List<Scenario> scenarios;
+  @NotEmpty private List<@Valid Variable<?, ?>> variables;
+  @NotEmpty private List<@Valid Scenario> scenarios;
 
   public AcceptanceTest(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

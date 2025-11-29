@@ -20,7 +20,7 @@ import org.setms.km.domain.model.validation.Location;
 @EqualsAndHashCode(callSuper = true)
 public class Entity extends Artifact {
 
-  @Valid @NotEmpty private Collection<Field> fields;
+  @NotEmpty private Collection<@Valid Field> fields;
 
   public Entity(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

@@ -26,7 +26,7 @@ public class Components extends Artifact {
   @HasType("modules")
   private Link deploys;
 
-  @NotEmpty @Valid private Collection<Component> components;
+  @NotEmpty private Collection<@Valid Component> components;
 
   public Components(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);

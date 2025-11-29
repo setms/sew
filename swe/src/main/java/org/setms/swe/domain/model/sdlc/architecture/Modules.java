@@ -27,7 +27,7 @@ public class Modules extends Artifact {
   @HasType("domain")
   private Link mappedTo;
 
-  @NotEmpty @Valid private Collection<Module> modules;
+  @NotEmpty private Collection<@Valid Module> modules;
 
   public Modules(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
