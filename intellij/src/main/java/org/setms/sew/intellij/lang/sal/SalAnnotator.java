@@ -75,7 +75,7 @@ public class SalAnnotator implements Annotator {
         return;
       }
       var resource = service.getWorkspace().find(file.getVirtualFile());
-      diagnostics = service.getKmSystem().diagnosticsFor(resource.path());
+      diagnostics = service.getProcessOrchestrator().diagnosticsFor(resource.path());
     }
     if (diagnostics.isEmpty()) {
       return;

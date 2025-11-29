@@ -20,7 +20,7 @@ public final class ProcessOrchestratorService implements Disposable {
   private final CompletableFuture<Void> ready = new CompletableFuture<>();
 
   private final Project project;
-  @Getter private ProcessOrchestrator kmSystem;
+  @Getter private ProcessOrchestrator processOrchestrator;
 
   @Override
   public void dispose() {
@@ -34,7 +34,7 @@ public final class ProcessOrchestratorService implements Disposable {
     ApplicationManager.getApplication()
         .runWriteAction(
             () -> {
-              kmSystem = new IntellijProcessOrchestrator(project);
+              processOrchestrator = new IntellijProcessOrchestrator(project);
               var connection = project.getMessageBus().connect(this);
               connection.subscribe(
                   VirtualFileManager.VFS_CHANGES, new FileListener(project, getWorkspace()));
@@ -51,6 +51,6 @@ public final class ProcessOrchestratorService implements Disposable {
   }
 
   public IntellijWorkspace getWorkspace() {
-    return (IntellijWorkspace) kmSystem.getWorkspace();
+    return (IntellijWorkspace) processOrchestrator.getWorkspace();
   }
 }

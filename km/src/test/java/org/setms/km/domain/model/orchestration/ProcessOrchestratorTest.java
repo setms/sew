@@ -33,7 +33,7 @@ class ProcessOrchestratorTest {
   public static final Duration MAX_BACKGROUND_VALIDATION_TIME = Duration.ofSeconds(1);
 
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
-  private ProcessOrchestrator kmSystem;
+  private ProcessOrchestrator processOrchestrator;
 
   private final Workspace<?> workspace = new InMemoryWorkspace();
   private final MainTool mainTool = new MainTool();
@@ -49,7 +49,7 @@ class ProcessOrchestratorTest {
 
   @Test
   void shouldValidateChangedArtifactButNotBuildItWhenInvalid() throws IOException {
-    createKmSystem();
+    createProcessOrchestrator();
     mainTool.init(new Diagnostic(ERROR, "message"), null);
     otherTool.init();
 
@@ -61,8 +61,8 @@ class ProcessOrchestratorTest {
     assertThat(otherTool.built).as("other built").isFalse();
   }
 
-  private void createKmSystem() {
-    kmSystem = new ProcessOrchestrator((workspace));
+  private void createProcessOrchestrator() {
+    processOrchestrator = new ProcessOrchestrator((workspace));
   }
 
   private String storeNewMainArtifact() throws IOException {
@@ -85,7 +85,7 @@ class ProcessOrchestratorTest {
 
   @Test
   void shouldBuildValidChangedArtifactAndDependents() throws IOException {
-    createKmSystem();
+    createProcessOrchestrator();
     mainTool.init();
     otherTool.init();
 
@@ -95,12 +95,12 @@ class ProcessOrchestratorTest {
     assertThat(mainTool.built).as("main built").isTrue();
     assertThat(otherTool.validated).as("other validated").isFalse();
     assertThat(otherTool.built).as("other built").isFalse();
-    assertThat(kmSystem.mainReportFor(path).name()).isEqualTo("report1");
+    assertThat(processOrchestrator.mainReportFor(path).name()).isEqualTo("report1");
   }
 
   @Test
   void shouldUpdateCachedGlobsWhenMatchingArtifactCreated() throws IOException {
-    createKmSystem();
+    createProcessOrchestrator();
 
     var path = storeNewMainArtifact();
 
@@ -121,7 +121,7 @@ class ProcessOrchestratorTest {
   @Test
   void shouldUpdateCachedGlobsWhenMatchingArtifactDeleted() throws IOException {
     var path = storeNewMainArtifact();
-    createKmSystem();
+    createProcessOrchestrator();
     assertThat(inputsForMainTool()).hasSize(1);
 
     workspace.root().select(path).delete();
@@ -131,7 +131,7 @@ class ProcessOrchestratorTest {
 
   @Test
   void shouldStoreValidationDiagnostics() throws IOException {
-    createKmSystem();
+    createProcessOrchestrator();
     var mainValidationDiagnostic =
         new Diagnostic(
             ERROR, "Main message", new Location("ape", "bear"), new Suggestion("cheetah", "dingo"));
@@ -140,7 +140,8 @@ class ProcessOrchestratorTest {
 
     var path = storeNewMainArtifact();
 
-    assertThat(kmSystem.diagnosticsFor(path)).isEqualTo(Set.of(mainValidationDiagnostic));
+    assertThat(processOrchestrator.diagnosticsFor(path))
+        .isEqualTo(Set.of(mainValidationDiagnostic));
   }
 
   private Resource<?> diagnosticsResourceFor(ArtifactTool<?> tool, Resource<?> diagnosticsRoot) {
@@ -153,14 +154,14 @@ class ProcessOrchestratorTest {
     var diagnosticsRoot = workspace.root().select(".km/diagnostics%s".formatted(path));
     createDiagnostic(diagnosticsRoot, mainTool);
     createDiagnostic(diagnosticsRoot, otherTool);
-    createKmSystem();
+    createProcessOrchestrator();
     mainTool.init();
     otherTool.init();
 
     var artifactPath = storeNewMainArtifact();
 
     assertThat(path).as("Test got path wrong").isEqualTo(artifactPath);
-    assertThat(kmSystem.diagnosticsFor(artifactPath)).isEmpty();
+    assertThat(processOrchestrator.diagnosticsFor(artifactPath)).isEmpty();
   }
 
   private void createDiagnostic(Resource<?> diagnosticsRoot, ArtifactTool<?> tool)
@@ -179,7 +180,7 @@ class ProcessOrchestratorTest {
             .root()
             .select(".km/reports%s/%s/old-report".formatted(path, mainTool.getClass().getName()));
     createReport(report);
-    createKmSystem();
+    createProcessOrchestrator();
     mainTool.init();
     otherTool.init();
 
@@ -205,7 +206,7 @@ class ProcessOrchestratorTest {
   void shouldValidateExistingArtifact() throws IOException {
     storeNewMainArtifact();
 
-    createKmSystem();
+    createProcessOrchestrator();
 
     await()
         .atMost(MAX_BACKGROUND_VALIDATION_TIME)
@@ -227,7 +228,7 @@ class ProcessOrchestratorTest {
     assertThat(workspace.root().select(path).lastModifiedAt())
         .isBefore(diagnosticsResource.lastModifiedAt());
 
-    createKmSystem();
+    createProcessOrchestrator();
 
     Thread.sleep(MAX_BACKGROUND_VALIDATION_TIME);
     assertThat(mainTool.validated).as("Existing artifact re-validated").isFalse();
@@ -237,7 +238,7 @@ class ProcessOrchestratorTest {
   void shouldRevalidateWhenInputDeleted() throws IOException {
     var path = storeNewMainArtifact();
     storeNewOtherArtifact();
-    createKmSystem();
+    createProcessOrchestrator();
     otherTool.init();
 
     workspace.root().select(path).delete();

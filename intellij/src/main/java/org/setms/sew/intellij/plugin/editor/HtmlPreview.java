@@ -153,7 +153,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
     var url =
         Optional.ofNullable(service.getWorkspace().find(file))
             .map(Resource::path)
-            .map(service.getKmSystem()::mainReportFor)
+            .map(service.getProcessOrchestrator()::mainReportFor)
             .map(report -> report.matching("", "html"))
             .map(List::getFirst)
             .map(Resource::toUri)

@@ -137,7 +137,7 @@ User Files (.entity, .command, etc.)
         ↓
 Workspace (monitors changes)
         ↓
-KmSystem (main orchestrator)
+ProcessOrchestrator (main orchestrator)
         ├→ Parse via Format.newParser()
         ├→ Register artifact definitions
         └→ Trigger Tools

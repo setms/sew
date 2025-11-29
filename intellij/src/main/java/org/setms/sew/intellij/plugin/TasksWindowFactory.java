@@ -24,9 +24,9 @@ public class TasksWindowFactory implements ToolWindowFactory, DumbAware {
     addContentTo(toolWindow);
     var service = project.getService(ProcessOrchestratorService.class);
     if (service.isNotReady()) {
-      service.whenReady().thenRun(() -> loadTasks(service.getKmSystem()));
+      service.whenReady().thenRun(() -> loadTasks(service.getProcessOrchestrator()));
     } else {
-      loadTasks(service.getKmSystem());
+      loadTasks(service.getProcessOrchestrator());
     }
   }
 
@@ -40,7 +40,7 @@ public class TasksWindowFactory implements ToolWindowFactory, DumbAware {
     toolWindow.getContentManager().addContent(content);
   }
 
-  private void loadTasks(ProcessOrchestrator kmSystem) {
-    kmSystem.diagnosticsWithSuggestions().forEach(model::addElement);
+  private void loadTasks(ProcessOrchestrator processOrchestrator) {
+    processOrchestrator.diagnosticsWithSuggestions().forEach(model::addElement);
   }
 }

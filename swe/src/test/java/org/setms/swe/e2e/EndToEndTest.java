@@ -53,14 +53,14 @@ class EndToEndTest {
   private final Collection<String> created = new HashSet<>();
   private final File root = new File("build/e2e");
   private Workspace<?> workspace;
-  private ProcessOrchestrator kmSystem;
+  private ProcessOrchestrator processOrchestrator;
   private final Chat chat = new Chat("Human", "SEW");
 
   @BeforeEach
   void init() {
     Files.delete(root);
     workspace = new DirectoryWorkspace(root);
-    kmSystem = new ProcessOrchestrator(workspace);
+    processOrchestrator = new ProcessOrchestrator(workspace);
 
     // Force initialization of Hibernate, to keep its output from interfering with our chat output
     validate(new Object());
@@ -73,7 +73,7 @@ class EndToEndTest {
       assertThatIterationIsCorrect(iteration);
     }
     chat.topic("The End");
-    kmSystem
+    processOrchestrator
         .diagnosticsWithSuggestions()
         .forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
   }
@@ -154,15 +154,15 @@ class EndToEndTest {
         .atMost(5, SECONDS)
         .untilAsserted(
             () ->
-                assertThat(kmSystem.diagnosticsWithSuggestions())
+                assertThat(processOrchestrator.diagnosticsWithSuggestions())
                     .as(
                         "Diagnostics for iteration %s"
                             .formatted(iteration.getDirectory().getName()))
                     .map(Diagnostic::message)
                     .containsExactlyInAnyOrderElementsOf(expected));
 
-    var diagnostics = kmSystem.diagnosticsWithSuggestions();
-    var allDiagnostics = kmSystem.diagnostics();
+    var diagnostics = processOrchestrator.diagnosticsWithSuggestions();
+    var allDiagnostics = processOrchestrator.diagnostics();
     allDiagnostics.removeAll(diagnostics);
     assertThat(allDiagnostics).as("Diagnostics without suggestions").isEmpty();
     diagnostics.forEach(
@@ -178,7 +178,7 @@ class EndToEndTest {
               .forEach(
                   suggestion -> {
                     var applied =
-                        kmSystem.applySuggestion(
+                        processOrchestrator.applySuggestion(
                             resource, suggestion.code(), diagnostic.location());
                     assertThat(applied.diagnostics())
                         .as(

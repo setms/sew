@@ -88,7 +88,7 @@ public class ApplySuggestion implements IntentionAction {
       Project project, PsiFile psiFile, ProcessOrchestratorService service, VirtualFile file) {
     var appliedSuggestion =
         service
-            .getKmSystem()
+            .getProcessOrchestrator()
             .applySuggestion(service.getWorkspace().find(file), suggestion.code(), location);
     var created =
         appliedSuggestion.createdOrChanged().stream()
