@@ -22,7 +22,7 @@ import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.sew.intellij.plugin.km.KmSystemService;
+import org.setms.sew.intellij.plugin.km.ProcessOrchestratorService;
 
 public class ApplySuggestion implements IntentionAction {
 
@@ -76,7 +76,7 @@ public class ApplySuggestion implements IntentionAction {
     if (file == null) {
       return;
     }
-    var service = project.getService(KmSystemService.class);
+    var service = project.getService(ProcessOrchestratorService.class);
     if (service.isNotReady()) {
       service.whenReady().thenRunAsync(() -> invoke(project, editor, psiFile));
       return;
@@ -85,7 +85,7 @@ public class ApplySuggestion implements IntentionAction {
   }
 
   public void applySuggestion(
-      Project project, PsiFile psiFile, KmSystemService service, VirtualFile file) {
+      Project project, PsiFile psiFile, ProcessOrchestratorService service, VirtualFile file) {
     var appliedSuggestion =
         service
             .getKmSystem()
@@ -117,7 +117,7 @@ public class ApplySuggestion implements IntentionAction {
                               project,
                               () ->
                                   project
-                                      .getService(KmSystemService.class)
+                                      .getService(ProcessOrchestratorService.class)
                                       .getWorkspace()
                                       .changed(virtualFile));
                           fileEditorManager.openFile(virtualFile, true);

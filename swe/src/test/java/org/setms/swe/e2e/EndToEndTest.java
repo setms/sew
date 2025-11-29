@@ -22,7 +22,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
-import org.setms.km.domain.model.kmsystem.KmSystem;
+import org.setms.km.domain.model.orchestration.ProcessOrchestrator;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Tools;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -53,14 +53,14 @@ class EndToEndTest {
   private final Collection<String> created = new HashSet<>();
   private final File root = new File("build/e2e");
   private Workspace<?> workspace;
-  private KmSystem kmSystem;
+  private ProcessOrchestrator kmSystem;
   private final Chat chat = new Chat("Human", "SEW");
 
   @BeforeEach
   void init() {
     Files.delete(root);
     workspace = new DirectoryWorkspace(root);
-    kmSystem = new KmSystem(workspace);
+    kmSystem = new ProcessOrchestrator(workspace);
 
     // Force initialization of Hibernate, to keep its output from interfering with our chat output
     validate(new Object());

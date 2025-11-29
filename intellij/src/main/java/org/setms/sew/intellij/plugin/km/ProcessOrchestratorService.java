@@ -9,18 +9,18 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.setms.km.domain.model.kmsystem.KmSystem;
+import org.setms.km.domain.model.orchestration.ProcessOrchestrator;
 import org.setms.sew.intellij.plugin.workspace.IntellijWorkspace;
 
 @Service(Service.Level.PROJECT)
 @RequiredArgsConstructor
-public final class KmSystemService implements Disposable {
+public final class ProcessOrchestratorService implements Disposable {
 
   private final AtomicBoolean started = new AtomicBoolean();
   private final CompletableFuture<Void> ready = new CompletableFuture<>();
 
   private final Project project;
-  @Getter private KmSystem kmSystem;
+  @Getter private ProcessOrchestrator kmSystem;
 
   @Override
   public void dispose() {
@@ -34,7 +34,7 @@ public final class KmSystemService implements Disposable {
     ApplicationManager.getApplication()
         .runWriteAction(
             () -> {
-              kmSystem = new IntellijKmSystem(project);
+              kmSystem = new IntellijProcessOrchestrator(project);
               var connection = project.getMessageBus().connect(this);
               connection.subscribe(
                   VirtualFileManager.VFS_CHANGES, new FileListener(project, getWorkspace()));

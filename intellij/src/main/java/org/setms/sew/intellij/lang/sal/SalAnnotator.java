@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.sew.intellij.lang.LevelSeverity;
 import org.setms.sew.intellij.plugin.filetype.SalLanguageFileType;
-import org.setms.sew.intellij.plugin.km.KmSystemService;
+import org.setms.sew.intellij.plugin.km.ProcessOrchestratorService;
 
 public class SalAnnotator implements Annotator {
 
@@ -61,7 +61,7 @@ public class SalAnnotator implements Annotator {
 
     if (!document.getText().equals(previousDocumentText)) {
       previousDocumentText = document.getText();
-      var service = psiElement.getProject().getService(KmSystemService.class);
+      var service = psiElement.getProject().getService(ProcessOrchestratorService.class);
       if (service.isNotReady()) {
         service
             .whenReady()

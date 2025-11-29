@@ -29,7 +29,7 @@ import org.cef.handler.CefLoadHandlerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.sew.intellij.plugin.km.KmSystemService;
+import org.setms.sew.intellij.plugin.km.ProcessOrchestratorService;
 
 public class HtmlPreview extends UserDataHolderBase implements FileEditor {
 
@@ -116,7 +116,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   private void showDocument() {
-    var service = project.getService(KmSystemService.class);
+    var service = project.getService(ProcessOrchestratorService.class);
     if (service.isNotReady()) {
       service.whenReady().thenRunAsync(this::showDocument);
       return;
@@ -140,7 +140,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
         WriteAction.run(
             () -> {
               documentManager.saveDocument(document);
-              project.getService(KmSystemService.class).getWorkspace().changed(file);
+              project.getService(ProcessOrchestratorService.class).getWorkspace().changed(file);
             });
       }
     } catch (IOException e) {
@@ -149,7 +149,7 @@ public class HtmlPreview extends UserDataHolderBase implements FileEditor {
   }
 
   private void showFile() {
-    var service = project.getService(KmSystemService.class);
+    var service = project.getService(ProcessOrchestratorService.class);
     var url =
         Optional.ofNullable(service.getWorkspace().find(file))
             .map(Resource::path)

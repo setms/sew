@@ -11,9 +11,9 @@ import java.awt.BorderLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import org.jetbrains.annotations.NotNull;
-import org.setms.km.domain.model.kmsystem.KmSystem;
+import org.setms.km.domain.model.orchestration.ProcessOrchestrator;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.sew.intellij.plugin.km.KmSystemService;
+import org.setms.sew.intellij.plugin.km.ProcessOrchestratorService;
 
 public class TasksWindowFactory implements ToolWindowFactory, DumbAware {
 
@@ -22,7 +22,7 @@ public class TasksWindowFactory implements ToolWindowFactory, DumbAware {
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     addContentTo(toolWindow);
-    var service = project.getService(KmSystemService.class);
+    var service = project.getService(ProcessOrchestratorService.class);
     if (service.isNotReady()) {
       service.whenReady().thenRun(() -> loadTasks(service.getKmSystem()));
     } else {
@@ -40,7 +40,7 @@ public class TasksWindowFactory implements ToolWindowFactory, DumbAware {
     toolWindow.getContentManager().addContent(content);
   }
 
-  private void loadTasks(KmSystem kmSystem) {
+  private void loadTasks(ProcessOrchestrator kmSystem) {
     kmSystem.diagnosticsWithSuggestions().forEach(model::addElement);
   }
 }

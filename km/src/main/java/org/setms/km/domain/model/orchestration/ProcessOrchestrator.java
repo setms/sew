@@ -1,4 +1,4 @@
-package org.setms.km.domain.model.kmsystem;
+package org.setms.km.domain.model.orchestration;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
@@ -37,7 +37,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
-public class KmSystem {
+public class ProcessOrchestrator {
 
   private static final String INPUTS = "inputs";
   private static final String PATHS = "paths";
@@ -46,7 +46,7 @@ public class KmSystem {
   private final ObjectMapper mapper = new JsonMapper();
   @Getter private final Workspace<?> workspace;
 
-  public KmSystem(Workspace<?> workspace) {
+  public ProcessOrchestrator(Workspace<?> workspace) {
     this.workspace = workspace;
     cacheInputs();
     registerHandlers();

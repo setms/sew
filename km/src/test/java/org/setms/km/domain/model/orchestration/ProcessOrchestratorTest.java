@@ -1,4 +1,4 @@
-package org.setms.km.domain.model.kmsystem;
+package org.setms.km.domain.model.orchestration;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,12 +28,12 @@ import org.setms.km.test.OtherTool;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
-class KmSystemTest {
+class ProcessOrchestratorTest {
 
   public static final Duration MAX_BACKGROUND_VALIDATION_TIME = Duration.ofSeconds(1);
 
   @SuppressWarnings({"FieldCanBeLocal", "unused"})
-  private KmSystem kmSystem;
+  private ProcessOrchestrator kmSystem;
 
   private final Workspace<?> workspace = new InMemoryWorkspace();
   private final MainTool mainTool = new MainTool();
@@ -62,7 +62,7 @@ class KmSystemTest {
   }
 
   private void createKmSystem() {
-    kmSystem = new KmSystem((workspace));
+    kmSystem = new ProcessOrchestrator((workspace));
   }
 
   private String storeNewMainArtifact() throws IOException {

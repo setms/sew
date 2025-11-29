@@ -4,15 +4,15 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
-import org.setms.km.domain.model.kmsystem.KmSystem;
-import org.setms.km.domain.model.kmsystem.OutOfDateArtifact;
+import org.setms.km.domain.model.orchestration.OutOfDateArtifact;
+import org.setms.km.domain.model.orchestration.ProcessOrchestrator;
 import org.setms.sew.intellij.plugin.workspace.IntellijWorkspace;
 
-public class IntellijKmSystem extends KmSystem {
+public class IntellijProcessOrchestrator extends ProcessOrchestrator {
 
   private final Project project;
 
-  public IntellijKmSystem(Project project) {
+  public IntellijProcessOrchestrator(Project project) {
     super(new IntellijWorkspace(ProjectUtil.guessProjectDir(project)));
     this.project = project;
   }

@@ -18,7 +18,9 @@ public class KmStartupActivity implements ProjectActivity {
     Tools.reload();
     ApplicationManager.getApplication()
         .invokeLater(
-            () -> WriteAction.run(() -> project.getService(KmSystemService.class).start()));
+            () ->
+                WriteAction.run(
+                    () -> project.getService(ProcessOrchestratorService.class).start()));
     return null;
   }
 }
