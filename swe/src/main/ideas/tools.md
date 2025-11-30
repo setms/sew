@@ -7,12 +7,13 @@ The architecture of a knowledge management (KM) system is mainly
 - The inputs are **artifacts** that capture knowledge about the problem to solve.
 - The outputs are either new or updated artifacts that knowledge workers enhance, or **reports** that help knowledge
   workers enhance artifacts.
-- The **KM system** implements the pipes that connect the output artifacts of one tool to the input artifacts of others.
+- The **Process Orchestrator** implements the pipes that connect the output artifacts of one tool to the input artifacts
+  of others.
 - The **knowledge product** is the sum of all artifacts.
 
 ```mermaid
 graph
-    System[KM system]
+    System[Process Orchestrator]
     ToolRegistry[Tool registry]
     KnowledgeProduct[Knowledge product]
     
@@ -50,10 +51,10 @@ Applying those suggestions creates skeletons of artifacts, which knowledge worke
 Some of those additions trigger a tool to create more artifacts, etc.
 The process ends when all artifacts that make up the knowledge product are complete.
 
-For instance, in a case management system for social workers, the system may start with the suggestion to add details
-about a client.
-The social worker adds those details, which prompts the system to suggest adding information about the client's problem, 
-etc, etc.
+For instance, in a case management system for social workers, the process orchestrator may start with the suggestion to
+add details about a client.
+The social worker adds those details, which prompts the process orchestrator to suggest adding information about the
+client's problem, etc, etc.
 
 ### Use cases
 
@@ -249,7 +250,7 @@ It's therefore important that a SEW handles large numbers of artifacts efficient
 - It should only build reports when necessary, i.e. when the inputs on which they depend change.
 - Caches should persist between sessions.
 
-A KM system that stores artifacts in a file system should maintain a `.km` directory containing:
+A process orchestrator that stores artifacts in a file system should maintain a `.km` directory containing:
 
 - `globs/<path>/<pattern>.glob` contains a list of resources matching the glob
   - updated when resources matching the glob are added or deleted
