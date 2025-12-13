@@ -24,7 +24,7 @@ jobs:
 
       - name: Restore Pitest analysis cache
         id: restore-pitest-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           key: ${{ runner.os }}-pitest-${{ github.sha }}
           restore-keys: ${{ runner.os }}-pitest-
