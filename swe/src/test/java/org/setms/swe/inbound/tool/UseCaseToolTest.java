@@ -62,6 +62,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     var diagnostics = validateAgainst(workspace);
 
     assertThat(diagnostics)
+        .as("Diagnostics")
         .hasSize(1)
         .allSatisfy(
             diagnostic -> {
@@ -96,8 +97,10 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
               assertThat(diagnostic.suggestions()).as("Suggestions").isNotEmpty();
             });
-    var diagnostic =
-        diagnostics.stream().filter(d -> d.message().contains("user")).findFirst().orElseThrow();
+    var maybeDiagnostic =
+        diagnostics.stream().filter(d -> d.message().contains("user")).findFirst();
+    assertThat(maybeDiagnostic).as("Diagnostics").isPresent();
+    var diagnostic = maybeDiagnostic.get();
     var created = apply(diagnostic.suggestions().getFirst(), diagnostic, workspace);
     assertThat(created.diagnostics()).isEmpty();
     var user = workspace.root().select("src/main/stakeholders/Duck.user");
@@ -152,7 +155,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
     var actual = validateAgainst(workspace);
 
-    assertThat(actual.size()).isGreaterThanOrEqualTo(1);
+    assertThat(actual.size()).as("# diagnostics").isGreaterThanOrEqualTo(1);
     var maybeDiagnostic =
         actual.stream().filter(d -> d.message().equals("Missing subdomains")).findFirst();
     assertThat(maybeDiagnostic).as("Warning about missing subdomains").isPresent();
