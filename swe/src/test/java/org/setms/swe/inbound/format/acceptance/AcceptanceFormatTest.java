@@ -17,9 +17,9 @@ import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.format.NestedObject;
 import org.setms.km.domain.model.format.Reference;
 import org.setms.km.domain.model.format.RootObject;
-import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
-import org.setms.swe.domain.model.sdlc.acceptance.AggregateScenario;
-import org.setms.swe.domain.model.sdlc.acceptance.ElementVariable;
+import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
+import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
 
 class AcceptanceFormatTest {
 

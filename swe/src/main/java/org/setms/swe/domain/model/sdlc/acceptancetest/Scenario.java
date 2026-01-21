@@ -1,4 +1,4 @@
-package org.setms.swe.domain.model.sdlc.acceptance;
+package org.setms.swe.domain.model.sdlc.acceptancetest;
 
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;

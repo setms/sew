@@ -1,4 +1,4 @@
-package org.setms.swe.domain.model.sdlc.acceptance;
+package org.setms.swe.domain.model.sdlc.acceptancetest;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;

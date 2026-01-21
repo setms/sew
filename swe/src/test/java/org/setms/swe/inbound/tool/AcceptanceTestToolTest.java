@@ -3,7 +3,7 @@ package org.setms.swe.inbound.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
 
 class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {

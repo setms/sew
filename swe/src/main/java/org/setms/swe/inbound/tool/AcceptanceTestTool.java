@@ -26,12 +26,12 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
-import org.setms.swe.domain.model.sdlc.acceptance.AggregateScenario;
-import org.setms.swe.domain.model.sdlc.acceptance.ElementVariable;
-import org.setms.swe.domain.model.sdlc.acceptance.PolicyScenario;
-import org.setms.swe.domain.model.sdlc.acceptance.ReadModelScenario;
-import org.setms.swe.domain.model.sdlc.acceptance.Scenario;
+import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
+import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
+import org.setms.swe.domain.model.sdlc.acceptancetest.PolicyScenario;
+import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
+import org.setms.swe.domain.model.sdlc.acceptancetest.Scenario;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
 

@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
-import org.setms.swe.domain.model.sdlc.acceptance.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.architecture.Components;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Modules;

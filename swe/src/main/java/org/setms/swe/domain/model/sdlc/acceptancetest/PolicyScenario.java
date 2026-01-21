@@ -1,4 +1,4 @@
-package org.setms.swe.domain.model.sdlc.acceptance;
+package org.setms.swe.domain.model.sdlc.acceptancetest;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -16,22 +16,20 @@ import org.setms.km.domain.model.artifact.Link;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class AggregateScenario extends Scenario {
+public class PolicyScenario extends Scenario {
 
   @HasType("variable")
   private List<Link> init;
 
   @NotNull
   @HasType("variable")
-  private Link accepts;
+  private Link handles;
 
+  @NotNull
   @HasType("variable")
-  private List<Link> state;
+  private Link issued;
 
-  @HasType("variable")
-  private Link emitted;
-
-  public AggregateScenario(FullyQualifiedName fullyQualifiedName) {
+  public PolicyScenario(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

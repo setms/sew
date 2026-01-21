@@ -120,7 +120,7 @@ Spring Boot web application providing web UI for SEW concepts:
 - Uses MapStruct for entity mapping
 - Spring validation framework integration
 
-## High-Level Architecture
+## High-level architecture
 
 ### Artifact system
 
@@ -183,7 +183,7 @@ object_type ObjectName {
 }
 ```
 
-**Object Types** (30+ types including):
+**Object types** (30+ types including):
 - Data modeling: `entity`, `field`, `command`, `aggregate`, `readModel`, `valueObject`
 - DDD: `domain`, `subdomain`, `term`
 - Processes: `activity`, `scenario`, `useCase`, `domainStory`

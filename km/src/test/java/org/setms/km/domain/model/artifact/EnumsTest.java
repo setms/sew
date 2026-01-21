@@ -9,6 +9,7 @@ class EnumsTest {
   @Test
   void shouldCreateTypedCollection() {
     var actual = Enums.of(Item.class);
+
     assertThat(actual.getType()).isEqualTo(Item.class);
   }
 
