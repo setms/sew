@@ -36,7 +36,7 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
    *
    * @param resource the input to validate
    * @param context additional inputs required for validation
-   * @param diagnostics where to any validation issues
+   * @param diagnostics where to store any validation issues
    */
   public A validate(
       Resource<?> resource, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
