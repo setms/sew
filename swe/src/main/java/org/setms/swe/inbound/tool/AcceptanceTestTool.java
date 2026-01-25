@@ -1,9 +1,5 @@
 package org.setms.swe.inbound.tool;
 
-import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
-import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
-import static org.setms.km.domain.model.tool.Tools.builderFor;
-import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 
@@ -15,8 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ArtifactTool;
@@ -24,7 +20,6 @@ import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
@@ -33,11 +28,16 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.PolicyScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Scenario;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
-import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
+@RequiredArgsConstructor
 public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
 
-  private static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
+  private final TechnologyResolver technologyResolver;
+
+  public AcceptanceTestTool() {
+    this(new TechnologyResolverImpl());
+  }
 
   @Override
   public Input<AcceptanceTest> validationTarget() {
@@ -57,17 +57,8 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
   @Override
   public void validate(
       AcceptanceTest acceptanceTest, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    if (inputs.get(Decision.class).stream()
-        .filter(decision -> decision.getPackage().equals(acceptanceTest.getPackage()))
-        .map(Decision::getTopic)
-        .noneMatch(ProgrammingLanguage.TOPIC::equals)) {
-      diagnostics.add(
-          new Diagnostic(
-              WARN,
-              "Missing decision on programming language",
-              acceptanceTest.toLocation(),
-              new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")));
-    }
+    technologyResolver.unitTestGenerator(
+        inputs.get(Decision.class), acceptanceTest.toLocation(), diagnostics);
   }
 
   @Override
@@ -76,28 +67,8 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       AcceptanceTest acceptanceTest,
       String suggestionCode,
       Location location,
-      ResolvedInputs inputs)
-      throws Exception {
-    if (suggestionCode.equals(PICK_PROGRAMMING_LANGUAGE)) {
-      return pickProgrammingLanguage(resource, acceptanceTest);
-    }
-    return super.doApply(resource, acceptanceTest, suggestionCode, location, inputs);
-  }
-
-  private AppliedSuggestion pickProgrammingLanguage(
-      Resource<?> resource, AcceptanceTest acceptanceTest) {
-    try {
-      var decision =
-          new Decision(new FullyQualifiedName(acceptanceTest.getPackage(), "ProgrammingLanguage"))
-              .setTopic(ProgrammingLanguage.TOPIC);
-      var decisionResource = resourceFor(decision, acceptanceTest, resource);
-      try (var output = decisionResource.writeTo()) {
-        builderFor(decision).build(decision, output);
-      }
-      return created(decisionResource);
-    } catch (Exception e) {
-      return failedWith(e);
-    }
+      ResolvedInputs inputs) {
+    return technologyResolver.applySuggestion(suggestionCode, resource);
   }
 
   @Override

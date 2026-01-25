@@ -1,0 +1,33 @@
+package org.setms.swe.domain.model.sdlc.technology;
+
+import java.util.Collection;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.workspace.Resource;
+import org.setms.swe.domain.model.sdlc.architecture.Decision;
+
+/**
+ * Resolves technology decisions into processes that use the decided-upon technology.
+ *
+ * <p>Decisions are ADR-style artifacts that document technology choices. Each decision has a topic
+ * (e.g., "ProgrammingLanguage") and a choice (e.g., "Java"). Choosing one option may unlock
+ * follow-up decisions — for example, choosing Java introduces topics for build tool, test
+ * framework, assertion library, and test data library.
+ *
+ * @see Decision
+ * @see UnitTestGenerator
+ */
+public interface TechnologyResolver {
+
+  /**
+   * @param decisions Decisions made
+   * @param location
+   * @param diagnostics where to store any validation issues
+   * @return something that can generates unit tests, or <code>null</code> if there are issues
+   */
+  UnitTestGenerator unitTestGenerator(
+      Collection<Decision> decisions, Location location, Collection<Diagnostic> diagnostics);
+
+  AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource);
+}
