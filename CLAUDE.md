@@ -274,6 +274,8 @@ To add a new artifact type:
 - Lombok used for reducing boilerplate (getters, builders, etc.)
 - Java 25 language features available
 - Run `./gradlew spotlessApply` before committing
+- Comments MUST explain **why**, NOT **what**
+- Don't discuss implementation details in JavaDoc - that's for documenting the API
 
 ### Known issues
 
