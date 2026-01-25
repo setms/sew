@@ -2,6 +2,9 @@ package org.setms.swe.inbound.tool;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import java.util.HashSet;
+import java.util.ServiceLoader;
+import java.util.Set;
 import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.GlobInput;
@@ -10,6 +13,8 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.architecture.Components;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Modules;
+import org.setms.swe.domain.model.sdlc.code.CodeFormat;
+import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
 import org.setms.swe.domain.model.sdlc.design.Entity;
@@ -23,6 +28,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Policy;
 import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
 import org.setms.swe.domain.model.sdlc.stakeholders.Owner;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
+import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
 import org.setms.swe.inbound.format.sal.SalFormat;
@@ -114,5 +120,21 @@ class Inputs {
 
   static Input<User> users() {
     return newInput(PATH_STAKEHOLDERS, User.class);
+  }
+
+  public static Set<Input<UnitTest>> unitTests() {
+    var result = new HashSet<Input<UnitTest>>();
+    for (var conventions :
+        ServiceLoader.load(
+            ProgrammingLanguageConventions.class,
+            ProgrammingLanguageConventions.class.getClassLoader())) {
+      result.add(
+          new GlobInput<>(
+              conventions.unitTestPath(),
+              CodeFormat.INSTANCE,
+              UnitTest.class,
+              conventions.extension()));
+    }
+    return result;
   }
 }

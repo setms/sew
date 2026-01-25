@@ -36,10 +36,9 @@
 
 ### Acceptance tests
 
-- Generate unit tests - Implement `JavaUnitTestGenerator`
-- Resolve unit tests
-  - `ArtifactPathProvider` interface - `JavaLanguage` implements it 
-  - `Inputs.unitTests()` returns `Set<Input<UnitTest>>` by querying all providers via `ServiceLoader` 
-  - Tools add all elements to their context sets 
-  - Non-existing paths resolve to empty lists - no special handling needed
-  
+- Check internal consistency
+- Implement `JavaUnitTestGenerator`
+- Implement `CodeParser` and `CodeBuilder`
+- Check whether unit test exits
+  - If not, create it using `UnitTestGenerator`
+  - If it does, check that it implements all scenarios 

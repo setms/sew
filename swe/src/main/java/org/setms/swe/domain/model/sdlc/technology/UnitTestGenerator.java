@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.technology;
 
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
+import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.inbound.tool.TechnologyResolverImpl;
 
 /**
@@ -12,5 +13,5 @@ import org.setms.swe.inbound.tool.TechnologyResolverImpl;
  */
 public interface UnitTestGenerator {
 
-  GeneratedCode generate(AcceptanceTest acceptanceTest);
+  UnitTest generate(AcceptanceTest acceptanceTest);
 }
