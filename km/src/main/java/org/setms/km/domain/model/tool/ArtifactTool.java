@@ -46,7 +46,8 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
       validate(result, context, diagnostics);
       return result;
     } catch (Exception e) {
-      Arrays.stream(e.getMessage().split("\n"))
+      var messages = Optional.ofNullable(e.getMessage()).orElse(e.getClass().getSimpleName());
+      Arrays.stream(messages.split("\n"))
           .map(this::normalize)
           .forEach(
               message ->
