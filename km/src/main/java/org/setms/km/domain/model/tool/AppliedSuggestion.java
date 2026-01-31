@@ -4,6 +4,7 @@ import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
@@ -27,7 +28,8 @@ public record AppliedSuggestion(Set<Resource<?>> createdOrChanged, Set<Diagnosti
   }
 
   public static AppliedSuggestion failedWith(Exception e) {
-    return failedWith(e.getMessage());
+    return failedWith(
+        Optional.ofNullable(e.getMessage()).orElseGet(() -> e.getClass().getSimpleName()));
   }
 
   public static AppliedSuggestion failedWith(String message, Object... args) {

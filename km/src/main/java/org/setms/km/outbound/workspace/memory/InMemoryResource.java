@@ -63,15 +63,16 @@ record InMemoryResource(
 
   @Override
   public List<InMemoryResource> children() {
-    return artifactsByPath.keySet().stream()
-        .filter(candidate -> candidate.startsWith(path + "/"))
-        .map(this::directChildOf)
-        .distinct()
-        .map(
-            child ->
-                new InMemoryResource(
-                    artifactsByPath, modifiedTimeByPath, child, pathChanged, pathDeleted))
-        .toList();
+    return new LinkedHashSet<>(artifactsByPath.keySet())
+        .stream()
+            .filter(candidate -> candidate.startsWith(path + "/"))
+            .map(this::directChildOf)
+            .distinct()
+            .map(
+                child ->
+                    new InMemoryResource(
+                        artifactsByPath, modifiedTimeByPath, child, pathChanged, pathDeleted))
+            .toList();
   }
 
   private String directChildOf(String descendant) {

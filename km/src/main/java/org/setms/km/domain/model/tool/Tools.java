@@ -63,7 +63,7 @@ public class Tools {
   }
 
   public static Stream<Tool> all() {
-    return tools.stream();
+    return new HashSet<>(tools).stream();
   }
 
   public static <T extends Artifact> Builder builderFor(T artifact) {
