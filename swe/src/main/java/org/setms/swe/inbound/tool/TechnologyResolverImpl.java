@@ -9,6 +9,7 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -23,36 +24,45 @@ import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
 public class TechnologyResolverImpl implements TechnologyResolver {
 
+  private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
+  private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
-  public static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
-  public static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
 
   @Override
-  public UnitTestGenerator unitTestGenerator(
+  public Optional<UnitTestGenerator> unitTestGenerator(
       Collection<Decision> decisions, Location location, Collection<Diagnostic> diagnostics) {
-    var decisionsByTopic = groupByTopic(decisions);
-    var programmingLanguage = decisionsByTopic.get(ProgrammingLanguage.TOPIC);
-    UnitTestGenerator result = null;
-    switch (programmingLanguage) {
-      case "Java" -> new JavaUnitGenerator();
-      case null ->
-          diagnostics.add(
-              new Diagnostic(
-                  WARN,
-                  "Missing decision on programming language",
-                  location,
-                  new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")));
-      default ->
-          diagnostics.add(
-              new Diagnostic(ERROR, "Decided on unknown programming language", location));
-    }
-    return result;
+    var programmingLanguage = groupByTopic(decisions).get(ProgrammingLanguage.TOPIC);
+    return Optional.ofNullable(unitTestGeneratorFor(programmingLanguage, location, diagnostics));
   }
 
   private Map<String, String> groupByTopic(Collection<Decision> decisions) {
     var result = new HashMap<String, String>();
     decisions.forEach(decision -> result.put(decision.getTopic(), decision.getChoice()));
     return result;
+  }
+
+  private UnitTestGenerator unitTestGeneratorFor(
+      String programmingLanguage, Location location, Collection<Diagnostic> diagnostics) {
+    return switch (programmingLanguage) {
+      case "Java" -> new JavaUnitGenerator();
+      case null ->
+          nothing(
+              new Diagnostic(
+                  WARN,
+                  "Missing decision on programming language",
+                  location,
+                  new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")),
+              diagnostics);
+      default ->
+          nothing(
+              new Diagnostic(ERROR, "Decided on unknown programming language", location),
+              diagnostics);
+    };
+  }
+
+  private <T> T nothing(Diagnostic diagnostic, Collection<Diagnostic> diagnostics) {
+    diagnostics.add(diagnostic);
+    return null;
   }
 
   @Override

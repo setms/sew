@@ -5,9 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.setms.swe.inbound.tool.AcceptanceTestTool.SUGGESTION_CREATE_UNIT_TEST;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
@@ -19,6 +21,8 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
+import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
+import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
 
 class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
@@ -39,6 +43,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
   private static final String REPORT_PATH = "build/Notifications-aggregate.html";
 
   private static final TechnologyResolver technologyResolver = mock(TechnologyResolver.class);
+  private static final UnitTestGenerator generator = mock(UnitTestGenerator.class);
 
   protected AcceptanceTestToolTest() {
     super(
@@ -67,7 +72,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
             invocation -> {
               Collection<Diagnostic> diagnostics = invocation.getArgument(2);
               diagnostics.add(diagnostic);
-              return null;
+              return Optional.empty();
             });
     var tool = (AcceptanceTestTool) getTool();
     var diagnostics = new ArrayList<Diagnostic>();
@@ -89,5 +94,56 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     var actual = tool.applySuggestion(null, suggestionCode, null, null, resource);
 
     assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  void shouldReportMissingUnitTest() {
+    var tool = (AcceptanceTestTool) getTool();
+    var diagnostics = new ArrayList<Diagnostic>();
+    var acceptanceTest = new AcceptanceTest(new FullyQualifiedName("package.Name"));
+    var inputs = new ResolvedInputs();
+    when(technologyResolver.unitTestGenerator(
+            anyCollection(), any(Location.class), anyCollection()))
+        .thenReturn(Optional.of(generator));
+
+    tool.validate(acceptanceTest, inputs, diagnostics);
+
+    assertThat(diagnostics)
+        .hasSize(1)
+        .first()
+        .satisfies(
+            diagnostic -> {
+              assertThat(diagnostic.level()).isEqualTo(Level.WARN);
+              assertThat(diagnostic.message()).isEqualTo("Missing unit test");
+            });
+  }
+
+  @Test
+  void shouldCreateUnitTest() {
+    var tool = (AcceptanceTestTool) getTool();
+    var acceptanceTest = new AcceptanceTest(new FullyQualifiedName("package.Name"));
+    var inputs = new ResolvedInputs();
+    var workspace = new InMemoryWorkspace();
+    when(technologyResolver.unitTestGenerator(
+            anyCollection(), any(Location.class), anyCollection()))
+        .thenReturn(Optional.of(generator));
+    UnitTest unitTest = new UnitTest(new FullyQualifiedName("package.Name"));
+    when(generator.generate(acceptanceTest)).thenReturn(unitTest);
+
+    var actual =
+        tool.applySuggestion(
+            acceptanceTest,
+            SUGGESTION_CREATE_UNIT_TEST,
+            acceptanceTest.toLocation(),
+            inputs,
+            workspace.root());
+
+    assertThat(actual).as("Applied suggestion").isNotNull();
+    assertThat(actual.createdOrChanged())
+        .as("Created")
+        .isNotNull()
+        .hasSize(1)
+        .first()
+        .satisfies(resource -> assertThat(resource.path()).isEqualTo("/src/test/java/Name.java"));
   }
 }

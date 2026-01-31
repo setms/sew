@@ -32,13 +32,12 @@
 
 ### Modules
 
-- Other deployment options than monolith - use `TechnologyResolver`
+- Other deployment options than monolith
 
 ### Acceptance tests
 
-- Check internal consistency
 - Implement `JavaUnitTestGenerator`
-- Implement `CodeParser` and `CodeBuilder`
 - Check whether unit test exits
   - If not, create it using `UnitTestGenerator`
   - If it does, check that it implements all scenarios 
+- Check internal consistency

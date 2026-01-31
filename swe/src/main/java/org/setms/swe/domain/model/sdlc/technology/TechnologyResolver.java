@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.technology;
 
 import java.util.Collection;
+import java.util.Optional;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -22,11 +23,11 @@ public interface TechnologyResolver {
 
   /**
    * @param decisions Decisions made
-   * @param location
+   * @param location From where the unit test is created
    * @param diagnostics where to store any validation issues
    * @return something that can generates unit tests, or <code>null</code> if there are issues
    */
-  UnitTestGenerator unitTestGenerator(
+  Optional<UnitTestGenerator> unitTestGenerator(
       Collection<Decision> decisions, Location location, Collection<Diagnostic> diagnostics);
 
   AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource);
