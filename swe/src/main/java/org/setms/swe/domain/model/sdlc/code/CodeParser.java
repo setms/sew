@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.regex.Pattern;
+import java.util.Optional;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.DataString;
@@ -13,8 +13,11 @@ import org.setms.km.domain.model.format.RootObject;
 
 class CodeParser implements Parser {
 
-  private static final Pattern PACKAGE_PATTERN = Pattern.compile("package\\s+([\\w.]+)\\s*;");
-  private static final Pattern CLASS_PATTERN = Pattern.compile("class\\s+(\\w+)");
+  private final ProgrammingLanguageConventions conventions;
+
+  CodeParser(ProgrammingLanguageConventions conventions) {
+    this.conventions = conventions;
+  }
 
   @Override
   public RootObject parse(InputStream input) throws IOException {
@@ -28,9 +31,8 @@ class CodeParser implements Parser {
       throws IOException {
     try (var reader = new BufferedReader(new InputStreamReader(input))) {
       var code = reader.readAllAsString();
-      var result =
-          type.getConstructor(FullyQualifiedName.class)
-              .newInstance(new FullyQualifiedName(extractPackage(code), extractClassName(code)));
+      var name = extractName(code);
+      var result = type.getConstructor(FullyQualifiedName.class).newInstance(name);
       if (result instanceof CodeArtifact codeArtifact) {
         codeArtifact.setCode(code);
       }
@@ -40,13 +42,9 @@ class CodeParser implements Parser {
     }
   }
 
-  private String extractPackage(String code) {
-    var matcher = PACKAGE_PATTERN.matcher(code);
-    return matcher.find() ? matcher.group(1) : "";
-  }
-
-  private String extractClassName(String code) {
-    var matcher = CLASS_PATTERN.matcher(code);
-    return matcher.find() ? matcher.group(1) : "";
+  private FullyQualifiedName extractName(String code) {
+    return Optional.ofNullable(conventions)
+        .map(c -> c.extractName(code))
+        .orElseGet(() -> new FullyQualifiedName("", ""));
   }
 }

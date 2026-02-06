@@ -26,7 +26,6 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.eventstorming.ExternalSystem;
 import org.setms.swe.domain.model.sdlc.eventstorming.Policy;
 import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
-import org.setms.swe.domain.model.sdlc.stakeholders.Owner;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
@@ -98,10 +97,6 @@ class Inputs {
     return newInput(PATH_ARCHITECTURE, Modules.class);
   }
 
-  static Input<Owner> owners() {
-    return newInput(PATH_STAKEHOLDERS, Owner.class);
-  }
-
   static Input<Policy> policies() {
     return newInput(PATH_DESIGN, Policy.class);
   }
@@ -131,7 +126,7 @@ class Inputs {
       result.add(
           new GlobInput<>(
               conventions.unitTestPath(),
-              CodeFormat.INSTANCE,
+              new CodeFormat(conventions),
               UnitTest.class,
               conventions.extension()));
     }

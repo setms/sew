@@ -19,7 +19,7 @@ class CodeFormatTest {
       code:     begin print("Hello, world!"); end
       """;
 
-  private final CodeFormat codeFormat = CodeFormat.INSTANCE;
+  private final CodeFormat codeFormat = new CodeFormat();
 
   @Test
   void shouldParseCode() throws IOException {
