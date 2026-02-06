@@ -144,6 +144,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
         .isNotNull()
         .hasSize(1)
         .first()
-        .satisfies(resource -> assertThat(resource.path()).isEqualTo("/src/test/java/Name.java"));
+        .satisfies(
+            resource -> assertThat(resource.path()).isEqualTo("/src/test/java/package/Name.java"));
   }
 }

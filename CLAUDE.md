@@ -276,6 +276,18 @@ To add a new artifact type:
 - Run `./gradlew spotlessApply` before committing
 - Comments MUST explain **why**, NOT **what**
 - Don't discuss implementation details in JavaDoc - that's for documenting the API
+- Use the `var` keyword where possible, but if that requires a type cast
+  - Good: `var name = "John";` Bad: `String name = "John";`
+  - Good: `var list = new ArrayList<String>();` Bad: `List<String> list = new ArrayList<>();`
+  - Good: `String name = null;` Bad: `var name = (String) null;`
+- Helper methods directly follow the method that first calls them
+- If a data object has chained setters, use chaining
+- If a variable is used in a `return`, it must be called `result`
+- If a variable is used in assertions or verifications, it must be called `actual`
+- Test methods must follow the Arrange/Act/Assert pattern
+  - These sections MUST be separated by a blank line
+  - No other blank lines are allowed
+  - No section may be more than 10 lines, extract helper methods is necessary
 
 ### Known issues
 

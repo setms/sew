@@ -119,7 +119,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
   private AppliedSuggestion store(
       UnitTest unitTest, AcceptanceTest acceptanceTest, Resource<?> acceptanceTestResource) {
     try {
-      var unitTestResource = resourceFor(unitTest, acceptanceTest, acceptanceTestResource);
+      var unitTestResource = unitTestResourceFor(unitTest, acceptanceTest, acceptanceTestResource);
       try (var output = unitTestResource.writeTo()) {
         builderFor(unitTest).build(unitTest, output);
       }
@@ -127,6 +127,13 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     } catch (Exception e) {
       return failedWith(e);
     }
+  }
+
+  private Resource<?> unitTestResourceFor(
+      UnitTest unitTest, AcceptanceTest acceptanceTest, Resource<?> acceptanceTestResource) {
+    var packageDirectories = unitTest.getPackage().replace('.', '/');
+    var result = resourceFor(unitTest, acceptanceTest, acceptanceTestResource);
+    return result.parent().orElseThrow().select(packageDirectories).select(result.name());
   }
 
   @Override
