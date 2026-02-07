@@ -215,6 +215,21 @@ Grammar defined in `swe/src/main/antlr/Acceptance.g4`
 
 ## Testing approach
 
+### Acceptance test-driven development
+
+The preferred workflow in outside in:
+
+1. Add an expectation that makes `EndToEndTest` fail.
+2. Then add a unit test that localizes (part of) that failure.
+3. Then update/add code to fix the failing unit test.
+4. Repeat with step 2 until `EndToEndTest` passes.
+
+- CRITICAL: **Never** write or change production code without a failing test that demands the change
+- CRITICAL: **Always** let the user review the unit test before proceeding with the implementation.
+
+Sometimes the user will start the workflow at step 2 (regular TDD).
+
+
 ### Mutation testing with Pitest
 
 - Enabled for `km` and `swe` modules

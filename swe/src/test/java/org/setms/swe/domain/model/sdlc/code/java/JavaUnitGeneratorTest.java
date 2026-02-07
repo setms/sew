@@ -32,9 +32,15 @@ class JavaUnitGeneratorTest {
     assertThat(actual.getName()).isEqualTo("NotificationsTest");
     assertThat(actual.getPackage()).isEqualTo(PACKAGE);
     assertThat(actual.getCode()).isNotEmpty();
-    assertThat(actual.getCode()).contains("package %s;".formatted(PACKAGE));
-    assertThat(actual.getCode()).contains("class NotificationsTest");
-    assertThat(actual.getCode()).contains("@Test");
+    assertThat(actual.getCode())
+        .contains("package %s;".formatted(PACKAGE))
+        .contains("import static org.assertj.core.api.Assertions.assertThat;")
+        .contains("class NotificationsTest")
+        .contains("@Test")
+        .contains("var message = TestData.someText();")
+        .contains("var notifyUser = new NotifyUser().setMessage(message);")
+        .contains("var actual = new Notifications().accept(notifyUser);")
+        .contains("assertThat(actual).isEqualTo(new UserNotified().setMessage(message));");
   }
 
   private AcceptanceTest aggregateAcceptanceTest() {
@@ -103,7 +109,12 @@ class JavaUnitGeneratorTest {
 
     assertThat(actual).isNotNull();
     assertThat(actual.getName()).isEqualTo("SendNotificationTest");
-    assertThat(actual.getCode()).contains("class SendNotificationTest");
+    assertThat(actual.getCode())
+        .contains("class SendNotificationTest")
+        .contains("var message = TestData.someText();")
+        .contains("var userNotified = new UserNotified().setMessage(message);")
+        .contains("var actual = new SendNotification().handle(userNotified);")
+        .contains("assertThat(actual).isEqualTo(new SendEmail().setMessage(message));");
   }
 
   private AcceptanceTest policyAcceptanceTest() {
@@ -142,7 +153,12 @@ class JavaUnitGeneratorTest {
 
     assertThat(actual).isNotNull();
     assertThat(actual.getName()).isEqualTo("NotificationListTest");
-    assertThat(actual.getCode()).contains("class NotificationListTest");
+    assertThat(actual.getCode())
+        .contains("class NotificationListTest")
+        .contains("var message = TestData.someText();")
+        .contains("var userNotified = new UserNotified().setMessage(message);")
+        .contains("new NotificationList().handle(userNotified);")
+        .doesNotContain("assertThat");
   }
 
   private AcceptanceTest readModelAcceptanceTest() {
