@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
@@ -20,13 +21,17 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.Variable;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
+@RequiredArgsConstructor
 public class JavaUnitGenerator implements UnitTestGenerator {
+
+  private final String topLevelPackage;
 
   @Override
   public UnitTest generate(AcceptanceTest acceptanceTest) {
     var className = acceptanceTest.getSut().getId() + "Test";
-    var result = new UnitTest(new FullyQualifiedName(acceptanceTest.getPackage(), className));
-    result.setCode(generateCode(acceptanceTest.getPackage(), className, acceptanceTest));
+    var packageName = topLevelPackage + "." + acceptanceTest.getPackage();
+    var result = new UnitTest(new FullyQualifiedName(packageName, className));
+    result.setCode(generateCode(packageName, className, acceptanceTest));
     return result;
   }
 

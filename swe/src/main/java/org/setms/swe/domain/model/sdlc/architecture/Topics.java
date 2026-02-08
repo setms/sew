@@ -45,12 +45,7 @@ public class Topics {
         .collect(toSet());
   }
 
-  public static Collection<String> choicesFor(String topic) {
-    return providers.stream()
-        .map(TopicProvider::validChoices)
-        .filter(map -> map.containsKey(topic))
-        .map(map -> map.get(topic))
-        .flatMap(Collection::stream)
-        .collect(toSet());
+  public static boolean isValidChoice(String topic, String choice) {
+    return providers.stream().anyMatch(provider -> provider.isValidChoice(topic, choice));
   }
 }

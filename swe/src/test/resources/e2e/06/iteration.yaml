@@ -1,2 +1,9 @@
 outputs:
-  - src/test/java/todo/TodoItemsTest.java
+  - src/main/architecture/TopLevelPackage.decision
+
+inputs:
+  - location: src/main/architecture
+    file: TopLevelPackage.decision
+
+diagnostics:
+  - Missing unit test

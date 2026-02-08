@@ -18,9 +18,10 @@ import org.setms.swe.domain.model.sdlc.design.FieldType;
 
 class JavaUnitGeneratorTest {
 
-  private static final String PACKAGE = "com.example";
+  private static final String TOP_LEVEL_PACKAGE = "com.example";
+  private static final String ACCEPTANCE_TEST_PACKAGE = "notifications";
 
-  private final JavaUnitGenerator generator = new JavaUnitGenerator();
+  private final JavaUnitGenerator generator = new JavaUnitGenerator(TOP_LEVEL_PACKAGE);
 
   @Test
   void shouldGenerateUnitTestFromAggregateScenario() {
@@ -28,12 +29,13 @@ class JavaUnitGeneratorTest {
 
     var actual = generator.generate(acceptanceTest);
 
+    var expectedPackage = TOP_LEVEL_PACKAGE + "." + ACCEPTANCE_TEST_PACKAGE;
     assertThat(actual).isNotNull();
     assertThat(actual.getName()).isEqualTo("NotificationsTest");
-    assertThat(actual.getPackage()).isEqualTo(PACKAGE);
+    assertThat(actual.getPackage()).isEqualTo(expectedPackage);
     assertThat(actual.getCode()).isNotEmpty();
     assertThat(actual.getCode())
-        .contains("package %s;".formatted(PACKAGE))
+        .contains("package %s;".formatted(expectedPackage))
         .contains("import static org.assertj.core.api.Assertions.assertThat;")
         .contains("class NotificationsTest")
         .contains("@Test")
@@ -78,7 +80,7 @@ class JavaUnitGeneratorTest {
   }
 
   private FullyQualifiedName fqn(String name) {
-    return new FullyQualifiedName(PACKAGE, name);
+    return new FullyQualifiedName(ACCEPTANCE_TEST_PACKAGE, name);
   }
 
   private Link variableLink(String name) {

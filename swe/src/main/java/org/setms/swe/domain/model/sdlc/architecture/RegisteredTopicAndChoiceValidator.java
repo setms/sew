@@ -13,6 +13,6 @@ public class RegisteredTopicAndChoiceValidator
       return false;
     }
     var choice = decision.getChoice();
-    return choice != null && Topics.choicesFor(topic).contains(choice);
+    return choice != null && Topics.isValidChoice(topic, choice);
   }
 }

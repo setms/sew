@@ -18,6 +18,7 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.code.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
@@ -26,13 +27,18 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
+  private static final String TOP_LEVEL_PACKAGE_DECISION = "TopLevelPackage";
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
+  static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
       Collection<Decision> decisions, Location location, Collection<Diagnostic> diagnostics) {
-    var programmingLanguage = groupByTopic(decisions).get(ProgrammingLanguage.TOPIC);
-    return Optional.ofNullable(unitTestGeneratorFor(programmingLanguage, location, diagnostics));
+    var topics = groupByTopic(decisions);
+    var programmingLanguage = topics.get(ProgrammingLanguage.TOPIC);
+    var topLevelPackage = topics.get(TopLevelPackage.TOPIC);
+    return Optional.ofNullable(
+        unitTestGeneratorFor(programmingLanguage, topLevelPackage, location, diagnostics));
   }
 
   private Map<String, String> groupByTopic(Collection<Decision> decisions) {
@@ -42,9 +48,12 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   private UnitTestGenerator unitTestGeneratorFor(
-      String programmingLanguage, Location location, Collection<Diagnostic> diagnostics) {
+      String programmingLanguage,
+      String topLevelPackage,
+      Location location,
+      Collection<Diagnostic> diagnostics) {
     return switch (programmingLanguage) {
-      case "Java" -> new JavaUnitGenerator();
+      case "Java" -> javaUnitGenerator(topLevelPackage, location, diagnostics);
       case null ->
           nothing(
               new Diagnostic(
@@ -55,9 +64,23 @@ public class TechnologyResolverImpl implements TechnologyResolver {
               diagnostics);
       default ->
           nothing(
-              new Diagnostic(ERROR, "Decided on unknown programming language", location),
+              new Diagnostic(ERROR, "Decided on unsupported programming language", location),
               diagnostics);
     };
+  }
+
+  private UnitTestGenerator javaUnitGenerator(
+      String topLevelPackage, Location location, Collection<Diagnostic> diagnostics) {
+    if (topLevelPackage == null) {
+      return nothing(
+          new Diagnostic(
+              WARN,
+              "Missing decision on top-level package",
+              location,
+              new Suggestion(PICK_TOP_LEVEL_PACKAGE, "Decide on top-level package")),
+          diagnostics);
+    }
+    return new JavaUnitGenerator(topLevelPackage);
   }
 
   private <T> T nothing(Diagnostic diagnostic, Collection<Diagnostic> diagnostics) {
@@ -67,25 +90,26 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   @Override
   public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
-    if (suggestionCode.equals(PICK_PROGRAMMING_LANGUAGE)) {
-      return pickProgrammingLanguage(resource);
-    }
-    return AppliedSuggestion.none();
+    return switch (suggestionCode) {
+      case PICK_PROGRAMMING_LANGUAGE ->
+          pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
+      case PICK_TOP_LEVEL_PACKAGE ->
+          pickDecision(resource, TOP_LEVEL_PACKAGE_DECISION, TopLevelPackage.TOPIC);
+      default -> AppliedSuggestion.none();
+    };
   }
 
-  private AppliedSuggestion pickProgrammingLanguage(Resource<?> resource) {
+  private AppliedSuggestion pickDecision(Resource<?> resource, String decisionName, String topic) {
     try {
       var decision =
-          new Decision(
-                  new FullyQualifiedName(
-                      TECHNOLOGY_DECISIONS_PACKAGE, PROGRAMMING_LANGUAGE_DECISION))
-              .setTopic(ProgrammingLanguage.TOPIC);
+          new Decision(new FullyQualifiedName(TECHNOLOGY_DECISIONS_PACKAGE, decisionName))
+              .setTopic(topic);
       var decisionInput = Inputs.decisions();
       var decisionResource =
           resource
               .select("/")
               .select(decisionInput.path())
-              .select("%s.%s".formatted(PROGRAMMING_LANGUAGE_DECISION, decisionInput.extension()));
+              .select("%s.%s".formatted(decisionName, decisionInput.extension()));
       try (var output = decisionResource.writeTo()) {
         builderFor(decision).build(decision, output);
       }

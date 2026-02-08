@@ -310,6 +310,31 @@ When working on the IntelliJ plugin:
 2. Test plugin in sandbox: `./gradlew :intellij:runIde`
 3. Plugin targets IntelliJ 2025.2.4 with backward compatibility to build 223
 
+### Technology decisions (topics & resolver)
+
+Technology choices are modeled as `Decision` artifacts (`.decision` files) with a topic and a choice.
+Topics are declared by `TopicProvider` implementations, discovered via ServiceLoader
+(`META-INF/services/org.setms.swe.domain.model.sdlc.architecture.TopicProvider`).
+
+Key classes:
+- **`TopicProvider`** — declares `topics()`, `dependsOn()`, and `isValidChoice(topic, choice)`.
+  A provider can declare a topic without validating choices (validation may live in another provider).
+- **`Topics`** — static registry loaded via ServiceLoader. Provides `names()` and `isValidChoice()`.
+- **`TechnologyResolverImpl`** — reads `Decision` artifacts, groups them by topic, and chains
+  requirements: each missing decision emits a diagnostic with a suggestion that creates a template
+  `.decision` file. Once all decisions are present, it creates the appropriate generator
+  (e.g., `JavaUnitGenerator`).
+
+To add a new technology decision:
+1. Create a `TopicProvider` in `swe/.../sdlc/code/` declaring the topic and its `dependsOn()`.
+2. Add choice validation in the language-specific provider (e.g., `JavaLanguage.isValidChoice()`) if the choice depends
+  on the programming language.
+3. Register in `META-INF/services/org.setms.swe.domain.model.sdlc.architecture.TopicProvider`.
+4. In `TechnologyResolverImpl`: extract the new topic from `groupByTopic()`, add a missing-decision
+   diagnostic with suggestion code, and handle `applySuggestion()` via `pickDecision()`.
+5. Update e2e iterations: insert a new iteration between the prerequisite decision and the
+   generation step (the new iteration provides the decision as input and expects the next diagnostic).
+
 ### Adding new artifact types
 
 To add a new artifact type:
@@ -324,7 +349,8 @@ To add a new artifact type:
 ### Code style
 
 - Code formatting enforced via Spotless plugin
-- Lombok used for reducing boilerplate (getters, builders, etc.)
+- Lombok used for reducing boilerplate — use `@RequiredArgsConstructor` instead of hand-written
+  constructors that only assign `final` fields
 - Java 25 language features available
 - Run `./gradlew spotlessApply` before committing
 - Comments MUST explain **why**, NOT **what**

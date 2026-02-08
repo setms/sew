@@ -1,4 +1,4 @@
-package todo;
+package com.company.todo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

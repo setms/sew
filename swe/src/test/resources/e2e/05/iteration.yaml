@@ -6,4 +6,4 @@ inputs:
     file: ProgrammingLanguage.decision
 
 diagnostics:
-  - Missing unit test
+  - Missing decision on top-level package

@@ -1,9 +1,7 @@
 package org.setms.swe.domain.model.sdlc.architecture;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 
-import java.util.Map;
 import java.util.Set;
 
 public interface TopicProvider {
@@ -16,7 +14,7 @@ public interface TopicProvider {
     return emptySet();
   }
 
-  default Map<String, Set<String>> validChoices() {
-    return emptyMap();
+  default boolean isValidChoice(String topic, String choice) {
+    return false;
   }
 }

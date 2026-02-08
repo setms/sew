@@ -1,0 +1,7 @@
+package technology
+
+decision TopLevelPackage {
+  topic     = "TopLevelPackage"
+  choice    = "com.company"
+  rationale = "Standard company package prefix."
+}

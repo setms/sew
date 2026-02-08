@@ -1,0 +1,2 @@
+outputs:
+  - src/test/java/com/company/todo/TodoItemsTest.java
