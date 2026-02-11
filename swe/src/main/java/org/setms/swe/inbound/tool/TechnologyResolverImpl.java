@@ -19,7 +19,7 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.code.TopLevelPackage;
-import org.setms.swe.domain.model.sdlc.code.java.JavaUnitGenerator;
+import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
@@ -80,7 +80,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
               new Suggestion(PICK_TOP_LEVEL_PACKAGE, "Decide on top-level package")),
           diagnostics);
     }
-    return new JavaUnitGenerator(topLevelPackage);
+    return new JavaUnitTestGenerator(topLevelPackage);
   }
 
   private <T> T nothing(Diagnostic diagnostic, Collection<Diagnostic> diagnostics) {

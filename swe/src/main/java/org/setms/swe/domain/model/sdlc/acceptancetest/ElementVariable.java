@@ -7,9 +7,9 @@ import org.setms.km.domain.model.artifact.Link;
 
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public final class ElementVariable extends Variable<Link, FieldAssignment> {
+public final class ElementVariable extends Variable<Link, FieldAssignment, ElementVariable> {
 
   public ElementVariable(FullyQualifiedName fullyQualifiedName) {
-    super(fullyQualifiedName);
+    super(fullyQualifiedName, Link::valueOf, Link::toString);
   }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -17,6 +18,9 @@ import lombok.Value;
 @Value
 @RequiredArgsConstructor
 public class Link implements Comparable<Link> {
+
+  private static final Pattern LINK_PATTERN =
+      Pattern.compile("((?<type>[a-z][a-zA-Z0-9]*)\\()?(?<id>[A-Z][a-zA-Z0-9]*)\\)?");
 
   String type;
   @NotEmpty String id;
@@ -28,6 +32,14 @@ public class Link implements Comparable<Link> {
 
   public Link(Artifact object) {
     this(object.type(), object.getName());
+  }
+
+  public static Link valueOf(String link) {
+    var matcher = LINK_PATTERN.matcher(link);
+    if (!matcher.matches()) {
+      throw new IllegalArgumentException("Invalid link: " + link);
+    }
+    return new Link(matcher.group("type"), matcher.group("id"));
   }
 
   public List<Link> optAttribute(String name) {

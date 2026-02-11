@@ -1,2 +1,3 @@
 outputs:
   - src/test/java/com/company/todo/TodoItemsTest.java
+  - src/test/java/com/company/todo/TestData.java

@@ -7,9 +7,9 @@ import org.setms.swe.domain.model.sdlc.design.FieldType;
 
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public final class FieldVariable extends Variable<FieldType, String> {
+public final class FieldVariable extends Variable<FieldType, String, FieldVariable> {
 
   public FieldVariable(FullyQualifiedName fullyQualifiedName) {
-    super(fullyQualifiedName);
+    super(fullyQualifiedName, FieldType::parse, FieldType::toString);
   }
 }

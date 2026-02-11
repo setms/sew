@@ -9,6 +9,7 @@ import static org.setms.swe.inbound.tool.AcceptanceTestTool.SUGGESTION_CREATE_UN
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
@@ -127,8 +128,9 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     when(technologyResolver.unitTestGenerator(
             anyCollection(), any(Location.class), anyCollection()))
         .thenReturn(Optional.of(generator));
-    UnitTest unitTest = new UnitTest(new FullyQualifiedName("package.Name"));
-    when(generator.generate(acceptanceTest)).thenReturn(unitTest);
+    var unitTest = new UnitTest(new FullyQualifiedName("package.Name"));
+    unitTest.setCode("");
+    when(generator.generate(acceptanceTest)).thenReturn(List.of(unitTest));
 
     var actual =
         tool.applySuggestion(

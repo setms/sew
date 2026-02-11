@@ -2,6 +2,7 @@ package org.setms.swe.inbound.format.acceptance;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.setms.swe.domain.model.sdlc.design.FieldType.TEXT;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -163,6 +164,20 @@ class AcceptanceFormatTest {
     var actual = format.newParser().parse(new ByteArrayInputStream(output.toByteArray()));
 
     assertThat(actual).isEqualTo(AGGREGATE_SCENARIO_OBJECT);
+  }
+
+  @Test
+  void shouldParseAsAcceptanceTestDomainObject() throws IOException {
+    output.write(AGGREGATE_SCENARIO.getBytes(UTF_8));
+
+    var actual =
+        format
+            .newParser()
+            .parse(new ByteArrayInputStream(output.toByteArray()), AcceptanceTest.class, true);
+
+    assertThat(actual).isNotNull();
+    assertThat(actual.getVariables()).hasSize(3);
+    assertThat(actual.getVariables().getFirst().getType()).isEqualTo(TEXT);
   }
 
   @Test

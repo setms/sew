@@ -22,21 +22,21 @@ import org.setms.km.domain.model.artifact.Link;
 public class AcceptanceTest extends Artifact {
 
   @NotNull private Link sut;
-  @NotEmpty private List<@Valid Variable<?, ?>> variables;
+  @NotEmpty private List<@Valid Variable<?, ?, ?>> variables;
   @NotEmpty private List<@Valid Scenario> scenarios;
 
   public AcceptanceTest(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 
-  public Optional<Variable<?, ?>> findVariable(Link variable) {
+  public Optional<Variable<?, ?, ?>> findVariable(Link variable) {
     return Optional.ofNullable(variable)
         .filter(p -> p.hasType("variable"))
         .map(Link::getId)
         .flatMap(this::findVariable);
   }
 
-  public Optional<Variable<?, ?>> findVariable(String name) {
+  public Optional<Variable<?, ?, ?>> findVariable(String name) {
     return variables.stream().filter(v -> name.equals(v.getName())).findFirst();
   }
 }

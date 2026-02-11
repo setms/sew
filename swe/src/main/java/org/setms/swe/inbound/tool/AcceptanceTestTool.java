@@ -1,9 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static java.util.Collections.emptySet;
-import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
-import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.unitTests;
@@ -36,6 +34,7 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.PolicyScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Scenario;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
@@ -112,18 +111,29 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     return technologyResolver
         .unitTestGenerator(decisions, acceptanceTest.toLocation(), diagnostics)
         .map(generator -> generator.generate(acceptanceTest))
-        .map(unitTest -> store(unitTest, acceptanceTest, resource))
+        .map(codeArtifacts -> store(codeArtifacts, acceptanceTest, resource))
         .orElseGet(() -> new AppliedSuggestion(emptySet(), diagnostics));
   }
 
   private AppliedSuggestion store(
-      UnitTest unitTest, AcceptanceTest acceptanceTest, Resource<?> acceptanceTestResource) {
+      List<CodeArtifact> codeArtifacts,
+      AcceptanceTest acceptanceTest,
+      Resource<?> acceptanceTestResource) {
     try {
-      var unitTestResource = unitTestResourceFor(unitTest, acceptanceTest, acceptanceTestResource);
-      try (var output = unitTestResource.writeTo()) {
-        builderFor(unitTest).build(unitTest, output);
+      var unitTest = (UnitTest) codeArtifacts.getFirst();
+      var packageDir =
+          unitTestResourceFor(unitTest, acceptanceTest, acceptanceTestResource)
+              .parent()
+              .orElseThrow();
+      var result = new AppliedSuggestion();
+      for (var artifact : codeArtifacts) {
+        var resource = packageDir.select(artifact.getName() + ".java");
+        try (var writer = new PrintWriter(resource.writeTo())) {
+          writer.print(artifact.getCode());
+        }
+        result = result.with(resource);
       }
-      return created(unitTestResource);
+      return result;
     } catch (Exception e) {
       return failedWith(e);
     }

@@ -1,7 +1,8 @@
 package org.setms.swe.domain.model.sdlc.technology;
 
+import java.util.List;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
-import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.inbound.tool.TechnologyResolverImpl;
 
 /**
@@ -13,5 +14,5 @@ import org.setms.swe.inbound.tool.TechnologyResolverImpl;
  */
 public interface UnitTestGenerator {
 
-  UnitTest generate(AcceptanceTest acceptanceTest);
+  List<CodeArtifact> generate(AcceptanceTest acceptanceTest);
 }

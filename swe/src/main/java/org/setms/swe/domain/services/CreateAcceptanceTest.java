@@ -106,7 +106,7 @@ public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
     test.getScenarios().add(scenario);
   }
 
-  private Link linkToVariable(Variable<?, ?> variable) {
+  private Link linkToVariable(Variable<?, ?, ?> variable) {
     return new Link("variable", variable.getName());
   }
 
@@ -116,8 +116,8 @@ public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
     return new FullyQualifiedName(packageName, name);
   }
 
-  private Variable<?, ?> ensureVariableFor(
-      @NotEmpty List<Variable<?, ?>> variables, Artifact object) {
+  private Variable<?, ?, ?> ensureVariableFor(
+      @NotEmpty List<Variable<?, ?, ?>> variables, Artifact object) {
     var name = initLower(object.getName());
     var result = variables.stream().filter(v -> v.getName().equals(name)).findFirst().orElse(null);
     if (result == null) {
@@ -138,8 +138,8 @@ public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
     return result;
   }
 
-  private Variable<?, ?> finalizeCommandVariable(
-      ElementVariable variable, Command command, List<Variable<?, ?>> variables) {
+  private Variable<?, ?, ?> finalizeCommandVariable(
+      ElementVariable variable, Command command, List<Variable<?, ?, ?>> variables) {
     variable.setType(new Link(command));
     if (resolver.resolve(command.getPayload(), "entity") instanceof Entity entity
         && !entity.getFields().isEmpty()) {
@@ -152,7 +152,7 @@ public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
       ElementVariable variable,
       Artifact entityContainer,
       Entity entity,
-      List<Variable<?, ?>> variables) {
+      List<Variable<?, ?, ?>> variables) {
     var definitions = new ArrayList<FieldAssignment>();
     entity
         .getFields()
@@ -187,7 +187,7 @@ public class CreateAcceptanceTest implements Function<Link, AcceptanceTest> {
   }
 
   private ElementVariable finalizeEventVariable(
-      ElementVariable variable, Event event, @NotEmpty List<Variable<?, ?>> variables) {
+      ElementVariable variable, Event event, @NotEmpty List<Variable<?, ?, ?>> variables) {
     variable.setType(new Link(event));
     if (resolver.resolve(event.getPayload(), "entity") instanceof Entity entity
         && !entity.getFields().isEmpty()) {

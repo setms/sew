@@ -8,5 +8,12 @@ public enum FieldType {
   TIME,
   DATETIME,
   ID,
-  SELECTION
+  SELECTION;
+
+  public static FieldType parse(String value) {
+    if (value == null || value.isBlank()) {
+      throw new IllegalArgumentException("Missing value");
+    }
+    return valueOf(value.toUpperCase());
+  }
 }
