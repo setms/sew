@@ -36,8 +36,6 @@
 
 ### Acceptance tests
 
-- Implement `JavaUnitTestGenerator`
 - Check whether unit test exits
-  - If not, create it using `UnitTestGenerator`
   - If it does, check that it implements all scenarios 
 - Check internal consistency
