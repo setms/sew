@@ -39,3 +39,5 @@
 - Check whether unit test exits
   - If it does, check that it implements all scenarios 
 - Check internal consistency
+  - All variables used in scenarios
+  - No undeclared variables used in scenarios
