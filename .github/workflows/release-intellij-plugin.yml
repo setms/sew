@@ -54,3 +54,9 @@ jobs:
         with:
           key: 'pitest'
           path: ~/.pitest/cache/*_pitest_history.bin
+
+      - name: Report on tests
+        uses: mikepenz/action-junit-report@v6
+        if: failure()
+        with:
+          report_paths: '**/TEST-*.xml'

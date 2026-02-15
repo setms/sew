@@ -33,11 +33,8 @@ jobs:
       - name: Check
         run: ./gradlew check
 
-      - name: Upload reports
+      - name: Report on tests
+        uses: mikepenz/action-junit-report@v6
         if: failure()
-        uses: actions/upload-artifact@v6
         with:
-          name: test-reports
-          path: |
-            **/build/reports/tests/test/**
-          retention-days: 7
+          report_paths: '**/TEST-*.xml'
