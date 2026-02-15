@@ -57,7 +57,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
 
   @AfterEach
   void cleanupGeneratedFiles() throws IOException {
-    workspaceFor("missing/domainStory")
+    workspaceFor("missing/domainstory")
         .root()
         .select("src/main/requirements/domain-stories/JustDoIt.domainStory")
         .delete();
