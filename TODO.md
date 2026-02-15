@@ -49,5 +49,4 @@
 
 ### Code
 
-- Make `CodeToolTest` fit pattern
 - Check whether project builds
