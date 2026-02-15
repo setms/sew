@@ -32,7 +32,7 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
 
   @Override
   public String codePath() {
-    return "src/main/java/";
+    return "src/main/java";
   }
 
   @Override

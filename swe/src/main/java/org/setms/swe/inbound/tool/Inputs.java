@@ -160,7 +160,7 @@ class Inputs {
 
   private static GlobInput<CodeArtifact> toCodeInput(ProgrammingLanguageConventions conventions) {
     return new GlobInput<>(
-        new Glob(conventions.codePath(), conventions.extension()),
+        Glob.of(conventions.codePath(), conventions.extension()),
         new CodeFormat(conventions),
         CodeArtifact.class);
   }

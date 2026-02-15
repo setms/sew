@@ -70,11 +70,15 @@ abstract class ToolTestCase<A extends Artifact> {
     assertReportingContext(tool.reportingContext());
   }
 
-  private void assertValidationTarget(ArtifactTool<?> tool) {
-    var input = tool.validationTargets().iterator().next();
-    assertThat(input.path()).isEqualTo("src/%s".formatted(sourceLocation));
-    assertThat(input.extension()).isEqualTo(extension);
-    assertThat(input.format()).isInstanceOf(formatType);
+  protected void assertValidationTarget(ArtifactTool<?> tool) {
+    assertThat(tool.validationTargets())
+        .isNotEmpty()
+        .allSatisfy(
+            input -> {
+              assertThat(input.path()).isEqualTo("src/%s".formatted(sourceLocation));
+              assertThat(input.extension()).isEqualTo(extension);
+              assertThat(input.format()).isInstanceOf(formatType);
+            });
   }
 
   protected void assertValidationContext(Set<Input<? extends Artifact>> inputs) {
@@ -208,9 +212,13 @@ abstract class ToolTestCase<A extends Artifact> {
       ArtifactTool<T> artifactTool,
       Workspace<?> workspace,
       ResolvedInputs inputs) {
-    var input = artifactTool.validationTargets().iterator().next();
-    return artifactTool.applySuggestion(
-        toArtifact(workspace, location, input), code, location, inputs, workspace.root());
+    var artifact =
+        artifactTool.validationTargets().stream()
+            .map(input -> toArtifact(workspace, location, input))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElseThrow();
+    return artifactTool.applySuggestion(artifact, code, location, inputs, workspace.root());
   }
 
   @SuppressWarnings("unchecked")

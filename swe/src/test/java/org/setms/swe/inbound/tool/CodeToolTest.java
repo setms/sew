@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
@@ -16,6 +17,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.code.CodeFormat;
 
 class CodeToolTest extends ToolTestCase<CodeArtifact> {
 
@@ -24,15 +26,17 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   }
 
   @Override
-  @Test
-  void shouldDefineInputs() {
-    // Skip - CodeTool has multiple validation targets (one per language)
-  }
-
-  @Override
-  @Test
-  void shouldValidate() {
-    // Skip - CodeTool validation is tested in specific tests below
+  protected void assertValidationTarget(ArtifactTool<?> tool) {
+    var targets = tool.validationTargets();
+    assertThat(targets).hasSize(3);
+    assertThat(targets).anySatisfy(input -> assertThat(input.path()).isEqualTo("src/main/java"));
+    assertThat(targets).anySatisfy(input -> assertThat(input.path()).isEqualTo("src/test/java"));
+    assertThat(targets)
+        .allSatisfy(
+            input -> {
+              assertThat(input.format()).isInstanceOf(CodeFormat.class);
+              assertThat(input.extension()).isEqualTo("java");
+            });
   }
 
   @Test
