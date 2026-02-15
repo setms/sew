@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 
@@ -21,11 +22,17 @@ class CommandToolTest extends ToolTestCase<Command> {
     super(new CommandTool(), Command.class, "main/design");
   }
 
+  @AfterEach
+  void cleanupGeneratedFiles() throws IOException {
+    workspaceFor("missing").root().select("src/main/design/Payload.entity").delete();
+  }
+
   @Test
   void shouldCreatePayload() throws IOException {
     var workspace = workspaceFor("missing");
 
     var actual = validateAgainst(workspace);
+
     assertThat(actual).as("Validation diagnostics").hasSize(1);
     var diagnostic = actual.getFirst();
     assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
@@ -37,10 +44,6 @@ class CommandToolTest extends ToolTestCase<Command> {
     var created = apply(suggestion, diagnostic, workspace).createdOrChanged();
     var payload = workspace.root().select("src/main/design/Payload.entity");
     assertThat(created).as("Apply diagnostics").hasSize(1).contains(payload);
-    try {
-      assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
-    } finally {
-      payload.delete();
-    }
+    assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
   }
 }

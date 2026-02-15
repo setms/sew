@@ -51,8 +51,8 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
   }
 
   @Override
-  public Input<AcceptanceTest> validationTarget() {
-    return acceptanceTests();
+  public Set<Input<? extends AcceptanceTest>> validationTargets() {
+    return Set.of(acceptanceTests());
   }
 
   @Override

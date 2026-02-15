@@ -26,8 +26,8 @@ import org.setms.swe.domain.model.sdlc.ddd.Term;
 public class GlossaryTool extends ArtifactTool<Term> {
 
   @Override
-  public Input<Term> validationTarget() {
-    return terms();
+  public Set<Input<? extends Term>> validationTargets() {
+    return Set.of(terms());
   }
 
   @Override

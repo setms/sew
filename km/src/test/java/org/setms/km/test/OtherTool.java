@@ -15,8 +15,8 @@ import org.setms.km.domain.model.workspace.Resource;
 public class OtherTool extends TestTool<OtherArtifact> {
 
   @Override
-  public Input<OtherArtifact> validationTarget() {
-    return new GlobInput<>("other", TestFormat.INSTANCE, OtherArtifact.class);
+  public Set<Input<? extends OtherArtifact>> validationTargets() {
+    return Set.of(new GlobInput<>("other", TestFormat.INSTANCE, OtherArtifact.class));
   }
 
   @Override

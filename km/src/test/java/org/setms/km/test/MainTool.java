@@ -18,8 +18,8 @@ public class MainTool extends TestTool<MainArtifact> {
       new GlobInput<>("main", TestFormat.INSTANCE, MainArtifact.class);
 
   @Override
-  public Input<MainArtifact> validationTarget() {
-    return INPUT;
+  public Set<Input<? extends MainArtifact>> validationTargets() {
+    return Set.of(INPUT);
   }
 
   @Override

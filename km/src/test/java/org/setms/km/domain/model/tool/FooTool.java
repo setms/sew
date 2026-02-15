@@ -4,6 +4,7 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
@@ -15,8 +16,8 @@ class FooTool extends ArtifactTool<Foo> {
   static final String SUGGESTION = "Some suggestion";
 
   @Override
-  public Input<Foo> validationTarget() {
-    return new GlobInput<>("foo", null, Foo.class);
+  public Set<Input<? extends Foo>> validationTargets() {
+    return Set.of(new GlobInput<>("foo", null, Foo.class));
   }
 
   @Override

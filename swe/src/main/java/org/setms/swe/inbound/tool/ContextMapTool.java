@@ -23,8 +23,8 @@ public class ContextMapTool extends BaseDiagramTool<Domain> {
   private static final String LABEL_DOWNSTREAM = "D";
 
   @Override
-  public Input<Domain> validationTarget() {
-    return domains();
+  public Set<Input<? extends Domain>> validationTargets() {
+    return Set.of(domains());
   }
 
   @Override

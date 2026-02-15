@@ -43,8 +43,8 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   private static final String CREATE_USE_CASE_SCENARIO = "usecase.scenario.create";
 
   @Override
-  public Input<DomainStory> validationTarget() {
-    return domainStories();
+  public Set<Input<? extends DomainStory>> validationTargets() {
+    return Set.of(domainStories());
   }
 
   @Override

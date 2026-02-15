@@ -44,8 +44,8 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
   private static final String SUGGESTION_DEPLOY_IN_COMPONENTS = "modules.deploy.in.components";
 
   @Override
-  public Input<Modules> validationTarget() {
-    return modules();
+  public Set<Input<? extends Modules>> validationTargets() {
+    return Set.of(modules());
   }
 
   @Override

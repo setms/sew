@@ -1,6 +1,7 @@
 package org.setms.km.domain.model.diagram;
 
 import java.util.Collection;
+import java.util.Set;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
@@ -11,8 +12,8 @@ import org.setms.km.domain.model.workspace.Resource;
 public class FooDiagramTool extends BaseDiagramTool<Foo> {
 
   @Override
-  public Input<Foo> validationTarget() {
-    return new GlobInput<>("foo", null, Foo.class);
+  public Set<Input<? extends Foo>> validationTargets() {
+    return Set.of(new GlobInput<>("foo", null, Foo.class));
   }
 
   @Override

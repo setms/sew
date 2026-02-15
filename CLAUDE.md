@@ -228,3 +228,4 @@ To add a new technology decision:
   - No other blank lines are allowed
   - No section may be more than 10 lines, extract helper methods is necessary
 - CRITICAL: Always re-use as much as possible, both in production and in test code
+- CRITICAL: Prefer `Stream` and `Optional` over `for` and `if`, especially to avoid nested blocks

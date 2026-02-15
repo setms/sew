@@ -51,8 +51,8 @@ class ArtifactToolTest {
     }
 
     @Override
-    public Input<Artifact> validationTarget() {
-      return target;
+    public Set<Input<? extends Artifact>> validationTargets() {
+      return Set.of(target);
     }
 
     @Override
@@ -70,10 +70,6 @@ class ArtifactToolTest {
     }
 
     @Override
-    public Input<? extends Artifact> validationTarget() {
-      return targets.iterator().next();
-    }
-
     public Set<Input<? extends Artifact>> validationTargets() {
       return targets;
     }

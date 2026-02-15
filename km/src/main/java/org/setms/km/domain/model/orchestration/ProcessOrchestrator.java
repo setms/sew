@@ -533,12 +533,20 @@ public class ProcessOrchestrator {
             .filter(t -> t.validates(resource.path()))
             .toList()) {
       var inputs = resolveInputs(tool.validationContext());
-      var artifact = parse(resource.path(), tool.validationTarget());
+      var input = findMatchingInput(tool, resource.path());
+      var artifact = parse(resource.path(), input);
       var result = tool.applySuggestion(artifact, code, location, inputs, resource);
       if (!result.createdOrChanged().isEmpty()) {
         return result;
       }
     }
     return none();
+  }
+
+  private Input<? extends Artifact> findMatchingInput(ArtifactTool<?> tool, String path) {
+    return tool.validationTargetInputs()
+        .filter(i -> i.matches(path))
+        .findFirst()
+        .orElseGet(() -> tool.validationTargetInputs().findFirst().orElseThrow());
   }
 }

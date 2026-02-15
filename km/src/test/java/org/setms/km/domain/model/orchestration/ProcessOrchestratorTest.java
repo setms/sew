@@ -72,7 +72,7 @@ class ProcessOrchestratorTest {
   private String storeNewArtifact(
       ArtifactTool<?> tool, Function<FullyQualifiedName, Artifact> artifactCreator)
       throws IOException {
-    var input = tool.validationTarget();
+    var input = tool.validationTargets().iterator().next();
     var resource = workspace.root().select(input.path()).select("Bear." + input.extension());
     try (var output = resource.writeTo()) {
       input
@@ -108,7 +108,7 @@ class ProcessOrchestratorTest {
   }
 
   private List<String> inputsForMainTool() throws IOException {
-    var input = mainTool.validationTarget();
+    var input = mainTool.validationTargets().iterator().next();
     var globPaths =
         workspace
             .root()

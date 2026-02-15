@@ -33,12 +33,6 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   }
 
   @Override
-  public Input<? extends CodeArtifact> validationTarget() {
-    // TODO: Shouldn't need to provide this, all clients should call validationTargets() instead
-    return validationTargets().iterator().next();
-  }
-
-  @Override
   public Set<Input<? extends CodeArtifact>> validationTargets() {
     var result = new HashSet<Input<? extends CodeArtifact>>();
     result.addAll(Inputs.code());

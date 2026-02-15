@@ -214,8 +214,8 @@ class EndToEndTest {
     var name = segments.get(2);
     return Tools.all()
         .filter(ArtifactTool.class::isInstance)
-        .map(ArtifactTool.class::cast)
-        .map(ArtifactTool::validationTarget)
+        .<ArtifactTool<?>>map(ArtifactTool.class::cast)
+        .flatMap(ArtifactTool::validationTargetInputs)
         .filter(input -> type.equals(initLower(input.type().getSimpleName())))
         .findFirst()
         .map(input -> "%s/%s.%s".formatted(input.path(), name, input.extension()));

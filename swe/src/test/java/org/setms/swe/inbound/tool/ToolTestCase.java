@@ -71,7 +71,7 @@ abstract class ToolTestCase<A extends Artifact> {
   }
 
   private void assertValidationTarget(ArtifactTool<?> tool) {
-    var input = tool.validationTarget();
+    var input = tool.validationTargets().iterator().next();
     assertThat(input.path()).isEqualTo("src/%s".formatted(sourceLocation));
     assertThat(input.extension()).isEqualTo(extension);
     assertThat(input.format()).isInstanceOf(formatType);
@@ -116,18 +116,20 @@ abstract class ToolTestCase<A extends Artifact> {
   }
 
   private SequencedSet<Diagnostic> validate(Workspace<?> workspace, ArtifactTool<?> artifactTool) {
-    var input = artifactTool.validationTarget();
-    var matchingObjects = workspace.root().matching(input.path(), input.extension());
-    assertThat(matchingObjects).as("Missing artifact resources").isNotEmpty();
     var result = new LinkedHashSet<Diagnostic>();
     var resolvedInputs =
         resolveValidationInputs(artifactTool, workspace.root(), new LinkedHashSet<>());
-    for (var source : matchingObjects) {
-      var artifact = artifactTool.validate(source, resolvedInputs, result);
-      if (artifact != null) {
-        assertThatParsedObjectMatchesExpectations(artifact);
-      }
-    }
+    artifactTool
+        .validationTargets()
+        .forEach(
+            input -> {
+              var matchingObjects = workspace.root().matching(input.path(), input.extension());
+              assertThat(matchingObjects).as("Missing artifact resources").isNotEmpty();
+              matchingObjects.stream()
+                  .map(source -> artifactTool.validate(source, resolvedInputs, result))
+                  .filter(Objects::nonNull)
+                  .forEach(this::assertThatParsedObjectMatchesExpectations);
+            });
     return result;
   }
 
@@ -149,7 +151,9 @@ abstract class ToolTestCase<A extends Artifact> {
       Tool tool, Resource<?> resource, Collection<Diagnostic> diagnostics) {
     var result = new ResolvedInputs();
     if (tool instanceof ArtifactTool<?> artifactTool) {
-      resolveInput(artifactTool.validationTarget(), resource, true, diagnostics, result);
+      artifactTool
+          .validationTargets()
+          .forEach(input -> resolveInput(input, resource, true, diagnostics, result));
     }
     tool.validationContext()
         .forEach(input -> resolveInput(input, resource, false, diagnostics, result));
@@ -204,12 +208,9 @@ abstract class ToolTestCase<A extends Artifact> {
       ArtifactTool<T> artifactTool,
       Workspace<?> workspace,
       ResolvedInputs inputs) {
+    var input = artifactTool.validationTargets().iterator().next();
     return artifactTool.applySuggestion(
-        toArtifact(workspace, location, artifactTool.validationTarget()),
-        code,
-        location,
-        inputs,
-        workspace.root());
+        toArtifact(workspace, location, input), code, location, inputs, workspace.root());
   }
 
   @SuppressWarnings("unchecked")

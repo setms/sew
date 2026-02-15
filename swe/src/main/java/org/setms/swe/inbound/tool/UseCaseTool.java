@@ -58,8 +58,8 @@ public class UseCaseTool extends BaseDiagramTool<UseCase> {
   private static final String CREATE_DOMAIN_STORY = "domainstory.create";
 
   @Override
-  public Input<UseCase> validationTarget() {
-    return useCases();
+  public Set<Input<? extends UseCase>> validationTargets() {
+    return Set.of(useCases());
   }
 
   @Override

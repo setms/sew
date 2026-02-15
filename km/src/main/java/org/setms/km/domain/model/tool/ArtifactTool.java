@@ -5,6 +5,7 @@ import static org.setms.km.domain.model.validation.Level.ERROR;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -17,20 +18,20 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
       Pattern.compile("[A-Z]+\\sat\\s[^:]+:\\s(?<message>.+)");
 
   /**
-   * The input that this tool validates.
+   * The inputs that this tool validates.
    *
    * @return the validation targets
    */
-  public abstract Input<? extends A> validationTarget();
+  public abstract Set<Input<? extends A>> validationTargets();
 
   /**
-   * The inputs that this tool validates. By default, returns a set containing only the {@link
-   * #validationTarget()}. Tools that validate multiple inputs should override this method.
+   * Returns a stream of validation targets with proper type bounds. This instance method properly
+   * preserves the type parameter when called on ArtifactTool instances.
    *
-   * @return the validation targets
+   * @return stream of validation target inputs
    */
-  public Set<Input<? extends A>> validationTargets() {
-    return Set.of(validationTarget());
+  public Stream<Input<? extends Artifact>> validationTargetInputs() {
+    return validationTargets().stream().map(input -> input);
   }
 
   /**
@@ -50,7 +51,11 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
    */
   public A validate(
       Resource<?> resource, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
-    var input = validationTarget();
+    var input =
+        validationTargets().stream()
+            .filter(i -> i.matches(resource.path()))
+            .findFirst()
+            .orElseGet(() -> validationTargets().iterator().next());
     try (var sutStream = resource.readFrom()) {
       var result = input.format().newParser().parse(sutStream, input.type(), true);
       validate(result, context, diagnostics);

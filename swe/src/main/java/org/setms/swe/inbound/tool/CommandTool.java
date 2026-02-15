@@ -29,8 +29,8 @@ public class CommandTool extends ArtifactTool<Command> {
   public static final String CREATE_PAYLOAD = "payload.create";
 
   @Override
-  public Input<Command> validationTarget() {
-    return commands();
+  public Set<Input<? extends Command>> validationTargets() {
+    return Set.of(commands());
   }
 
   @Override

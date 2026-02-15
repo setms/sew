@@ -17,7 +17,6 @@
 
 ### Generic
 
-- ValidationTargets - plural everywhere
 - Introduce Decisions - Optional<Choice> getChoiceFor(String topic)
 
 ### Decision

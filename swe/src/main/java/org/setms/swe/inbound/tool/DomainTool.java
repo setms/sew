@@ -41,8 +41,8 @@ public class DomainTool extends BaseDiagramTool<Domain> {
   private static final String CREATE_MODULES = "modules.create";
 
   @Override
-  public Input<Domain> validationTarget() {
-    return domains();
+  public Set<Input<? extends Domain>> validationTargets() {
+    return Set.of(domains());
   }
 
   @Override
