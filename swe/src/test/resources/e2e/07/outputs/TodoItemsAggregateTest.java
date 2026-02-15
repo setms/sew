@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-class TodoItemsTest {
+class TodoItemsAggregateTest {
 
   private final TodoItemsService service = new TodoItemsService();
 

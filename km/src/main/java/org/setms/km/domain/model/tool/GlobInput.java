@@ -17,11 +17,15 @@ public record GlobInput<T extends Artifact>(String name, Glob glob, Format forma
   }
 
   public GlobInput(String path, Format format, Class<T> type, String extension) {
-    this(
-        initLower(new English().plural(type.getSimpleName())),
-        Glob.of(path, extension),
-        format,
-        type);
+    this(toName(type), Glob.of(path, extension), format, type);
+  }
+
+  private static String toName(Class<?> type) {
+    return initLower(new English().plural(type.getSimpleName()));
+  }
+
+  public GlobInput(Glob glob, Format format, Class<T> type) {
+    this(toName(type), glob, format, type);
   }
 
   @Override

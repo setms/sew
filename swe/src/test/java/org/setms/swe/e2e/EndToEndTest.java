@@ -1,5 +1,6 @@
 package org.setms.swe.e2e;
 
+import static java.util.Optional.empty;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -169,10 +170,11 @@ class EndToEndTest {
         diagnostic ->
             chat.add(
                 false,
-                "Found issue `%s` in %s".formatted(diagnostic.message(), diagnostic.location())));
+                "Found issue `%s`%s"
+                    .formatted(diagnostic.message(), toLocation(diagnostic, "in"))));
     diagnostics.forEach(
         diagnostic -> {
-          var resource = workspace.root().select(toPath(diagnostic.location()));
+          var resource = workspace.root().select(toPath(diagnostic.location()).orElse("/"));
           diagnostic
               .suggestions()
               .forEach(
@@ -182,23 +184,31 @@ class EndToEndTest {
                             resource, suggestion.code(), diagnostic.location());
                     assertThat(applied.diagnostics())
                         .as(
-                            "Diagnostics for applying suggestion %s at %s"
-                                .formatted(suggestion.code(), diagnostic.location()))
+                            "Diagnostics for applying suggestion %s%s"
+                                .formatted(suggestion.code(), toLocation(diagnostic, "at")))
                         .isEmpty();
                     applied.createdOrChanged().stream().map(Resource::name).forEach(created::add);
                     chat.add(
                         true,
-                        "Applied suggestion `%s` to %s"
-                            .formatted(suggestion.message(), diagnostic.location()));
+                        "Applied suggestion `%s`%s"
+                            .formatted(suggestion.message(), toLocation(diagnostic, "at")));
                   });
         });
   }
 
-  private String toPath(Location location) {
+  private String toLocation(Diagnostic diagnostic, String adverb) {
+    var format = " %s %%s".formatted(adverb);
+    return Optional.ofNullable(diagnostic.location()).map(format::formatted).orElse("");
+  }
+
+  private Optional<String> toPath(Location location) {
+    if (location == null) {
+      return empty();
+    }
     var segments = location.segments();
     if (segments.size() < 3) {
       System.err.printf("Unknown path for location %s%n", location);
-      return "/";
+      return empty();
     }
     var type = segments.get(1);
     var name = segments.get(2);
@@ -208,7 +218,6 @@ class EndToEndTest {
         .map(ArtifactTool::validationTarget)
         .filter(input -> type.equals(initLower(input.type().getSimpleName())))
         .findFirst()
-        .map(input -> "%s/%s.%s".formatted(input.path(), name, input.extension()))
-        .orElse("/");
+        .map(input -> "%s/%s.%s".formatted(input.path(), name, input.extension()));
   }
 }

@@ -39,7 +39,7 @@ public class Tools {
     return tools.stream()
         .filter(ArtifactTool.class::isInstance)
         .map(tool -> (ArtifactTool<?>) tool)
-        .filter(tool -> hasInputOfType(type, Stream.of(tool.validationTarget())))
+        .filter(tool -> hasInputOfType(type, tool.validationTargets().stream().map(input -> input)))
         .toList();
   }
 

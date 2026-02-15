@@ -6,7 +6,13 @@ public interface ProgrammingLanguageConventions {
 
   String extension();
 
+  String codePath();
+
   String unitTestPath();
+
+  String unitTestPattern();
+
+  String unitTestHelpersPattern();
 
   FullyQualifiedName extractName(String code);
 }

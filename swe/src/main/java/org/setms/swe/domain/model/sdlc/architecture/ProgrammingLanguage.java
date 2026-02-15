@@ -1,7 +1,6 @@
-package org.setms.swe.domain.model.sdlc.code;
+package org.setms.swe.domain.model.sdlc.architecture;
 
 import java.util.Set;
-import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
 
 public class ProgrammingLanguage implements TopicProvider {
 

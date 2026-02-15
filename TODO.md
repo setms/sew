@@ -13,7 +13,12 @@
   - Terms from glossary
 
 
-## Specific tools
+## Tools
+
+### Generic
+
+- ValidationTargets - plural everywhere
+- Introduce Decisions - Optional<Choice> getChoiceFor(String topic)
 
 ### Decision
 
@@ -36,8 +41,14 @@
 
 ### Acceptance tests
 
+- Resolve duplication between name and unit test name
 - Check whether unit test exits
   - If it does, check that it implements all scenarios 
 - Check internal consistency
   - All variables used in scenarios
   - No undeclared variables used in scenarios
+
+### Code
+
+- Make `CodeToolTest` fit pattern
+- Check whether project builds

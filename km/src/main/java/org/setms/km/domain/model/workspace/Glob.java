@@ -11,7 +11,8 @@ public record Glob(String path, String pattern) {
   }
 
   public String extension() {
-    return pattern.startsWith(PATTERN_PREFIX) ? pattern.substring(PATTERN_PREFIX.length()) : null;
+    var index = pattern.lastIndexOf('.');
+    return index >= 0 ? pattern.substring(index + 1) : null;
   }
 
   public boolean matches(String path) {
@@ -25,19 +26,34 @@ public record Glob(String path, String pattern) {
       return false;
     }
     candidate = candidate.substring(index);
-    var regex = "";
-    var remainder = pattern;
-    if (remainder.startsWith("**/")) {
-      regex = ".*";
-      remainder = remainder.substring(3);
-    }
-    if (remainder.startsWith("*.")) {
-      regex += "[^/]*\\.";
-      remainder = remainder.substring(2);
-    }
-    regex += remainder;
+    var regex = patternToRegex(pattern);
     var matcher = Pattern.compile(regex).matcher(candidate);
     return matcher.matches();
+  }
+
+  private String patternToRegex(String pattern) {
+    var result = new StringBuilder();
+
+    var remainder = pattern;
+    if (remainder.startsWith("**/")) {
+      result.append(".*");
+      remainder = remainder.substring(3);
+    }
+
+    while (!remainder.isEmpty()) {
+      var starIndex = remainder.indexOf('*');
+      if (starIndex < 0) {
+        result.append(Pattern.quote(remainder));
+        break;
+      }
+      if (starIndex > 0) {
+        result.append(Pattern.quote(remainder.substring(0, starIndex)));
+      }
+      result.append("[^/]*");
+      remainder = remainder.substring(starIndex + 1);
+    }
+
+    return result.toString();
   }
 
   @Override

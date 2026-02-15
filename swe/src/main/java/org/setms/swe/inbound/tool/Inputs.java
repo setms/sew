@@ -1,18 +1,22 @@
 package org.setms.swe.inbound.tool;
 
+import static java.util.stream.Collectors.toSet;
 import static lombok.AccessLevel.PRIVATE;
 
-import java.util.HashSet;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
+import org.setms.km.domain.model.workspace.Glob;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.architecture.Components;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Modules;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
@@ -28,6 +32,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Policy;
 import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
+import org.setms.swe.domain.model.sdlc.unittest.UnitTestHelper;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
 import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
 import org.setms.swe.inbound.format.sal.SalFormat;
@@ -118,18 +123,45 @@ class Inputs {
   }
 
   public static Set<Input<UnitTest>> unitTests() {
-    var result = new HashSet<Input<UnitTest>>();
-    for (var conventions :
+    return programmingLanguageConventions().map(Inputs::toUnitTestInput).collect(toSet());
+  }
+
+  private static Stream<ProgrammingLanguageConventions> programmingLanguageConventions() {
+    return StreamSupport.stream(
         ServiceLoader.load(
-            ProgrammingLanguageConventions.class,
-            ProgrammingLanguageConventions.class.getClassLoader())) {
-      result.add(
-          new GlobInput<>(
-              conventions.unitTestPath(),
-              new CodeFormat(conventions),
-              UnitTest.class,
-              conventions.extension()));
-    }
-    return result;
+                ProgrammingLanguageConventions.class,
+                ProgrammingLanguageConventions.class.getClassLoader())
+            .spliterator(),
+        false);
+  }
+
+  private static GlobInput<UnitTest> toUnitTestInput(ProgrammingLanguageConventions conventions) {
+    return new GlobInput<>(
+        new Glob(conventions.unitTestPath(), conventions.unitTestPattern()),
+        new CodeFormat(conventions),
+        UnitTest.class);
+  }
+
+  public static Set<Input<UnitTestHelper>> unitTestHelpers() {
+    return programmingLanguageConventions().map(Inputs::toUnitTestHelperInput).collect(toSet());
+  }
+
+  private static GlobInput<UnitTestHelper> toUnitTestHelperInput(
+      ProgrammingLanguageConventions conventions) {
+    return new GlobInput<>(
+        new Glob(conventions.unitTestPath(), conventions.unitTestHelpersPattern()),
+        new CodeFormat(conventions),
+        UnitTestHelper.class);
+  }
+
+  public static Set<Input<? extends CodeArtifact>> code() {
+    return programmingLanguageConventions().map(Inputs::toCodeInput).collect(toSet());
+  }
+
+  private static GlobInput<CodeArtifact> toCodeInput(ProgrammingLanguageConventions conventions) {
+    return new GlobInput<>(
+        new Glob(conventions.codePath(), conventions.extension()),
+        new CodeFormat(conventions),
+        CodeArtifact.class);
   }
 }

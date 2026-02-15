@@ -1,0 +1,5 @@
+outputs:
+  - src/main/architecture/BuildTool.decision
+inputs:
+  - location: src/main/architecture
+    file: BuildTool.decision

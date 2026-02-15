@@ -387,19 +387,44 @@ public class ProcessOrchestrator {
 
   private void validateDependent(
       String path, ArtifactTool<?> artifactTool, ResolvedInputs resolvedInputs) {
-    if (artifactTool.validationTarget().matches(path)) {
+    if (artifactTool.validationTargets().stream().anyMatch(input -> input.matches(path))) {
       var diagnostics = new LinkedHashSet<Diagnostic>();
       artifactTool.validate(workspace.root().select(path), resolvedInputs, diagnostics);
       storeDiagnostics(path, artifactTool, diagnostics);
     } else {
-      resourcesMatching(artifactTool.validationTarget())
+      pathsToValidateFor(artifactTool)
           .forEach(
-              resource -> {
+              filePath -> {
                 var diagnostics = new LinkedHashSet<Diagnostic>();
-                artifactTool.validate(resource, resolvedInputs, diagnostics);
-                storeDiagnostics(resource.path(), artifactTool, diagnostics);
+                artifactTool.validate(
+                    workspace.root().select(filePath), resolvedInputs, diagnostics);
+                storeDiagnostics(filePath, artifactTool, diagnostics);
               });
     }
+  }
+
+  private TreeSet<String> pathsToValidateFor(ArtifactTool<?> artifactTool) {
+    var result = new TreeSet<String>();
+    artifactTool
+        .validationTargets()
+        .forEach(input -> resourcesMatching(input).map(Resource::path).forEach(result::add));
+    pathsWithDiagnosticsFor(artifactTool)
+        .filter(
+            filePath ->
+                artifactTool.validationTargets().stream()
+                    .anyMatch(input -> input.matches(filePath)))
+        .forEach(result::add);
+    return result;
+  }
+
+  private Stream<String> pathsWithDiagnosticsFor(ArtifactTool<?> tool) {
+    var toolName = tool.getClass().getName();
+    var diagnosticsPrefix = "/.km/diagnostics";
+    return workspace.root().matching(".km/diagnostics", "json").stream()
+        .map(Resource::path)
+        .filter(path -> path.endsWith("/%s.json".formatted(toolName)))
+        .map(path -> path.substring(diagnosticsPrefix.length()))
+        .map(path -> path.substring(0, path.lastIndexOf('/')));
   }
 
   private void registerArtifactDefinitions() {
@@ -509,9 +534,6 @@ public class ProcessOrchestrator {
             .toList()) {
       var inputs = resolveInputs(tool.validationContext());
       var artifact = parse(resource.path(), tool.validationTarget());
-      if (artifact == null) {
-        continue;
-      }
       var result = tool.applySuggestion(artifact, code, location, inputs, resource);
       if (!result.createdOrChanged().isEmpty()) {
         return result;

@@ -2,10 +2,11 @@ package org.setms.swe.domain.model.sdlc.code.java;
 
 import java.util.regex.Pattern;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.swe.domain.model.sdlc.architecture.BuildTool;
+import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
-import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
-import org.setms.swe.domain.model.sdlc.code.TopLevelPackage;
 
 public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventions {
 
@@ -19,6 +20,7 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
     return switch (topic) {
       case ProgrammingLanguage.TOPIC -> "Java".equals(choice);
       case TopLevelPackage.TOPIC -> JAVA_PACKAGE_PATTERN.matcher(choice).matches();
+      case BuildTool.TOPIC -> "Gradle".equals(choice);
       default -> false;
     };
   }
@@ -29,8 +31,23 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
   }
 
   @Override
+  public String codePath() {
+    return "src/main/java/";
+  }
+
+  @Override
   public String unitTestPath() {
     return "src/test/java";
+  }
+
+  @Override
+  public String unitTestPattern() {
+    return "**/*Test." + extension();
+  }
+
+  @Override
+  public String unitTestHelpersPattern() {
+    return "**/*." + extension();
   }
 
   @Override

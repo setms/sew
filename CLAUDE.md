@@ -165,6 +165,13 @@ Each iteration runs three steps in order:
    Every diagnostic must have suggestions. Apply all suggestions and verify no new diagnostics
    result. Files created or changed by suggestions become the outputs verified in the next iteration.
 
+Running `EndToEndTest` takes a lot longer than unit tests, so make sure to capture any required output from 
+`swe/build/reports/tests/test/org.setms.swe.e2e.EndToEndTest/shouldGuideSoftwareEngineering().html`.
+Use this test output to avoid running the test repeatedly without changes.
+
+The resulting files created by `EndToEndTest` are in `swe/build/e2e`.
+Look here to see what files were created during the run of the test.
+
 
 ### Test frameworks
 
@@ -206,7 +213,7 @@ To add a new technology decision:
   constructors that only assign `final` fields
 - Java 25 language features available
 - Run `./gradlew spotlessApply` before committing
-- Comments MUST explain **why**, NOT **what**
+- CRITICAL: Comments MUST explain **why**, NOT **what** or **how**
 - Don't discuss implementation details in JavaDoc - that's for documenting the API
 - Use the `var` keyword where possible, but if that requires a type cast
   - Good: `var name = "John";` Bad: `String name = "John";`

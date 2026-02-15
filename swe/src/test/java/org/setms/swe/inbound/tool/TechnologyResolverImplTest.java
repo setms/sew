@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
 
@@ -14,8 +15,8 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
-import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguage;
-import org.setms.swe.domain.model.sdlc.code.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class TechnologyResolverImplTest {
@@ -106,11 +107,10 @@ class TechnologyResolverImplTest {
         .as("Created")
         .hasSize(1)
         .allSatisfy(
-            resource -> {
-              assertThat(resource.path())
-                  .as("Path")
-                  .isEqualTo("/src/main/architecture/ProgrammingLanguage.decision");
-            });
+            resource ->
+                assertThat(resource.path())
+                    .as("Path")
+                    .isEqualTo("/src/main/architecture/ProgrammingLanguage.decision"));
   }
 
   @Test
@@ -124,10 +124,26 @@ class TechnologyResolverImplTest {
         .as("Created")
         .hasSize(1)
         .allSatisfy(
-            resource -> {
-              assertThat(resource.path())
-                  .as("Path")
-                  .isEqualTo("/src/main/architecture/TopLevelPackage.decision");
-            });
+            resource ->
+                assertThat(resource.path())
+                    .as("Path")
+                    .isEqualTo("/src/main/architecture/TopLevelPackage.decision"));
+  }
+
+  @Test
+  void shouldCreateBuildToolDecision() {
+    var workspace = new InMemoryWorkspace();
+
+    var actual = resolver.applySuggestion(PICK_BUILD_TOOL, workspace.root());
+
+    assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
+    assertThat(actual.createdOrChanged())
+        .as("Created")
+        .hasSize(1)
+        .allSatisfy(
+            resource ->
+                assertThat(resource.path())
+                    .as("Path")
+                    .isEqualTo("/src/main/architecture/BuildTool.decision"));
   }
 }

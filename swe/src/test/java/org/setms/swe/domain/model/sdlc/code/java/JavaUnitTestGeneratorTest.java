@@ -31,7 +31,7 @@ class JavaUnitTestGeneratorTest {
 
     var expectedPackage = TOP_LEVEL_PACKAGE + "." + ACCEPTANCE_TEST_PACKAGE;
     assertThat(actual).isNotNull();
-    assertThat(actual.getName()).isEqualTo("NotificationsTest");
+    assertThat(actual.getName()).isEqualTo("NotificationsAggregateTest");
     assertThat(actual.getPackage()).isEqualTo(expectedPackage);
     assertThat(actual.getCode()).isNotEmpty();
     assertThat(actual.getCode())
@@ -41,7 +41,7 @@ class JavaUnitTestGeneratorTest {
         .contains("import static com.example.notifications.domain.services.NotificationsService;")
         .contains("import static org.assertj.core.api.Assertions.assertThat;")
         .contains("@Test")
-        .contains("class NotificationsTest")
+        .contains("class NotificationsAggregateTest")
         .contains("private final NotificationsService service = new NotificationsService();")
         .contains("var notifyUser = someNotifyUser();")
         .contains(
@@ -128,9 +128,9 @@ class JavaUnitTestGeneratorTest {
     var actual = generator.generate(acceptanceTest).getFirst();
 
     assertThat(actual).isNotNull();
-    assertThat(actual.getName()).isEqualTo("SendNotificationTest");
+    assertThat(actual.getName()).isEqualTo("SendNotificationPolicyTest");
     assertThat(actual.getCode())
-        .contains("class SendNotificationTest")
+        .contains("class SendNotificationPolicyTest")
         .contains("private final SendNotificationService service = new SendNotificationService();")
         .contains("var userNotified = someUserNotified();")
         .contains("var expected = new SendEmail().setMessage(userNotified.getMessage());")
@@ -173,9 +173,9 @@ class JavaUnitTestGeneratorTest {
     var actual = generator.generate(acceptanceTest).getFirst();
 
     assertThat(actual).isNotNull();
-    assertThat(actual.getName()).isEqualTo("NotificationListTest");
+    assertThat(actual.getName()).isEqualTo("NotificationListReadModelTest");
     assertThat(actual.getCode())
-        .contains("class NotificationListTest")
+        .contains("class NotificationListReadModelTest")
         .contains("private final NotificationListService service = new NotificationListService();")
         .contains("var userNotified = someUserNotified();")
         .contains("service.handle(userNotified);")

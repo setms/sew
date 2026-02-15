@@ -4,6 +4,7 @@ import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
+import static org.setms.swe.inbound.tool.Inputs.unitTestHelpers;
 import static org.setms.swe.inbound.tool.Inputs.unitTests;
 
 import java.io.IOException;
@@ -57,6 +58,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
     var result = new HashSet<Input<? extends Artifact>>(unitTests());
+    result.addAll(unitTestHelpers());
     result.add(decisions());
     return result;
   }
@@ -87,9 +89,10 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     }
   }
 
-  private Optional<UnitTest> find(List<UnitTest> unitTests, AcceptanceTest ignored) {
-    // TODO: How to match against acceptanceTest?
-    return unitTests.stream().findFirst();
+  private Optional<UnitTest> find(List<UnitTest> unitTests, AcceptanceTest acceptanceTest) {
+    return unitTests.stream()
+        .filter(unitTest -> unitTest.getName().equals(acceptanceTest.getName() + "Test"))
+        .findFirst();
   }
 
   @Override

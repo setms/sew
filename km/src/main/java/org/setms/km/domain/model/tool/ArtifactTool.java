@@ -21,14 +21,24 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
    *
    * @return the validation targets
    */
-  public abstract Input<A> validationTarget();
+  public abstract Input<? extends A> validationTarget();
+
+  /**
+   * The inputs that this tool validates. By default, returns a set containing only the {@link
+   * #validationTarget()}. Tools that validate multiple inputs should override this method.
+   *
+   * @return the validation targets
+   */
+  public Set<Input<? extends A>> validationTargets() {
+    return Set.of(validationTarget());
+  }
 
   /**
    * @param path the path to an artifact
    * @return whether this tool can validate the artifact at the given path
    */
   public boolean validates(String path) {
-    return validationTarget().matches(path);
+    return validationTargets().stream().anyMatch(input -> input.matches(path));
   }
 
   /**
@@ -130,8 +140,10 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
   }
 
   private Optional<Input<? extends Artifact>> inputFor(Artifact artifact) {
-    if (validationTarget().targets(artifact)) {
-      return Optional.of(validationTarget());
+    for (var input : validationTargets()) {
+      if (input.targets(artifact)) {
+        return Optional.of(input);
+      }
     }
     return validationContext().stream().filter(input -> input.targets(artifact)).findFirst();
   }
@@ -173,7 +185,7 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
   @Override
   public Set<Input<? extends Artifact>> allInputs() {
     var result = new LinkedHashSet<>(super.allInputs());
-    result.add(validationTarget());
+    result.addAll(validationTargets());
     reportingTarget().ifPresent(result::add);
     return result;
   }
