@@ -44,11 +44,13 @@ public interface BuildTool {
   void validate(Resource<?> resource, Collection<Diagnostic> diagnostics);
 
   /**
-   * Generate build configuration files.
+   * Apply a suggestion to generate build configuration files.
    *
-   * @return list of configuration artifacts (e.g., build.gradle, settings.gradle)
+   * @param suggestionCode the suggestion code from the diagnostic
+   * @param resource the project root resource
+   * @return applied suggestion result with created resources
    */
-  List<CodeArtifact> initProject();
+  AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource);
 }
 ```
 
@@ -122,9 +124,33 @@ public class GradleBuildTool implements BuildTool {
   }
 
   @Override
-  public List<CodeArtifact> initProject() {
-    // Returns 2 artifacts: build.gradle and settings.gradle
-    // settings.gradle uses projectName: rootProject.name = 'projectName'
+  public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
+    if (!GENERATE_BUILD_CONFIG.equals(suggestionCode)) {
+      return AppliedSuggestion.none();
+    }
+
+    try {
+      // Generate build.gradle
+      var buildGradleResource = resource.select("/").select("build.gradle");
+      try (var output = buildGradleResource.writeTo()) {
+        output.write(createBuildGradleContent().getBytes());
+      }
+
+      // Generate settings.gradle
+      var settingsGradleResource = resource.select("/").select("settings.gradle");
+      try (var output = settingsGradleResource.writeTo()) {
+        output.write(("rootProject.name = '" + projectName + "'\n").getBytes());
+      }
+
+      return AppliedSuggestion.created(List.of(buildGradleResource, settingsGradleResource));
+    } catch (IOException e) {
+      return AppliedSuggestion.failedWith(e);
+    }
+  }
+
+  private String createBuildGradleContent() {
+    // Use km/build.gradle as template, simplified (no ANTLR, Spotless, Pitest)
+    // Include Java plugin, JUnit 5, AssertJ, JQwik
   }
 
   private boolean fileExists(Resource<?> resource, String path) {
@@ -218,9 +244,8 @@ public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> reso
 
 private AppliedSuggestion generateBuildConfig(Resource<?> resource) {
   // Get BuildTool instance via buildTool(decisions, inputs, resource, ...)
-  // Call initProject() to get artifacts
-  // Save each artifact using resource.select().writeTo()
-  // Return AppliedSuggestion.created() for created resources
+  // Call buildTool.applySuggestion(suggestionCode, resource)
+  // BuildTool handles file generation and returns AppliedSuggestion
 }
 ```
 
@@ -320,7 +345,7 @@ This iteration verifies that applying the "Generate build configuration files" s
     - `shouldEmitDiagnosticWhenBuildGradleMissing()` - verify diagnostic when build.gradle doesn't exist
     - `shouldEmitDiagnosticWhenSettingsGradleMissing()` - verify diagnostic when settings.gradle doesn't exist
     - `shouldNotEmitDiagnosticWhenConfigurationExists()` - verify no diagnostic when both files exist
-    - `shouldGenerateBuildGradleAndSettings()` - verify initProject() generates 2 files
+    - `shouldGenerateBuildGradleAndSettings()` - verify applySuggestion() generates 2 files
     - `shouldUseProjectNameInSettings()` - verify settings.gradle uses projectName from constructor (e.g., `"my-project"` → `rootProject.name = 'my-project'`)
     - `shouldIncludeRequiredDependencies()` - verify JUnit 5, AssertJ, JQwik in build.gradle
 
@@ -342,7 +367,7 @@ This iteration verifies that applying the "Generate build configuration files" s
 
 Run `EndToEndTest.shouldGuideSoftwareEngineering()`:
 - Iteration 08: Should now expect "Missing build configuration" diagnostic (emitted by GradleBuildTool.validate())
-- Iteration 09 (new): Should verify build files are generated and no new diagnostics appear
+- Iteration 09 (new): Should verify build files are generated (via GradleBuildTool.applySuggestion()) and no new diagnostics appear
 
 ### Benefits of This Architecture
 
