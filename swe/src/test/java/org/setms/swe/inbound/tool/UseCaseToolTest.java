@@ -5,7 +5,7 @@ import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
@@ -55,8 +55,17 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     super(new UseCaseTool(), UseCase.class, "main/requirements/use-cases");
   }
 
+  @AfterEach
+  void cleanupGeneratedFiles() throws IOException {
+    workspaceFor("missing/domainStory")
+        .root()
+        .select("src/main/requirements/domain-stories/JustDoIt.domainStory")
+        .delete();
+    workspaceFor("missing/reference").root().select("src/main/stakeholders/Duck.user").delete();
+  }
+
   @Test
-  void shouldCreateDomainStory() throws IOException {
+  void shouldCreateDomainStory() {
     var workspace = workspaceFor("missing/domainstory");
 
     var diagnostics = validateAgainst(workspace);
@@ -77,15 +86,11 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(created).hasSize(1).contains(domainStory);
     var file = toFile(domainStory);
     assertThat(file).isFile();
-    try {
-      assertThat(file).hasContent(DOMAIN_STORY);
-    } finally {
-      Files.delete(file.toPath());
-    }
+    assertThat(file).hasContent(DOMAIN_STORY);
   }
 
   @Test
-  void shouldCreateMissingReference() throws IOException {
+  void shouldCreateMissingReference() {
     var workspace = workspaceFor("missing/reference");
 
     var diagnostics = validateAgainst(workspace);
@@ -107,11 +112,7 @@ class UseCaseToolTest extends ToolTestCase<UseCase> {
     assertThat(created.createdOrChanged()).hasSize(1).contains(user);
     var file = toFile(user);
     assertThat(file).isFile();
-    try {
-      assertThat(file).hasContent(USER);
-    } finally {
-      Files.delete(file.toPath());
-    }
+    assertThat(file).hasContent(USER);
   }
 
   @Test
