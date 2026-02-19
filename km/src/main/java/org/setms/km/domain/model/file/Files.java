@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class Files {
             .map(Path::toFile)
             .toList();
       }
-    } catch (IOException e) {
+    } catch (IOException | UncheckedIOException e) {
       return emptyList();
     }
   }

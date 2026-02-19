@@ -25,6 +25,7 @@ import org.setms.km.test.MainArtifact;
 import org.setms.km.test.MainTool;
 import org.setms.km.test.OtherArtifact;
 import org.setms.km.test.OtherTool;
+import org.setms.km.test.StandaloneTestTool;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -38,6 +39,7 @@ class ProcessOrchestratorTest {
   private final Workspace<?> workspace = new InMemoryWorkspace();
   private final MainTool mainTool = new MainTool();
   private final OtherTool otherTool = new OtherTool();
+  private final StandaloneTestTool standaloneTool = new StandaloneTestTool();
   private final ObjectMapper mapper = new JsonMapper();
 
   @BeforeEach
@@ -45,6 +47,7 @@ class ProcessOrchestratorTest {
     Tools.reload();
     Tools.add(mainTool);
     Tools.add(otherTool);
+    Tools.add(standaloneTool);
   }
 
   @Test
@@ -248,5 +251,56 @@ class ProcessOrchestratorTest {
 
   private void storeNewOtherArtifact() throws IOException {
     storeNewArtifact(otherTool, OtherArtifact::new);
+  }
+
+  @Test
+  void shouldApplySuggestionFromStandaloneTool() {
+    createProcessOrchestrator();
+
+    var actual =
+        processOrchestrator.applySuggestion(
+            workspace.root(), StandaloneTestTool.SUGGESTION_CODE, null);
+
+    assertThat(actual.createdOrChanged()).as("Created or changed").hasSize(1);
+  }
+
+  @Test
+  void shouldClearStandaloneDiagnosticsAfterSuccessfulApplySuggestion() throws IOException {
+    createProcessOrchestrator();
+    standaloneTool.init(new Diagnostic(WARN, "Standalone warning"));
+    storeNewMainArtifact();
+
+    standaloneTool.init();
+    processOrchestrator.applySuggestion(workspace.root(), StandaloneTestTool.SUGGESTION_CODE, null);
+
+    assertThat(processOrchestrator.diagnostics())
+        .as("Diagnostics after suggestion applied")
+        .isEmpty();
+  }
+
+  @Test
+  void shouldClearStaleStandaloneDiagnosticsWhenContextChanges() throws IOException {
+    createProcessOrchestrator();
+    standaloneTool.init(new Diagnostic(WARN, "Standalone warning"));
+    storeNewMainArtifact();
+    standaloneTool.init();
+
+    storeArtifactAt();
+
+    assertThat(processOrchestrator.diagnostics())
+        .as("Stale diagnostics should be cleared")
+        .isEmpty();
+  }
+
+  private void storeArtifactAt() throws IOException {
+    var input = mainTool.validationTargets().iterator().next();
+    var resource = workspace.root().select(input.path()).select("Bear." + input.extension());
+    try (var output = resource.writeTo()) {
+      input
+          .format()
+          .newBuilder()
+          .build(new MainArtifact(new FullyQualifiedName("ape.Bear")), output);
+    }
+    resource.path();
   }
 }

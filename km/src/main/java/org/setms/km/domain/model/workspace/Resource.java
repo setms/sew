@@ -39,4 +39,11 @@ public interface Resource<T extends Resource<T>> {
   void delete() throws IOException;
 
   LocalDateTime lastModifiedAt();
+
+  /**
+   * Check if this resource exists in the workspace.
+   *
+   * @return true if the resource exists, false otherwise
+   */
+  boolean exists();
 }

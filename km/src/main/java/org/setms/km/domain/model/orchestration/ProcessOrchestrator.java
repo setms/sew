@@ -379,10 +379,18 @@ public class ProcessOrchestrator {
       case ArtifactTool<?> artifactTool -> validateDependent(path, artifactTool, resolvedInputs);
       case StandaloneTool standaloneTool -> {
         var diagnostics = new LinkedHashSet<Diagnostic>();
-        standaloneTool.validate(resolvedInputs, diagnostics);
+        standaloneTool.validate(resolvedInputs, workspace.root(), diagnostics);
+        clearStaleDiagnosticsFor(standaloneTool);
         storeDiagnostics(path, tool, diagnostics);
       }
     }
+  }
+
+  private void clearStaleDiagnosticsFor(StandaloneTool tool) {
+    var toolName = tool.getClass().getName();
+    workspace.root().matching(".km/diagnostics", "json").stream()
+        .filter(r -> r.name().equals("%s.json".formatted(toolName)))
+        .forEach(this::deleteIgnoreExceptions);
   }
 
   private void validateDependent(
@@ -540,7 +548,27 @@ public class ProcessOrchestrator {
         return result;
       }
     }
+    for (var tool :
+        Tools.all()
+            .filter(StandaloneTool.class::isInstance)
+            .map(StandaloneTool.class::cast)
+            .toList()) {
+      var inputs = resolveInputs(tool.validationContext());
+      var result = tool.applySuggestion(code, location, inputs, resource);
+      if (!result.createdOrChanged().isEmpty()) {
+        revalidateStandaloneTool(tool, resource);
+        return result;
+      }
+    }
     return none();
+  }
+
+  private void revalidateStandaloneTool(StandaloneTool tool, Resource<?> resource) {
+    var inputs = resolveInputs(tool.validationContext());
+    var diagnostics = new LinkedHashSet<Diagnostic>();
+    tool.validate(inputs, workspace.root(), diagnostics);
+    clearStaleDiagnosticsFor(tool);
+    storeDiagnostics(resource.path(), tool, diagnostics);
   }
 
   private Input<? extends Artifact> findMatchingInput(ArtifactTool<?> tool, String path) {

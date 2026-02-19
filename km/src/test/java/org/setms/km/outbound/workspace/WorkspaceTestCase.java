@@ -216,4 +216,16 @@ public abstract class WorkspaceTestCase {
     modified = resource.lastModifiedAt();
     assertThat(modified).as("Creation time").isBefore(now()).isAfter(rightNow);
   }
+
+  @Test
+  void shouldCheckResourceExistence() throws IOException {
+    var resource = workspace.root().select("test.txt");
+    assertThat(resource.exists()).isFalse();
+
+    try (var output = resource.writeTo()) {
+      output.write("content".getBytes());
+    }
+
+    assertThat(resource.exists()).isTrue();
+  }
 }

@@ -2,6 +2,7 @@
 
 ## End-to-end test
 
+- Build tool decision is repeated
 - Finish workflow
 
 
@@ -18,6 +19,29 @@
 ### Generic
 
 - Introduce Decisions - Optional<Choice> getChoiceFor(String topic)
+
+### Acceptance tests
+
+- Resolve duplication between name and unit test name
+- Check whether unit test exits
+  - If it does, check that it implements all scenarios
+- Check internal consistency
+  - All variables used in scenarios
+  - No undeclared variables used in scenarios
+
+### Build
+
+- Verify access to org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool.GENERATE_BUILD_CONFIG
+
+### Build configuration
+
+- BuildConfigurationTool seems iffy as a concept
+
+### Code
+
+- Verify comment in org.setms.swe.inbound.tool.CodeTool.validate
+- Check whether project builds
+
 
 ### Decision
 
@@ -38,15 +62,6 @@
 
 - Other deployment options than monolith
 
-### Acceptance tests
+### Project
 
-- Resolve duplication between name and unit test name
-- Check whether unit test exits
-  - If it does, check that it implements all scenarios 
-- Check internal consistency
-  - All variables used in scenarios
-  - No undeclared variables used in scenarios
-
-### Code
-
-- Check whether project builds
+- Rename to Context?

@@ -9,4 +9,5 @@ public class Input {
 
   String file;
   String location;
+  String alias;
 }

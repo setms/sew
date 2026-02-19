@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static java.util.stream.Collectors.toMap;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
+import static org.setms.swe.inbound.tool.Inputs.projects;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -43,7 +44,7 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of(decisions());
+    return Set.of(decisions(), projects());
   }
 
   @Override
@@ -60,8 +61,8 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   public void validate(
       CodeArtifact codeArtifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var topics = groupByTopic(inputs.get(Decision.class));
-    var buildTool = topics.get(BuildTool.TOPIC);
-    if (buildTool == null) {
+    var buildToolChoice = topics.get(BuildTool.TOPIC);
+    if (buildToolChoice == null) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -69,6 +70,8 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
               null,
               new Suggestion(TechnologyResolverImpl.PICK_BUILD_TOOL, "Decide on build tool")));
     }
+    // Note: Build tool validation (checking for build.gradle/settings.gradle) happens in
+    // a separate validation pass since we need workspace root access
   }
 
   private Map<String, String> groupByTopic(Collection<Decision> decisions) {

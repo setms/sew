@@ -68,10 +68,10 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
   void shouldReportDiagnosticsFromTechnologyResolver() {
     var diagnostic = new Diagnostic(Level.WARN, "Something's not right");
     when(technologyResolver.unitTestGenerator(
-            anyCollection(), any(Location.class), anyCollection()))
+            anyCollection(), anyCollection(), any(Location.class), anyCollection()))
         .thenAnswer(
             invocation -> {
-              Collection<Diagnostic> diagnostics = invocation.getArgument(2);
+              Collection<Diagnostic> diagnostics = invocation.getArgument(3);
               diagnostics.add(diagnostic);
               return Optional.empty();
             });
@@ -104,7 +104,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     var acceptanceTest = new AcceptanceTest(new FullyQualifiedName("package.Name"));
     var inputs = new ResolvedInputs();
     when(technologyResolver.unitTestGenerator(
-            anyCollection(), any(Location.class), anyCollection()))
+            anyCollection(), anyCollection(), any(Location.class), anyCollection()))
         .thenReturn(Optional.of(generator));
 
     tool.validate(acceptanceTest, inputs, diagnostics);
@@ -126,7 +126,7 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     var inputs = new ResolvedInputs();
     var workspace = new InMemoryWorkspace();
     when(technologyResolver.unitTestGenerator(
-            anyCollection(), any(Location.class), anyCollection()))
+            anyCollection(), anyCollection(), any(Location.class), anyCollection()))
         .thenReturn(Optional.of(generator));
     var unitTest = new UnitTest(new FullyQualifiedName("package.Name"));
     unitTest.setCode("");

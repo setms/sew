@@ -144,6 +144,14 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   }
 
   @Override
+  public boolean exists() {
+    if (virtualFile == null) {
+      return file.exists();
+    }
+    return virtualFile.exists();
+  }
+
+  @Override
   public URI toUri() {
     return Files.toUri(virtualFile == null ? file : virtualFile.toNioPath().toFile());
   }

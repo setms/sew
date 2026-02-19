@@ -1,9 +1,11 @@
 outputs:
-  - src/main/architecture/TopLevelPackage.decision
+  - src/main/overview/ProjectName.project
 
 inputs:
-  - location: src/main/architecture
-    file: TopLevelPackage.decision
+  - location: src/main/overview
+    file: Todo.project
+    alias: ProjectName.project
 
 diagnostics:
-  - Missing unit test
+  - Missing decision on top-level package
+  - Missing decision on build tool

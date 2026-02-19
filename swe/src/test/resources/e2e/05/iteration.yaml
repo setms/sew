@@ -6,4 +6,4 @@ inputs:
     file: ProgrammingLanguage.decision
 
 diagnostics:
-  - Missing decision on top-level package
+  - Missing project

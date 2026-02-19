@@ -150,6 +150,11 @@ record InMemoryResource(
   }
 
   @Override
+  public boolean exists() {
+    return artifactsByPath.containsKey(path);
+  }
+
+  @Override
   public String toString() {
     return toUri().toString();
   }

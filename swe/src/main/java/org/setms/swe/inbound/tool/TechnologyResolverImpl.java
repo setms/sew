@@ -12,15 +12,17 @@ import java.util.Map;
 import java.util.Optional;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.domain.model.sdlc.architecture.BuildTool;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
+import org.setms.swe.domain.model.sdlc.project.Project;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
@@ -33,15 +35,20 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
   static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
   static final String PICK_BUILD_TOOL = "build-tool.decide";
+  static final String CREATE_PROJECT = "project.create";
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
-      Collection<Decision> decisions, Location location, Collection<Diagnostic> diagnostics) {
+      Collection<Decision> decisions,
+      Collection<Project> projects,
+      Location location,
+      Collection<Diagnostic> diagnostics) {
     var topics = groupByTopic(decisions);
     var programmingLanguage = topics.get(ProgrammingLanguage.TOPIC);
     var topLevelPackage = topics.get(TopLevelPackage.TOPIC);
     return Optional.ofNullable(
-        unitTestGeneratorFor(programmingLanguage, topLevelPackage, location, diagnostics));
+        unitTestGeneratorFor(
+            programmingLanguage, projects, topLevelPackage, location, diagnostics));
   }
 
   private Map<String, String> groupByTopic(Collection<Decision> decisions) {
@@ -52,11 +59,12 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   private UnitTestGenerator unitTestGeneratorFor(
       String programmingLanguage,
+      Collection<Project> projects,
       String topLevelPackage,
       Location location,
       Collection<Diagnostic> diagnostics) {
     return switch (programmingLanguage) {
-      case "Java" -> javaUnitGenerator(topLevelPackage, location, diagnostics);
+      case "Java" -> javaUnitGenerator(projects, topLevelPackage, location, diagnostics);
       case null ->
           nothing(
               new Diagnostic(
@@ -73,7 +81,13 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   private UnitTestGenerator javaUnitGenerator(
-      String topLevelPackage, Location location, Collection<Diagnostic> diagnostics) {
+      Collection<Project> projects,
+      String topLevelPackage,
+      Location location,
+      Collection<Diagnostic> diagnostics) {
+    if (projects.isEmpty()) {
+      return null;
+    }
     if (topLevelPackage == null) {
       return nothing(
           new Diagnostic(
@@ -92,13 +106,102 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   @Override
+  public Optional<org.setms.swe.domain.model.sdlc.technology.BuildTool> buildTool(
+      Resource<?> resource,
+      ResolvedInputs inputs,
+      Location location,
+      Collection<Diagnostic> diagnostics) {
+    var project = inputs.get(Project.class).stream().findFirst();
+    if (project.isEmpty()) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN, "Missing project", location, new Suggestion(CREATE_PROJECT, "Create project")));
+      return Optional.empty();
+    }
+
+    var projectName = project.get().getTitle();
+    if (projectName == null || projectName.isBlank()) {
+      diagnostics.add(new Diagnostic(WARN, "Missing project title", location));
+      return Optional.empty();
+    }
+
+    var topics = groupByTopic(inputs.get(Decision.class));
+    var programmingLanguage = topics.get(ProgrammingLanguage.TOPIC);
+    var buildToolChoice = topics.get(org.setms.swe.domain.model.sdlc.architecture.BuildTool.TOPIC);
+
+    var result =
+        buildToolFor(programmingLanguage, buildToolChoice, projectName, location, diagnostics);
+    if (resource != null) {
+      result.ifPresent(bt -> bt.validate(resource, diagnostics));
+    }
+    return result;
+  }
+
+  private Optional<org.setms.swe.domain.model.sdlc.technology.BuildTool> buildToolFor(
+      String programmingLanguage,
+      String buildToolChoice,
+      String projectName,
+      Location location,
+      Collection<Diagnostic> diagnostics) {
+    if (programmingLanguage == null) {
+      return Optional.ofNullable(
+          nothing(
+              new Diagnostic(
+                  WARN,
+                  "Missing decision on programming language",
+                  location,
+                  new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")),
+              diagnostics));
+    }
+    if (buildToolChoice == null) {
+      return Optional.ofNullable(
+          nothing(
+              new Diagnostic(
+                  WARN,
+                  "Missing decision on build tool",
+                  location,
+                  new Suggestion(PICK_BUILD_TOOL, "Decide on build tool")),
+              diagnostics));
+    }
+
+    return switch (programmingLanguage) {
+      case "Java" -> javaBuildTool(buildToolChoice, projectName, location, diagnostics);
+      default ->
+          Optional.ofNullable(
+              nothing(
+                  new Diagnostic(ERROR, "Decided on unsupported programming language", location),
+                  diagnostics));
+    };
+  }
+
+  private Optional<org.setms.swe.domain.model.sdlc.technology.BuildTool> javaBuildTool(
+      String buildToolChoice,
+      String projectName,
+      Location location,
+      Collection<Diagnostic> diagnostics) {
+    return switch (buildToolChoice) {
+      case "Gradle" -> Optional.of(new GradleBuildTool(projectName));
+      default ->
+          Optional.ofNullable(
+              nothing(
+                  new Diagnostic(ERROR, "Decided on unsupported build tool", location),
+                  diagnostics));
+    };
+  }
+
+  @Override
   public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
     return switch (suggestionCode) {
       case PICK_PROGRAMMING_LANGUAGE ->
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
       case PICK_TOP_LEVEL_PACKAGE ->
           pickDecision(resource, TOP_LEVEL_PACKAGE_DECISION, TopLevelPackage.TOPIC);
-      case PICK_BUILD_TOOL -> pickDecision(resource, BUILD_TOOL_DECISION, BuildTool.TOPIC);
+      case PICK_BUILD_TOOL ->
+          pickDecision(
+              resource,
+              BUILD_TOOL_DECISION,
+              org.setms.swe.domain.model.sdlc.architecture.BuildTool.TOPIC);
+      case CREATE_PROJECT -> createProject(resource);
       default -> AppliedSuggestion.none();
     };
   }
@@ -118,6 +221,32 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         builderFor(decision).build(decision, output);
       }
       return created(decisionResource);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
+  }
+
+  private AppliedSuggestion createProject(Resource<?> resource) {
+    try {
+      var projectName = "ProjectName";
+      var projectInput = Inputs.projects();
+      var projectResource =
+          resource
+              .select("/")
+              .select(projectInput.path())
+              .select("%s.%s".formatted(projectName, projectInput.extension()));
+      var content =
+          """
+          package overview
+
+          project %s {
+            title = "%s"
+          }
+          """;
+      try (var output = projectResource.writeTo()) {
+        output.write(content.formatted(projectName, projectName).getBytes());
+      }
+      return created(projectResource);
     } catch (Exception e) {
       return failedWith(e);
     }

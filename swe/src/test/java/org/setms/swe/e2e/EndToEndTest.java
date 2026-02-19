@@ -139,20 +139,26 @@ class EndToEndTest {
           source.transferTo(target);
         }
       }
+      if (input.getAlias() != null) {
+        workspace.root().select(input.getLocation()).select(input.getAlias()).delete();
+      }
       chat.add(
           true,
-          "%s %s/%s"
+          "%s %s/%s%s"
               .formatted(
-                  created.contains(input.getFile()) ? "Updated" : "Created",
+                  input.getAlias() != null
+                      ? "Copied and updated"
+                      : created.contains(input.getFile()) ? "Updated" : "Created",
                   input.getLocation(),
-                  input.getFile()));
+                  input.getFile(),
+                  input.getAlias() == null ? "" : " from " + input.getAlias()));
     }
   }
 
   private void assertThatDiagnosticsMatch(Iteration iteration) {
     var expected = listOf(iteration.getDiagnostics());
     await()
-        .atMost(5, SECONDS)
+        .atMost(3, SECONDS)
         .untilAsserted(
             () ->
                 assertThat(processOrchestrator.diagnosticsWithSuggestions())

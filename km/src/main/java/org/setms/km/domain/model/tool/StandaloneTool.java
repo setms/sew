@@ -20,6 +20,18 @@ public abstract non-sealed class StandaloneTool extends Tool {
    * @param diagnostics where to store any validation issues
    */
   public void validate(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    validate(inputs, null, diagnostics);
+  }
+
+  /**
+   * Validate the {@linkplain #validationContext() context}, with access to the workspace root.
+   *
+   * @param inputs the context to validate
+   * @param root the workspace root resource, or {@code null} if unavailable
+   * @param diagnostics where to store any validation issues
+   */
+  public void validate(
+      ResolvedInputs inputs, Resource<?> root, Collection<Diagnostic> diagnostics) {
     // For descendants to override
   }
 

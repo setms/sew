@@ -4,6 +4,7 @@ import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
+import static org.setms.swe.inbound.tool.Inputs.projects;
 import static org.setms.swe.inbound.tool.Inputs.unitTestHelpers;
 import static org.setms.swe.inbound.tool.Inputs.unitTests;
 
@@ -36,6 +37,7 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Scenario;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.project.Project;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
@@ -60,6 +62,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     var result = new HashSet<Input<? extends Artifact>>(unitTests());
     result.addAll(unitTestHelpers());
     result.add(decisions());
+    result.add(projects());
     return result;
   }
 
@@ -75,7 +78,11 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     var unitTest = find(inputs.get(UnitTest.class), acceptanceTest);
     if (unitTest.isEmpty()) {
       if (technologyResolver
-          .unitTestGenerator(inputs.get(Decision.class), acceptanceTest.toLocation(), diagnostics)
+          .unitTestGenerator(
+              inputs.get(Decision.class),
+              inputs.get(Project.class),
+              acceptanceTest.toLocation(),
+              diagnostics)
           .isPresent()) {
         diagnostics.add(
             new Diagnostic(
@@ -103,16 +110,20 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       Location location,
       ResolvedInputs inputs) {
     if (SUGGESTION_CREATE_UNIT_TEST.equals(suggestionCode)) {
-      return createUnitTest(acceptanceTest, resource, inputs.get(Decision.class));
+      return createUnitTest(
+          acceptanceTest, resource, inputs.get(Decision.class), inputs.get(Project.class));
     }
     return technologyResolver.applySuggestion(suggestionCode, resource);
   }
 
   private AppliedSuggestion createUnitTest(
-      AcceptanceTest acceptanceTest, Resource<?> resource, Collection<Decision> decisions) {
+      AcceptanceTest acceptanceTest,
+      Resource<?> resource,
+      Collection<Decision> decisions,
+      Collection<Project> projects) {
     var diagnostics = new HashSet<Diagnostic>();
     return technologyResolver
-        .unitTestGenerator(decisions, acceptanceTest.toLocation(), diagnostics)
+        .unitTestGenerator(decisions, projects, acceptanceTest.toLocation(), diagnostics)
         .map(generator -> generator.generate(acceptanceTest))
         .map(codeArtifacts -> store(codeArtifacts, acceptanceTest, resource))
         .orElseGet(() -> new AppliedSuggestion(emptySet(), diagnostics));

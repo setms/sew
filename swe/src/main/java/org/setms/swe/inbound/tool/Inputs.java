@@ -30,6 +30,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.eventstorming.ExternalSystem;
 import org.setms.swe.domain.model.sdlc.eventstorming.Policy;
 import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
+import org.setms.swe.domain.model.sdlc.project.Project;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTestHelper;
@@ -48,6 +49,7 @@ class Inputs {
   static final String PATH_ACCEPTANCE_TESTS = "src/test/acceptance";
   static final String PATH_ANALYSIS = "src/main/analysis";
   static final String PATH_ARCHITECTURE = "src/main/architecture";
+  static final String PATH_OVERVIEW = "src/main/overview";
 
   static Input<AcceptanceTest> acceptanceTests() {
     return new GlobInput<>(
@@ -104,6 +106,10 @@ class Inputs {
 
   static Input<Policy> policies() {
     return newInput(PATH_DESIGN, Policy.class);
+  }
+
+  static Input<Project> projects() {
+    return newInput(PATH_OVERVIEW, Project.class);
   }
 
   static Input<ReadModel> readModels() {

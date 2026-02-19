@@ -1,5 +1,6 @@
 outputs:
+  - src/test/java/com/company/todo/TodoItemsAggregateTest.java
+  - src/test/java/com/company/todo/TestData.java
   - src/main/architecture/BuildTool.decision
-inputs:
-  - location: src/main/architecture
-    file: BuildTool.decision
+diagnostics:
+  - Missing decision on build tool

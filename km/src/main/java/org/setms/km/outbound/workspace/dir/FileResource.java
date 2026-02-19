@@ -119,6 +119,11 @@ class FileResource implements Resource<FileResource> {
   }
 
   @Override
+  public boolean exists() {
+    return file.exists();
+  }
+
+  @Override
   public String toString() {
     return file.getPath();
   }

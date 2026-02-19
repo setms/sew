@@ -7,15 +7,7 @@ and visual modeling for complex software design.
 It provides custom DSLs for software engineering artifacts (domains, use cases, aggregates, events, etc.) with IntelliJ
 IDEA plugin support.
 
-## Build commands
-
-### Building the project
-
-```bash
-./gradlew build
-```
-
-### Running tests
+## Validating
 
 ```bash
 # Run all tests
@@ -31,6 +23,8 @@ IDEA plugin support.
 ./gradlew check
 ```
 
+- CRITICAL: **Never** report a task as done until `./gradlew test` passes with zero failures.
+- CRITICAL: After making any code change, always verify by running the relevant tests before declaring success.
 
 ## Project structure
 
@@ -176,7 +170,7 @@ Look here to see what files were created during the run of the test.
 ### Test frameworks
 
 - JUnit 5 (JUnit Platform)
-- Property-based testing with JQwik
+- Test data builders with JQwik
 - Mockito for test mocking
 
 ## Development notes
@@ -206,19 +200,35 @@ To add a new technology decision:
 5. Update e2e iterations: insert a new iteration between the prerequisite decision and the
    generation step (the new iteration provides the decision as input and expects the next diagnostic).
 
+### Tool usage
+
+- CRITICAL: **Never** use Bash commands like `ls`, `find`, `cat`, `head`, `tail`, `sed`, `awk`, `grep`, or `echo` for
+  file operations. Always use the dedicated tools instead:
+  - Find files: use `Glob` or `mcp__jetbrains__find_files_by_glob` / `mcp__jetbrains__find_files_by_name_keyword`
+  - Search content: use `Grep` or `mcp__jetbrains__search_in_files_by_text` / `mcp__jetbrains__search_in_files_by_regex`
+  - Read files: use `Read` or `mcp__jetbrains__get_file_text_by_path`
+  - List directories: use `mcp__jetbrains__list_directory_tree`
+  - Edit files: use `Edit` or `mcp__jetbrains__replace_text_in_file`
+  - Write files: use `Write` or `mcp__jetbrains__create_new_file`
+  - Reserve `Bash` exclusively for running build/test commands (e.g., `./gradlew test`)
+
 ### Code style
 
 - Code formatting enforced via Spotless plugin
-- Lombok used for reducing boilerplate — use `@RequiredArgsConstructor` instead of hand-written
+- Lombok used for reducing boilerplate — use `@RequiredArgsConstructor` instead of handwritten
   constructors that only assign `final` fields
 - Java 25 language features available
 - Run `./gradlew spotlessApply` before committing
-- CRITICAL: Comments MUST explain **why**, NOT **what** or **how**
 - Don't discuss implementation details in JavaDoc - that's for documenting the API
-- Use the `var` keyword where possible, but if that requires a type cast
-  - Good: `var name = "John";` Bad: `String name = "John";`
-  - Good: `var list = new ArrayList<String>();` Bad: `List<String> list = new ArrayList<>();`
-  - Good: `String name = null;` Bad: `var name = (String) null;`
+- CRITICAL: Use the `var` keyword where possible:
+  ```java```
+  var name = "John"; // Good
+  String name = "John"; // Bad
+  var list = new ArrayList<String>(); // Good
+  List<String> list = new ArrayList<>(); // Bad
+  String name = null; // Good
+  var name = (String) null; // Bad
+  ```
 - Helper methods directly follow the method that first calls them
 - If a data object has chained setters, use chaining
 - If a variable is used in a `return`, it must be called `result`
@@ -229,3 +239,8 @@ To add a new technology decision:
   - No section may be more than 10 lines, extract helper methods is necessary
 - CRITICAL: Always re-use as much as possible, both in production and in test code
 - CRITICAL: Prefer `Stream` and `Optional` over `for` and `if`, especially to avoid nested blocks
+- CRITICAL: Instead of writing a comment before a block of code, extract the code into a method and name it properly.
+  This is non-negotiable.
+- CRITICAL: Import types rather than use their fully qualified names. This is non-negotiable.
+- CRITICAL: Tests MUST consist of at most three sections: Arrange, Act, and Assert.
+  Separate the sections by blank lines and don't use any other blank lines in the test method.

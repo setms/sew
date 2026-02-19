@@ -1,0 +1,9 @@
+outputs:
+  - src/main/architecture/BuildTool.decision
+inputs:
+  - location: src/main/architecture
+    file: BuildTool.decision
+  - location: src/main/overview
+    file: ProjectName.project
+diagnostics:
+  - Missing build configuration
