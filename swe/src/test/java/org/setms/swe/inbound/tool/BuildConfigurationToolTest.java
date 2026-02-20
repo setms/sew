@@ -25,7 +25,7 @@ class BuildConfigurationToolTest {
   void shouldNotRequireBuildConfigurationWhenFilesExist() throws IOException {
     var workspace = new InMemoryWorkspace();
     createBuildFiles(workspace.root());
-    var inputs = resolvedInputs(workspace);
+    var inputs = resolvedInputs();
     var diagnostics = new ArrayList<Diagnostic>();
 
     tool.validate(inputs, workspace.root(), diagnostics);
@@ -43,15 +43,15 @@ class BuildConfigurationToolTest {
     }
   }
 
-  private ResolvedInputs resolvedInputs(InMemoryWorkspace workspace) throws IOException {
-    var inputs = resolvedInputsWithoutUnitTests();
+  private ResolvedInputs resolvedInputs() {
+    var result = resolvedInputsWithoutUnitTests();
     var unitTest = new UnitTest(new FullyQualifiedName("com.example", "FooTest"));
-    inputs.put("unitTests", List.of(unitTest));
-    return inputs;
+    result.put("unitTests", List.of(unitTest));
+    return result;
   }
 
   @Test
-  void shouldNotRequireBuildConfigurationWhenNoUnitTestsPresent() throws IOException {
+  void shouldNotRequireBuildConfigurationWhenNoUnitTestsPresent() {
     var workspace = new InMemoryWorkspace();
     var inputs = resolvedInputsWithoutUnitTests();
     var diagnostics = new ArrayList<Diagnostic>();
@@ -79,9 +79,9 @@ class BuildConfigurationToolTest {
   }
 
   @Test
-  void shouldRequireBuildConfigurationWhenFilesAbsent() throws IOException {
+  void shouldRequireBuildConfigurationWhenFilesAbsent() {
     var workspace = new InMemoryWorkspace();
-    var inputs = resolvedInputs(workspace);
+    var inputs = resolvedInputs();
     var diagnostics = new ArrayList<Diagnostic>();
 
     tool.validate(inputs, workspace.root(), diagnostics);
