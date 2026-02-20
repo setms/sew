@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.TechnologyResolverImpl.CREATE_PROJECT;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
@@ -52,7 +53,7 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldReturnEmptyWithoutDiagnosticWhenProjectMissing() {
+  void shouldRequireProjectForUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
     var location = new Location("foo/bar");
     var decisions = List.of(decision(ProgrammingLanguage.TOPIC, "Java"));
@@ -60,7 +61,23 @@ class TechnologyResolverImplTest {
     var actual = resolver.unitTestGenerator(decisions, emptyList(), location, diagnostics);
 
     assertThat(actual).as("Generator").isEmpty();
-    assertThat(diagnostics).as("Diagnostics").isEmpty();
+    assertThat(diagnostics)
+        .as("Diagnostics")
+        .extracting(Diagnostic::message)
+        .containsExactly("Missing project");
+    assertThat(diagnostics)
+        .allSatisfy(
+            diagnostic -> {
+              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
+              assertThat(diagnostic.location()).as("Location").isEqualTo(location);
+              assertThat(diagnostic.suggestions())
+                  .hasSize(1)
+                  .allSatisfy(
+                      suggestion ->
+                          assertThat(suggestion.code())
+                              .as("Suggestion code")
+                              .isEqualTo(CREATE_PROJECT));
+            });
   }
 
   @Test

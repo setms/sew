@@ -86,7 +86,10 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       Location location,
       Collection<Diagnostic> diagnostics) {
     if (projects.isEmpty()) {
-      return null;
+      return nothing(
+          new Diagnostic(
+              WARN, "Missing project", location, new Suggestion(CREATE_PROJECT, "Create project")),
+          diagnostics);
     }
     if (topLevelPackage == null) {
       return nothing(
