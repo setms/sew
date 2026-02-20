@@ -206,6 +206,6 @@ class TechnologyResolverImplTest {
             resource ->
                 assertThat(resource.path())
                     .as("Path")
-                    .isEqualTo("/src/main/overview/ProjectName.project"));
+                    .isEqualTo("/src/main/overview/Project.project"));
   }
 }

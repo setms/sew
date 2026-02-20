@@ -164,14 +164,12 @@ public class TechnologyResolverImpl implements TechnologyResolver {
               diagnostics));
     }
 
-    return switch (programmingLanguage) {
-      case "Java" -> javaBuildTool(buildToolChoice, projectName, location, diagnostics);
-      default ->
-          Optional.ofNullable(
-              nothing(
-                  new Diagnostic(ERROR, "Decided on unsupported programming language", location),
-                  diagnostics));
-    };
+    return programmingLanguage.equals("Java")
+        ? javaBuildTool(buildToolChoice, projectName, location, diagnostics)
+        : Optional.ofNullable(
+            nothing(
+                new Diagnostic(ERROR, "Decided on unsupported programming language", location),
+                diagnostics));
   }
 
   private Optional<org.setms.swe.domain.model.sdlc.technology.BuildTool> javaBuildTool(
@@ -179,14 +177,11 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       String projectName,
       Location location,
       Collection<Diagnostic> diagnostics) {
-    return switch (buildToolChoice) {
-      case "Gradle" -> Optional.of(new GradleBuildTool(projectName));
-      default ->
-          Optional.ofNullable(
-              nothing(
-                  new Diagnostic(ERROR, "Decided on unsupported build tool", location),
-                  diagnostics));
-    };
+    return buildToolChoice.equals("Gradle")
+        ? Optional.of(new GradleBuildTool(projectName))
+        : Optional.ofNullable(
+            nothing(
+                new Diagnostic(ERROR, "Decided on unsupported build tool", location), diagnostics));
   }
 
   @Override
@@ -234,7 +229,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
           resource
               .select("/")
               .select(projectInput.path())
-              .select("%s.%s".formatted(projectName, projectInput.extension()));
+              .select("Project.%s".formatted(projectInput.extension()));
       var content =
           """
           package overview
