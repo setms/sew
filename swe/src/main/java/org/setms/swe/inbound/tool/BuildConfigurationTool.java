@@ -1,13 +1,14 @@
 package org.setms.swe.inbound.tool;
 
+import static java.util.stream.Collectors.toSet;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.projects;
 import static org.setms.swe.inbound.tool.Inputs.unitTests;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
@@ -31,11 +32,7 @@ public class BuildConfigurationTool extends StandaloneTool {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    var result = new HashSet<Input<? extends Artifact>>();
-    result.add(projects());
-    result.add(decisions());
-    result.addAll(unitTests());
-    return result;
+    return Stream.concat(Stream.of(projects(), decisions()), unitTests().stream()).collect(toSet());
   }
 
   @Override
