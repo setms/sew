@@ -1,7 +1,0 @@
-package technology
-
-decision BuildTool {
-  topic     = "BuildTool"
-  choice    = "Gradle"
-  rationale = "Most popular build tool for Java."
-}

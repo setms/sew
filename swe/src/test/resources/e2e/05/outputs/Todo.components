@@ -1,0 +1,9 @@
+package todo
+
+components Todo {
+  deploys = modules(Todo)
+}
+
+component Todo {
+  deploys = [ module(TodoItems) ]
+}

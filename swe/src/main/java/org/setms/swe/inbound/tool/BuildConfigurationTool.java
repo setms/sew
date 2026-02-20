@@ -2,9 +2,11 @@ package org.setms.swe.inbound.tool;
 
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.projects;
+import static org.setms.swe.inbound.tool.Inputs.unitTests;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -16,6 +18,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
+import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
 @RequiredArgsConstructor
 public class BuildConfigurationTool extends StandaloneTool {
@@ -28,12 +31,19 @@ public class BuildConfigurationTool extends StandaloneTool {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of(projects(), decisions());
+    var result = new HashSet<Input<? extends Artifact>>();
+    result.add(projects());
+    result.add(decisions());
+    result.addAll(unitTests());
+    return result;
   }
 
   @Override
   public void validate(
       ResolvedInputs inputs, Resource<?> root, Collection<Diagnostic> diagnostics) {
+    if (inputs.get(UnitTest.class).isEmpty()) {
+      return;
+    }
     var buildTool = technologyResolver.buildTool(null, inputs, null, diagnostics);
     buildTool.ifPresent(bt -> bt.validate(root, diagnostics));
   }

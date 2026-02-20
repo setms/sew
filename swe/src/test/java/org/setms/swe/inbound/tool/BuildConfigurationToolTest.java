@@ -15,6 +15,7 @@ import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
 class BuildConfigurationToolTest {
 
@@ -43,6 +44,24 @@ class BuildConfigurationToolTest {
   }
 
   private ResolvedInputs resolvedInputs(InMemoryWorkspace workspace) throws IOException {
+    var inputs = resolvedInputsWithoutUnitTests();
+    var unitTest = new UnitTest(new FullyQualifiedName("com.example", "FooTest"));
+    inputs.put("unitTests", List.of(unitTest));
+    return inputs;
+  }
+
+  @Test
+  void shouldNotRequireBuildConfigurationWhenNoUnitTestsPresent() throws IOException {
+    var workspace = new InMemoryWorkspace();
+    var inputs = resolvedInputsWithoutUnitTests();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    tool.validate(inputs, workspace.root(), diagnostics);
+
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
+  }
+
+  private ResolvedInputs resolvedInputsWithoutUnitTests() {
     var inputs = new ResolvedInputs();
     var project =
         new Project(new FullyQualifiedName("overview", "MyProject")).setTitle("MyProject");
