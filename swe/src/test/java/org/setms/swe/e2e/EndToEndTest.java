@@ -90,7 +90,7 @@ class EndToEndTest {
     try (var input = new FileInputStream(new File(directory, "iteration.yaml"))) {
       var result = new Yaml().loadAs(input, Iteration.class);
       result.setDirectory(directory);
-      return result;
+      return result.validate();
     } catch (IOException e) {
       throw new AssertionError(e.getMessage());
     }
