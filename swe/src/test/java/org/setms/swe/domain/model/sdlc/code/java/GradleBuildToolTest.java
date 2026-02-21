@@ -69,13 +69,10 @@ class GradleBuildToolTest {
 
   @Test
   void shouldGenerateBuildConfigViaGradleToolingApi(@TempDir File projectDir) {
-    // Arrange
     var workspace = new DirectoryWorkspace(projectDir);
 
-    // Act
     var actual = buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
 
-    // Assert
     assertThat(actual.diagnostics()).isEmpty();
     assertThat(actual.createdOrChanged()).hasSize(7);
     assertThat(workspace.root().select("/gradle/libs.versions.toml").exists()).isTrue();
