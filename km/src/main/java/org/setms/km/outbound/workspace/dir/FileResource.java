@@ -1,6 +1,7 @@
 package org.setms.km.outbound.workspace.dir;
 
 import static io.methvin.watcher.DirectoryChangeEvent.EventType.*;
+import static java.util.Comparator.comparing;
 
 import io.methvin.watcher.DirectoryChangeEvent;
 import java.io.*;
@@ -54,7 +55,10 @@ class FileResource implements Resource<FileResource> {
 
   @Override
   public List<FileResource> children() {
-    return Files.childrenOf(file).map(child -> new FileResource(child, workspace)).toList();
+    return Files.childrenOf(file)
+        .map(child -> new FileResource(child, workspace))
+        .sorted(comparing(FileResource::name))
+        .toList();
   }
 
   @Override

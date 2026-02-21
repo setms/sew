@@ -99,6 +99,7 @@ class EndToEndTest {
   private void assertThatIterationIsCorrect(Iteration iteration) throws IOException {
     assertThatOutputsWereCreatedFor(iteration);
     copyInputsFrom(iteration);
+    showWorkspace();
     assertThatDiagnosticsMatch(iteration);
   }
 
@@ -197,7 +198,7 @@ class EndToEndTest {
                     chat.add(
                         true,
                         "Applied suggestion `%s`%s"
-                            .formatted(suggestion.message(), toLocation(diagnostic, "at")));
+                            .formatted(suggestion.message(), toLocation(diagnostic, "to")));
                   });
         });
   }
@@ -225,5 +226,23 @@ class EndToEndTest {
         .filter(input -> type.equals(initLower(input.type().getSimpleName())))
         .findFirst()
         .map(input -> "%s/%s.%s".formatted(input.path(), name, input.extension()));
+  }
+
+  private void showWorkspace() {
+    System.out.printf("%nWorkspace:%n");
+    show(workspace.root());
+    System.out.println();
+  }
+
+  private void show(Resource<?> resource) {
+    resource.children().stream()
+        .filter(child -> !child.name().startsWith("."))
+        .forEach(
+            child -> {
+              if (child.children().isEmpty()) {
+                System.out.printf("  %s%n", child.path());
+              }
+              show(child);
+            });
   }
 }
