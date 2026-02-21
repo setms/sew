@@ -3,12 +3,13 @@ package org.setms.swe.domain.model.sdlc.code.java;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 
 class GradleBuildToolTest {
@@ -67,21 +68,17 @@ class GradleBuildToolTest {
   }
 
   @Test
-  void shouldGenerateBuildGradleAndSettings() throws IOException {
-    var suggestionCode = GradleBuildTool.GENERATE_BUILD_CONFIG;
+  void shouldGenerateBuildConfigViaGradleToolingApi(@TempDir File projectDir) {
+    // Arrange
+    var workspace = new DirectoryWorkspace(projectDir);
 
-    var actual = buildTool.applySuggestion(suggestionCode, workspace.root());
+    // Act
+    var actual = buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
 
+    // Assert
     assertThat(actual.diagnostics()).isEmpty();
-    assertThat(actual.createdOrChanged()).hasSize(2);
-    var buildGradle = workspace.root().select("/build.gradle");
-    assertThat(buildGradle.exists()).isTrue();
-    var buildContent = readFile(buildGradle);
-    assertThat(buildContent).contains("plugins", "id 'java'", "junit-jupiter", "assertj", "jqwik");
-    var settingsGradle = workspace.root().select("/settings.gradle");
-    assertThat(settingsGradle.exists()).isTrue();
-    var settingsContent = readFile(settingsGradle);
-    assertThat(settingsContent).contains("rootProject.name = '" + PROJECT_NAME + "'");
+    assertThat(actual.createdOrChanged()).hasSize(7);
+    assertThat(workspace.root().select("/gradle/libs.versions.toml").exists()).isTrue();
   }
 
   @Test
@@ -96,13 +93,6 @@ class GradleBuildToolTest {
     var resource = workspace.root().select(path);
     try (var output = resource.writeTo()) {
       output.write(content.getBytes());
-    }
-  }
-
-  private String readFile(org.setms.km.domain.model.workspace.Resource<?> resource)
-      throws IOException {
-    try (var reader = new BufferedReader(new InputStreamReader(resource.readFrom()))) {
-      return reader.lines().reduce((a, b) -> a + "\n" + b).orElse("");
     }
   }
 }

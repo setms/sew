@@ -36,6 +36,7 @@ directory-watcher = { module = "io.methvin:directory-watcher", version.ref = "di
 evo-inflector = { module = "org.atteo:evo-inflector", version.ref = "evo-inflector" }
 jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
 jfreechart = { module = "org.jfree:jfreechart", version.ref = "jfreechart" }
+gradle-tooling-api = { module = "org.gradle:gradle-tooling-api", version = "9.3.1" }
 jgraphx = { module = "com.github.vlsi.mxgraph:jgraphx", version.ref = "jgraphx" }
 json = { module = "org.json:json", version.ref = "json" }
 jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }

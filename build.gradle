@@ -41,6 +41,9 @@ subprojects {
         maven {
             url = uri('https://repo.languagetool.org/artifactory/languagetool-os-release/')
         }
+        maven {
+            url = uri('https://repo.gradle.org/gradle/libs-releases/')
+        }
     }
 
     java {
