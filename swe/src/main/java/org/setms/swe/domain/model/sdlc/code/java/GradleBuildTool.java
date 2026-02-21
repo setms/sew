@@ -52,7 +52,7 @@ public class GradleBuildTool implements BuildTool {
       diagnostics.add(
           new Diagnostic(
               WARN,
-              "Missing build configuration",
+              "Gradle project isn't initialized",
               null,
               new Suggestion(GENERATE_BUILD_CONFIG, "Generate build configuration files")));
     }

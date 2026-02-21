@@ -31,7 +31,7 @@ class GradleBuildToolTest {
         .satisfies(
             diagnostic -> {
               assertThat(diagnostic.level()).isEqualTo(WARN);
-              assertThat(diagnostic.message()).isEqualTo("Missing build configuration");
+              assertThat(diagnostic.message()).isEqualTo("Gradle project isn't initialized");
               assertThat(diagnostic.suggestions()).hasSize(1);
               assertThat(diagnostic.suggestions().getFirst().message())
                   .isEqualTo("Generate build configuration files");
@@ -51,7 +51,7 @@ class GradleBuildToolTest {
         .satisfies(
             diagnostic -> {
               assertThat(diagnostic.level()).isEqualTo(WARN);
-              assertThat(diagnostic.message()).isEqualTo("Missing build configuration");
+              assertThat(diagnostic.message()).isEqualTo("Gradle project isn't initialized");
             });
   }
 
