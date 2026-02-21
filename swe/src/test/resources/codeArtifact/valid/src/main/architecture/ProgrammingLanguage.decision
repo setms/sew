@@ -1,0 +1,6 @@
+package technology
+
+decision ProgrammingLanguage {
+  topic  = "ProgrammingLanguage"
+  choice = "Java"
+}

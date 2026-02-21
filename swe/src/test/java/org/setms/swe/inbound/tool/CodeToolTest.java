@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
+import org.setms.swe.domain.model.sdlc.project.Project;
 
 class CodeToolTest extends ToolTestCase<CodeArtifact> {
 
@@ -97,6 +99,43 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
     tool.validate(codeArtifact, inputs, diagnostics);
 
     assertThat(diagnostics).isEmpty();
+  }
+
+  @Test
+  void shouldValidateGradleInitializationWhenGradleDecided() throws IOException {
+    var workspace = new InMemoryWorkspace();
+    createFile(
+        workspace,
+        "/src/test/java/com/example/MyTest.java",
+        "package com.example;\npublic class MyTest {}");
+    var decisions =
+        List.of(
+            decision(ProgrammingLanguage.TOPIC, "Java"),
+            decision(TopLevelPackage.TOPIC, "com.example"),
+            decision(BuildTool.TOPIC, "Gradle"));
+    var inputs =
+        new ResolvedInputs().put("decisions", decisions).put("projects", List.of(project()));
+    var diagnostics = new ArrayList<Diagnostic>();
+    var tool = (CodeTool) getTool();
+
+    tool.validate(
+        workspace.root().select("/src/test/java/com/example/MyTest.java"), inputs, diagnostics);
+
+    assertThat(diagnostics)
+        .map(Diagnostic::message)
+        .containsExactly("Gradle project isn't initialized");
+  }
+
+  private void createFile(InMemoryWorkspace workspace, String path, String content)
+      throws IOException {
+    var resource = workspace.root().select(path);
+    try (var output = resource.writeTo()) {
+      output.write(content.getBytes());
+    }
+  }
+
+  private Project project() {
+    return new Project(new FullyQualifiedName("overview", "MyProject")).setTitle("MyProject");
   }
 
   @Test
