@@ -1,11 +1,10 @@
 outputs:
-  - src/main/overview/ProjectName.project
+  - src/main/overview/Project.project
 
 inputs:
   - location: src/main/overview
     file: Todo.project
-    alias: ProjectName.project
+    alias: Project.project
 
 diagnostics:
   - Missing decision on top-level package
-  - Missing decision on build tool

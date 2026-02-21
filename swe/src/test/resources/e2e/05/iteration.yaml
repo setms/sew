@@ -1,5 +1,6 @@
 outputs:
   - src/main/architecture/ProgrammingLanguage.decision
+  - src/main/architecture/Todo.components
 
 inputs:
   - location: src/main/architecture

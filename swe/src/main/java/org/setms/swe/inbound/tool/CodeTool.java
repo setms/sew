@@ -70,8 +70,6 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
               null,
               new Suggestion(TechnologyResolverImpl.PICK_BUILD_TOOL, "Decide on build tool")));
     }
-    // Note: Build tool validation (checking for build.gradle/settings.gradle) happens in
-    // a separate validation pass since we need workspace root access
   }
 
   private Map<String, String> groupByTopic(Collection<Decision> decisions) {

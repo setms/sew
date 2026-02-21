@@ -1,0 +1,6 @@
+package technology
+
+decision BuildTool {
+  topic = "BuildTool"
+  choice = "Gradle"
+}

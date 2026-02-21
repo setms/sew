@@ -1,6 +1,5 @@
 outputs:
   - src/main/architecture/TopLevelPackage.decision
-  - src/main/architecture/BuildTool.decision
 
 inputs:
   - location: src/main/architecture
@@ -8,4 +7,3 @@ inputs:
 
 diagnostics:
   - Missing unit test
-  - Missing decision on build tool

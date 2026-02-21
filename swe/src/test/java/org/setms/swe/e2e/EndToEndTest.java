@@ -63,7 +63,7 @@ class EndToEndTest {
     workspace = new DirectoryWorkspace(root);
     processOrchestrator = new ProcessOrchestrator(workspace);
 
-    // Force initialization of Hibernate, to keep its output from interfering with our chat output
+    // Force initialization of Hibernate, so that its output doesn't interfere with our chat output
     validate(new Object());
   }
 
@@ -229,9 +229,9 @@ class EndToEndTest {
   }
 
   private void showWorkspace() {
-    System.out.printf("%nWorkspace:%n");
+    System.out.printf("%n--- Workspace%n");
     show(workspace.root());
-    System.out.println();
+    System.out.printf("---%n%n");
   }
 
   private void show(Resource<?> resource) {
@@ -240,7 +240,7 @@ class EndToEndTest {
         .forEach(
             child -> {
               if (child.children().isEmpty()) {
-                System.out.printf("  %s%n", child.path());
+                System.out.printf("  %s%n", child.path().substring(1));
               }
               show(child);
             });
