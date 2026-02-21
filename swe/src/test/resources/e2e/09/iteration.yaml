@@ -4,3 +4,6 @@ outputs:
 inputs:
   - file: BuildTool.decision
     location: src/main/architecture
+
+diagnostics:
+  - Gradle project isn't initialized

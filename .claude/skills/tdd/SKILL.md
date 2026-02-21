@@ -33,6 +33,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   If it doesn't, return to step 2.
 12. Mark the test scenario as complete.
 13. If there are test scenarios that aren't complete, return to step 1.
+  CRITICAL: You MUST have explicit approval to continue with the next test scenario.
 14. If `EndToEndTest` still fails after all test scenarios are complete, invoke the `e2e` skill.
 
 Implementation notes:

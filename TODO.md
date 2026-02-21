@@ -2,7 +2,6 @@
 
 ## End-to-end test
 
-- Build tool decision is repeated
 - Finish workflow
 
 
@@ -32,10 +31,6 @@
 ### Build
 
 - Verify access to org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool.GENERATE_BUILD_CONFIG
-
-### Build configuration
-
-- BuildConfigurationTool seems iffy as a concept
 
 ### Code
 
