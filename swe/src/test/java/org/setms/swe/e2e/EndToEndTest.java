@@ -113,7 +113,9 @@ class EndToEndTest {
                   iteration.getDirectory(),
                   "outputs/%s".formatted(output.substring(1 + output.lastIndexOf("/")))),
               FileInputStream::new);
-      assertThat(actual).as(output).isEqualTo(expected);
+      if (!"<anything>".equals(expected)) {
+        assertThat(actual).as(output).isEqualTo(expected);
+      }
       chat.add(false, "Created " + output);
     }
   }
