@@ -54,6 +54,8 @@ Domain-specific models and tools organized under `org.setms.swe.domain.model.sdl
 
 Domain Services in `org.setms.swe.domain.services`.
 
+CRITICAL: **Never** propose changes to `BuildConfigurationTool` to drive any behavior. It is slated for removal.
+
 ### intellij-lang-sal
 
 IntelliJ language support for SAL (Structured Artifact Language).

@@ -12,8 +12,8 @@ description: Write code following the TDD style. Use when there is a non-empty, 
 3. Make sure this test fails for the correct reason.
   If you invented new types or methods, you'll first have to write just enough code to make the test compile.
   Then run the test.
-  If it passes or fails for the wrong reason, update the test until it fails for the correct reason and with a clear
-  message that shows what's wrong.
+  If it passes or fails for the wrong reason, update the test until it fails for the correct reason.
+  Also make sure the test failure clearly indicates what's wrong.
 4. Show the test to the user and ask them to review it.
   Address any concerns they may have.
 5. Once you have approval, write code to make the failing test pass.
@@ -44,3 +44,7 @@ Implementation notes:
 CRITICAL: You must not conclude you're done until all tests pass (with the possible exception of `EndToEndTest`) and
 all other checks succeed.
 This is non-negotiable.
+
+CRITICAL: You mustn't run any test more than once, unless there were changes to either the test or the code it tests.
+If you need more information, look at the test report in the `build` directory instead.
+This is critical for not wasting time.
