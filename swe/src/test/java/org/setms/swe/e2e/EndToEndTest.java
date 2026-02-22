@@ -75,9 +75,7 @@ class EndToEndTest {
       assertThatIterationIsCorrect(iteration);
     }
     chat.topic("The End");
-    processOrchestrator
-        .diagnosticsWithSuggestions()
-        .forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
+    processOrchestrator.diagnostics().forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
   }
 
   private List<Iteration> loadIterations() {
@@ -165,47 +163,42 @@ class EndToEndTest {
         .atMost(3, SECONDS)
         .untilAsserted(
             () ->
-                assertThat(processOrchestrator.diagnostics())
+                assertThat(processOrchestrator.diagnosticsWithSuggestions())
                     .as(
                         "Diagnostics for iteration %s"
                             .formatted(iteration.getDirectory().getName()))
                     .map(Diagnostic::message)
                     .containsExactlyInAnyOrderElementsOf(expected));
 
-    processOrchestrator
-        .diagnostics()
-        .forEach(
-            diagnostic ->
-                chat.add(
-                    false,
-                    "Found issue `%s`%s"
-                        .formatted(diagnostic.message(), toLocation(diagnostic, "in"))));
-    processOrchestrator
-        .diagnosticsWithSuggestions()
-        .forEach(
-            diagnostic -> {
-              var resource = workspace.root().select(toPath(diagnostic.location()).orElse("/"));
-              diagnostic
-                  .suggestions()
-                  .forEach(
-                      suggestion -> {
-                        var applied =
-                            processOrchestrator.applySuggestion(
-                                resource, suggestion.code(), diagnostic.location());
-                        assertThat(applied.diagnostics())
-                            .as(
-                                "Diagnostics for applying suggestion %s%s"
-                                    .formatted(suggestion.code(), toLocation(diagnostic, "at")))
-                            .isEmpty();
-                        applied.createdOrChanged().stream()
-                            .map(Resource::name)
-                            .forEach(created::add);
-                        chat.add(
-                            true,
-                            "Applied suggestion `%s`%s"
-                                .formatted(suggestion.message(), toLocation(diagnostic, "to")));
-                      });
-            });
+    var diagnostics = processOrchestrator.diagnosticsWithSuggestions();
+    diagnostics.forEach(
+        diagnostic ->
+            chat.add(
+                false,
+                "Found issue `%s`%s"
+                    .formatted(diagnostic.message(), toLocation(diagnostic, "in"))));
+    diagnostics.forEach(
+        diagnostic -> {
+          var resource = workspace.root().select(toPath(diagnostic.location()).orElse("/"));
+          diagnostic
+              .suggestions()
+              .forEach(
+                  suggestion -> {
+                    var applied =
+                        processOrchestrator.applySuggestion(
+                            resource, suggestion.code(), diagnostic.location());
+                    assertThat(applied.diagnostics())
+                        .as(
+                            "Diagnostics for applying suggestion %s%s"
+                                .formatted(suggestion.code(), toLocation(diagnostic, "at")))
+                        .isEmpty();
+                    applied.createdOrChanged().stream().map(Resource::name).forEach(created::add);
+                    chat.add(
+                        true,
+                        "Applied suggestion `%s`%s"
+                            .formatted(suggestion.message(), toLocation(diagnostic, "to")));
+                  });
+        });
   }
 
   private String toLocation(Diagnostic diagnostic, String adverb) {
