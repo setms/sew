@@ -35,7 +35,7 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
 import org.setms.swe.domain.model.sdlc.acceptancetest.PolicyScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Scenario;
-import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.project.Project;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -79,7 +79,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     if (unitTest.isEmpty()) {
       if (technologyResolver
           .unitTestGenerator(
-              inputs.get(Decision.class),
+              Decisions.from(inputs),
               inputs.get(Project.class),
               acceptanceTest.toLocation(),
               diagnostics)
@@ -111,7 +111,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       ResolvedInputs inputs) {
     if (SUGGESTION_CREATE_UNIT_TEST.equals(suggestionCode)) {
       return createUnitTest(
-          acceptanceTest, resource, inputs.get(Decision.class), inputs.get(Project.class));
+          acceptanceTest, resource, Decisions.from(inputs), inputs.get(Project.class));
     }
     return technologyResolver.applySuggestion(suggestionCode, resource, inputs);
   }
@@ -119,7 +119,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
   private AppliedSuggestion createUnitTest(
       AcceptanceTest acceptanceTest,
       Resource<?> resource,
-      Collection<Decision> decisions,
+      Decisions decisions,
       Collection<Project> projects) {
     var diagnostics = new HashSet<Diagnostic>();
     return technologyResolver

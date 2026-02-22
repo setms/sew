@@ -1,13 +1,11 @@
 package org.setms.swe.inbound.tool;
 
-import static java.util.stream.Collectors.toMap;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.projects;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -20,7 +18,7 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
-import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -66,8 +64,8 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
 
   private void validateCodeBuilder(
       Resource<?> root, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var topics = groupByTopic(inputs.get(Decision.class));
-    if (topics.get(BuildSystem.TOPIC) != null) {
+    var decisions = Decisions.from(inputs);
+    if (decisions.existFor(BuildSystem.TOPIC)) {
       technologyResolver
           .codeBuilder(root, inputs, diagnostics)
           .ifPresent(bt -> bt.build(root, diagnostics));
@@ -77,8 +75,8 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   @Override
   public void validate(
       CodeArtifact codeArtifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var topics = groupByTopic(inputs.get(Decision.class));
-    var selectedBuildSystem = topics.get(BuildSystem.TOPIC);
+    var decisions = Decisions.from(inputs);
+    var selectedBuildSystem = decisions.about(BuildSystem.TOPIC);
     if (selectedBuildSystem == null) {
       diagnostics.add(
           new Diagnostic(
@@ -87,12 +85,6 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
               null,
               new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system")));
     }
-  }
-
-  private Map<String, String> groupByTopic(Collection<Decision> decisions) {
-    return decisions.stream()
-        .filter(decision -> decision.getChoice() != null)
-        .collect(toMap(Decision::getTopic, Decision::getChoice));
   }
 
   @Override

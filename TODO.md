@@ -17,7 +17,7 @@
 
 ### Generic
 
-- Introduce Decisions - Optional<Choice> getChoiceFor(String topic)
+- Artifacts are rendered twice: see `.km/reports` for e.g. domain stories
 
 ### Acceptance tests
 

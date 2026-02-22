@@ -8,8 +8,6 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
@@ -20,6 +18,7 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
@@ -42,22 +41,15 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
-      Collection<Decision> decisions,
+      Decisions decisions,
       Collection<Project> projects,
       Location location,
       Collection<Diagnostic> diagnostics) {
-    var topics = groupByTopic(decisions);
-    var programmingLanguage = topics.get(ProgrammingLanguage.TOPIC);
-    var topLevelPackage = topics.get(TopLevelPackage.TOPIC);
+    var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
+    var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
     return Optional.ofNullable(
         unitTestGeneratorFor(
             programmingLanguage, projects, topLevelPackage, location, diagnostics));
-  }
-
-  private Map<String, String> groupByTopic(Collection<Decision> decisions) {
-    var result = new HashMap<String, String>();
-    decisions.forEach(decision -> result.put(decision.getTopic(), decision.getChoice()));
-    return result;
   }
 
   private UnitTestGenerator unitTestGeneratorFor(
@@ -123,9 +115,9 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     }
 
     var projectName = project.get().getTitle();
-    var topics = groupByTopic(inputs.get(Decision.class));
-    var programmingLanguage = topics.get(ProgrammingLanguage.TOPIC);
-    var selectedBuildSystem = topics.get(BuildSystem.TOPIC);
+    var decisions = Decisions.from(inputs);
+    var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
+    var selectedBuildSystem = decisions.about(BuildSystem.TOPIC);
 
     var result = codeBuilderFor(programmingLanguage, selectedBuildSystem, projectName, diagnostics);
     if (resource != null) {

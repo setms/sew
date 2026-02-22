@@ -29,8 +29,9 @@ public class ResolvedInputs implements LinkResolver {
   }
 
   private <T extends Artifact> List<T> get(String name, Class<T> type) {
-    var namedObjects = Optional.ofNullable(values.get(name)).orElseGet(Collections::emptyList);
-    return namedObjects.stream().map(type::cast).toList();
+    return Optional.ofNullable(values.get(name)).orElseGet(Collections::emptyList).stream()
+        .map(type::cast)
+        .toList();
   }
 
   @Override

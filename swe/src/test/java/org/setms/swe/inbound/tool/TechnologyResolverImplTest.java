@@ -21,6 +21,7 @@ import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
@@ -36,7 +37,7 @@ class TechnologyResolverImplTest {
     var diagnostics = new ArrayList<Diagnostic>();
     Location location = new Location("foo/bar");
 
-    resolver.unitTestGenerator(emptyList(), emptyList(), location, diagnostics);
+    resolver.unitTestGenerator(Decisions.none(), emptyList(), location, diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -61,7 +62,7 @@ class TechnologyResolverImplTest {
   void shouldRequireProjectForUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
     var location = new Location("foo/bar");
-    var decisions = List.of(decision(ProgrammingLanguage.TOPIC, "Java"));
+    var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
 
     var actual = resolver.unitTestGenerator(decisions, emptyList(), location, diagnostics);
 
@@ -89,7 +90,7 @@ class TechnologyResolverImplTest {
   void shouldNeedTopLevelPackageAfterProject() {
     var diagnostics = new ArrayList<Diagnostic>();
     var location = new Location("foo/bar");
-    var decisions = List.of(decision(ProgrammingLanguage.TOPIC, "Java"));
+    var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
     var projects = List.of(project());
 
     resolver.unitTestGenerator(decisions, projects, location, diagnostics);
@@ -127,7 +128,7 @@ class TechnologyResolverImplTest {
     var diagnostics = new ArrayList<Diagnostic>();
     var location = new Location("foo/bar");
     var decisions =
-        List.of(
+        Decisions.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"));
     var projects = List.of(project());
@@ -195,7 +196,6 @@ class TechnologyResolverImplTest {
   @Test
   void shouldRequireProjectForCodeBuilder() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var location = new Location("foo/bar");
     var inputs = new ResolvedInputs();
     var workspace = new InMemoryWorkspace();
 
