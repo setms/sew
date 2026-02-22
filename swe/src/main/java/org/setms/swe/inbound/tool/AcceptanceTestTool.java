@@ -98,7 +98,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
 
   private Optional<UnitTest> find(List<UnitTest> unitTests, AcceptanceTest acceptanceTest) {
     return unitTests.stream()
-        .filter(unitTest -> unitTest.getName().equals(acceptanceTest.getName() + "Test"))
+        .filter(unitTest -> unitTest.getName().equals(acceptanceTest.getUnitTestName()))
         .findFirst();
   }
 

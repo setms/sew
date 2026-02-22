@@ -21,7 +21,6 @@
 
 ### Acceptance tests
 
-- Resolve duplication between name and unit test name
 - Check whether unit test exits
   - If it does, check that it implements all scenarios
 - Check internal consistency

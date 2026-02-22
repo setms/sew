@@ -29,12 +29,9 @@ class JavaUnitGeneratorTest {
 
     var actual = generatedUnitTest(acceptanceTest);
 
-    assertThat(actual.getName()).isEqualTo("NotificationsTest");
     assertThat(actual.getPackage()).isEqualTo(PACKAGE);
-    assertThat(actual.getCode()).isNotEmpty();
-    assertThat(actual.getCode()).contains("package %s;".formatted(PACKAGE));
-    assertThat(actual.getCode()).contains("class NotificationsTest");
-    assertThat(actual.getCode()).contains("@Test");
+    assertThatUnitTestHasName(actual, "NotificationsAggregateTest");
+    assertThat(actual.getCode()).contains("package %s;".formatted(PACKAGE)).contains("@Test");
   }
 
   private UnitTest generatedUnitTest(AcceptanceTest acceptanceTest) {
@@ -105,8 +102,7 @@ class JavaUnitGeneratorTest {
 
     var actual = generatedUnitTest(acceptanceTest);
 
-    assertThat(actual.getName()).isEqualTo("SendNotificationTest");
-    assertThat(actual.getCode()).contains("class SendNotificationTest");
+    assertThatUnitTestHasName(actual, "SendNotificationPolicyTest");
   }
 
   private AcceptanceTest policyAcceptanceTest() {
@@ -143,8 +139,12 @@ class JavaUnitGeneratorTest {
 
     var actual = generatedUnitTest(acceptanceTest);
 
-    assertThat(actual.getName()).isEqualTo("NotificationListTest");
-    assertThat(actual.getCode()).contains("class NotificationListTest");
+    assertThatUnitTestHasName(actual, "NotificationListReadModelTest");
+  }
+
+  private void assertThatUnitTestHasName(UnitTest actual, String NotificationListReadModelTest) {
+    assertThat(actual.getName()).isEqualTo(NotificationListReadModelTest);
+    assertThat(actual.getCode()).contains("class " + NotificationListReadModelTest);
   }
 
   private AcceptanceTest readModelAcceptanceTest() {

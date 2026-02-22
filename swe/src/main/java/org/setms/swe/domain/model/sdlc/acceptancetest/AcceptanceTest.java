@@ -39,4 +39,8 @@ public class AcceptanceTest extends Artifact {
   public Optional<Variable<?, ?, ?>> findVariable(String name) {
     return variables.stream().filter(v -> name.equals(v.getName())).findFirst();
   }
+
+  public String getUnitTestName() {
+    return getName() + "Test";
+  }
 }
