@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.domain.model.sdlc.architecture.BuildTool.TOPIC;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
 
 import java.io.IOException;
@@ -17,14 +18,15 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
-import org.setms.swe.domain.model.sdlc.architecture.BuildTool;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
 import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.technology.BuildTool;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class CodeToolTest extends ToolTestCase<CodeArtifact> {
@@ -97,7 +99,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
         new Decision[] {
           decision(ProgrammingLanguage.TOPIC, "Java"),
           decision(TopLevelPackage.TOPIC, "com.example"),
-          decision(BuildTool.TOPIC, "Gradle")
+          decision(TOPIC, "Gradle")
         };
     var inputs = new ResolvedInputs().put("decisions", List.of(decisions));
     var tool = (CodeTool) getTool();
@@ -118,7 +120,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
         List.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"),
-            decision(BuildTool.TOPIC, "Gradle"));
+            decision(TOPIC, "Gradle"));
     var inputs =
         new ResolvedInputs().put("decisions", decisions).put("projects", List.of(project()));
     var diagnostics = new ArrayList<Diagnostic>();
@@ -132,8 +134,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
         .containsExactly("Gradle project isn't initialized");
   }
 
-  private void createFile(InMemoryWorkspace workspace, String path, String content)
-      throws IOException {
+  private void createFile(Workspace<?> workspace, String path, String content) throws IOException {
     var resource = workspace.root().select(path);
     try (var output = resource.writeTo()) {
       output.write(content.getBytes());
@@ -164,8 +165,8 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
 
   @Test
   void shouldCallBuildAfterBuildToolIsInitialized() throws IOException {
-    var mockBuildTool = mock(org.setms.swe.domain.model.sdlc.technology.BuildTool.class);
-    var tool = givenToolWithBuildToolMock(mockBuildTool);
+    var buildTool = mock(BuildTool.class);
+    var tool = givenToolWith(buildTool);
     var workspace = givenWorkspaceWithTestSource();
     var inputs = givenInputsWithBuildToolDecision();
     var diagnostics = new ArrayList<Diagnostic>();
@@ -173,17 +174,16 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
     tool.validate(
         workspace.root().select("/src/test/java/com/example/MyTest.java"), inputs, diagnostics);
 
-    verify(mockBuildTool).build(any(), any());
+    verify(buildTool).build(any(), any());
   }
 
-  private CodeTool givenToolWithBuildToolMock(
-      org.setms.swe.domain.model.sdlc.technology.BuildTool buildTool) {
+  private ArtifactTool<CodeArtifact> givenToolWith(BuildTool buildTool) {
     var resolver = mock(TechnologyResolver.class);
     when(resolver.buildTool(any(), any(), any(), any())).thenReturn(Optional.of(buildTool));
     return new CodeTool(resolver);
   }
 
-  private InMemoryWorkspace givenWorkspaceWithTestSource() throws IOException {
+  private Workspace<?> givenWorkspaceWithTestSource() throws IOException {
     var workspace = new InMemoryWorkspace();
     createFile(
         workspace,
@@ -197,7 +197,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
         List.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"),
-            decision(BuildTool.TOPIC, "Gradle"));
+            decision(TOPIC, "Gradle"));
     return new ResolvedInputs().put("decisions", decisions).put("projects", List.of(project()));
   }
 }
