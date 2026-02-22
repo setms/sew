@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 
@@ -91,6 +92,30 @@ class GradleBuildToolTest {
 
     assertThat(actual.diagnostics()).isEmpty();
     assertThat(actual.createdOrChanged()).hasSize(10);
+  }
+
+  @Test
+  void shouldProduceNoDiagnosticsWhenSourcesCompileCleanly(@TempDir File projectDir)
+      throws IOException {
+    var workspace = new DirectoryWorkspace(projectDir);
+    buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    addJavaSourceFile(
+        workspace.root(), "com/example/Hello.java", "package com.example; public class Hello {}");
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    buildTool.build(workspace.root(), diagnostics);
+
+    assertThat(diagnostics).isEmpty();
+    assertThat(workspace.root().select("build/classes/java/main/com/example/Hello.class").exists())
+        .isTrue();
+  }
+
+  private void addJavaSourceFile(Resource<?> root, String relativePath, String content)
+      throws IOException {
+    var resource = root.select("src/main/java/" + relativePath);
+    try (var output = resource.writeTo()) {
+      output.write(content.getBytes());
+    }
   }
 
   @Test

@@ -89,7 +89,25 @@ public class GradleBuildTool implements BuildTool {
   }
 
   @Override
-  public void build(Resource<?> resource, Collection<Diagnostic> diagnostics) {}
+  public void build(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    if (!resource.select("/build.gradle").exists()
+        || !resource.select("/settings.gradle").exists()) {
+      return;
+    }
+    runCompile(resource);
+  }
+
+  private void runCompile(Resource<?> resource) {
+    try (var connection =
+        GradleConnector.newConnector()
+            .forProjectDirectory(new File(resource.toUri()))
+            .useGradleVersion(GRADLE_VERSION)
+            .connect()) {
+      connection.newBuild().forTasks("compileJava").run();
+    } catch (Exception e) {
+      throw new IllegalStateException("gradle compile failed", e);
+    }
+  }
 
   @Override
   public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
