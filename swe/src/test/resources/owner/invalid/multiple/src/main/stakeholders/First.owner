@@ -1,5 +1,0 @@
-package owners
-
-owner First {
-    display = "First"
-}

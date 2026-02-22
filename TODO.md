@@ -19,22 +19,13 @@
 
 - Artifacts are rendered twice: see `.km/reports` for e.g. domain stories
 
-### Acceptance tests
+### Acceptance test
 
 - Check whether unit test exits
   - If it does, check that it implements all scenarios
 - Check internal consistency
   - All variables used in scenarios
   - No undeclared variables used in scenarios
-
-### Build
-
-- Verify access to org.setms.swe.domain.model.sdlc.code.java.Gradle.GENERATE_BUILD_CONFIG
-
-### Code
-
-- Verify comment in org.setms.swe.inbound.tool.CodeTool.validate
-
 
 ### Decision
 

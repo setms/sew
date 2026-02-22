@@ -8,5 +8,4 @@ org.setms.swe.inbound.tool.DomainTool
 org.setms.swe.inbound.tool.EntityTool
 org.setms.swe.inbound.tool.GlossaryTool
 org.setms.swe.inbound.tool.ModulesTool
-org.setms.swe.inbound.tool.ProjectTool
 org.setms.swe.inbound.tool.UseCaseTool
