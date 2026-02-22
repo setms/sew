@@ -30,7 +30,7 @@
 
 ### Build
 
-- Verify access to org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool.GENERATE_BUILD_CONFIG
+- Verify access to org.setms.swe.domain.model.sdlc.code.java.Gradle.GENERATE_BUILD_CONFIG
 
 ### Code
 

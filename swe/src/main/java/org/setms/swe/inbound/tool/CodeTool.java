@@ -60,16 +60,16 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   public CodeArtifact validate(
       Resource<?> resource, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
     var result = super.validate(resource, context, diagnostics);
-    validateBuildTool(resource.select("/"), context, diagnostics);
+    validateCodeBuilder(resource.select("/"), context, diagnostics);
     return result;
   }
 
-  private void validateBuildTool(
+  private void validateCodeBuilder(
       Resource<?> root, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var topics = groupByTopic(inputs.get(Decision.class));
     if (topics.get(BuildSystem.TOPIC) != null) {
       technologyResolver
-          .buildTool(root, inputs, diagnostics)
+          .codeBuilder(root, inputs, diagnostics)
           .ifPresent(bt -> bt.build(root, diagnostics));
     }
   }
@@ -78,8 +78,8 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   public void validate(
       CodeArtifact codeArtifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var topics = groupByTopic(inputs.get(Decision.class));
-    var buildToolChoice = topics.get(BuildSystem.TOPIC);
-    if (buildToolChoice == null) {
+    var selectedBuildSystem = topics.get(BuildSystem.TOPIC);
+    if (selectedBuildSystem == null) {
       diagnostics.add(
           new Diagnostic(
               WARN,

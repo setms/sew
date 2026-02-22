@@ -18,8 +18,7 @@ public interface TechnologyResolver {
    * @param projects Projects defined
    * @param location From where the unit test is created
    * @param diagnostics where to store any validation issues
-   * @return something that can generates unit tests, or <code>Optional.empty()</code> if there are
-   *     issues
+   * @return something that can generate unit tests, or empty if there are issues
    */
   Optional<UnitTestGenerator> unitTestGenerator(
       Collection<Decision> decisions,
@@ -28,13 +27,12 @@ public interface TechnologyResolver {
       Collection<Diagnostic> diagnostics);
 
   /**
-   * @param resource Project root resource (passed to BuildTool.validate())
-   * @param inputs Resolved inputs (to access Project artifact)
+   * @param resource Workspace root resource
+   * @param inputs Resolved inputs
    * @param diagnostics where to store any validation issues
-   * @return something that can validate and generate build configuration, or empty if there are
-   *     issues
+   * @return something that can build code, or empty if there are issues
    */
-  Optional<BuildTool> buildTool(
+  Optional<CodeBuilder> codeBuilder(
       Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
   AppliedSuggestion applySuggestion(

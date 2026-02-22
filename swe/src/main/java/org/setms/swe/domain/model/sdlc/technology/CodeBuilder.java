@@ -4,21 +4,13 @@ import java.util.Collection;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.inbound.tool.TechnologyResolverImpl;
 
-/**
- * Validates and generates build configuration files.
- *
- * <p>Implementations are build-tool specific (e.g., Gradle, Maven). They know what configuration
- * files they need, validate whether they exist, and generate them when requested. The selection of
- * which implementation to use is handled by {@link TechnologyResolverImpl}.
- */
-public interface BuildTool {
+public interface CodeBuilder {
 
   /**
-   * Validate everything's in place for the tool to work properly.
+   * Validate everything's in place for the builder to work properly.
    *
-   * @param resource the project root resource
+   * @param resource the workspace root resource
    * @param diagnostics where to add diagnostics for issues
    */
   void validate(Resource<?> resource, Collection<Diagnostic> diagnostics);
@@ -26,7 +18,7 @@ public interface BuildTool {
   /**
    * Compile the project and collect diagnostics for any errors found.
    *
-   * @param resource the project root resource
+   * @param resource the workspace root resource
    * @param diagnostics where to add diagnostics for compilation errors
    */
   void build(Resource<?> resource, Collection<Diagnostic> diagnostics);

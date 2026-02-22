@@ -26,7 +26,7 @@ import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
 import org.setms.swe.domain.model.sdlc.project.Project;
-import org.setms.swe.domain.model.sdlc.technology.BuildTool;
+import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class CodeToolTest extends ToolTestCase<CodeArtifact> {
@@ -50,7 +50,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   }
 
   @Test
-  void shouldNeedBuildToolWhenUnitTestExists() {
+  void shouldRequireCodeBuilderWhenUnitTestExists() {
     var diagnostics = new ArrayList<Diagnostic>();
     var codeArtifact = codeArtifact();
     var decisions =
@@ -92,7 +92,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   }
 
   @Test
-  void shouldNotNeedBuildToolWhenAlreadyDecided() {
+  void shouldNotRequireCodeBuilderWhenAlreadyDecided() {
     var diagnostics = new ArrayList<Diagnostic>();
     var codeArtifact = codeArtifact();
     Decision[] decisions =
@@ -112,10 +112,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   @Test
   void shouldValidateGradleInitializationWhenGradleDecided() throws IOException {
     var workspace = new InMemoryWorkspace();
-    createFile(
-        workspace,
-        "/src/test/java/com/example/MyTest.java",
-        "package com.example;\npublic class MyTest {}");
+    createFile(workspace);
     var decisions =
         List.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
@@ -134,10 +131,10 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
         .containsExactly("Gradle project isn't initialized");
   }
 
-  private void createFile(Workspace<?> workspace, String path, String content) throws IOException {
-    var resource = workspace.root().select(path);
+  private void createFile(Workspace<?> workspace) throws IOException {
+    var resource = workspace.root().select("/src/test/java/com/example/MyTest.java");
     try (var output = resource.writeTo()) {
-      output.write(content.getBytes());
+      output.write("package com.example;\npublic class MyTest {}".getBytes());
     }
   }
 
@@ -146,7 +143,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   }
 
   @Test
-  void shouldCreateBuildToolDecision() {
+  void shouldCreateCodeBuilderDecision() {
     var workspace = new InMemoryWorkspace();
     var tool = (CodeTool) getTool();
 
@@ -164,35 +161,32 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   }
 
   @Test
-  void shouldCallBuildAfterBuildToolIsInitialized() throws IOException {
-    var buildTool = mock(BuildTool.class);
-    var tool = givenToolWith(buildTool);
+  void shouldCallBuildAfterCodeBuilderIsInitialized() throws IOException {
+    var codeBuilder = mock(CodeBuilder.class);
+    var tool = givenToolWith(codeBuilder);
     var workspace = givenWorkspaceWithTestSource();
-    var inputs = givenInputsWithBuildToolDecision();
+    var inputs = givenInputsWithBuildSystemDecision();
     var diagnostics = new ArrayList<Diagnostic>();
 
     tool.validate(
         workspace.root().select("/src/test/java/com/example/MyTest.java"), inputs, diagnostics);
 
-    verify(buildTool).build(any(), any());
+    verify(codeBuilder).build(any(), any());
   }
 
-  private ArtifactTool<CodeArtifact> givenToolWith(BuildTool buildTool) {
+  private ArtifactTool<CodeArtifact> givenToolWith(CodeBuilder codeBuilder) {
     var resolver = mock(TechnologyResolver.class);
-    when(resolver.buildTool(any(), any(), any())).thenReturn(Optional.of(buildTool));
+    when(resolver.codeBuilder(any(), any(), any())).thenReturn(Optional.of(codeBuilder));
     return new CodeTool(resolver);
   }
 
   private Workspace<?> givenWorkspaceWithTestSource() throws IOException {
     var workspace = new InMemoryWorkspace();
-    createFile(
-        workspace,
-        "/src/test/java/com/example/MyTest.java",
-        "package com.example;\npublic class MyTest {}");
+    createFile(workspace);
     return workspace;
   }
 
-  private ResolvedInputs givenInputsWithBuildToolDecision() {
+  private ResolvedInputs givenInputsWithBuildSystemDecision() {
     var decisions =
         List.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),

@@ -25,10 +25,10 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.domain.model.sdlc.technology.BuildTool;
+import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 
 @RequiredArgsConstructor
-public class GradleBuildTool implements BuildTool {
+public class Gradle implements CodeBuilder {
 
   public static final String GENERATE_BUILD_CONFIG = "gradle.generate.build.config";
   private static final String GRADLE_VERSION = "9.3.1";

@@ -14,12 +14,13 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
+import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 
-class GradleBuildToolTest {
+class GradleTest {
 
   private static final String PROJECT_NAME = "MyProject";
 
-  private final GradleBuildTool buildTool = new GradleBuildTool(PROJECT_NAME);
+  private final CodeBuilder codeBuilder = new Gradle(PROJECT_NAME);
   private final InMemoryWorkspace workspace = new InMemoryWorkspace();
 
   @Test
@@ -27,7 +28,7 @@ class GradleBuildToolTest {
     createFile("/settings.gradle", "rootProject.name = 'test'");
     var diagnostics = new ArrayList<Diagnostic>();
 
-    buildTool.validate(workspace.root(), diagnostics);
+    codeBuilder.validate(workspace.root(), diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -47,7 +48,7 @@ class GradleBuildToolTest {
     createFile("/build.gradle", "plugins { id 'java' }");
     var diagnostics = new ArrayList<Diagnostic>();
 
-    buildTool.validate(workspace.root(), diagnostics);
+    codeBuilder.validate(workspace.root(), diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -65,7 +66,7 @@ class GradleBuildToolTest {
     createFile("/settings.gradle", "rootProject.name = 'test'");
     var diagnostics = new ArrayList<Diagnostic>();
 
-    buildTool.validate(workspace.root(), diagnostics);
+    codeBuilder.validate(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
   }
@@ -74,7 +75,7 @@ class GradleBuildToolTest {
   void shouldGenerateBuildConfigViaGradleToolingApi(@TempDir File projectDir) {
     var workspace = new DirectoryWorkspace(projectDir);
 
-    var actual = buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    var actual = codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
 
     assertThat(actual.diagnostics()).isEmpty();
     assertThat(actual.createdOrChanged()).hasSize(10);
@@ -90,7 +91,7 @@ class GradleBuildToolTest {
     javaFile.createNewFile();
     var workspace = new DirectoryWorkspace(projectDir);
 
-    var actual = buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    var actual = codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
 
     assertThat(actual.diagnostics()).isEmpty();
     assertThat(actual.createdOrChanged()).hasSize(10);
@@ -100,11 +101,11 @@ class GradleBuildToolTest {
   void shouldProduceNoDiagnosticsWhenSourcesCompileCleanly(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenJavaSourceFile(workspace.root());
     var diagnostics = new ArrayList<Diagnostic>();
 
-    buildTool.build(workspace.root(), diagnostics);
+    codeBuilder.build(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
     assertThat(workspace.root().select("build/classes/java/main/com/example/Hello.class").exists())
@@ -115,11 +116,11 @@ class GradleBuildToolTest {
   void shouldEmitDiagnosticWhenSourcesHaveCompilationError(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenJavaSourceFileWithError(workspace.root());
     var diagnostics = new ArrayList<Diagnostic>();
 
-    buildTool.build(workspace.root(), diagnostics);
+    codeBuilder.build(workspace.root(), diagnostics);
 
     assertThat(diagnostics).hasSize(1);
     var actual = diagnostics.getFirst();
@@ -133,11 +134,11 @@ class GradleBuildToolTest {
   void shouldEmitDiagnosticWhenTestSourcesHaveCompilationError(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenJavaTestSourceFileWithError(workspace.root());
     var diagnostics = new ArrayList<Diagnostic>();
 
-    buildTool.build(workspace.root(), diagnostics);
+    codeBuilder.build(workspace.root(), diagnostics);
 
     assertThat(diagnostics).hasSize(1);
     var actual = diagnostics.getFirst();
@@ -172,14 +173,14 @@ class GradleBuildToolTest {
   void shouldProduceNoDiagnosticsWhenThereIsNothingToBuild() {
     var diagnostics = new ArrayList<Diagnostic>();
 
-    buildTool.build(workspace.root(), diagnostics);
+    codeBuilder.build(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
   }
 
   @Test
   void shouldReturnNoneForUnknownSuggestion() {
-    var actual = buildTool.applySuggestion("unknown.suggestion", workspace.root());
+    var actual = codeBuilder.applySuggestion("unknown.suggestion", workspace.root());
 
     assertThat(actual.createdOrChanged()).isEmpty();
     assertThat(actual.diagnostics()).isEmpty();

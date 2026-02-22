@@ -23,7 +23,7 @@ import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
-import org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool;
+import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.project.Project;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -175,7 +175,7 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldCreateBuildToolDecision() {
+  void shouldCreateCodeBuilderDecision() {
     var workspace = new InMemoryWorkspace();
 
     var actual =
@@ -193,13 +193,13 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldRequireProjectForBuildTool() {
+  void shouldRequireProjectForCodeBuilder() {
     var diagnostics = new ArrayList<Diagnostic>();
     var location = new Location("foo/bar");
     var inputs = new ResolvedInputs();
     var workspace = new InMemoryWorkspace();
 
-    resolver.buildTool(workspace.root(), inputs, diagnostics);
+    resolver.codeBuilder(workspace.root(), inputs, diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -241,8 +241,7 @@ class TechnologyResolverImplTest {
     var workspace = new DirectoryWorkspace(projectDir);
     var inputs = givenInputsForJavaGradleProject();
 
-    var actual =
-        resolver.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root(), inputs);
+    var actual = resolver.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root(), inputs);
 
     assertThat(actual.diagnostics()).isEmpty();
     assertThat(actual.createdOrChanged()).hasSize(10);

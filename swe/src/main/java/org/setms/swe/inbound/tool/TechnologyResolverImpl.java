@@ -22,10 +22,10 @@ import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
-import org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool;
+import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.project.Project;
-import org.setms.swe.domain.model.sdlc.technology.BuildTool;
+import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
@@ -112,7 +112,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   @Override
-  public Optional<BuildTool> buildTool(
+  public Optional<CodeBuilder> codeBuilder(
       Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var project = inputs.get(Project.class).stream().findFirst();
     if (project.isEmpty()) {
@@ -125,16 +125,16 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     var projectName = project.get().getTitle();
     var topics = groupByTopic(inputs.get(Decision.class));
     var programmingLanguage = topics.get(ProgrammingLanguage.TOPIC);
-    var buildToolChoice = topics.get(BuildSystem.TOPIC);
+    var selectedBuildSystem = topics.get(BuildSystem.TOPIC);
 
-    var result = buildToolFor(programmingLanguage, buildToolChoice, projectName, diagnostics);
+    var result = codeBuilderFor(programmingLanguage, selectedBuildSystem, projectName, diagnostics);
     if (resource != null) {
       result.ifPresent(bt -> bt.validate(resource, diagnostics));
     }
     return result;
   }
 
-  private Optional<BuildTool> buildToolFor(
+  private Optional<CodeBuilder> codeBuilderFor(
       String programmingLanguage,
       String selectedBuildSystem,
       String projectName,
@@ -168,10 +168,10 @@ public class TechnologyResolverImpl implements TechnologyResolver {
                 diagnostics));
   }
 
-  private Optional<BuildTool> javaBuildSystem(
+  private Optional<CodeBuilder> javaBuildSystem(
       String selectedBuildSystem, String projectName, Collection<Diagnostic> diagnostics) {
     return selectedBuildSystem.equals("Gradle")
-        ? Optional.of(new GradleBuildTool(projectName))
+        ? Optional.of(new Gradle(projectName))
         : Optional.ofNullable(
             nothing(
                 new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics));
@@ -187,15 +187,15 @@ public class TechnologyResolverImpl implements TechnologyResolver {
           pickDecision(resource, TOP_LEVEL_PACKAGE_DECISION, TopLevelPackage.TOPIC);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case CREATE_PROJECT -> createProject(resource);
-      case GradleBuildTool.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
+      case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
   }
 
   private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
-    return buildTool(resource, inputs, diagnostics)
-        .map(bt -> bt.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, resource))
+    return codeBuilder(resource, inputs, diagnostics)
+        .map(bt -> bt.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, resource))
         .orElseGet(
             () ->
                 diagnostics.stream()
