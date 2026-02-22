@@ -129,6 +129,31 @@ class GradleBuildToolTest {
         .isEqualTo(new Location("src/main/java/com/example/Hello.java", "3"));
   }
 
+  @Test
+  void shouldEmitDiagnosticWhenTestSourcesHaveCompilationError(@TempDir File projectDir)
+      throws IOException {
+    var workspace = new DirectoryWorkspace(projectDir);
+    buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    givenJavaTestSourceFileWithError(workspace.root());
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    buildTool.build(workspace.root(), diagnostics);
+
+    assertThat(diagnostics).hasSize(1);
+    var actual = diagnostics.getFirst();
+    assertThat(actual.level()).isEqualTo(ERROR);
+    assertThat(actual.message()).isEqualTo("illegal start of expression");
+    assertThat(actual.location())
+        .isEqualTo(new Location("src/test/java/com/example/HelloTest.java", "3"));
+  }
+
+  private void givenJavaTestSourceFileWithError(Resource<?> root) throws IOException {
+    var resource = root.select("src/test/java/com/example/HelloTest.java");
+    try (var output = resource.writeTo()) {
+      output.write("package com.example;\npublic class HelloTest {\n    int x = ;\n}".getBytes());
+    }
+  }
+
   private void givenJavaSourceFileWithError(Resource<?> root) throws IOException {
     var resource = root.select("src/main/java/com/example/Hello.java");
     try (var output = resource.writeTo()) {

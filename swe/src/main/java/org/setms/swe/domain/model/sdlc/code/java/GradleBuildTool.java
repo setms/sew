@@ -113,7 +113,7 @@ public class GradleBuildTool implements BuildTool {
             .connect()) {
       connection
           .newBuild()
-          .forTasks("compileJava")
+          .forTasks("compileJava", "compileTestJava")
           .setStandardOutput(output)
           .setStandardError(output)
           .run();
