@@ -50,5 +50,6 @@ public interface TechnologyResolver {
       Location location,
       Collection<Diagnostic> diagnostics);
 
-  AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource);
+  AppliedSuggestion applySuggestion(
+      String suggestionCode, Resource<?> resource, ResolvedInputs inputs);
 }

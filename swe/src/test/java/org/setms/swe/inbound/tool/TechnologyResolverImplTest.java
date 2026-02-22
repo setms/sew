@@ -8,17 +8,22 @@ import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
+import org.setms.swe.domain.model.sdlc.architecture.BuildTool;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool;
 import org.setms.swe.domain.model.sdlc.project.Project;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -137,7 +142,8 @@ class TechnologyResolverImplTest {
   void shouldCreateProgrammingLanguageDecision() {
     var workspace = new InMemoryWorkspace();
 
-    var actual = resolver.applySuggestion(PICK_PROGRAMMING_LANGUAGE, workspace.root());
+    var actual =
+        resolver.applySuggestion(PICK_PROGRAMMING_LANGUAGE, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
@@ -154,7 +160,8 @@ class TechnologyResolverImplTest {
   void shouldCreateTopLevelPackageDecision() {
     var workspace = new InMemoryWorkspace();
 
-    var actual = resolver.applySuggestion(PICK_TOP_LEVEL_PACKAGE, workspace.root());
+    var actual =
+        resolver.applySuggestion(PICK_TOP_LEVEL_PACKAGE, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
@@ -171,7 +178,7 @@ class TechnologyResolverImplTest {
   void shouldCreateBuildToolDecision() {
     var workspace = new InMemoryWorkspace();
 
-    var actual = resolver.applySuggestion(PICK_BUILD_TOOL, workspace.root());
+    var actual = resolver.applySuggestion(PICK_BUILD_TOOL, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
@@ -213,7 +220,9 @@ class TechnologyResolverImplTest {
   void shouldCreateProjectArtifact() {
     var workspace = new InMemoryWorkspace();
 
-    var actual = resolver.applySuggestion(TechnologyResolverImpl.CREATE_PROJECT, workspace.root());
+    var actual =
+        resolver.applySuggestion(
+            TechnologyResolverImpl.CREATE_PROJECT, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
@@ -224,5 +233,26 @@ class TechnologyResolverImplTest {
                 assertThat(resource.path())
                     .as("Path")
                     .isEqualTo("/src/main/overview/Project.project"));
+  }
+
+  @Test
+  void shouldGenerateBuildConfigWhenApplyingSuggestion(@TempDir File projectDir) {
+    var workspace = new DirectoryWorkspace(projectDir);
+    var inputs = givenInputsForJavaGradleProject();
+
+    var actual =
+        resolver.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root(), inputs);
+
+    assertThat(actual.diagnostics()).isEmpty();
+    assertThat(actual.createdOrChanged()).hasSize(10);
+  }
+
+  private ResolvedInputs givenInputsForJavaGradleProject() {
+    return new ResolvedInputs()
+        .put("projects", List.of(project()))
+        .put(
+            "decisions",
+            List.of(
+                decision(ProgrammingLanguage.TOPIC, "Java"), decision(BuildTool.TOPIC, "Gradle")));
   }
 }

@@ -6,6 +6,7 @@ import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -188,7 +189,8 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   @Override
-  public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
+  public AppliedSuggestion applySuggestion(
+      String suggestionCode, Resource<?> resource, ResolvedInputs inputs) {
     return switch (suggestionCode) {
       case PICK_PROGRAMMING_LANGUAGE ->
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
@@ -200,8 +202,22 @@ public class TechnologyResolverImpl implements TechnologyResolver {
               BUILD_TOOL_DECISION,
               org.setms.swe.domain.model.sdlc.architecture.BuildTool.TOPIC);
       case CREATE_PROJECT -> createProject(resource);
+      case GradleBuildTool.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
+  }
+
+  private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {
+    var diagnostics = new ArrayList<Diagnostic>();
+    return buildTool(resource, inputs, null, diagnostics)
+        .map(bt -> bt.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, resource))
+        .orElseGet(
+            () ->
+                diagnostics.stream()
+                    .reduce(
+                        AppliedSuggestion.none(),
+                        AppliedSuggestion::with,
+                        (appliedSuggestion, _) -> appliedSuggestion));
   }
 
   private AppliedSuggestion pickDecision(Resource<?> resource, String decisionName, String topic) {

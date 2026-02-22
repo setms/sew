@@ -74,8 +74,23 @@ class GradleBuildToolTest {
     var actual = buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
 
     assertThat(actual.diagnostics()).isEmpty();
-    assertThat(actual.createdOrChanged()).hasSize(7);
+    assertThat(actual.createdOrChanged()).hasSize(10);
     assertThat(workspace.root().select("/gradle/libs.versions.toml").exists()).isTrue();
+  }
+
+  @Test
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  void shouldGenerateBuildConfigEvenWithExistingSourceFiles(@TempDir File projectDir)
+      throws IOException {
+    var javaFile = new File(projectDir, "src/test/java/com/example/FooTest.java");
+    javaFile.getParentFile().mkdirs();
+    javaFile.createNewFile();
+    var workspace = new DirectoryWorkspace(projectDir);
+
+    var actual = buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+
+    assertThat(actual.diagnostics()).isEmpty();
+    assertThat(actual.createdOrChanged()).hasSize(10);
   }
 
   @Test

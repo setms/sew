@@ -113,7 +113,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       return createUnitTest(
           acceptanceTest, resource, inputs.get(Decision.class), inputs.get(Project.class));
     }
-    return technologyResolver.applySuggestion(suggestionCode, resource);
+    return technologyResolver.applySuggestion(suggestionCode, resource, inputs);
   }
 
   private AppliedSuggestion createUnitTest(

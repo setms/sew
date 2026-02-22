@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.setms.swe.inbound.tool.AcceptanceTestTool.SUGGESTION_CREATE_UNIT_TEST;
@@ -90,7 +91,8 @@ class AcceptanceTestToolTest extends ToolTestCase<AcceptanceTest> {
     var suggestionCode = "do.something.about.it";
     var resource = new InMemoryWorkspace().root();
     var expected = AppliedSuggestion.failedWith("It's out of my hands");
-    when(technologyResolver.applySuggestion(suggestionCode, resource)).thenReturn(expected);
+    when(technologyResolver.applySuggestion(eq(suggestionCode), eq(resource), any()))
+        .thenReturn(expected);
 
     var actual = tool.applySuggestion(null, suggestionCode, null, null, resource);
 

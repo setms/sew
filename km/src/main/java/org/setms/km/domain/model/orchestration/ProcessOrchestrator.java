@@ -545,6 +545,7 @@ public class ProcessOrchestrator {
       var artifact = parse(resource.path(), input);
       var result = tool.applySuggestion(artifact, code, location, inputs, resource);
       if (!result.createdOrChanged().isEmpty()) {
+        revalidateArtifactTool(tool);
         return result;
       }
     }
@@ -561,6 +562,17 @@ public class ProcessOrchestrator {
       }
     }
     return none();
+  }
+
+  private void revalidateArtifactTool(ArtifactTool<?> tool) {
+    var inputs = resolveInputs(tool.validationContext());
+    pathsToValidateFor(tool)
+        .forEach(
+            filePath -> {
+              var diagnostics = new LinkedHashSet<Diagnostic>();
+              tool.validate(workspace.root().select(filePath), inputs, diagnostics);
+              storeDiagnostics(filePath, tool, diagnostics);
+            });
   }
 
   private void revalidateStandaloneTool(StandaloneTool tool, Resource<?> resource) {

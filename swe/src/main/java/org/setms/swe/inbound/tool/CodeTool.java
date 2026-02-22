@@ -101,6 +101,6 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
       String suggestionCode,
       Location location,
       ResolvedInputs inputs) {
-    return technologyResolver.applySuggestion(suggestionCode, resource);
+    return technologyResolver.applySuggestion(suggestionCode, resource, inputs);
   }
 }
