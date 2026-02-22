@@ -90,7 +90,7 @@ public class ProcessOrchestrator {
     workspace.registerArtifactDeletedHandler(this::artifactDeleted);
   }
 
-  private void artifactChanged(String path, Artifact artifact) {
+  private synchronized void artifactChanged(String path, Artifact artifact) {
     if (isInternalResource(path)) {
       return;
     }
@@ -327,7 +327,7 @@ public class ProcessOrchestrator {
     return diagnostics().stream().filter(Diagnostic::hasSuggestion).collect(toSet());
   }
 
-  private void artifactDeleted(String path) {
+  private synchronized void artifactDeleted(String path) {
     if (isInternalResource(path)) {
       return;
     }
@@ -526,7 +526,8 @@ public class ProcessOrchestrator {
   }
 
   @SuppressWarnings("unchecked")
-  public AppliedSuggestion applySuggestion(Resource<?> resource, String code, Location location) {
+  public synchronized AppliedSuggestion applySuggestion(
+      Resource<?> resource, String code, Location location) {
     if (resource == null) {
       return none();
     }
