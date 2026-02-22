@@ -89,6 +89,9 @@ public class GradleBuildTool implements BuildTool {
   }
 
   @Override
+  public void build(Resource<?> resource, Collection<Diagnostic> diagnostics) {}
+
+  @Override
   public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
     if (!GENERATE_BUILD_CONFIG.equals(suggestionCode)) {
       return AppliedSuggestion.none();

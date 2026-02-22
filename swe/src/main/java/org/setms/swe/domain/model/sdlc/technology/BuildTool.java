@@ -24,6 +24,14 @@ public interface BuildTool {
   void validate(Resource<?> resource, Collection<Diagnostic> diagnostics);
 
   /**
+   * Compile the project and collect diagnostics for any errors found.
+   *
+   * @param resource the project root resource
+   * @param diagnostics where to add diagnostics for compilation errors
+   */
+  void build(Resource<?> resource, Collection<Diagnostic> diagnostics);
+
+  /**
    * Apply a suggestion to fix an issue reported earlier.
    *
    * @param suggestionCode the suggestion code from the diagnostic

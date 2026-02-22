@@ -94,6 +94,15 @@ class GradleBuildToolTest {
   }
 
   @Test
+  void shouldProduceNoDiagnosticsWhenThereIsNothingToBuild() {
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    buildTool.build(workspace.root(), diagnostics);
+
+    assertThat(diagnostics).isEmpty();
+  }
+
+  @Test
   void shouldReturnNoneForUnknownSuggestion() {
     var actual = buildTool.applySuggestion("unknown.suggestion", workspace.root());
 
