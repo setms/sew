@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
@@ -233,20 +234,24 @@ class EndToEndTest {
   }
 
   private void showWorkspace() {
-    System.out.printf("%n--- Workspace%n");
-    show(workspace.root());
+    System.out.printf("%n---%n<workspace>%n");
+    show(workspace.root(), "");
     System.out.printf("---%n%n");
   }
 
-  private void show(Resource<?> resource) {
-    resource.children().stream()
-        .filter(child -> !child.name().startsWith(".") && !"build".equals(child.name()))
-        .forEach(
-            child -> {
-              if (child.children().isEmpty()) {
-                System.out.printf("  %s%n", child.path().substring(1));
-              }
-              show(child);
-            });
+  private void show(Resource<?> resource, String indent) {
+    var children =
+        resource.children().stream()
+            .filter(child -> !child.name().startsWith(".") && !"build".equals(child.name()))
+            .toList();
+    IntStream.range(0, children.size())
+        .forEach(i -> showChild(children.get(i), indent, i == children.size() - 1));
+  }
+
+  private void showChild(Resource<?> child, String indent, boolean isLast) {
+    System.out.println(indent + (isLast ? "└── " : "├── ") + child.name());
+    Optional.of(child)
+        .filter(c -> !c.children().isEmpty())
+        .ifPresent(c -> show(c, indent + (isLast ? "    " : "│   ")));
   }
 }
