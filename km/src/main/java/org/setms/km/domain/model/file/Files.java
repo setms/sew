@@ -1,5 +1,6 @@
 package org.setms.km.domain.model.file;
 
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.util.Collections.emptyList;
 
 import java.io.File;
@@ -21,14 +22,22 @@ public class Files {
   private static final String PATH_PREFIX = "//";
 
   public static void delete(File file) {
-    if (file == null || !file.exists()) {
+    if (file == null) {
       return;
     }
-    if (file.isDirectory()) {
-      childrenOf(file).forEach(Files::delete);
-    }
-    if (!file.delete()) {
-      throw new RuntimeException("Unable to delete file: " + file.getAbsolutePath());
+    var path = file.toPath();
+    try {
+      if (java.nio.file.Files.isDirectory(path, NOFOLLOW_LINKS)) {
+        try (var children = java.nio.file.Files.newDirectoryStream(path)) {
+          for (var child : children) {
+            delete(child.toFile());
+          }
+        }
+      }
+      java.nio.file.Files.deleteIfExists(path);
+    } catch (IOException e) {
+      file.deleteOnExit();
+      throw new UncheckedIOException(e);
     }
   }
 
