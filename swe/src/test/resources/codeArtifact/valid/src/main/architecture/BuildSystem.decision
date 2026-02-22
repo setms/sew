@@ -1,0 +1,6 @@
+package valid
+
+decision BuildSystem {
+  topic  = "BuildSystem"
+  choice = "Gradle"
+}

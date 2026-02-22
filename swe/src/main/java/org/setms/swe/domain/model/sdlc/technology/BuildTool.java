@@ -16,7 +16,7 @@ import org.setms.swe.inbound.tool.TechnologyResolverImpl;
 public interface BuildTool {
 
   /**
-   * Validate everything's in place for the build tool to work properly.
+   * Validate everything's in place for the tool to work properly.
    *
    * @param resource the project root resource
    * @param diagnostics where to add diagnostics for issues

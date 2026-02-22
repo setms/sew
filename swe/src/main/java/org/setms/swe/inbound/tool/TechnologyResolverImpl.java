@@ -18,25 +18,27 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.GradleBuildTool;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.technology.BuildTool;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
 public class TechnologyResolverImpl implements TechnologyResolver {
 
+  static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
+  static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
+  static final String PICK_BUILD_SYSTEM = "build-system.decide";
+  static final String CREATE_PROJECT = "project.create";
+
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
   private static final String TOP_LEVEL_PACKAGE_DECISION = "TopLevelPackage";
-  private static final String BUILD_TOOL_DECISION = "BuildTool";
-  static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
-  static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
-  static final String PICK_BUILD_TOOL = "build-tool.decide";
-  static final String CREATE_PROJECT = "project.create";
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
@@ -110,42 +112,32 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   @Override
-  public Optional<org.setms.swe.domain.model.sdlc.technology.BuildTool> buildTool(
-      Resource<?> resource,
-      ResolvedInputs inputs,
-      Location location,
-      Collection<Diagnostic> diagnostics) {
+  public Optional<BuildTool> buildTool(
+      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var project = inputs.get(Project.class).stream().findFirst();
     if (project.isEmpty()) {
       diagnostics.add(
           new Diagnostic(
-              WARN, "Missing project", location, new Suggestion(CREATE_PROJECT, "Create project")));
+              WARN, "Missing project", null, new Suggestion(CREATE_PROJECT, "Create project")));
       return Optional.empty();
     }
 
     var projectName = project.get().getTitle();
-    if (projectName == null || projectName.isBlank()) {
-      diagnostics.add(new Diagnostic(WARN, "Missing project title", location));
-      return Optional.empty();
-    }
-
     var topics = groupByTopic(inputs.get(Decision.class));
     var programmingLanguage = topics.get(ProgrammingLanguage.TOPIC);
-    var buildToolChoice = topics.get(org.setms.swe.domain.model.sdlc.architecture.BuildTool.TOPIC);
+    var buildToolChoice = topics.get(BuildSystem.TOPIC);
 
-    var result =
-        buildToolFor(programmingLanguage, buildToolChoice, projectName, location, diagnostics);
+    var result = buildToolFor(programmingLanguage, buildToolChoice, projectName, diagnostics);
     if (resource != null) {
       result.ifPresent(bt -> bt.validate(resource, diagnostics));
     }
     return result;
   }
 
-  private Optional<org.setms.swe.domain.model.sdlc.technology.BuildTool> buildToolFor(
+  private Optional<BuildTool> buildToolFor(
       String programmingLanguage,
-      String buildToolChoice,
+      String selectedBuildSystem,
       String projectName,
-      Location location,
       Collection<Diagnostic> diagnostics) {
     if (programmingLanguage == null) {
       return Optional.ofNullable(
@@ -153,39 +145,36 @@ public class TechnologyResolverImpl implements TechnologyResolver {
               new Diagnostic(
                   WARN,
                   "Missing decision on programming language",
-                  location,
+                  null,
                   new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")),
               diagnostics));
     }
-    if (buildToolChoice == null) {
+    if (selectedBuildSystem == null) {
       return Optional.ofNullable(
           nothing(
               new Diagnostic(
                   WARN,
-                  "Missing decision on build tool",
-                  location,
-                  new Suggestion(PICK_BUILD_TOOL, "Decide on build tool")),
+                  "Missing decision on build system",
+                  null,
+                  new Suggestion(PICK_BUILD_SYSTEM, "Decide on build system")),
               diagnostics));
     }
 
     return programmingLanguage.equals("Java")
-        ? javaBuildTool(buildToolChoice, projectName, location, diagnostics)
+        ? javaBuildSystem(selectedBuildSystem, projectName, diagnostics)
         : Optional.ofNullable(
             nothing(
-                new Diagnostic(ERROR, "Decided on unsupported programming language", location),
+                new Diagnostic(ERROR, "Decided on unsupported programming language", null),
                 diagnostics));
   }
 
-  private Optional<org.setms.swe.domain.model.sdlc.technology.BuildTool> javaBuildTool(
-      String buildToolChoice,
-      String projectName,
-      Location location,
-      Collection<Diagnostic> diagnostics) {
-    return buildToolChoice.equals("Gradle")
+  private Optional<BuildTool> javaBuildSystem(
+      String selectedBuildSystem, String projectName, Collection<Diagnostic> diagnostics) {
+    return selectedBuildSystem.equals("Gradle")
         ? Optional.of(new GradleBuildTool(projectName))
         : Optional.ofNullable(
             nothing(
-                new Diagnostic(ERROR, "Decided on unsupported build tool", location), diagnostics));
+                new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics));
   }
 
   @Override
@@ -196,11 +185,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
       case PICK_TOP_LEVEL_PACKAGE ->
           pickDecision(resource, TOP_LEVEL_PACKAGE_DECISION, TopLevelPackage.TOPIC);
-      case PICK_BUILD_TOOL ->
-          pickDecision(
-              resource,
-              BUILD_TOOL_DECISION,
-              org.setms.swe.domain.model.sdlc.architecture.BuildTool.TOPIC);
+      case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case CREATE_PROJECT -> createProject(resource);
       case GradleBuildTool.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
@@ -209,7 +194,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
-    return buildTool(resource, inputs, null, diagnostics)
+    return buildTool(resource, inputs, diagnostics)
         .map(bt -> bt.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, resource))
         .orElseGet(
             () ->

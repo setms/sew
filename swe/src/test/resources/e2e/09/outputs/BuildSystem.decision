@@ -1,0 +1,5 @@
+package technology
+
+decision BuildSystem {
+  topic = "BuildSystem"
+}

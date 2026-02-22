@@ -4,7 +4,7 @@ import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.CREATE_PROJECT;
-import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
+import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_SYSTEM;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
 
@@ -19,7 +19,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
-import org.setms.swe.domain.model.sdlc.architecture.BuildTool;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
@@ -178,7 +178,8 @@ class TechnologyResolverImplTest {
   void shouldCreateBuildToolDecision() {
     var workspace = new InMemoryWorkspace();
 
-    var actual = resolver.applySuggestion(PICK_BUILD_TOOL, workspace.root(), new ResolvedInputs());
+    var actual =
+        resolver.applySuggestion(PICK_BUILD_SYSTEM, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
@@ -188,7 +189,7 @@ class TechnologyResolverImplTest {
             resource ->
                 assertThat(resource.path())
                     .as("Path")
-                    .isEqualTo("/src/main/architecture/BuildTool.decision"));
+                    .isEqualTo("/src/main/architecture/BuildSystem.decision"));
   }
 
   @Test
@@ -198,7 +199,7 @@ class TechnologyResolverImplTest {
     var inputs = new ResolvedInputs();
     var workspace = new InMemoryWorkspace();
 
-    resolver.buildTool(workspace.root(), inputs, location, diagnostics);
+    resolver.buildTool(workspace.root(), inputs, diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -253,6 +254,7 @@ class TechnologyResolverImplTest {
         .put(
             "decisions",
             List.of(
-                decision(ProgrammingLanguage.TOPIC, "Java"), decision(BuildTool.TOPIC, "Gradle")));
+                decision(ProgrammingLanguage.TOPIC, "Java"),
+                decision(BuildSystem.TOPIC, "Gradle")));
   }
 }

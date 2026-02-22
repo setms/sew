@@ -2,9 +2,9 @@ package org.setms.swe.domain.model.sdlc.architecture;
 
 import java.util.Set;
 
-public class BuildTool implements TopicProvider {
+public class BuildSystem implements TopicProvider {
 
-  public static final String TOPIC = "BuildTool";
+  public static final String TOPIC = "BuildSystem";
 
   @Override
   public Set<String> topics() {

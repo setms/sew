@@ -3,4 +3,4 @@ outputs:
   - src/test/java/com/company/todo/TestData.java
 
 diagnostics:
-  - Missing decision on build tool
+  - Missing decision on build system

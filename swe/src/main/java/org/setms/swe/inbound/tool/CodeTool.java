@@ -19,7 +19,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.domain.model.sdlc.architecture.BuildTool;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -49,8 +49,7 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
 
   @Override
   public boolean validates(String path) {
-    // Allow applying build tool suggestion from root, since it's not tied to any one specific file,
-    // but all of them
+    // Handle issues that aren't related to a specific artifact
     if ("/".equals(path)) {
       return true;
     }
@@ -68,9 +67,9 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   private void validateBuildTool(
       Resource<?> root, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var topics = groupByTopic(inputs.get(Decision.class));
-    if (topics.get(BuildTool.TOPIC) != null) {
+    if (topics.get(BuildSystem.TOPIC) != null) {
       technologyResolver
-          .buildTool(root, inputs, null, diagnostics)
+          .buildTool(root, inputs, diagnostics)
           .ifPresent(bt -> bt.build(root, diagnostics));
     }
   }
@@ -79,14 +78,14 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   public void validate(
       CodeArtifact codeArtifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var topics = groupByTopic(inputs.get(Decision.class));
-    var buildToolChoice = topics.get(BuildTool.TOPIC);
+    var buildToolChoice = topics.get(BuildSystem.TOPIC);
     if (buildToolChoice == null) {
       diagnostics.add(
           new Diagnostic(
               WARN,
-              "Missing decision on build tool",
+              "Missing decision on build system",
               null,
-              new Suggestion(TechnologyResolverImpl.PICK_BUILD_TOOL, "Decide on build tool")));
+              new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system")));
     }
   }
 

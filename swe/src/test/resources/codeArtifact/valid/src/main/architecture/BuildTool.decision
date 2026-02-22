@@ -1,6 +1,0 @@
-package valid
-
-decision BuildTool {
-  topic  = "BuildTool"
-  choice = "Gradle"
-}

@@ -1,4 +1,4 @@
-org.setms.swe.domain.model.sdlc.architecture.BuildTool
+org.setms.swe.domain.model.sdlc.architecture.BuildSystem
 org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage
 org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage
 org.setms.swe.domain.model.sdlc.code.java.JavaLanguage

@@ -1,8 +1,8 @@
 outputs:
-  - src/main/architecture/BuildTool.decision
+  - src/main/architecture/BuildSystem.decision
 
 inputs:
-  - file: BuildTool.decision
+  - file: BuildSystem.decision
     location: src/main/architecture
 
 diagnostics:

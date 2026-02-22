@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.setms.km.domain.model.validation.Level.WARN;
-import static org.setms.swe.domain.model.sdlc.architecture.BuildTool.TOPIC;
-import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
+import static org.setms.swe.domain.model.sdlc.architecture.BuildSystem.TOPIC;
+import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_SYSTEM;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,14 +70,14 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
               assertThat(diagnostic.message())
                   .as("Message")
-                  .isEqualTo("Missing decision on build tool");
+                  .isEqualTo("Missing decision on build system");
               assertThat(diagnostic.suggestions())
                   .hasSize(1)
                   .allSatisfy(
                       suggestion ->
                           assertThat(suggestion.message())
                               .as("Suggestion")
-                              .isEqualTo("Decide on build tool"));
+                              .isEqualTo("Decide on build system"));
             });
   }
 
@@ -150,7 +150,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
     var workspace = new InMemoryWorkspace();
     var tool = (CodeTool) getTool();
 
-    var actual = tool.applySuggestion(null, PICK_BUILD_TOOL, null, null, workspace.root());
+    var actual = tool.applySuggestion(null, PICK_BUILD_SYSTEM, null, null, workspace.root());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
@@ -160,7 +160,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
             resource ->
                 assertThat(resource.path())
                     .as("Path")
-                    .isEqualTo("/src/main/architecture/BuildTool.decision"));
+                    .isEqualTo("/src/main/architecture/BuildSystem.decision"));
   }
 
   @Test
@@ -179,7 +179,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
 
   private ArtifactTool<CodeArtifact> givenToolWith(BuildTool buildTool) {
     var resolver = mock(TechnologyResolver.class);
-    when(resolver.buildTool(any(), any(), any(), any())).thenReturn(Optional.of(buildTool));
+    when(resolver.buildTool(any(), any(), any())).thenReturn(Optional.of(buildTool));
     return new CodeTool(resolver);
   }
 

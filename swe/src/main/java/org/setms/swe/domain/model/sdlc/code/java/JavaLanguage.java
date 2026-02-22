@@ -2,7 +2,7 @@ package org.setms.swe.domain.model.sdlc.code.java;
 
 import java.util.regex.Pattern;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.swe.domain.model.sdlc.architecture.BuildTool;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
@@ -20,7 +20,7 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
     return switch (topic) {
       case ProgrammingLanguage.TOPIC -> "Java".equals(choice);
       case TopLevelPackage.TOPIC -> JAVA_PACKAGE_PATTERN.matcher(choice).matches();
-      case BuildTool.TOPIC -> "Gradle".equals(choice);
+      case BuildSystem.TOPIC -> "Gradle".equals(choice);
       default -> false;
     };
   }
