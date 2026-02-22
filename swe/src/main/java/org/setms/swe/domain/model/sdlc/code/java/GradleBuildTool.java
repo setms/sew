@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -149,7 +152,6 @@ public class GradleBuildTool implements BuildTool {
     }
     try {
       initializeGradleProject(resource);
-      cleanUpFiles(resource);
       return buildConfigResources(resource);
     } catch (Exception e) {
       return AppliedSuggestion.failedWith(e);
@@ -161,7 +163,7 @@ public class GradleBuildTool implements BuildTool {
     var stderr = new ByteArrayOutputStream();
     try (var connection =
         GradleConnector.newConnector()
-            .forProjectDirectory(new File(resource.toUri()))
+            .forProjectDirectory(toFile(resource))
             .useGradleVersion(GRADLE_VERSION)
             .connect()) {
       connection
@@ -185,23 +187,32 @@ public class GradleBuildTool implements BuildTool {
           .setStandardOutput(stdout)
           .setStandardError(stderr)
           .run();
+      connection.notifyDaemonsAboutChangedPaths(cleanUpFiles(resource));
     } catch (Exception e) {
       throw new IllegalStateException(
           "gradle init failed%nstdout: %s%nstderr: %s".formatted(stdout, stderr), e);
     }
   }
 
-  private void cleanUpFiles(Resource<?> resource) throws IOException {
-    cleanUpBuild(resource);
-    cleanUpSettings(resource);
-    cleanUpVersionCatalog(resource);
+  private File toFile(Resource<?> resource) {
+    return new File(resource.toUri());
   }
 
-  private void cleanUpBuild(Resource<?> resource) throws IOException {
+  private List<Path> cleanUpFiles(Resource<?> resource) throws IOException {
+    var result = new ArrayList<Path>();
+    cleanUpBuild(resource, result);
+    cleanUpSettings(resource);
+    cleanUpVersionCatalog(resource);
+    return result;
+  }
+
+  private void cleanUpBuild(Resource<?> resource, Collection<Path> changed) throws IOException {
     try (var output = resource.select("build.gradle").writeTo()) {
       output.write(BUILD_GRADLE.getBytes(StandardCharsets.UTF_8));
     }
-    resource.select("lib").delete();
+    var lib = resource.select("lib");
+    lib.delete();
+    changed.add(toFile(lib).toPath().toAbsolutePath());
   }
 
   private void cleanUpSettings(Resource<?> resource) throws IOException {
