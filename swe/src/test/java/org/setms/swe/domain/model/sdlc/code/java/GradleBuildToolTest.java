@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.File;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
@@ -107,6 +109,31 @@ class GradleBuildToolTest {
     assertThat(diagnostics).isEmpty();
     assertThat(workspace.root().select("build/classes/java/main/com/example/Hello.class").exists())
         .isTrue();
+  }
+
+  @Test
+  void shouldEmitDiagnosticWhenSourcesHaveCompilationError(@TempDir File projectDir)
+      throws IOException {
+    var workspace = new DirectoryWorkspace(projectDir);
+    buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
+    givenJavaSourceFileWithError(workspace.root());
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    buildTool.build(workspace.root(), diagnostics);
+
+    assertThat(diagnostics).hasSize(1);
+    var actual = diagnostics.getFirst();
+    assertThat(actual.level()).isEqualTo(ERROR);
+    assertThat(actual.message()).isEqualTo("illegal start of expression");
+    assertThat(actual.location())
+        .isEqualTo(new Location("src/main/java/com/example/Hello.java", "3"));
+  }
+
+  private void givenJavaSourceFileWithError(Resource<?> root) throws IOException {
+    var resource = root.select("src/main/java/com/example/Hello.java");
+    try (var output = resource.writeTo()) {
+      output.write("package com.example;\npublic class Hello {\n    int x = ;\n}".getBytes());
+    }
   }
 
   private void givenJavaSourceFile(Resource<?> root) throws IOException {

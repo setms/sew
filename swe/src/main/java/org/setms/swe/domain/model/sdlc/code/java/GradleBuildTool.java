@@ -1,5 +1,6 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
+import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.BufferedReader;
@@ -10,11 +11,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.gradle.tooling.BuildException;
 import org.gradle.tooling.GradleConnector;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.technology.BuildTool;
@@ -24,6 +29,7 @@ public class GradleBuildTool implements BuildTool {
 
   public static final String GENERATE_BUILD_CONFIG = "gradle.generate.build.config";
   private static final String GRADLE_VERSION = "9.3.1";
+  private static final Pattern COMPILATION_ERROR = Pattern.compile("^(/.+):(\\d+): error: (.+)$");
   private static final String BUILD_GRADLE =
       """
       plugins {
@@ -94,19 +100,46 @@ public class GradleBuildTool implements BuildTool {
         || !resource.select("/settings.gradle").exists()) {
       return;
     }
-    runCompile(resource);
+    runCompile(resource, diagnostics);
   }
 
-  private void runCompile(Resource<?> resource) {
+  private void runCompile(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    var projectDir = new File(resource.toUri());
+    var output = new ByteArrayOutputStream();
     try (var connection =
         GradleConnector.newConnector()
-            .forProjectDirectory(new File(resource.toUri()))
+            .forProjectDirectory(projectDir)
             .useGradleVersion(GRADLE_VERSION)
             .connect()) {
-      connection.newBuild().forTasks("compileJava").run();
+      connection
+          .newBuild()
+          .forTasks("compileJava")
+          .setStandardOutput(output)
+          .setStandardError(output)
+          .run();
+    } catch (BuildException e) {
+      parseCompilationErrors(output.toString(), projectDir.getAbsolutePath(), diagnostics);
     } catch (Exception e) {
       throw new IllegalStateException("gradle compile failed", e);
     }
+  }
+
+  private void parseCompilationErrors(
+      String output, String projectDir, Collection<Diagnostic> diagnostics) {
+    output
+        .lines()
+        .map(COMPILATION_ERROR::matcher)
+        .filter(Matcher::matches)
+        .map(matcher -> toCompilationDiagnostic(matcher, projectDir))
+        .forEach(diagnostics::add);
+  }
+
+  private Diagnostic toCompilationDiagnostic(Matcher matcher, String projectDir) {
+    var filePath =
+        matcher.group(1).replace(projectDir + File.separator, "").replace(File.separator, "/");
+    var lineNumber = matcher.group(2);
+    var message = matcher.group(3);
+    return new Diagnostic(ERROR, message, new Location(filePath, lineNumber));
   }
 
   @Override
