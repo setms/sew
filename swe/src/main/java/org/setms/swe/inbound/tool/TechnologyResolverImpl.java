@@ -23,7 +23,7 @@ import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
-import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
@@ -42,24 +42,24 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
       Decisions decisions,
-      Collection<Project> projects,
+      Collection<Initiative> initiatives,
       Location location,
       Collection<Diagnostic> diagnostics) {
     var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
     var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
     return Optional.ofNullable(
         unitTestGeneratorFor(
-            programmingLanguage, projects, topLevelPackage, location, diagnostics));
+            programmingLanguage, initiatives, topLevelPackage, location, diagnostics));
   }
 
   private UnitTestGenerator unitTestGeneratorFor(
       String programmingLanguage,
-      Collection<Project> projects,
+      Collection<Initiative> initiatives,
       String topLevelPackage,
       Location location,
       Collection<Diagnostic> diagnostics) {
     return switch (programmingLanguage) {
-      case "Java" -> javaUnitGenerator(projects, topLevelPackage, location, diagnostics);
+      case "Java" -> javaUnitGenerator(initiatives, topLevelPackage, location, diagnostics);
       case null ->
           nothing(
               new Diagnostic(
@@ -76,11 +76,11 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   private UnitTestGenerator javaUnitGenerator(
-      Collection<Project> projects,
+      Collection<Initiative> initiatives,
       String topLevelPackage,
       Location location,
       Collection<Diagnostic> diagnostics) {
-    if (projects.isEmpty()) {
+    if (initiatives.isEmpty()) {
       return nothing(
           new Diagnostic(
               WARN, "Missing project", location, new Suggestion(CREATE_PROJECT, "Create project")),
@@ -106,7 +106,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   @Override
   public Optional<CodeBuilder> codeBuilder(
       Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var project = inputs.get(Project.class).stream().findFirst();
+    var project = inputs.get(Initiative.class).stream().findFirst();
     if (project.isEmpty()) {
       diagnostics.add(
           new Diagnostic(
@@ -219,25 +219,26 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   private AppliedSuggestion createProject(Resource<?> resource) {
     try {
-      var projectName = "ProjectName";
-      var projectInput = Inputs.projects();
-      var projectResource =
+      var projectName = "Project";
+      var input = Inputs.initiatives();
+      var initiativeResource =
           resource
               .select("/")
-              .select(projectInput.path())
-              .select("Project.%s".formatted(projectInput.extension()));
+              .select(input.path())
+              .select("Project.%s".formatted(input.extension()));
       var content =
           """
           package overview
 
-          project %s {
-            title = "%s"
+          initiative %s {
+            organization = "Organization"
+            title        = "%s"
           }
           """;
-      try (var output = projectResource.writeTo()) {
+      try (var output = initiativeResource.writeTo()) {
         output.write(content.formatted(projectName, projectName).getBytes());
       }
-      return created(projectResource);
+      return created(initiativeResource);
     } catch (Exception e) {
       return failedWith(e);
     }

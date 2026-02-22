@@ -1,0 +1,6 @@
+package overview
+
+initiative MyProject {
+  organization = "MyOrganization"
+  title = "MyProject"
+}

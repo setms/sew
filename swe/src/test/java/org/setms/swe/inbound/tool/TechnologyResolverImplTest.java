@@ -25,7 +25,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
-import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class TechnologyResolverImplTest {
@@ -91,7 +91,7 @@ class TechnologyResolverImplTest {
     var diagnostics = new ArrayList<Diagnostic>();
     var location = new Location("foo/bar");
     var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
-    var projects = List.of(project());
+    var projects = List.of(initiative());
 
     resolver.unitTestGenerator(decisions, projects, location, diagnostics);
 
@@ -119,8 +119,10 @@ class TechnologyResolverImplTest {
         .setChoice(choice);
   }
 
-  private Project project() {
-    return new Project(new FullyQualifiedName("overview.Todo")).setTitle("Todo");
+  private Initiative initiative() {
+    return new Initiative(new FullyQualifiedName("overview.Todo"))
+        .setOrganization("Softure")
+        .setTitle("Todo");
   }
 
   @Test
@@ -131,7 +133,7 @@ class TechnologyResolverImplTest {
         Decisions.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"));
-    var projects = List.of(project());
+    var projects = List.of(initiative());
 
     var actual = resolver.unitTestGenerator(decisions, projects, location, diagnostics);
 
@@ -233,7 +235,7 @@ class TechnologyResolverImplTest {
             resource ->
                 assertThat(resource.path())
                     .as("Path")
-                    .isEqualTo("/src/main/overview/Project.project"));
+                    .isEqualTo("/src/main/overview/Project.initiative"));
   }
 
   @Test
@@ -249,7 +251,7 @@ class TechnologyResolverImplTest {
 
   private ResolvedInputs givenInputsForJavaGradleProject() {
     return new ResolvedInputs()
-        .put("projects", List.of(project()))
+        .put("initiatives", List.of(initiative()))
         .put(
             "decisions",
             List.of(

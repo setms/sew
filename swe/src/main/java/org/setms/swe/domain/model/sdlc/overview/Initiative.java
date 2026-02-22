@@ -1,4 +1,4 @@
-package org.setms.swe.domain.model.sdlc.project;
+package org.setms.swe.domain.model.sdlc.overview;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.EqualsAndHashCode;
@@ -14,11 +14,12 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Project extends Artifact {
+public class Initiative extends Artifact {
 
+  @NotEmpty private String organization;
   @NotEmpty private String title;
 
-  public Project(FullyQualifiedName fullyQualifiedName) {
+  public Initiative(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
   }
 }

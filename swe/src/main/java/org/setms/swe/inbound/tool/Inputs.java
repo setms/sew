@@ -30,7 +30,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.eventstorming.ExternalSystem;
 import org.setms.swe.domain.model.sdlc.eventstorming.Policy;
 import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
-import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTestHelper;
@@ -108,8 +108,8 @@ class Inputs {
     return newInput(PATH_DESIGN, Policy.class);
   }
 
-  static Input<Project> projects() {
-    return newInput(PATH_OVERVIEW, Project.class);
+  static Input<Initiative> initiatives() {
+    return newInput(PATH_OVERVIEW, Initiative.class);
   }
 
   static Input<ReadModel> readModels() {

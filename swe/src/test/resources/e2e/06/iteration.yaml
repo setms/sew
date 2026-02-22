@@ -1,10 +1,10 @@
 outputs:
-  - src/main/overview/Project.project
+  - src/main/overview/Project.initiative
 
 inputs:
   - location: src/main/overview
-    file: Todo.project
-    alias: Project.project
+    file: Todo.initiative
+    alias: Project.initiative
 
 diagnostics:
   - Missing decision on top-level package

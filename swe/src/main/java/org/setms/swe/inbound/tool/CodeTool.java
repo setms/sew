@@ -2,7 +2,7 @@ package org.setms.swe.inbound.tool;
 
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
-import static org.setms.swe.inbound.tool.Inputs.projects;
+import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,7 +42,7 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of(decisions(), projects());
+    return Set.of(decisions(), initiatives());
   }
 
   @Override

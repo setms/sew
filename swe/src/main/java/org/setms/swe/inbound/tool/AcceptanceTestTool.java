@@ -4,7 +4,7 @@ import static java.util.Collections.emptySet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
-import static org.setms.swe.inbound.tool.Inputs.projects;
+import static org.setms.swe.inbound.tool.Inputs.initiatives;
 import static org.setms.swe.inbound.tool.Inputs.unitTestHelpers;
 import static org.setms.swe.inbound.tool.Inputs.unitTests;
 
@@ -37,7 +37,7 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Scenario;
 import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
-import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
@@ -62,7 +62,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     var result = new HashSet<Input<? extends Artifact>>(unitTests());
     result.addAll(unitTestHelpers());
     result.add(decisions());
-    result.add(projects());
+    result.add(initiatives());
     return result;
   }
 
@@ -80,7 +80,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       if (technologyResolver
           .unitTestGenerator(
               Decisions.from(inputs),
-              inputs.get(Project.class),
+              inputs.get(Initiative.class),
               acceptanceTest.toLocation(),
               diagnostics)
           .isPresent()) {
@@ -111,7 +111,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       ResolvedInputs inputs) {
     if (SUGGESTION_CREATE_UNIT_TEST.equals(suggestionCode)) {
       return createUnitTest(
-          acceptanceTest, resource, Decisions.from(inputs), inputs.get(Project.class));
+          acceptanceTest, resource, Decisions.from(inputs), inputs.get(Initiative.class));
     }
     return technologyResolver.applySuggestion(suggestionCode, resource, inputs);
   }
@@ -120,10 +120,10 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       AcceptanceTest acceptanceTest,
       Resource<?> resource,
       Decisions decisions,
-      Collection<Project> projects) {
+      Collection<Initiative> initiatives) {
     var diagnostics = new HashSet<Diagnostic>();
     return technologyResolver
-        .unitTestGenerator(decisions, projects, acceptanceTest.toLocation(), diagnostics)
+        .unitTestGenerator(decisions, initiatives, acceptanceTest.toLocation(), diagnostics)
         .map(generator -> generator.generate(acceptanceTest))
         .map(codeArtifacts -> store(codeArtifacts, acceptanceTest, resource))
         .orElseGet(() -> new AppliedSuggestion(emptySet(), diagnostics));

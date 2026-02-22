@@ -25,7 +25,7 @@ import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
-import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -119,7 +119,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
             decision(TopLevelPackage.TOPIC, "com.example"),
             decision(TOPIC, "Gradle"));
     var inputs =
-        new ResolvedInputs().put("decisions", decisions).put("projects", List.of(project()));
+        new ResolvedInputs().put("decisions", decisions).put("initiatives", List.of(initiative()));
     var diagnostics = new ArrayList<Diagnostic>();
     var tool = (CodeTool) getTool();
 
@@ -138,8 +138,10 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
     }
   }
 
-  private Project project() {
-    return new Project(new FullyQualifiedName("overview", "MyProject")).setTitle("MyProject");
+  private Initiative initiative() {
+    return new Initiative(new FullyQualifiedName("overview", "MyInitiative"))
+        .setOrganization("MyOrganization")
+        .setTitle("MyProject");
   }
 
   @Test
@@ -192,6 +194,6 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"),
             decision(TOPIC, "Gradle"));
-    return new ResolvedInputs().put("decisions", decisions).put("projects", List.of(project()));
+    return new ResolvedInputs().put("decisions", decisions).put("projects", List.of(initiative()));
   }
 }
