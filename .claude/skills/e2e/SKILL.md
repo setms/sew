@@ -12,7 +12,8 @@ For outside-in TDD, we base the test list on a failing acceptance test:
   If it exists and all items are marked as complete, clear it.
   Otherwise, stop and ask the user how to proceed.
 2. Analyze the failures in `EndToEndTest` as documented in 
-  `swe/build/reports/tests/test/org.setms.swe.e2e.EndToEndTest/shouldGuideSoftwareEngineering().html`. 
+  `swe/build/reports/tests/test/org.setms.swe.e2e.EndToEndTest/shouldGuideSoftwareEngineering().html`.
+  Limit yourself to the last iteration, you most likely don't need anything before that to understand the issue.
 3. For each issue that you discover during this analysis, add a test scenario to `TDD.md`.
 4. Order the test scenarios (see below). 
 5. Treat `TDD.md` as a plan, where test scenarios are todo items.

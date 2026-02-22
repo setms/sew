@@ -324,11 +324,7 @@ public class ProcessOrchestrator {
   }
 
   public Set<Diagnostic> diagnosticsWithSuggestions() {
-    return workspace.root().matching(".km/diagnostics", "json").stream()
-        .map(this::deserializeFrom)
-        .flatMap(Collection::stream)
-        .filter(Diagnostic::hasSuggestion)
-        .collect(toSet());
+    return diagnostics().stream().filter(Diagnostic::hasSuggestion).collect(toSet());
   }
 
   private void artifactDeleted(String path) {

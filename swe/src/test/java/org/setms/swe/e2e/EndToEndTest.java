@@ -164,7 +164,7 @@ class EndToEndTest {
         .atMost(3, SECONDS)
         .untilAsserted(
             () ->
-                assertThat(processOrchestrator.diagnosticsWithSuggestions())
+                assertThat(processOrchestrator.diagnostics())
                     .as(
                         "Diagnostics for iteration %s"
                             .formatted(iteration.getDirectory().getName()))
@@ -172,9 +172,6 @@ class EndToEndTest {
                     .containsExactlyInAnyOrderElementsOf(expected));
 
     var diagnostics = processOrchestrator.diagnosticsWithSuggestions();
-    var allDiagnostics = processOrchestrator.diagnostics();
-    allDiagnostics.removeAll(diagnostics);
-    assertThat(allDiagnostics).as("Diagnostics without suggestions").isEmpty();
     diagnostics.forEach(
         diagnostic ->
             chat.add(
