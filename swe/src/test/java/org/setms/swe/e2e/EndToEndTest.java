@@ -227,9 +227,8 @@ class EndToEndTest {
   }
 
   private void showWorkspace() {
-    System.out.printf("%n---%n<workspace>%n");
+    System.out.printf("%nWorkspace:%n");
     show(workspace.root(), "");
-    System.out.printf("---%n%n");
   }
 
   private void show(Resource<?> resource, String indent) {
@@ -242,9 +241,9 @@ class EndToEndTest {
   }
 
   private void showChild(Resource<?> child, String indent, boolean isLast) {
-    System.out.println(indent + (isLast ? "└── " : "├── ") + child.name());
+    System.out.println(indent + (isLast ? "└─ " : "├─ ") + child.name());
     Optional.of(child)
         .filter(c -> !c.children().isEmpty())
-        .ifPresent(c -> show(c, indent + (isLast ? "    " : "│   ")));
+        .ifPresent(c -> show(c, indent + (isLast ? "   " : "│  ")));
   }
 }

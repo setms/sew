@@ -35,7 +35,6 @@
 ### Code
 
 - Verify comment in org.setms.swe.inbound.tool.CodeTool.validate
-- Check whether project builds
 
 
 ### Decision
@@ -59,4 +58,4 @@
 
 ### Project
 
-- Rename to Context?
+- Rename to Initiative
