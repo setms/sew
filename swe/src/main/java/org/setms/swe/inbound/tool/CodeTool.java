@@ -69,7 +69,9 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
       Resource<?> root, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var topics = groupByTopic(inputs.get(Decision.class));
     if (topics.get(BuildTool.TOPIC) != null) {
-      technologyResolver.buildTool(root, inputs, null, diagnostics);
+      technologyResolver
+          .buildTool(root, inputs, null, diagnostics)
+          .ifPresent(bt -> bt.build(root, diagnostics));
     }
   }
 

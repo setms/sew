@@ -1,12 +1,17 @@
 package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_TOOL;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ArtifactTool;
@@ -20,6 +25,7 @@ import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
 import org.setms.swe.domain.model.sdlc.project.Project;
+import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class CodeToolTest extends ToolTestCase<CodeArtifact> {
 
@@ -154,5 +160,44 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
                 assertThat(resource.path())
                     .as("Path")
                     .isEqualTo("/src/main/architecture/BuildTool.decision"));
+  }
+
+  @Test
+  void shouldCallBuildAfterBuildToolIsInitialized() throws IOException {
+    var mockBuildTool = mock(org.setms.swe.domain.model.sdlc.technology.BuildTool.class);
+    var tool = givenToolWithBuildToolMock(mockBuildTool);
+    var workspace = givenWorkspaceWithTestSource();
+    var inputs = givenInputsWithBuildToolDecision();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    tool.validate(
+        workspace.root().select("/src/test/java/com/example/MyTest.java"), inputs, diagnostics);
+
+    verify(mockBuildTool).build(any(), any());
+  }
+
+  private CodeTool givenToolWithBuildToolMock(
+      org.setms.swe.domain.model.sdlc.technology.BuildTool buildTool) {
+    var resolver = mock(TechnologyResolver.class);
+    when(resolver.buildTool(any(), any(), any(), any())).thenReturn(Optional.of(buildTool));
+    return new CodeTool(resolver);
+  }
+
+  private InMemoryWorkspace givenWorkspaceWithTestSource() throws IOException {
+    var workspace = new InMemoryWorkspace();
+    createFile(
+        workspace,
+        "/src/test/java/com/example/MyTest.java",
+        "package com.example;\npublic class MyTest {}");
+    return workspace;
+  }
+
+  private ResolvedInputs givenInputsWithBuildToolDecision() {
+    var decisions =
+        List.of(
+            decision(ProgrammingLanguage.TOPIC, "Java"),
+            decision(TopLevelPackage.TOPIC, "com.example"),
+            decision(BuildTool.TOPIC, "Gradle"));
+    return new ResolvedInputs().put("decisions", decisions).put("projects", List.of(project()));
   }
 }
