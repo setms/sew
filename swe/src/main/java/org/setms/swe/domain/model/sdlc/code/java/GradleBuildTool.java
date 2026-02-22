@@ -8,8 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.gradle.tooling.GradleConnector;
@@ -24,6 +24,54 @@ public class GradleBuildTool implements BuildTool {
 
   public static final String GENERATE_BUILD_CONFIG = "gradle.generate.build.config";
   private static final String GRADLE_VERSION = "9.3.1";
+  private static final String BUILD_GRADLE =
+      """
+      plugins {
+          id 'java'
+          alias libs.plugins.lombok
+      }
+
+      repositories {
+          mavenCentral()
+      }
+
+      dependencies {
+          testImplementation libs.bundles.test
+
+          testRuntimeOnly libs.bundles.test.runtime
+      }
+
+      java {
+          toolchain {
+              languageVersion = JavaLanguageVersion.of(25)
+          }
+      }
+
+      tasks.named('test') {
+          useJUnitPlatform()
+      }
+      """;
+  private static final String VERSION_CATALOG =
+      """
+      [versions]
+      assertj = "3.27.7"
+      jqwik = "1.9.3"
+      junit-jupiter = "6.0.3"
+      lombok-plugin = "9.2.0"
+
+      [libraries]
+      assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+      jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
+      junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+      junit-jupiter-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-jupiter" }
+
+      [bundles]
+      test = ["assertj", "junit-jupiter", "jqwik"]
+      test-runtime = ["junit-jupiter-launcher"]
+
+      [plugins]
+      lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
+      """;
 
   private final String projectName;
 
@@ -96,15 +144,8 @@ public class GradleBuildTool implements BuildTool {
   }
 
   private void cleanUpBuild(Resource<?> resource) throws IOException {
-    try (var reader =
-        new BufferedReader(new InputStreamReader(resource.select("lib/build.gradle").readFrom()))) {
-      try (var writer = new PrintWriter(resource.select("build.gradle").writeTo())) {
-        reader
-            .lines()
-            .filter(line -> unwantedExampleDependencies().noneMatch(line::contains))
-            .map(line -> line.replace("java-library", "java"))
-            .forEach(writer::println);
-      }
+    try (var output = resource.select("build.gradle").writeTo()) {
+      output.write(BUILD_GRADLE.getBytes(StandardCharsets.UTF_8));
     }
     resource.select("lib").delete();
   }
@@ -126,22 +167,9 @@ public class GradleBuildTool implements BuildTool {
   }
 
   private void cleanUpVersionCatalog(Resource<?> resource) throws IOException {
-    List<String> lines;
-    var versionCatalog = resource.select("gradle/libs.versions.toml");
-    try (var reader = new BufferedReader(new InputStreamReader(versionCatalog.readFrom()))) {
-      lines =
-          reader
-              .lines()
-              .filter(line -> unwantedExampleDependencies().noneMatch(line::contains))
-              .toList();
+    try (var output = resource.select("gradle/libs.versions.toml").writeTo()) {
+      output.write(VERSION_CATALOG.getBytes(StandardCharsets.UTF_8));
     }
-    try (var writer = new PrintWriter(versionCatalog.writeTo())) {
-      lines.forEach(writer::println);
-    }
-  }
-
-  private Stream<String> unwantedExampleDependencies() {
-    return Stream.of("math3", "guava");
   }
 
   private AppliedSuggestion buildConfigResources(Resource<?> resource) {
