@@ -20,7 +20,6 @@ public class Files {
   private static final String FILE_URI_SCHEME = "file:";
   private static final String PATH_PREFIX = "//";
 
-  @SuppressWarnings("ResultOfMethodCallIgnored")
   public static void delete(File file) {
     if (file == null || !file.exists()) {
       return;
@@ -28,7 +27,9 @@ public class Files {
     if (file.isDirectory()) {
       childrenOf(file).forEach(Files::delete);
     }
-    file.delete();
+    if (!file.delete()) {
+      throw new RuntimeException("Unable to delete file: " + file.getAbsolutePath());
+    }
   }
 
   public static Stream<File> childrenOf(File file) {
