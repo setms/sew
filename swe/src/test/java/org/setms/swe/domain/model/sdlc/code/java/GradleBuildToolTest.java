@@ -99,8 +99,7 @@ class GradleBuildToolTest {
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
     buildTool.applySuggestion(GradleBuildTool.GENERATE_BUILD_CONFIG, workspace.root());
-    addJavaSourceFile(
-        workspace.root(), "com/example/Hello.java", "package com.example; public class Hello {}");
+    givenJavaSourceFile(workspace.root());
     var diagnostics = new ArrayList<Diagnostic>();
 
     buildTool.build(workspace.root(), diagnostics);
@@ -110,11 +109,10 @@ class GradleBuildToolTest {
         .isTrue();
   }
 
-  private void addJavaSourceFile(Resource<?> root, String relativePath, String content)
-      throws IOException {
-    var resource = root.select("src/main/java/" + relativePath);
+  private void givenJavaSourceFile(Resource<?> root) throws IOException {
+    var resource = root.select("src/main/java/com/example/Hello.java");
     try (var output = resource.writeTo()) {
-      output.write(content.getBytes());
+      output.write("package com.example; public class Hello {}".getBytes());
     }
   }
 
