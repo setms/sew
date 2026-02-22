@@ -5,12 +5,11 @@ import static java.time.LocalDateTime.now;
 import java.io.*;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
@@ -26,7 +25,7 @@ record InMemoryResource(
   private static final byte[] EMPTY = new byte[0];
 
   InMemoryResource(String path, Consumer<String> pathChanged, Consumer<String> pathDeleted) {
-    this(new TreeMap<>(), new HashMap<>(), path, pathChanged, pathDeleted);
+    this(new ConcurrentSkipListMap<>(), new ConcurrentHashMap<>(), path, pathChanged, pathDeleted);
   }
 
   @Override
@@ -63,16 +62,15 @@ record InMemoryResource(
 
   @Override
   public List<InMemoryResource> children() {
-    return new LinkedHashSet<>(artifactsByPath.keySet())
-        .stream()
-            .filter(candidate -> candidate.startsWith(path + "/"))
-            .map(this::directChildOf)
-            .distinct()
-            .map(
-                child ->
-                    new InMemoryResource(
-                        artifactsByPath, modifiedTimeByPath, child, pathChanged, pathDeleted))
-            .toList();
+    return artifactsByPath.keySet().stream()
+        .filter(candidate -> candidate.startsWith(path + "/"))
+        .map(this::directChildOf)
+        .distinct()
+        .map(
+            child ->
+                new InMemoryResource(
+                    artifactsByPath, modifiedTimeByPath, child, pathChanged, pathDeleted))
+        .toList();
   }
 
   private String directChildOf(String descendant) {
@@ -104,14 +102,13 @@ record InMemoryResource(
 
   @Override
   public List<InMemoryResource> matching(String path, String extension) {
-    return new LinkedHashSet<>(artifactsByPath.keySet())
-        .stream()
-            .filter(Glob.of(path, extension)::matches)
-            .map(
-                match ->
-                    new InMemoryResource(
-                        artifactsByPath, modifiedTimeByPath, match, pathChanged, pathDeleted))
-            .toList();
+    return artifactsByPath.keySet().stream()
+        .filter(Glob.of(path, extension)::matches)
+        .map(
+            match ->
+                new InMemoryResource(
+                    artifactsByPath, modifiedTimeByPath, match, pathChanged, pathDeleted))
+        .toList();
   }
 
   @Override
