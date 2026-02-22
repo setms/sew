@@ -4,7 +4,7 @@ import static org.setms.km.domain.model.format.Strings.NL;
 
 public class Chat {
 
-  private static final int LINE_LENGTH = 120;
+  private static final int LINE_LENGTH = 130;
   private static final String TOPIC_SEPARATOR = "━";
   private static final String START = "> ";
   private static final String END = " <";
