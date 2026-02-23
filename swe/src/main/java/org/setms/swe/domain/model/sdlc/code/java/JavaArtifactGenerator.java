@@ -24,6 +24,7 @@ public abstract class JavaArtifactGenerator {
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs) {
     return switch (suggestionCode) {
       case CREATE_INITIATIVE -> createInitiative(resource);
+      case PICK_TOP_LEVEL_PACKAGE -> pickTopLevelPackageDecision(resource, inputs);
       default -> AppliedSuggestion.none();
     };
   }
@@ -45,6 +46,38 @@ public abstract class JavaArtifactGenerator {
         output.write(content.getBytes());
       }
       return created(initiativeResource);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
+  }
+
+  private static AppliedSuggestion pickTopLevelPackageDecision(
+      Resource<?> resource, ResolvedInputs inputs) {
+    try {
+      var choice =
+          inputs.get(Initiative.class).stream()
+              .findFirst()
+              .map(
+                  i ->
+                      "com.%s.%s"
+                          .formatted(i.getOrganization().toLowerCase(), i.getTitle().toLowerCase()))
+              .orElse("com.example");
+      var decisionResource =
+          resource.select("/").select("src/main/architecture").select("TopLevelPackage.decision");
+      var content =
+          """
+          package technology
+
+          decision TopLevelPackage {
+            choice = "%s"
+            topic  = "TopLevelPackage"
+          }
+          """
+              .formatted(choice);
+      try (var output = decisionResource.writeTo()) {
+        output.write(content.getBytes());
+      }
+      return created(decisionResource);
     } catch (Exception e) {
       return failedWith(e);
     }

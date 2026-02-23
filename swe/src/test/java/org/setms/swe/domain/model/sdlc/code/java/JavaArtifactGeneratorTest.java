@@ -34,6 +34,26 @@ class JavaArtifactGeneratorTest {
   }
 
   @Test
+  void shouldCreateTopLevelPackageDecision() {
+    var workspace = new InMemoryWorkspace();
+    var inputs = givenInputsWithInitiative();
+
+    var actual =
+        JavaArtifactGenerator.applySuggestion(
+            JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE, workspace.root(), inputs);
+
+    assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
+    assertThat(actual.createdOrChanged())
+        .as("Created")
+        .hasSize(1)
+        .allSatisfy(
+            resource ->
+                assertThat(resource.path())
+                    .as("Path")
+                    .isEqualTo("/src/main/architecture/TopLevelPackage.decision"));
+  }
+
+  @Test
   void shouldEmitMissingInitiativeWhenNonePresent() {
     var inputs = new ResolvedInputs();
     var diagnostics = new ArrayList<Diagnostic>();
