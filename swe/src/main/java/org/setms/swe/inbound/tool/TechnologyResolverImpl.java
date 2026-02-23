@@ -33,7 +33,7 @@ import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 public class TechnologyResolverImpl implements TechnologyResolver {
 
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
-  static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
+  static final String PICK_TOP_LEVEL_PACKAGE = JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE;
   static final String PICK_BUILD_SYSTEM = "build-system.decide";
   static final String CREATE_INITIATIVE = JavaArtifactGenerator.CREATE_INITIATIVE;
 

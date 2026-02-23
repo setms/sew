@@ -4,10 +4,10 @@
 
 - [x] `TechnologyResolver.unitTestGenerator()` and `codeGenerator()` should accept `ResolvedInputs`
   rather than `Decisions`, so prerequisite validation can access both decisions and initiatives.
-- [~] A `JavaArtifactGenerator` base class should emit "Missing initiative" (with a suggestion to
+- [x] A `JavaArtifactGenerator` base class should emit "Missing initiative" (with a suggestion to
   create one) when no initiative is present, because the top-level package decision is derived from
   the initiative.
-- [ ] `JavaArtifactGenerator` should emit "Missing decision on top-level package" (with a suggestion
+- [~] `JavaArtifactGenerator` should emit "Missing decision on top-level package" (with a suggestion
   to decide) when an initiative is present but the top-level package has not been decided yet.
 - [ ] `JavaUnitTestGenerator` and `JavaCodeGenerator` should extend `JavaArtifactGenerator`, so they
   get prerequisite validation for free.
