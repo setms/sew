@@ -1,6 +1,6 @@
-package com.company.todo;
+package com.example.todo;
 
-import com.company.todo.domain.model.AddTodoItem;
+import com.example.todo.domain.model.AddTodoItem;
 import java.time.OffsetDateTime;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

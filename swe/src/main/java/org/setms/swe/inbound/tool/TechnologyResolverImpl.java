@@ -175,13 +175,27 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return switch (suggestionCode) {
       case PICK_PROGRAMMING_LANGUAGE ->
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
-      case PICK_TOP_LEVEL_PACKAGE ->
-          pickDecision(resource, TOP_LEVEL_PACKAGE_DECISION, TopLevelPackage.TOPIC);
+      case PICK_TOP_LEVEL_PACKAGE -> pickTopLevelPackageDecision(resource, inputs);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case CREATE_PROJECT -> createProject(resource);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
+  }
+
+  private AppliedSuggestion pickTopLevelPackageDecision(
+      Resource<?> resource, ResolvedInputs inputs) {
+    var defaultChoice =
+        inputs.get(Initiative.class).stream()
+            .findFirst()
+            .map(
+                initiative ->
+                    "com.%s.%s"
+                        .formatted(
+                            initiative.getOrganization().toLowerCase(),
+                            initiative.getTitle().toLowerCase()))
+            .orElse(null);
+    return pickDecision(resource, TOP_LEVEL_PACKAGE_DECISION, TopLevelPackage.TOPIC, defaultChoice);
   }
 
   private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {
@@ -198,10 +212,16 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   private AppliedSuggestion pickDecision(Resource<?> resource, String decisionName, String topic) {
+    return pickDecision(resource, decisionName, topic, null);
+  }
+
+  private AppliedSuggestion pickDecision(
+      Resource<?> resource, String decisionName, String topic, String defaultChoice) {
     try {
       var decision =
           new Decision(new FullyQualifiedName(TECHNOLOGY_DECISIONS_PACKAGE, decisionName))
               .setTopic(topic);
+      Optional.ofNullable(defaultChoice).ifPresent(decision::setChoice);
       var decisionInput = Inputs.decisions();
       var decisionResource =
           resource

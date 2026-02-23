@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
@@ -9,6 +10,8 @@ import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
@@ -175,6 +179,28 @@ class TechnologyResolverImplTest {
                 assertThat(resource.path())
                     .as("Path")
                     .isEqualTo("/src/main/architecture/TopLevelPackage.decision"));
+  }
+
+  @Test
+  void shouldDeriveDefaultTopLevelPackageChoiceFromInitiative() {
+    var workspace = new InMemoryWorkspace();
+    var inputs = new ResolvedInputs().put("initiatives", List.of(initiative()));
+
+    var actual = resolver.applySuggestion(PICK_TOP_LEVEL_PACKAGE, workspace.root(), inputs);
+
+    assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
+    assertThat(actual.createdOrChanged())
+        .hasSize(1)
+        .allSatisfy(
+            resource -> assertThat(contentOf(resource)).contains("choice = \"com.softure.todo\""));
+  }
+
+  private String contentOf(Resource<?> resource) {
+    try (var input = resource.readFrom()) {
+      return new String(input.readAllBytes(), UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   @Test

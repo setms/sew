@@ -1,8 +1,8 @@
-package com.company.todo;
+package com.example.todo;
 
-import static com.company.todo.TestData.someAddTodoItem;
-import static com.company.todo.domain.model.TodoItemAdded;
-import static com.company.todo.domain.services.TodoItemsService;
+import static com.example.todo.TestData.someAddTodoItem;
+import static com.example.todo.domain.model.TodoItemAdded;
+import static com.example.todo.domain.services.TodoItemsService;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;

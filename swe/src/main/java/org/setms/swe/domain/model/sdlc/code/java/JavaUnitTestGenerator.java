@@ -32,7 +32,10 @@ public class JavaUnitTestGenerator implements UnitTestGenerator {
   @Override
   public List<CodeArtifact> generate(AcceptanceTest acceptanceTest) {
     var className = "%sTest".formatted(acceptanceTest.getName());
-    var packageName = topLevelPackage + "." + acceptanceTest.getPackage();
+    var packageName =
+        topLevelPackage.endsWith(acceptanceTest.getPackage())
+            ? topLevelPackage
+            : topLevelPackage + "." + acceptanceTest.getPackage();
     var unitTest = new UnitTest(new FullyQualifiedName(packageName, className));
     unitTest.setCode(generateCode(packageName, className, acceptanceTest));
     var testData = new CodeArtifact(new FullyQualifiedName(packageName, "TestData"));

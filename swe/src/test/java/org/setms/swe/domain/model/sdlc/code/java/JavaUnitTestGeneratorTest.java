@@ -54,6 +54,10 @@ class JavaUnitTestGeneratorTest {
   }
 
   private AcceptanceTest aggregateAcceptanceTest() {
+    return aggregateAcceptanceTest(ACCEPTANCE_TEST_PACKAGE);
+  }
+
+  private AcceptanceTest aggregateAcceptanceTest(String packageName) {
     var message = fieldVariable();
     var dueDate =
         new FieldVariable(fqn("dueDate"))
@@ -85,7 +89,7 @@ class JavaUnitTestGeneratorTest {
         new AggregateScenario(fqn("Accept NotifyUser and emit UserNotified"))
             .setAccepts(variableLink("notifyUser"))
             .setEmitted(variableLink("userNotified"));
-    return new AcceptanceTest(fqn("NotificationsAggregate"))
+    return new AcceptanceTest(fqn(packageName, "NotificationsAggregate"))
         .setSut(new Link("aggregate", "Notifications"))
         .setVariables(List.of(message, dueDate, notifyUser, userNotified))
         .setScenarios(List.of(scenario));
@@ -98,7 +102,11 @@ class JavaUnitTestGeneratorTest {
   }
 
   private FullyQualifiedName fqn(String name) {
-    return new FullyQualifiedName(ACCEPTANCE_TEST_PACKAGE, name);
+    return fqn(ACCEPTANCE_TEST_PACKAGE, name);
+  }
+
+  private FullyQualifiedName fqn(String packageName, String name) {
+    return new FullyQualifiedName(packageName, name);
   }
 
   private Link variableLink(String name) {
@@ -110,6 +118,17 @@ class JavaUnitTestGeneratorTest {
     return new ElementVariable(fqn(name))
         .setType(new Link(type, id))
         .setDefinitions(List.of(assignments));
+  }
+
+  @Test
+  void shouldGenerateUnitTestInCorrectPackage() {
+    var acceptanceTest =
+        aggregateAcceptanceTest(
+            TOP_LEVEL_PACKAGE.substring(1 + TOP_LEVEL_PACKAGE.lastIndexOf('.')));
+
+    var actual = generator.generate(acceptanceTest).getFirst();
+
+    assertThat(actual.getPackage()).isEqualTo(TOP_LEVEL_PACKAGE);
   }
 
   @Test

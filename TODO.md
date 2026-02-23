@@ -27,10 +27,6 @@
   - All variables used in scenarios
   - No undeclared variables used in scenarios
 
-### Code
-
-- Use `Initiative.getOrganization()` in top-level decision
-
 ### Decision
 
 - Render ADR
