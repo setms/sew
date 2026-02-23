@@ -1,6 +1,6 @@
 outputs:
   - src/test/java/com/example/todo/TodoItemsAggregateTest.java
-  - src/test/java/com/example/todo/TestData.java
+  - src/test/java/com/example/todo/TestDataBuilder.java
 
 diagnostics:
   - Missing decision on build system

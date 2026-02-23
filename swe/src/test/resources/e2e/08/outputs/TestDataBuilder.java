@@ -9,7 +9,7 @@ import net.jqwik.api.Arbitrary;
 import net.jqwik.api.Combinators;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class TestData {
+public class TestDataBuilder {
 
   public static AddTodoItem someAddTodoItem() {
     return addTodoItems().sample();

@@ -1,6 +1,6 @@
 package com.example.todo;
 
-import static com.example.todo.TestData.someAddTodoItem;
+import static com.example.todo.TestDataBuilder.someAddTodoItem;
 import static com.example.todo.domain.model.TodoItemAdded;
 import static com.example.todo.domain.services.TodoItemsService;
 import static org.assertj.core.api.Assertions.assertThat;

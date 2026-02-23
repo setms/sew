@@ -36,7 +36,7 @@ class JavaUnitTestGeneratorTest {
     assertThat(actual.getCode()).isNotEmpty();
     assertThat(actual.getCode())
         .contains("package %s;".formatted(expectedPackage))
-        .contains("import static com.example.notifications.TestData.someNotifyUser;")
+        .contains("import static com.example.notifications.TestDataBuilder.someNotifyUser;")
         .contains("import static com.example.notifications.domain.model.UserNotified;")
         .contains("import static com.example.notifications.domain.services.NotificationsService;")
         .contains("import static org.assertj.core.api.Assertions.assertThat;")
@@ -260,14 +260,14 @@ class JavaUnitTestGeneratorTest {
   }
 
   @Test
-  void shouldGenerateTestData() {
+  void shouldGenerateTestDataBuilder() {
     var acceptanceTest = aggregateAcceptanceTest();
 
     var actual = generator.generate(acceptanceTest);
 
     assertThat(actual).hasSize(2);
     assertThat(actual.get(1).getCode())
-        .contains("class TestData")
+        .contains("class TestDataBuilder")
         .contains("public static NotifyUser someNotifyUser()")
         .contains("Combinators.combine(")
         .contains("Arbitraries.strings().ofMinLength(1).map(Text::new)");

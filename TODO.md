@@ -26,7 +26,6 @@
 - Check internal consistency
   - All variables used in scenarios
   - No undeclared variables used in scenarios
-- Rename `TestData` to `TestDataBuilder`
 
 ### Aggregate
 

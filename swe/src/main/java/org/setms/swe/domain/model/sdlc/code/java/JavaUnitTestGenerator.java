@@ -38,9 +38,9 @@ public class JavaUnitTestGenerator implements UnitTestGenerator {
             : topLevelPackage + "." + acceptanceTest.getPackage();
     var unitTest = new UnitTest(new FullyQualifiedName(packageName, className));
     unitTest.setCode(generateCode(packageName, className, acceptanceTest));
-    var testData = new CodeArtifact(new FullyQualifiedName(packageName, "TestData"));
-    testData.setCode(generateTestDataCode(packageName, acceptanceTest));
-    return List.of(unitTest, testData);
+    var testDataBuilder = new CodeArtifact(new FullyQualifiedName(packageName, "TestDataBuilder"));
+    testDataBuilder.setCode(testDataBuilderCode(testDataBuilder, acceptanceTest));
+    return List.of(unitTest, testDataBuilder);
   }
 
   private String generateCode(String packageName, String className, AcceptanceTest acceptanceTest) {
@@ -96,7 +96,7 @@ public class JavaUnitTestGenerator implements UnitTestGenerator {
       collectModelImports(packageName, scenario, acceptanceTest, imports);
     }
     for (var inputVar : collectInputVariables(acceptanceTest)) {
-      imports.add("%s.TestData.some%s".formatted(packageName, inputVar.getType().getId()));
+      imports.add("%s.TestDataBuilder.some%s".formatted(packageName, inputVar.getType().getId()));
     }
     if (imports.stream().anyMatch(i -> i.startsWith(packageName + ".domain.model."))) {
       imports.add("org.assertj.core.api.Assertions.assertThat");
@@ -236,13 +236,13 @@ public class JavaUnitTestGenerator implements UnitTestGenerator {
     return initLower(result);
   }
 
-  private String generateTestDataCode(String packageName, AcceptanceTest acceptanceTest) {
+  private String testDataBuilderCode(CodeArtifact code, AcceptanceTest acceptanceTest) {
     var builder = new StringBuilder();
     var inputVars = collectInputVariables(acceptanceTest);
-    builder.append("package %s;\n".formatted(packageName));
-    generateTestDataImports(packageName, inputVars, acceptanceTest, builder);
+    builder.append("package %s;\n".formatted(code.getPackage()));
+    addTestDataBuilderImports(code.getPackage(), inputVars, acceptanceTest, builder);
     builder.append("\n@NoArgsConstructor(access = AccessLevel.PRIVATE)\n");
-    builder.append("public class TestData {\n");
+    builder.append("public class ").append(code.getName()).append(" {\n");
     for (var inputVar : inputVars) {
       generateFactoryMethods(inputVar, acceptanceTest, builder);
     }
@@ -266,7 +266,7 @@ public class JavaUnitTestGenerator implements UnitTestGenerator {
         .toList();
   }
 
-  private void generateTestDataImports(
+  private void addTestDataBuilderImports(
       String packageName,
       List<ElementVariable> inputVars,
       AcceptanceTest acceptanceTest,
