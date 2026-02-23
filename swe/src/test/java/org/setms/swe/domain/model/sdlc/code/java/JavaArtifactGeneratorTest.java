@@ -9,9 +9,29 @@ import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 
 class JavaArtifactGeneratorTest {
+
+  @Test
+  void shouldCreateInitiative() {
+    var workspace = new InMemoryWorkspace();
+
+    var actual =
+        JavaArtifactGenerator.applySuggestion(
+            JavaArtifactGenerator.CREATE_INITIATIVE, workspace.root(), new ResolvedInputs());
+
+    assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
+    assertThat(actual.createdOrChanged())
+        .as("Created")
+        .hasSize(1)
+        .allSatisfy(
+            resource ->
+                assertThat(resource.path())
+                    .as("Path")
+                    .isEqualTo("/src/main/overview/Project.initiative"));
+  }
 
   @Test
   void shouldEmitMissingInitiativeWhenNonePresent() {
