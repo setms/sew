@@ -21,6 +21,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
+import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
@@ -34,7 +35,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
   static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
   static final String PICK_BUILD_SYSTEM = "build-system.decide";
-  static final String CREATE_INITIATIVE = "initiative.create";
+  static final String CREATE_INITIATIVE = JavaArtifactGenerator.CREATE_INITIATIVE;
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
