@@ -42,35 +42,24 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
-      Decisions decisions, Collection<Initiative> initiatives, Collection<Diagnostic> diagnostics) {
+      Decisions decisions, Collection<Diagnostic> diagnostics) {
     var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
     var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
     return Optional.ofNullable(
-        unitTestGeneratorFor(programmingLanguage, initiatives, topLevelPackage, diagnostics));
+        unitTestGeneratorFor(programmingLanguage, topLevelPackage, diagnostics));
   }
 
   private UnitTestGenerator unitTestGeneratorFor(
-      String programmingLanguage,
-      Collection<Initiative> initiatives,
-      String topLevelPackage,
-      Collection<Diagnostic> diagnostics) {
+      String programmingLanguage, String topLevelPackage, Collection<Diagnostic> diagnostics) {
     return switch (programmingLanguage) {
-      case "Java" -> javaUnitGenerator(initiatives, topLevelPackage, diagnostics);
+      case "Java" -> javaUnitGenerator(topLevelPackage, diagnostics);
       case null -> nothing(missingProgrammingLanguageDecision(), diagnostics);
-      default ->
-          nothing(
-              new Diagnostic(ERROR, "Decided on unsupported programming language", null),
-              diagnostics);
+      default -> nothing(unsupportedProgrammingLanguage(), diagnostics);
     };
   }
 
   private UnitTestGenerator javaUnitGenerator(
-      Collection<Initiative> initiatives,
-      String topLevelPackage,
-      Collection<Diagnostic> diagnostics) {
-    if (initiatives.isEmpty()) {
-      return nothing(missingInitiative(), diagnostics);
-    }
+      String topLevelPackage, Collection<Diagnostic> diagnostics) {
     if (topLevelPackage == null) {
       return nothing(
           new Diagnostic(
@@ -90,7 +79,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   @Override
   public Optional<CodeGenerator> codeGenerator(
-      Decisions decisions, Collection<Initiative> initiatives, Collection<Diagnostic> diagnostics) {
+      Decisions decisions, Collection<Diagnostic> diagnostics) {
     var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
     var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
     return Optional.ofNullable(codeGeneratorFor(programmingLanguage, topLevelPackage, diagnostics));
@@ -101,11 +90,12 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return switch (programmingLanguage) {
       case "Java" -> new JavaCodeGenerator(topLevelPackage);
       case null -> nothing(missingProgrammingLanguageDecision(), diagnostics);
-      default ->
-          nothing(
-              new Diagnostic(ERROR, "Decided on unsupported programming language", null),
-              diagnostics);
+      default -> nothing(unsupportedProgrammingLanguage(), diagnostics);
     };
+  }
+
+  private Diagnostic unsupportedProgrammingLanguage() {
+    return new Diagnostic(ERROR, "Decided on unsupported programming language", null);
   }
 
   @Override
@@ -154,10 +144,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
     return programmingLanguage.equals("Java")
         ? javaBuildSystem(selectedBuildSystem, projectName, diagnostics)
-        : Optional.ofNullable(
-            nothing(
-                new Diagnostic(ERROR, "Decided on unsupported programming language", null),
-                diagnostics));
+        : Optional.ofNullable(nothing(unsupportedProgrammingLanguage(), diagnostics));
   }
 
   private Diagnostic missingProgrammingLanguageDecision() {

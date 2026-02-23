@@ -25,12 +25,18 @@
 
 ### Aggregate
 
-- Generate code
+- Generate domain object
+- Generate entity
+  - Requires decision on framework (e.g. Spring Boot / Spring Data)
 - Generate DB schema
+  - Requires decision on DB Schema Change Manager
+    - Which requires decision on DB type to be RDBMS (schema managers are only available for DBs with schemas)
+  - A DSCM may use SQL or native programming language files
+  - For Flyway, they're stored in `src/main/resources/db/migration` by default
 
 ### Command
 
-- Generate code
+- Generate domain object
 
 ### Decision
 
@@ -45,7 +51,7 @@
 
 ### Event
 
-- Generate code
+- Generate domain object
 
 ### Glossary
 

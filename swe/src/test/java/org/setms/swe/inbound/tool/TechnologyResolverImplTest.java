@@ -1,10 +1,8 @@
 package org.setms.swe.inbound.tool;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
-import static org.setms.swe.inbound.tool.TechnologyResolverImpl.CREATE_INITIATIVE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_SYSTEM;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
@@ -40,7 +38,7 @@ class TechnologyResolverImplTest {
   void shouldNeedProgrammingLanguageForUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
 
-    resolver.unitTestGenerator(Decisions.none(), emptyList(), diagnostics);
+    resolver.unitTestGenerator(Decisions.none(), diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -61,39 +59,11 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldRequireProjectForUnitTestGenerator() {
+  void shouldNeedTopLevelPackageForJavaUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
     var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
 
-    var actual = resolver.unitTestGenerator(decisions, emptyList(), diagnostics);
-
-    assertThat(actual).as("Generator").isEmpty();
-    assertThat(diagnostics)
-        .as("Diagnostics")
-        .extracting(Diagnostic::message)
-        .containsExactly("Missing initiative");
-    assertThat(diagnostics)
-        .allSatisfy(
-            diagnostic -> {
-              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.location()).as("Location").isNull();
-              assertThat(diagnostic.suggestions())
-                  .hasSize(1)
-                  .allSatisfy(
-                      suggestion ->
-                          assertThat(suggestion.code())
-                              .as("Suggestion code")
-                              .isEqualTo(CREATE_INITIATIVE));
-            });
-  }
-
-  @Test
-  void shouldNeedTopLevelPackageAfterProject() {
-    var diagnostics = new ArrayList<Diagnostic>();
-    var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
-    var projects = List.of(initiative());
-
-    resolver.unitTestGenerator(decisions, projects, diagnostics);
+    resolver.unitTestGenerator(decisions, diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -126,15 +96,14 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldReturnGeneratorWhenAllDecisionsAndProjectPresent() {
+  void shouldReturnUnitTestGeneratorWhenAllDecisionsPresent() {
     var diagnostics = new ArrayList<Diagnostic>();
     var decisions =
         Decisions.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"));
-    var projects = List.of(initiative());
 
-    var actual = resolver.unitTestGenerator(decisions, projects, diagnostics);
+    var actual = resolver.unitTestGenerator(decisions, diagnostics);
 
     assertThat(actual).as("Generator").isPresent();
     assertThat(diagnostics).as("Diagnostics").isEmpty();
@@ -223,9 +192,8 @@ class TechnologyResolverImplTest {
         Decisions.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"));
-    var initiatives = List.of(initiative());
 
-    var actual = resolver.codeGenerator(decisions, initiatives, diagnostics);
+    var actual = resolver.codeGenerator(decisions, diagnostics);
 
     assertThat(actual).as("Generator").isPresent();
     assertThat(actual.get()).as("Generator type").isInstanceOf(JavaCodeGenerator.class);
