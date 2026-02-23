@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
-import static org.setms.swe.inbound.tool.TechnologyResolverImpl.CREATE_PROJECT;
+import static org.setms.swe.inbound.tool.TechnologyResolverImpl.CREATE_INITIATIVE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_SYSTEM;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
@@ -74,7 +74,7 @@ class TechnologyResolverImplTest {
     assertThat(diagnostics)
         .as("Diagnostics")
         .extracting(Diagnostic::message)
-        .containsExactly("Missing project");
+        .containsExactly("Missing initiative");
     assertThat(diagnostics)
         .allSatisfy(
             diagnostic -> {
@@ -86,7 +86,7 @@ class TechnologyResolverImplTest {
                       suggestion ->
                           assertThat(suggestion.code())
                               .as("Suggestion code")
-                              .isEqualTo(CREATE_PROJECT));
+                              .isEqualTo(CREATE_INITIATIVE));
             });
   }
 
@@ -234,14 +234,14 @@ class TechnologyResolverImplTest {
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.message()).as("Message").isEqualTo("Missing project");
+              assertThat(diagnostic.message()).as("Message").isEqualTo("Missing initiative");
               assertThat(diagnostic.suggestions())
                   .hasSize(1)
                   .allSatisfy(
                       suggestion ->
                           assertThat(suggestion.message())
                               .as("Suggestion")
-                              .isEqualTo("Create project"));
+                              .isEqualTo("Create initiative"));
             });
   }
 
@@ -251,7 +251,7 @@ class TechnologyResolverImplTest {
 
     var actual =
         resolver.applySuggestion(
-            TechnologyResolverImpl.CREATE_PROJECT, workspace.root(), new ResolvedInputs());
+            TechnologyResolverImpl.CREATE_INITIATIVE, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())

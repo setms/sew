@@ -149,7 +149,7 @@ class EndToEndTest {
           "%s %s/%s%s"
               .formatted(
                   input.getAlias() != null
-                      ? "Copied and updated"
+                      ? "Renamed and updated"
                       : created.contains(input.getFile()) ? "Updated" : "Created",
                   input.getLocation(),
                   input.getFile(),

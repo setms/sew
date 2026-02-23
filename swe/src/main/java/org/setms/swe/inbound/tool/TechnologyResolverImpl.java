@@ -33,7 +33,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
   static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
   static final String PICK_BUILD_SYSTEM = "build-system.decide";
-  static final String CREATE_PROJECT = "project.create";
+  static final String CREATE_INITIATIVE = "initiative.create";
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
@@ -83,7 +83,10 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     if (initiatives.isEmpty()) {
       return nothing(
           new Diagnostic(
-              WARN, "Missing project", location, new Suggestion(CREATE_PROJECT, "Create project")),
+              WARN,
+              "Missing initiative",
+              location,
+              new Suggestion(CREATE_INITIATIVE, "Create initiative")),
           diagnostics);
     }
     if (topLevelPackage == null) {
@@ -110,7 +113,10 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     if (project.isEmpty()) {
       diagnostics.add(
           new Diagnostic(
-              WARN, "Missing project", null, new Suggestion(CREATE_PROJECT, "Create project")));
+              WARN,
+              "Missing initiative",
+              null,
+              new Suggestion(CREATE_INITIATIVE, "Create initiative")));
       return Optional.empty();
     }
 
@@ -177,7 +183,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
       case PICK_TOP_LEVEL_PACKAGE -> pickTopLevelPackageDecision(resource, inputs);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
-      case CREATE_PROJECT -> createProject(resource);
+      case CREATE_INITIATIVE -> createProject(resource);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
