@@ -20,6 +20,9 @@ Review changed code and make sure it follows the following style guide:
 - Don't use technical terms like `mock` in identifier names.
 - Method declarations MUST use the most generic type possible for parameters and return types.
   For example, use `Map` instead of `HashMap` and `Collection` instead of `ArrayList`.
+- IMPORTANT: If a class emits a diagnostic with a suggestion, then that same class must apply the suggestion, not some
+  other class.
+  This is non-negotiable.
 
 CRITICAL: After each change, run all tests.
 If a change made any test **other than `EndToEndTest`** fail, revert the change and try a different approach.
