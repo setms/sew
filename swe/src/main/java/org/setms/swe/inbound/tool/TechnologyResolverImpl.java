@@ -33,9 +33,7 @@ import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 public class TechnologyResolverImpl implements TechnologyResolver {
 
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
-  static final String PICK_TOP_LEVEL_PACKAGE = JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE;
   static final String PICK_BUILD_SYSTEM = "build-system.decide";
-  static final String CREATE_INITIATIVE = JavaArtifactGenerator.CREATE_INITIATIVE;
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
@@ -68,7 +66,8 @@ public class TechnologyResolverImpl implements TechnologyResolver {
               WARN,
               "Missing decision on top-level package",
               null,
-              new Suggestion(PICK_TOP_LEVEL_PACKAGE, "Decide on top-level package")),
+              new Suggestion(
+                  JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE, "Decide on top-level package")),
           diagnostics);
     }
     return new JavaUnitTestGenerator(topLevelPackage);
@@ -123,7 +122,10 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   private Diagnostic missingInitiative() {
     return new Diagnostic(
-        WARN, "Missing initiative", null, new Suggestion(CREATE_INITIATIVE, "Create initiative"));
+        WARN,
+        "Missing initiative",
+        null,
+        new Suggestion(JavaArtifactGenerator.CREATE_INITIATIVE, "Create initiative"));
   }
 
   private Optional<CodeBuilder> codeBuilderFor(
@@ -173,9 +175,10 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return switch (suggestionCode) {
       case PICK_PROGRAMMING_LANGUAGE ->
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
-      case PICK_TOP_LEVEL_PACKAGE -> pickTopLevelPackageDecision(resource, inputs);
+      case JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE ->
+          pickTopLevelPackageDecision(resource, inputs);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
-      case CREATE_INITIATIVE -> createProject(resource);
+      case JavaArtifactGenerator.CREATE_INITIATIVE -> createProject(resource);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };

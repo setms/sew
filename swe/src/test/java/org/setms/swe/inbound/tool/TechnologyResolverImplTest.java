@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_SYSTEM;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
-import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_TOP_LEVEL_PACKAGE;
 
 import java.io.File;
 import java.io.IOException;
@@ -136,7 +135,8 @@ class TechnologyResolverImplTest {
     var workspace = new InMemoryWorkspace();
 
     var actual =
-        resolver.applySuggestion(PICK_TOP_LEVEL_PACKAGE, workspace.root(), new ResolvedInputs());
+        resolver.applySuggestion(
+            JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
@@ -154,7 +154,9 @@ class TechnologyResolverImplTest {
     var workspace = new InMemoryWorkspace();
     var inputs = new ResolvedInputs().put("initiatives", List.of(initiative()));
 
-    var actual = resolver.applySuggestion(PICK_TOP_LEVEL_PACKAGE, workspace.root(), inputs);
+    var actual =
+        resolver.applySuggestion(
+            JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE, workspace.root(), inputs);
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
