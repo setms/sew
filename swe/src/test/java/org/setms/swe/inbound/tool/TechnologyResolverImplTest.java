@@ -25,6 +25,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
+import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -250,12 +251,12 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldCreateProjectArtifact() {
+  void shouldCreateInitiative() {
     var workspace = new InMemoryWorkspace();
 
     var actual =
         resolver.applySuggestion(
-            TechnologyResolverImpl.CREATE_INITIATIVE, workspace.root(), new ResolvedInputs());
+            JavaArtifactGenerator.CREATE_INITIATIVE, workspace.root(), new ResolvedInputs());
 
     assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
     assertThat(actual.createdOrChanged())
