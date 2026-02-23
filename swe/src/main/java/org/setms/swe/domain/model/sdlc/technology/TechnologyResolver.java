@@ -30,6 +30,17 @@ public interface TechnologyResolver {
   Optional<CodeBuilder> codeBuilder(
       Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
+  /**
+   * @param decisions Decisions made
+   * @param initiatives Projects defined
+   * @param diagnostics where to store any validation issues
+   * @return something that can generate production code, or empty if there are issues
+   */
+  default Optional<CodeGenerator> codeGenerator(
+      Decisions decisions, Collection<Initiative> initiatives, Collection<Diagnostic> diagnostics) {
+    return Optional.empty();
+  }
+
   AppliedSuggestion applySuggestion(
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs);
 }

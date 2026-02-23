@@ -28,6 +28,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
+import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -213,6 +214,22 @@ class TechnologyResolverImplTest {
                 assertThat(resource.path())
                     .as("Path")
                     .isEqualTo("/src/main/architecture/BuildSystem.decision"));
+  }
+
+  @Test
+  void shouldReturnJavaCodeGeneratorWhenProgrammingLanguageIsJava() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var decisions =
+        Decisions.of(
+            decision(ProgrammingLanguage.TOPIC, "Java"),
+            decision(TopLevelPackage.TOPIC, "com.example"));
+    var initiatives = List.of(initiative());
+
+    var actual = resolver.codeGenerator(decisions, initiatives, diagnostics);
+
+    assertThat(actual).as("Generator").isPresent();
+    assertThat(actual.get()).as("Generator type").isInstanceOf(JavaCodeGenerator.class);
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
   }
 
   @Test

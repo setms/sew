@@ -21,9 +21,11 @@ import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
+import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
+import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
@@ -84,6 +86,26 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   private <T> T nothing(Diagnostic diagnostic, Collection<Diagnostic> diagnostics) {
     diagnostics.add(diagnostic);
     return null;
+  }
+
+  @Override
+  public Optional<CodeGenerator> codeGenerator(
+      Decisions decisions, Collection<Initiative> initiatives, Collection<Diagnostic> diagnostics) {
+    var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
+    var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
+    return Optional.ofNullable(codeGeneratorFor(programmingLanguage, topLevelPackage, diagnostics));
+  }
+
+  private CodeGenerator codeGeneratorFor(
+      String programmingLanguage, String topLevelPackage, Collection<Diagnostic> diagnostics) {
+    return switch (programmingLanguage) {
+      case "Java" -> new JavaCodeGenerator(topLevelPackage);
+      case null -> nothing(missingProgrammingLanguageDecision(), diagnostics);
+      default ->
+          nothing(
+              new Diagnostic(ERROR, "Decided on unsupported programming language", null),
+              diagnostics);
+    };
   }
 
   @Override
