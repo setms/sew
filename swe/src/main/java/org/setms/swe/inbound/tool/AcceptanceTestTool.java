@@ -83,8 +83,6 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
                 acceptanceTest.toLocation(),
                 new Suggestion(SUGGESTION_CREATE_UNIT_TEST, "Create unit test")));
       }
-    } else {
-      // TODO: Verify unit test implements all scenarios
     }
   }
 
