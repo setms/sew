@@ -6,18 +6,17 @@ import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 
 /** Resolves technology decisions into implementations that use the decided-upon technology. */
 public interface TechnologyResolver {
 
   /**
-   * @param decisions Decisions made
+   * @param inputs Resolved inputs, including decisions and other artifacts
    * @param diagnostics where to store any validation issues
    * @return something that can generate unit tests, or empty if there are issues
    */
   Optional<UnitTestGenerator> unitTestGenerator(
-      Decisions decisions, Collection<Diagnostic> diagnostics);
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
   /**
    * @param resource Workspace root resource
@@ -29,11 +28,11 @@ public interface TechnologyResolver {
       Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
   /**
-   * @param decisions Decisions made
+   * @param inputs Resolved inputs, including decisions and other artifacts
    * @param diagnostics where to store any validation issues
    * @return something that can generate production code, or empty if there are issues
    */
-  Optional<CodeGenerator> codeGenerator(Decisions decisions, Collection<Diagnostic> diagnostics);
+  Optional<CodeGenerator> codeGenerator(ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
   AppliedSuggestion applySuggestion(
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs);

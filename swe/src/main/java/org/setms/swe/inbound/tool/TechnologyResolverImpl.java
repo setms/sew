@@ -42,7 +42,8 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
-      Decisions decisions, Collection<Diagnostic> diagnostics) {
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var decisions = Decisions.from(inputs);
     var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
     var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
     return Optional.ofNullable(
@@ -79,7 +80,8 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   @Override
   public Optional<CodeGenerator> codeGenerator(
-      Decisions decisions, Collection<Diagnostic> diagnostics) {
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var decisions = Decisions.from(inputs);
     var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
     var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
     return Optional.ofNullable(codeGeneratorFor(programmingLanguage, topLevelPackage, diagnostics));

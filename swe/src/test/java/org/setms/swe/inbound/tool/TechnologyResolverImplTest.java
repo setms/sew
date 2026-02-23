@@ -22,7 +22,6 @@ import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
-import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
@@ -38,7 +37,7 @@ class TechnologyResolverImplTest {
   void shouldNeedProgrammingLanguageForUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
 
-    resolver.unitTestGenerator(Decisions.none(), diagnostics);
+    resolver.unitTestGenerator(new ResolvedInputs(), diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -61,9 +60,10 @@ class TechnologyResolverImplTest {
   @Test
   void shouldNeedTopLevelPackageForJavaUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
+    var inputs =
+        new ResolvedInputs().put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
 
-    resolver.unitTestGenerator(decisions, diagnostics);
+    resolver.unitTestGenerator(inputs, diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -98,12 +98,15 @@ class TechnologyResolverImplTest {
   @Test
   void shouldReturnUnitTestGeneratorWhenAllDecisionsPresent() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var decisions =
-        Decisions.of(
-            decision(ProgrammingLanguage.TOPIC, "Java"),
-            decision(TopLevelPackage.TOPIC, "com.example"));
+    var inputs =
+        new ResolvedInputs()
+            .put(
+                "decisions",
+                List.of(
+                    decision(ProgrammingLanguage.TOPIC, "Java"),
+                    decision(TopLevelPackage.TOPIC, "com.example")));
 
-    var actual = resolver.unitTestGenerator(decisions, diagnostics);
+    var actual = resolver.unitTestGenerator(inputs, diagnostics);
 
     assertThat(actual).as("Generator").isPresent();
     assertThat(diagnostics).as("Diagnostics").isEmpty();
@@ -188,15 +191,37 @@ class TechnologyResolverImplTest {
   @Test
   void shouldReturnJavaCodeGeneratorWhenProgrammingLanguageIsJava() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var decisions =
-        Decisions.of(
-            decision(ProgrammingLanguage.TOPIC, "Java"),
-            decision(TopLevelPackage.TOPIC, "com.example"));
+    var inputs =
+        new ResolvedInputs()
+            .put(
+                "decisions",
+                List.of(
+                    decision(ProgrammingLanguage.TOPIC, "Java"),
+                    decision(TopLevelPackage.TOPIC, "com.example")));
 
-    var actual = resolver.codeGenerator(decisions, diagnostics);
+    var actual = resolver.codeGenerator(inputs, diagnostics);
 
     assertThat(actual).as("Generator").isPresent();
     assertThat(actual.get()).as("Generator type").isInstanceOf(JavaCodeGenerator.class);
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
+  }
+
+  @Test
+  void shouldAcceptResolvedInputsForUnitTestAndCodeGenerators() {
+    var inputs =
+        new ResolvedInputs()
+            .put(
+                "decisions",
+                List.of(
+                    decision(ProgrammingLanguage.TOPIC, "Java"),
+                    decision(TopLevelPackage.TOPIC, "com.example")));
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    var unitTestGen = resolver.unitTestGenerator(inputs, diagnostics);
+    var codeGen = resolver.codeGenerator(inputs, diagnostics);
+
+    assertThat(unitTestGen).as("Unit test generator").isPresent();
+    assertThat(codeGen).as("Code generator").isPresent();
     assertThat(diagnostics).as("Diagnostics").isEmpty();
   }
 

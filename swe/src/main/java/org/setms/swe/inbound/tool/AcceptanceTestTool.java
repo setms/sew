@@ -35,7 +35,6 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
 import org.setms.swe.domain.model.sdlc.acceptancetest.PolicyScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Scenario;
-import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
@@ -76,7 +75,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     // TODO: Verify internal consistency, only proceed if OK
     var unitTest = find(inputs.get(UnitTest.class), acceptanceTest);
     if (unitTest.isEmpty()) {
-      if (technologyResolver.unitTestGenerator(Decisions.from(inputs), diagnostics).isPresent()) {
+      if (technologyResolver.unitTestGenerator(inputs, diagnostics).isPresent()) {
         diagnostics.add(
             new Diagnostic(
                 Level.WARN,
@@ -103,16 +102,16 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       Location location,
       ResolvedInputs inputs) {
     if (SUGGESTION_CREATE_UNIT_TEST.equals(suggestionCode)) {
-      return createUnitTest(acceptanceTest, resource, Decisions.from(inputs));
+      return createUnitTest(acceptanceTest, resource, inputs);
     }
     return technologyResolver.applySuggestion(suggestionCode, resource, inputs);
   }
 
   private AppliedSuggestion createUnitTest(
-      AcceptanceTest acceptanceTest, Resource<?> resource, Decisions decisions) {
+      AcceptanceTest acceptanceTest, Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new HashSet<Diagnostic>();
     return technologyResolver
-        .unitTestGenerator(decisions, diagnostics)
+        .unitTestGenerator(inputs, diagnostics)
         .map(generator -> generator.generate(acceptanceTest))
         .map(codeArtifacts -> store(codeArtifacts, acceptanceTest, resource))
         .orElseGet(() -> new AppliedSuggestion(emptySet(), diagnostics));
