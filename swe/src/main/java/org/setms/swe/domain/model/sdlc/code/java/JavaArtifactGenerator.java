@@ -30,54 +30,51 @@ public abstract class JavaArtifactGenerator {
   }
 
   private static AppliedSuggestion createInitiative(Resource<?> resource) {
-    try {
-      var initiativeResource =
-          resource.select("/").select("src/main/overview").select("Project.initiative");
-      var content =
-          """
-          package overview
+    var initiativeResource =
+        resource.select("/").select("src/main/overview").select("Project.initiative");
+    var content =
+        """
+        package overview
 
-          initiative Project {
-            organization = "Organization"
-            title        = "Project"
-          }
-          """;
-      try (var output = initiativeResource.writeTo()) {
-        output.write(content.getBytes());
-      }
-      return created(initiativeResource);
-    } catch (Exception e) {
-      return failedWith(e);
-    }
+        initiative Project {
+          organization = "Organization"
+          title        = "Project"
+        }
+        """;
+    return writeContent(initiativeResource, content);
   }
 
   private static AppliedSuggestion pickTopLevelPackageDecision(
       Resource<?> resource, ResolvedInputs inputs) {
-    try {
-      var choice =
-          inputs.get(Initiative.class).stream()
-              .findFirst()
-              .map(
-                  i ->
-                      "com.%s.%s"
-                          .formatted(i.getOrganization().toLowerCase(), i.getTitle().toLowerCase()))
-              .orElse("com.example");
-      var decisionResource =
-          resource.select("/").select("src/main/architecture").select("TopLevelPackage.decision");
-      var content =
-          """
-          package technology
+    var choice =
+        inputs.get(Initiative.class).stream()
+            .findFirst()
+            .map(
+                i ->
+                    "com.%s.%s"
+                        .formatted(i.getOrganization().toLowerCase(), i.getTitle().toLowerCase()))
+            .orElse("com.example");
+    var decisionResource =
+        resource.select("/").select("src/main/architecture").select("TopLevelPackage.decision");
+    var content =
+        """
+        package technology
 
-          decision TopLevelPackage {
-            choice = "%s"
-            topic  = "TopLevelPackage"
-          }
-          """
-              .formatted(choice);
-      try (var output = decisionResource.writeTo()) {
+        decision TopLevelPackage {
+          choice = "%s"
+          topic  = "TopLevelPackage"
+        }
+        """
+            .formatted(choice);
+    return writeContent(decisionResource, content);
+  }
+
+  private static AppliedSuggestion writeContent(Resource<?> resource, String content) {
+    try {
+      try (var output = resource.writeTo()) {
         output.write(content.getBytes());
       }
-      return created(decisionResource);
+      return created(resource);
     } catch (Exception e) {
       return failedWith(e);
     }
