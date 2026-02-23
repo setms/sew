@@ -26,6 +26,20 @@
 - Check internal consistency
   - All variables used in scenarios
   - No undeclared variables used in scenarios
+- Rename `TestData` to `TestDataBuilder`
+
+### Aggregate
+
+- Generate code
+- Generate DB schema
+
+### Command
+
+- Generate code
+
+### Code
+
+- Duplication in TechnologyResolverImpl about missing initiative
 
 ### Decision
 
@@ -37,6 +51,10 @@
 - Conversion to use case scenario:
   - handle multiple activities in single sentence
   - handle computerSystem as System-under-Design vs external system
+
+### Event
+
+- Generate code
 
 ### Glossary
 
