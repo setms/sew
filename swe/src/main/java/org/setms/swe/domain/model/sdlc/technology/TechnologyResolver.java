@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
@@ -16,15 +15,11 @@ public interface TechnologyResolver {
   /**
    * @param decisions Decisions made
    * @param initiatives Projects defined
-   * @param location From where the unit test is created
    * @param diagnostics where to store any validation issues
    * @return something that can generate unit tests, or empty if there are issues
    */
   Optional<UnitTestGenerator> unitTestGenerator(
-      Decisions decisions,
-      Collection<Initiative> initiatives,
-      Location location,
-      Collection<Diagnostic> diagnostics);
+      Decisions decisions, Collection<Initiative> initiatives, Collection<Diagnostic> diagnostics);
 
   /**
    * @param resource Workspace root resource

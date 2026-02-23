@@ -19,7 +19,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
@@ -39,16 +38,14 @@ class TechnologyResolverImplTest {
   @Test
   void shouldNeedProgrammingLanguageForUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
-    Location location = new Location("foo/bar");
 
-    resolver.unitTestGenerator(Decisions.none(), emptyList(), location, diagnostics);
+    resolver.unitTestGenerator(Decisions.none(), emptyList(), diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.location()).as("Location").isEqualTo(location);
               assertThat(diagnostic.message())
                   .as("Message")
                   .isEqualTo("Missing decision on programming language");
@@ -65,10 +62,9 @@ class TechnologyResolverImplTest {
   @Test
   void shouldRequireProjectForUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var location = new Location("foo/bar");
     var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
 
-    var actual = resolver.unitTestGenerator(decisions, emptyList(), location, diagnostics);
+    var actual = resolver.unitTestGenerator(decisions, emptyList(), diagnostics);
 
     assertThat(actual).as("Generator").isEmpty();
     assertThat(diagnostics)
@@ -79,7 +75,7 @@ class TechnologyResolverImplTest {
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.location()).as("Location").isEqualTo(location);
+              assertThat(diagnostic.location()).as("Location").isNull();
               assertThat(diagnostic.suggestions())
                   .hasSize(1)
                   .allSatisfy(
@@ -93,11 +89,10 @@ class TechnologyResolverImplTest {
   @Test
   void shouldNeedTopLevelPackageAfterProject() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var location = new Location("foo/bar");
     var decisions = Decisions.of(decision(ProgrammingLanguage.TOPIC, "Java"));
     var projects = List.of(initiative());
 
-    resolver.unitTestGenerator(decisions, projects, location, diagnostics);
+    resolver.unitTestGenerator(decisions, projects, diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -132,14 +127,13 @@ class TechnologyResolverImplTest {
   @Test
   void shouldReturnGeneratorWhenAllDecisionsAndProjectPresent() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var location = new Location("foo/bar");
     var decisions =
         Decisions.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"));
     var projects = List.of(initiative());
 
-    var actual = resolver.unitTestGenerator(decisions, projects, location, diagnostics);
+    var actual = resolver.unitTestGenerator(decisions, projects, diagnostics);
 
     assertThat(actual).as("Generator").isPresent();
     assertThat(diagnostics).as("Diagnostics").isEmpty();

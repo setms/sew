@@ -78,11 +78,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
     var unitTest = find(inputs.get(UnitTest.class), acceptanceTest);
     if (unitTest.isEmpty()) {
       if (technologyResolver
-          .unitTestGenerator(
-              Decisions.from(inputs),
-              inputs.get(Initiative.class),
-              acceptanceTest.toLocation(),
-              diagnostics)
+          .unitTestGenerator(Decisions.from(inputs), inputs.get(Initiative.class), diagnostics)
           .isPresent()) {
         diagnostics.add(
             new Diagnostic(
@@ -123,7 +119,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       Collection<Initiative> initiatives) {
     var diagnostics = new HashSet<Diagnostic>();
     return technologyResolver
-        .unitTestGenerator(decisions, initiatives, acceptanceTest.toLocation(), diagnostics)
+        .unitTestGenerator(decisions, initiatives, diagnostics)
         .map(generator -> generator.generate(acceptanceTest))
         .map(codeArtifacts -> store(codeArtifacts, acceptanceTest, resource))
         .orElseGet(() -> new AppliedSuggestion(emptySet(), diagnostics));

@@ -13,7 +13,6 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
@@ -41,36 +40,24 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
-      Decisions decisions,
-      Collection<Initiative> initiatives,
-      Location location,
-      Collection<Diagnostic> diagnostics) {
+      Decisions decisions, Collection<Initiative> initiatives, Collection<Diagnostic> diagnostics) {
     var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
     var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
     return Optional.ofNullable(
-        unitTestGeneratorFor(
-            programmingLanguage, initiatives, topLevelPackage, location, diagnostics));
+        unitTestGeneratorFor(programmingLanguage, initiatives, topLevelPackage, diagnostics));
   }
 
   private UnitTestGenerator unitTestGeneratorFor(
       String programmingLanguage,
       Collection<Initiative> initiatives,
       String topLevelPackage,
-      Location location,
       Collection<Diagnostic> diagnostics) {
     return switch (programmingLanguage) {
-      case "Java" -> javaUnitGenerator(initiatives, topLevelPackage, location, diagnostics);
-      case null ->
-          nothing(
-              new Diagnostic(
-                  WARN,
-                  "Missing decision on programming language",
-                  location,
-                  new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")),
-              diagnostics);
+      case "Java" -> javaUnitGenerator(initiatives, topLevelPackage, diagnostics);
+      case null -> nothing(missingProgrammingLanguageDecision(), diagnostics);
       default ->
           nothing(
-              new Diagnostic(ERROR, "Decided on unsupported programming language", location),
+              new Diagnostic(ERROR, "Decided on unsupported programming language", null),
               diagnostics);
     };
   }
@@ -78,23 +65,16 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   private UnitTestGenerator javaUnitGenerator(
       Collection<Initiative> initiatives,
       String topLevelPackage,
-      Location location,
       Collection<Diagnostic> diagnostics) {
     if (initiatives.isEmpty()) {
-      return nothing(
-          new Diagnostic(
-              WARN,
-              "Missing initiative",
-              location,
-              new Suggestion(CREATE_INITIATIVE, "Create initiative")),
-          diagnostics);
+      return nothing(missingInitiative(), diagnostics);
     }
     if (topLevelPackage == null) {
       return nothing(
           new Diagnostic(
               WARN,
               "Missing decision on top-level package",
-              location,
+              null,
               new Suggestion(PICK_TOP_LEVEL_PACKAGE, "Decide on top-level package")),
           diagnostics);
     }
@@ -109,27 +89,26 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   @Override
   public Optional<CodeBuilder> codeBuilder(
       Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var project = inputs.get(Initiative.class).stream().findFirst();
-    if (project.isEmpty()) {
-      diagnostics.add(
-          new Diagnostic(
-              WARN,
-              "Missing initiative",
-              null,
-              new Suggestion(CREATE_INITIATIVE, "Create initiative")));
+    var initiative = inputs.get(Initiative.class).stream().findFirst();
+    if (initiative.isEmpty()) {
+      diagnostics.add(missingInitiative());
       return Optional.empty();
     }
 
-    var projectName = project.get().getTitle();
     var decisions = Decisions.from(inputs);
-    var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
-    var selectedBuildSystem = decisions.about(BuildSystem.TOPIC);
-
-    var result = codeBuilderFor(programmingLanguage, selectedBuildSystem, projectName, diagnostics);
-    if (resource != null) {
-      result.ifPresent(bt -> bt.validate(resource, diagnostics));
-    }
+    var result =
+        codeBuilderFor(
+            decisions.about(ProgrammingLanguage.TOPIC),
+            decisions.about(BuildSystem.TOPIC),
+            initiative.get().getTitle(),
+            diagnostics);
+    result.ifPresent(codeBuilder -> codeBuilder.validate(resource, diagnostics));
     return result;
+  }
+
+  private Diagnostic missingInitiative() {
+    return new Diagnostic(
+        WARN, "Missing initiative", null, new Suggestion(CREATE_INITIATIVE, "Create initiative"));
   }
 
   private Optional<CodeBuilder> codeBuilderFor(
@@ -138,14 +117,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       String projectName,
       Collection<Diagnostic> diagnostics) {
     if (programmingLanguage == null) {
-      return Optional.ofNullable(
-          nothing(
-              new Diagnostic(
-                  WARN,
-                  "Missing decision on programming language",
-                  null,
-                  new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language")),
-              diagnostics));
+      return Optional.ofNullable(nothing(missingProgrammingLanguageDecision(), diagnostics));
     }
     if (selectedBuildSystem == null) {
       return Optional.ofNullable(
@@ -164,6 +136,14 @@ public class TechnologyResolverImpl implements TechnologyResolver {
             nothing(
                 new Diagnostic(ERROR, "Decided on unsupported programming language", null),
                 diagnostics));
+  }
+
+  private Diagnostic missingProgrammingLanguageDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on programming language",
+        null,
+        new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language"));
   }
 
   private Optional<CodeBuilder> javaBuildSystem(

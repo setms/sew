@@ -32,10 +32,6 @@
 
 - Generate code
 
-### Code
-
-- Duplication in TechnologyResolverImpl about missing initiative
-
 ### Decision
 
 - Render ADR
