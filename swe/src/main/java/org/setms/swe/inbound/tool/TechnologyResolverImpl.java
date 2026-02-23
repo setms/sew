@@ -178,7 +178,8 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       case JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE ->
           pickTopLevelPackageDecision(resource, inputs);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
-      case JavaArtifactGenerator.CREATE_INITIATIVE -> createProject(resource);
+      case JavaArtifactGenerator.CREATE_INITIATIVE ->
+          JavaArtifactGenerator.applySuggestion(suggestionCode, resource, inputs);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
@@ -233,33 +234,6 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         builderFor(decision).build(decision, output);
       }
       return created(decisionResource);
-    } catch (Exception e) {
-      return failedWith(e);
-    }
-  }
-
-  private AppliedSuggestion createProject(Resource<?> resource) {
-    try {
-      var projectName = "Project";
-      var input = Inputs.initiatives();
-      var initiativeResource =
-          resource
-              .select("/")
-              .select(input.path())
-              .select("Project.%s".formatted(input.extension()));
-      var content =
-          """
-          package overview
-
-          initiative %s {
-            organization = "Organization"
-            title        = "%s"
-          }
-          """;
-      try (var output = initiativeResource.writeTo()) {
-        output.write(content.formatted(projectName, projectName).getBytes());
-      }
-      return created(initiativeResource);
     } catch (Exception e) {
       return failedWith(e);
     }
