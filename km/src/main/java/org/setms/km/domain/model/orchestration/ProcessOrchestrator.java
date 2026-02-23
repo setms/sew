@@ -228,11 +228,13 @@ public class ProcessOrchestrator {
                         input ->
                             resourcesMatching(input)
                                 .forEach(
-                                    reportResource -> {
-                                      var reportArtifact = (A) parse(reportResource.path(), input);
-                                      artifactTool.buildReportsFor(
-                                          reportArtifact, inputs, output, diagnostics);
-                                    })));
+                                    reportResource ->
+                                        artifactTool.buildReportsFor(
+                                            (A) parse(reportResource.path(), input),
+                                            inputs,
+                                            reportResourceFor(reportResource.path())
+                                                .select(artifactTool.getClass().getName()),
+                                            diagnostics))));
   }
 
   private Stream<Resource<?>> resourcesMatching(Input<?> input) {

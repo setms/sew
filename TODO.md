@@ -15,10 +15,6 @@
 
 ## Tools
 
-### Generic
-
-- Artifacts are rendered twice: see `.km/reports` for e.g. domain stories
-
 ### Acceptance test
 
 - Check whether unit test exits
