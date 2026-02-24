@@ -11,6 +11,7 @@ import java.util.SequencedCollection;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -18,6 +19,7 @@ import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 
@@ -41,14 +43,33 @@ class CommandToolTest extends ToolTestCase<Command> {
   }
 
   @Test
-  void shouldWarnAboutMissingCode() {
+  void shouldNotWarnAboutMissingCodeWhenCommandHasNoPayload() {
     var command =
         new Command(new FullyQualifiedName("design", "WithoutPayload")).setDisplay("Do It");
     var diagnostics = new ArrayList<Diagnostic>();
 
     ((CommandTool) getTool()).validate(command, new ResolvedInputs(), diagnostics);
 
+    assertThat(diagnostics).isEmpty();
+  }
+
+  @Test
+  void shouldWarnAboutMissingCode() {
+    var command =
+        new Command(new FullyQualifiedName("design", "WithPayload"))
+            .setDisplay("Do It")
+            .setPayload(new Link("entity", "Payload"));
+    var inputs = givenResolvedPayload();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    ((CommandTool) getTool()).validate(command, inputs, diagnostics);
+
     assertThatSingleMissingCodeDiagnostic(diagnostics);
+  }
+
+  private ResolvedInputs givenResolvedPayload() {
+    return new ResolvedInputs()
+        .put("entities", List.of(new Entity(new FullyQualifiedName("design", "Payload"))));
   }
 
   private void assertThatSingleMissingCodeDiagnostic(Collection<Diagnostic> diagnostics) {

@@ -78,8 +78,9 @@ public class CommandTool extends ArtifactTool<Command> {
 
   private void validateCode(
       Command command, Collection<CodeArtifact> codeArtifacts, Collection<Diagnostic> diagnostics) {
-    if (codeArtifacts.stream()
-        .noneMatch(ca -> ca.getName().equals(command.getName() + "Command"))) {
+    if (command.getPayload() != null
+        && codeArtifacts.stream()
+            .noneMatch(ca -> ca.getName().equals(command.getName() + "Command"))) {
       diagnostics.add(
           new Diagnostic(
               WARN,
