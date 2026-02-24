@@ -39,50 +39,25 @@ class TechnologyResolverImplTest {
 
     resolver.unitTestGenerator(new ResolvedInputs(), diagnostics);
 
-    assertThat(diagnostics)
-        .hasSize(1)
-        .allSatisfy(
-            diagnostic -> {
-              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.message())
-                  .as("Message")
-                  .isEqualTo("Missing decision on programming language");
-              assertThat(diagnostic.suggestions())
-                  .hasSize(1)
-                  .allSatisfy(
-                      suggestion ->
-                          assertThat(suggestion.message())
-                              .as("Suggestion")
-                              .isEqualTo("Decide on programming language"));
-            });
+    assertThatSingleWarnDiagnosticHas(
+        diagnostics, "Missing decision on programming language", "Decide on programming language");
   }
 
   @Test
   void shouldNeedTopLevelPackageForJavaUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var inputs =
-        new ResolvedInputs()
-            .put("initiatives", List.of(initiative()))
-            .put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
+    var inputs = givenInputsForJavaWithoutTopLevelPackage();
 
     resolver.unitTestGenerator(inputs, diagnostics);
 
-    assertThat(diagnostics)
-        .hasSize(1)
-        .allSatisfy(
-            diagnostic -> {
-              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.message())
-                  .as("Message")
-                  .isEqualTo("Missing decision on top-level package");
-              assertThat(diagnostic.suggestions())
-                  .hasSize(1)
-                  .allSatisfy(
-                      suggestion ->
-                          assertThat(suggestion.message())
-                              .as("Suggestion")
-                              .isEqualTo("Decide on top-level package"));
-            });
+    assertThatSingleWarnDiagnosticHas(
+        diagnostics, "Missing decision on top-level package", "Decide on top-level package");
+  }
+
+  private ResolvedInputs givenInputsForJavaWithoutTopLevelPackage() {
+    return new ResolvedInputs()
+        .put("initiatives", List.of(initiative()))
+        .put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
   }
 
   private Decision decision(String topic, String choice) {
@@ -214,31 +189,26 @@ class TechnologyResolverImplTest {
   @Test
   void shouldNeedInitiativeForJavaUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var inputs =
-        new ResolvedInputs().put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
+    var inputs = givenInputsForJavaWithoutInitiative();
 
     resolver.unitTestGenerator(inputs, diagnostics);
 
-    assertThat(diagnostics)
-        .hasSize(1)
-        .allSatisfy(
-            diagnostic ->
-                assertThat(diagnostic.message()).as("Message").isEqualTo("Missing initiative"));
+    assertThatSingleWarnDiagnosticHas(diagnostics, "Missing initiative", "Create initiative");
   }
 
   @Test
   void shouldNeedInitiativeForJavaCodeGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var inputs =
-        new ResolvedInputs().put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
+    var inputs = givenInputsForJavaWithoutInitiative();
 
     resolver.codeGenerator(inputs, diagnostics);
 
-    assertThat(diagnostics)
-        .hasSize(1)
-        .allSatisfy(
-            diagnostic ->
-                assertThat(diagnostic.message()).as("Message").isEqualTo("Missing initiative"));
+    assertThatSingleWarnDiagnosticHas(diagnostics, "Missing initiative", "Create initiative");
+  }
+
+  private ResolvedInputs givenInputsForJavaWithoutInitiative() {
+    return new ResolvedInputs()
+        .put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
   }
 
   @Test
@@ -269,24 +239,28 @@ class TechnologyResolverImplTest {
   @Test
   void shouldRequireProjectForCodeBuilder() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var inputs = new ResolvedInputs();
     var workspace = new InMemoryWorkspace();
 
-    resolver.codeBuilder(workspace.root(), inputs, diagnostics);
+    resolver.codeBuilder(workspace.root(), new ResolvedInputs(), diagnostics);
 
+    assertThatSingleWarnDiagnosticHas(diagnostics, "Missing initiative", "Create initiative");
+  }
+
+  private void assertThatSingleWarnDiagnosticHas(
+      List<Diagnostic> diagnostics, String message, String suggestionMessage) {
     assertThat(diagnostics)
         .hasSize(1)
         .allSatisfy(
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.message()).as("Message").isEqualTo("Missing initiative");
+              assertThat(diagnostic.message()).as("Message").isEqualTo(message);
               assertThat(diagnostic.suggestions())
                   .hasSize(1)
                   .allSatisfy(
                       suggestion ->
                           assertThat(suggestion.message())
                               .as("Suggestion")
-                              .isEqualTo("Create initiative"));
+                              .isEqualTo(suggestionMessage));
             });
   }
 

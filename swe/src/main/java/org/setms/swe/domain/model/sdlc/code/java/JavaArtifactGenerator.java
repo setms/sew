@@ -19,6 +19,15 @@ public abstract class JavaArtifactGenerator {
 
   public static final String CREATE_INITIATIVE = "initiative.create";
   public static final String PICK_TOP_LEVEL_PACKAGE = "top-level-package.decide";
+  public static final String DEFAULT_INITIATIVE =
+      """
+  package overview
+
+  initiative Project {
+    organization = "Organization"
+    title        = "Project"
+  }
+  """;
 
   public static AppliedSuggestion applySuggestion(
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs) {
@@ -30,18 +39,9 @@ public abstract class JavaArtifactGenerator {
   }
 
   private static AppliedSuggestion createInitiative(Resource<?> resource) {
-    var initiativeResource =
-        resource.select("/").select("src/main/overview").select("Project.initiative");
-    var content =
-        """
-        package overview
-
-        initiative Project {
-          organization = "Organization"
-          title        = "Project"
-        }
-        """;
-    return writeContent(initiativeResource, content);
+    return writeContent(
+        resource.select("/").select("src/main/overview").select("Project.initiative"),
+        DEFAULT_INITIATIVE);
   }
 
   private static AppliedSuggestion pickTopLevelPackageDecision(

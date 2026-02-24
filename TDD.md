@@ -14,9 +14,9 @@
   top-level package decision.
 - [x] `TechnologyResolverImpl.applySuggestion()` should delegate to `JavaArtifactGenerator.applySuggestion()`
   for `CREATE_INITIATIVE` and `PICK_TOP_LEVEL_PACKAGE`.
-- [ ] `JavaUnitTestGenerator` and `JavaCodeGenerator` should extend `JavaArtifactGenerator`, so they
+- [x] `JavaUnitTestGenerator` and `JavaCodeGenerator` should extend `JavaArtifactGenerator`, so they
   get prerequisite validation for free.
-- [ ] `TechnologyResolverImpl.unitTestGenerator()` and `codeGenerator()` should delegate to
+- [x] `TechnologyResolverImpl.unitTestGenerator()` and `codeGenerator()` should delegate to
   `JavaUnitTestGenerator` and `JavaCodeGenerator`, respectively, for prerequisite validation, knowing only about the
   programming language.
 - [~] `TechnologyResolver` should have a method `codeGenerator()`, analogous to `unitTestGenerator()` which returns a
