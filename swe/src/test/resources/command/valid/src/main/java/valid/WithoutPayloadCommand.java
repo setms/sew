@@ -1,0 +1,3 @@
+package valid;
+
+class WithoutPayloadCommand {}

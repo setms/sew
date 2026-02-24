@@ -57,11 +57,11 @@ public class CommandTool extends ArtifactTool<Command> {
 
   @Override
   public void validate(Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    validate(command, inputs.get(Entity.class), diagnostics);
+    validatePayload(command, inputs.get(Entity.class), diagnostics);
     validateCode(command, inputs.get(CodeArtifact.class), diagnostics);
   }
 
-  private void validate(
+  private void validatePayload(
       Command command, Collection<Entity> entities, Collection<Diagnostic> diagnostics) {
     var payload = command.getPayload();
     if (payload != null) {
@@ -78,7 +78,8 @@ public class CommandTool extends ArtifactTool<Command> {
 
   private void validateCode(
       Command command, Collection<CodeArtifact> codeArtifacts, Collection<Diagnostic> diagnostics) {
-    if (codeArtifacts.stream().noneMatch(ca -> ca.getName().equals(command.getName()))) {
+    if (codeArtifacts.stream()
+        .noneMatch(ca -> ca.getName().equals(command.getName() + "Command"))) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -122,13 +123,7 @@ public class CommandTool extends ArtifactTool<Command> {
     return resolver
         .codeGenerator(inputs, diagnostics)
         .map(generator -> writeCode(generator.generate(command), commandResource))
-        .orElseGet(
-            () ->
-                diagnostics.stream()
-                    .reduce(
-                        AppliedSuggestion.none(),
-                        AppliedSuggestion::with,
-                        (appliedSuggestion, _) -> appliedSuggestion));
+        .orElseGet(AppliedSuggestion::none);
   }
 
   private AppliedSuggestion writeCode(
@@ -144,8 +139,7 @@ public class CommandTool extends ArtifactTool<Command> {
       var path = artifact.getPackage().replace('.', '/');
       var resource =
           commandResource
-              .select("/")
-              .select("src/main/java")
+              .select("/src/main/java")
               .select(path)
               .select(artifact.getName() + ".java");
       try (var output = resource.writeTo()) {

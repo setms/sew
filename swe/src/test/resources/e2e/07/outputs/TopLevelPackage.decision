@@ -2,5 +2,5 @@ package technology
 
 decision TopLevelPackage {
   choice = "com.example.todo"
-  topic = "TopLevelPackage"
+  topic  = "TopLevelPackage"
 }

@@ -1,3 +1,0 @@
-package missing;
-
-class WithPayload {}

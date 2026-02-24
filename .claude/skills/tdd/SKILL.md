@@ -17,8 +17,8 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   If it passes or fails for the wrong reason, update the test until it fails for the correct reason.
   Also make sure the test failure clearly indicates what's wrong.
 5. Show the test to the user and ask them to review it.
-  Address any concerns they may have.
-  **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL, especially after making changes to the test based on feedback**.
+  If the user asks for changes, make them and present the test again for approval.
+  **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE TEST**.
 6. Once you have approval, write code to make the failing test pass.
   Write the minimal amount of code you can get away with.
   Don't look ahead to other tests, just optimize for the minimum amount of code change that makes this single test pass.
@@ -29,8 +29,8 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   Write a very short commit message using conventional commits.
 9. Now review the code by invoking the `code-review` skill.
 10. Present the changes to the user, as well as the current state of `EndToEndTest`.
-  Address any concerns the user may have about the changes.
-  **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL, especially after making changes to the code based on feedback**.
+  If the user asks for changes, make them and present the code again for approval.
+  **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE CODE**.
 11. If you made any changes to the structure, commit them.
   Write a very short commit message using conventional commits.
 12. Once you have approval, consider whether the added unit test fully covers the test scenario.

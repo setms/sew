@@ -1,3 +1,0 @@
-package valid;
-
-class WithPayload {}

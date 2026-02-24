@@ -2,25 +2,8 @@
 
 ## Test list
 
-- [x] `TechnologyResolver.unitTestGenerator()` and `codeGenerator()` should accept `ResolvedInputs`
-  rather than `Decisions`, so prerequisite validation can access both decisions and initiatives.
-- [x] A `JavaArtifactGenerator` base class should emit "Missing initiative" (with a suggestion to
-  create one) when no initiative is present, because the top-level package decision is derived from
-  the initiative.
-- [x] `JavaArtifactGenerator` should emit "Missing decision on top-level package" (with a suggestion
-  to decide) when an initiative is present but the top-level package has not been decided yet.
-- [x] `JavaArtifactGenerator.applySuggestion()` should handle `CREATE_INITIATIVE` by creating an initiative.
-- [x] `JavaArtifactGenerator.applySuggestion()` should handle `PICK_TOP_LEVEL_PACKAGE` by creating a
-  top-level package decision.
-- [x] `TechnologyResolverImpl.applySuggestion()` should delegate to `JavaArtifactGenerator.applySuggestion()`
-  for `CREATE_INITIATIVE` and `PICK_TOP_LEVEL_PACKAGE`.
-- [x] `JavaUnitTestGenerator` and `JavaCodeGenerator` should extend `JavaArtifactGenerator`, so they
-  get prerequisite validation for free.
-- [x] `TechnologyResolverImpl.unitTestGenerator()` and `codeGenerator()` should delegate to
-  `JavaUnitTestGenerator` and `JavaCodeGenerator`, respectively, for prerequisite validation, knowing only about the
-  programming language.
-- [x] `TechnologyResolver` should have a method `codeGenerator()`, analogous to `unitTestGenerator()` which returns a
-  `JavaCodeGenerator` when the decision for programming language is `Java`.
-- [x] `CommandTool.validate()` should check if there is a `CodeArtifact` corresponding to the command and issue a
-  diagnostic with suggestion to generate if not.
-- [x] `CommandTool.applySuggestion` should use `TechnologyResolver.codeGenerator()` to generate code for the command.
+- [ ] If the top-level package ends with the same segment as the `Command`'s package, they shouldn't be appended.
+  This prevents ugly packages like `com.company.project.project` for a top-level package `com.company.project` and
+  a command in the `project` package.
+- [ ] `CommandTool` must not report missing code if it has no payload (since the generated code depends on the payload).
+- [ ] `CommandTool` must look for corresponding code in the correct package, which ends in `.domain.model`.
