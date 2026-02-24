@@ -14,12 +14,14 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 
 class JavaCodeGeneratorTest {
 
+  private static final String PACKAGE = "project";
+
   @Test
   void shouldNotDuplicateCommandPackageWhenTopLevelPackageEndsWithSameSegment() {
     var generator = new JavaCodeGenerator("com.company.project");
     var payload = givenPayload();
     var command =
-        new Command(new FullyQualifiedName("project", "CreateProject"))
+        new Command(new FullyQualifiedName(PACKAGE, "CreateProject"))
             .setDisplay("Create Project")
             .setPayload(new Link("entity", payload.getName()));
 
@@ -30,12 +32,11 @@ class JavaCodeGeneratorTest {
   }
 
   private Entity givenPayload() {
-    return new Entity(new FullyQualifiedName("project", "Project"))
+    return new Entity(new FullyQualifiedName(PACKAGE, "Project"))
         .setFields(
             List.of(
-                new Field(new FullyQualifiedName("project", "name")).setType(FieldType.TEXT),
-                new Field(new FullyQualifiedName("project", "description"))
-                    .setType(FieldType.TEXT)));
+                new Field(new FullyQualifiedName(PACKAGE, "name")).setType(FieldType.TEXT),
+                new Field(new FullyQualifiedName(PACKAGE, "description")).setType(FieldType.TEXT)));
   }
 
   private void assertThatGeneratedArtifact(CodeArtifact actual) {
