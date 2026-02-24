@@ -150,6 +150,20 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldUseDefaultChoiceForTopLevelPackageDecisionWhenNoInitiative() {
+    var workspace = new InMemoryWorkspace();
+
+    var actual =
+        resolver.applySuggestion(
+            JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE, workspace.root(), new ResolvedInputs());
+
+    assertThat(actual.createdOrChanged())
+        .hasSize(1)
+        .allSatisfy(
+            resource -> assertThat(contentOf(resource)).contains("choice = \"com.example\""));
+  }
+
+  @Test
   void shouldDeriveDefaultTopLevelPackageChoiceFromInitiative() {
     var workspace = new InMemoryWorkspace();
     var inputs = new ResolvedInputs().put("initiatives", List.of(initiative()));

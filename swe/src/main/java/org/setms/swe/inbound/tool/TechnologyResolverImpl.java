@@ -37,7 +37,6 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
-  private static final String TOP_LEVEL_PACKAGE_DECISION = "TopLevelPackage";
 
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
@@ -175,29 +174,12 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return switch (suggestionCode) {
       case PICK_PROGRAMMING_LANGUAGE ->
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
-      case JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE ->
-          pickTopLevelPackageDecision(resource, inputs);
-      case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
-      case JavaArtifactGenerator.CREATE_INITIATIVE ->
+      case JavaArtifactGenerator.CREATE_INITIATIVE, JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE ->
           JavaArtifactGenerator.applySuggestion(suggestionCode, resource, inputs);
+      case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
-  }
-
-  private AppliedSuggestion pickTopLevelPackageDecision(
-      Resource<?> resource, ResolvedInputs inputs) {
-    var defaultChoice =
-        inputs.get(Initiative.class).stream()
-            .findFirst()
-            .map(
-                initiative ->
-                    "com.%s.%s"
-                        .formatted(
-                            initiative.getOrganization().toLowerCase(),
-                            initiative.getTitle().toLowerCase()))
-            .orElse(null);
-    return pickDecision(resource, TOP_LEVEL_PACKAGE_DECISION, TopLevelPackage.TOPIC, defaultChoice);
   }
 
   private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {
