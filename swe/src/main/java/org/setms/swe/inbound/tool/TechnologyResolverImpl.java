@@ -196,16 +196,10 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   }
 
   private AppliedSuggestion pickDecision(Resource<?> resource, String decisionName, String topic) {
-    return pickDecision(resource, decisionName, topic, null);
-  }
-
-  private AppliedSuggestion pickDecision(
-      Resource<?> resource, String decisionName, String topic, String defaultChoice) {
     try {
       var decision =
           new Decision(new FullyQualifiedName(TECHNOLOGY_DECISIONS_PACKAGE, decisionName))
               .setTopic(topic);
-      Optional.ofNullable(defaultChoice).ifPresent(decision::setChoice);
       var decisionInput = Inputs.decisions();
       var decisionResource =
           resource
