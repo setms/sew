@@ -11,7 +11,6 @@ import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.entities;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -50,7 +49,7 @@ public class CommandTool extends ArtifactTool<Command> {
   }
 
   private void validate(
-      Command command, List<Entity> entities, Collection<Diagnostic> diagnostics) {
+      Command command, Collection<Entity> entities, Collection<Diagnostic> diagnostics) {
     var payload = command.getPayload();
     if (payload != null) {
       if (payload.resolveFrom(entities).isEmpty()) {
@@ -65,7 +64,7 @@ public class CommandTool extends ArtifactTool<Command> {
   }
 
   private void validateCode(
-      Command command, List<CodeArtifact> codeArtifacts, Collection<Diagnostic> diagnostics) {
+      Command command, Collection<CodeArtifact> codeArtifacts, Collection<Diagnostic> diagnostics) {
     if (codeArtifacts.stream().noneMatch(ca -> ca.getName().equals(command.getName()))) {
       diagnostics.add(
           new Diagnostic(

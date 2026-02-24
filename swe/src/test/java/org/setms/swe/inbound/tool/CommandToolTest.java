@@ -5,16 +5,17 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.SequencedSet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 
 class CommandToolTest extends ToolTestCase<Command> {
-
-  private final CommandTool commandTool = new CommandTool();
 
   private static final String ENTITY_SKELETON =
       """
@@ -39,8 +40,12 @@ class CommandToolTest extends ToolTestCase<Command> {
         new Command(new FullyQualifiedName("design", "WithoutPayload")).setDisplay("Do It");
     var diagnostics = new ArrayList<Diagnostic>();
 
-    commandTool.validate(command, new ResolvedInputs(), diagnostics);
+    ((CommandTool) getTool()).validate(command, new ResolvedInputs(), diagnostics);
 
+    assertThatSingleMissingCodeDiagnostic(diagnostics);
+  }
+
+  private void assertThatSingleMissingCodeDiagnostic(List<Diagnostic> diagnostics) {
     assertThat(diagnostics)
         .hasSize(1)
         .allSatisfy(
@@ -60,11 +65,21 @@ class CommandToolTest extends ToolTestCase<Command> {
 
     var actual = validateAgainst(workspace);
 
-    assertThat(actual).as("Validation diagnostics").hasSize(1);
-    var diagnostic = actual.getFirst();
+    assertThatPayloadDiagnosticAndCreation(actual, workspace);
+  }
+
+  private void assertThatPayloadDiagnosticAndCreation(
+      SequencedSet<Diagnostic> diagnostics, Workspace<?> workspace) throws IOException {
+    assertThat(diagnostics).as("Validation diagnostics").hasSize(1);
+    var diagnostic = diagnostics.getFirst();
     assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
     assertThat(diagnostic.message()).as("Message").isEqualTo("Missing entity Payload");
     assertThat(diagnostic.location()).as("Location").hasToString("missing/command/WithPayload");
+    assertThatCreatedPayload(diagnostic, workspace);
+  }
+
+  private void assertThatCreatedPayload(Diagnostic diagnostic, Workspace<?> workspace)
+      throws IOException {
     assertThat(diagnostic.suggestions()).as("Suggestions").hasSize(1);
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).as("Suggestion").isEqualTo("Create entity");

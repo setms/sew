@@ -19,7 +19,7 @@
 - [x] `TechnologyResolverImpl.unitTestGenerator()` and `codeGenerator()` should delegate to
   `JavaUnitTestGenerator` and `JavaCodeGenerator`, respectively, for prerequisite validation, knowing only about the
   programming language.
-- [~] `TechnologyResolver` should have a method `codeGenerator()`, analogous to `unitTestGenerator()` which returns a
+- [x] `TechnologyResolver` should have a method `codeGenerator()`, analogous to `unitTestGenerator()` which returns a
   `JavaCodeGenerator` when the decision for programming language is `Java`.
 - [ ] `CommandTool.validate()` should check if there is a `CodeArtifact` corresponding to the command and issue a
   diagnostic with suggestion to generate if not.
