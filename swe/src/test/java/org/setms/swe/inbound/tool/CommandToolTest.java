@@ -19,6 +19,7 @@ import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
@@ -51,6 +52,29 @@ class CommandToolTest extends ToolTestCase<Command> {
     ((CommandTool) getTool()).validate(command, new ResolvedInputs(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
+  }
+
+  @Test
+  void shouldWarnAboutMissingCodeWhenCodeIsInWrongPackage() {
+    var command =
+        new Command(new FullyQualifiedName("design", "WithPayload"))
+            .setDisplay("Do It")
+            .setPayload(new Link("entity", "Payload"));
+    var inputs = givenCodeInWrongPackage();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    ((CommandTool) getTool()).validate(command, inputs, diagnostics);
+
+    assertThatSingleMissingCodeDiagnostic(diagnostics);
+  }
+
+  private ResolvedInputs givenCodeInWrongPackage() {
+    return givenResolvedPayload()
+        .put(
+            "codeArtifacts",
+            List.of(
+                new CodeArtifact(new FullyQualifiedName("wrong.package", "WithPayloadCommand"))
+                    .setCode("class WithPayloadCommand {}")));
   }
 
   @Test
