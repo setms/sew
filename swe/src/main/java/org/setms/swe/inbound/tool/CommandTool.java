@@ -69,7 +69,7 @@ public class CommandTool extends ArtifactTool<Command> {
         diagnostics.add(
             new Diagnostic(
                 WARN,
-                "Missing entity " + payload.getId(),
+                "Missing entity %s".formatted(payload.getId()),
                 command.toLocation(),
                 new Suggestion(CREATE_PAYLOAD, "Create entity")));
       }
@@ -80,7 +80,7 @@ public class CommandTool extends ArtifactTool<Command> {
       Command command, Collection<CodeArtifact> codeArtifacts, Collection<Diagnostic> diagnostics) {
     if (command.getPayload() != null
         && codeArtifacts.stream()
-            .noneMatch(ca -> ca.getName().equals(command.getName() + "Command"))) {
+            .noneMatch(ca -> ca.getName().equals("%sCommand".formatted(command.getName())))) {
       diagnostics.add(
           new Diagnostic(
               WARN,
