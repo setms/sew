@@ -5,15 +5,21 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.SequencedSet;
+import java.util.SequencedCollection;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Workspace;
+import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
+import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
+import org.setms.swe.domain.model.sdlc.overview.Initiative;
 
 class CommandToolTest extends ToolTestCase<Command> {
 
@@ -45,7 +51,7 @@ class CommandToolTest extends ToolTestCase<Command> {
     assertThatSingleMissingCodeDiagnostic(diagnostics);
   }
 
-  private void assertThatSingleMissingCodeDiagnostic(List<Diagnostic> diagnostics) {
+  private void assertThatSingleMissingCodeDiagnostic(Collection<Diagnostic> diagnostics) {
     assertThat(diagnostics)
         .hasSize(1)
         .allSatisfy(
@@ -60,6 +66,39 @@ class CommandToolTest extends ToolTestCase<Command> {
   }
 
   @Test
+  void shouldGenerateCodeForCommand() {
+    var command =
+        new Command(new FullyQualifiedName("design", "WithoutPayload")).setDisplay("Do It");
+    var inputs = givenInputsWithAllPrerequisites();
+    var workspace = new InMemoryWorkspace();
+
+    var actual =
+        ((CommandTool) getTool())
+            .applySuggestion(command, CommandTool.GENERATE_CODE, null, inputs, workspace.root());
+
+    assertThat(actual.createdOrChanged()).as("Created artifacts").isNotEmpty();
+  }
+
+  private ResolvedInputs givenInputsWithAllPrerequisites() {
+    return new ResolvedInputs()
+        .put(
+            "initiatives",
+            List.of(
+                new Initiative(new FullyQualifiedName("overview", "Project"))
+                    .setOrganization("Example")
+                    .setTitle("Project")))
+        .put(
+            "decisions",
+            List.of(
+                new Decision(new FullyQualifiedName("technology", "ProgrammingLanguage"))
+                    .setTopic(ProgrammingLanguage.TOPIC)
+                    .setChoice("Java"),
+                new Decision(new FullyQualifiedName("technology", "TopLevelPackage"))
+                    .setTopic(TopLevelPackage.TOPIC)
+                    .setChoice("com.example")));
+  }
+
+  @Test
   void shouldCreatePayload() throws IOException {
     var workspace = workspaceFor("missing");
 
@@ -69,7 +108,7 @@ class CommandToolTest extends ToolTestCase<Command> {
   }
 
   private void assertThatPayloadDiagnosticAndCreation(
-      SequencedSet<Diagnostic> diagnostics, Workspace<?> workspace) throws IOException {
+      SequencedCollection<Diagnostic> diagnostics, Workspace<?> workspace) throws IOException {
     assertThat(diagnostics).as("Validation diagnostics").hasSize(1);
     var diagnostic = diagnostics.getFirst();
     assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);

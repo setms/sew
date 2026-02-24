@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toSet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
@@ -10,6 +11,7 @@ import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.entities;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -26,11 +28,22 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
+import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 public class CommandTool extends ArtifactTool<Command> {
 
   public static final String CREATE_PAYLOAD = "payload.create";
   public static final String GENERATE_CODE = "code.generate";
+
+  private final TechnologyResolver resolver;
+
+  public CommandTool() {
+    this(new TechnologyResolverImpl());
+  }
+
+  CommandTool(TechnologyResolver resolver) {
+    this.resolver = resolver;
+  }
 
   @Override
   public Set<Input<? extends Command>> validationTargets() {
@@ -84,7 +97,7 @@ public class CommandTool extends ArtifactTool<Command> {
       ResolvedInputs inputs) {
     return switch (suggestionCode) {
       case CREATE_PAYLOAD -> createPayloadFor(commandResource, command);
-      case GENERATE_CODE -> generateCodeFor(command, inputs);
+      case GENERATE_CODE -> generateCodeFor(commandResource, command, inputs);
       default -> unknown(suggestionCode);
     };
   }
@@ -103,7 +116,44 @@ public class CommandTool extends ArtifactTool<Command> {
     }
   }
 
-  private AppliedSuggestion generateCodeFor(Command command, ResolvedInputs inputs) {
-    throw new UnsupportedOperationException("Not yet implemented");
+  private AppliedSuggestion generateCodeFor(
+      Resource<?> commandResource, Command command, ResolvedInputs inputs) {
+    var diagnostics = new ArrayList<Diagnostic>();
+    return resolver
+        .codeGenerator(inputs, diagnostics)
+        .map(generator -> writeCode(generator.generate(command), commandResource))
+        .orElseGet(
+            () ->
+                diagnostics.stream()
+                    .reduce(
+                        AppliedSuggestion.none(),
+                        AppliedSuggestion::with,
+                        (appliedSuggestion, _) -> appliedSuggestion));
+  }
+
+  private AppliedSuggestion writeCode(
+      Collection<CodeArtifact> artifacts, Resource<?> commandResource) {
+    return artifacts.stream()
+        .map(artifact -> writeCodeArtifact(artifact, commandResource))
+        .flatMap(applied -> applied.createdOrChanged().stream())
+        .reduce(AppliedSuggestion.none(), AppliedSuggestion::with, (a, _) -> a);
+  }
+
+  private AppliedSuggestion writeCodeArtifact(CodeArtifact artifact, Resource<?> commandResource) {
+    try {
+      var path = artifact.getPackage().replace('.', '/');
+      var resource =
+          commandResource
+              .select("/")
+              .select("src/main/java")
+              .select(path)
+              .select(artifact.getName() + ".java");
+      try (var output = resource.writeTo()) {
+        output.write(artifact.getCode().getBytes(UTF_8));
+      }
+      return created(resource);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
   }
 }
