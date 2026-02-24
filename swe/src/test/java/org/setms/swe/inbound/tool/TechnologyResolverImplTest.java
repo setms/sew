@@ -61,7 +61,9 @@ class TechnologyResolverImplTest {
   void shouldNeedTopLevelPackageForJavaUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
     var inputs =
-        new ResolvedInputs().put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
+        new ResolvedInputs()
+            .put("initiatives", List.of(initiative()))
+            .put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
 
     resolver.unitTestGenerator(inputs, diagnostics);
 
@@ -98,18 +100,22 @@ class TechnologyResolverImplTest {
   @Test
   void shouldReturnUnitTestGeneratorWhenAllDecisionsPresent() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var inputs =
-        new ResolvedInputs()
-            .put(
-                "decisions",
-                List.of(
-                    decision(ProgrammingLanguage.TOPIC, "Java"),
-                    decision(TopLevelPackage.TOPIC, "com.example")));
+    var inputs = givenInputsForJavaWithTopLevelPackage();
 
     var actual = resolver.unitTestGenerator(inputs, diagnostics);
 
     assertThat(actual).as("Generator").isPresent();
     assertThat(diagnostics).as("Diagnostics").isEmpty();
+  }
+
+  private ResolvedInputs givenInputsForJavaWithTopLevelPackage() {
+    return new ResolvedInputs()
+        .put("initiatives", List.of(initiative()))
+        .put(
+            "decisions",
+            List.of(
+                decision(ProgrammingLanguage.TOPIC, "Java"),
+                decision(TopLevelPackage.TOPIC, "com.example")));
   }
 
   @Test
@@ -206,15 +212,39 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldReturnJavaCodeGeneratorWhenProgrammingLanguageIsJava() {
+  void shouldNeedInitiativeForJavaUnitTestGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
     var inputs =
-        new ResolvedInputs()
-            .put(
-                "decisions",
-                List.of(
-                    decision(ProgrammingLanguage.TOPIC, "Java"),
-                    decision(TopLevelPackage.TOPIC, "com.example")));
+        new ResolvedInputs().put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
+
+    resolver.unitTestGenerator(inputs, diagnostics);
+
+    assertThat(diagnostics)
+        .hasSize(1)
+        .allSatisfy(
+            diagnostic ->
+                assertThat(diagnostic.message()).as("Message").isEqualTo("Missing initiative"));
+  }
+
+  @Test
+  void shouldNeedInitiativeForJavaCodeGenerator() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs =
+        new ResolvedInputs().put("decisions", List.of(decision(ProgrammingLanguage.TOPIC, "Java")));
+
+    resolver.codeGenerator(inputs, diagnostics);
+
+    assertThat(diagnostics)
+        .hasSize(1)
+        .allSatisfy(
+            diagnostic ->
+                assertThat(diagnostic.message()).as("Message").isEqualTo("Missing initiative"));
+  }
+
+  @Test
+  void shouldReturnJavaCodeGeneratorWhenProgrammingLanguageIsJava() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs = givenInputsForJavaWithTopLevelPackage();
 
     var actual = resolver.codeGenerator(inputs, diagnostics);
 
@@ -225,13 +255,7 @@ class TechnologyResolverImplTest {
 
   @Test
   void shouldAcceptResolvedInputsForUnitTestAndCodeGenerators() {
-    var inputs =
-        new ResolvedInputs()
-            .put(
-                "decisions",
-                List.of(
-                    decision(ProgrammingLanguage.TOPIC, "Java"),
-                    decision(TopLevelPackage.TOPIC, "com.example")));
+    var inputs = givenInputsForJavaWithTopLevelPackage();
     var diagnostics = new ArrayList<Diagnostic>();
 
     var unitTestGen = resolver.unitTestGenerator(inputs, diagnostics);

@@ -19,7 +19,6 @@ import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
-import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
@@ -41,56 +40,28 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   @Override
   public Optional<UnitTestGenerator> unitTestGenerator(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var decisions = Decisions.from(inputs);
-    var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
-    var topLevelPackage = decisions.about(TopLevelPackage.TOPIC);
-    return Optional.ofNullable(
-        unitTestGeneratorFor(programmingLanguage, topLevelPackage, diagnostics));
-  }
-
-  private UnitTestGenerator unitTestGeneratorFor(
-      String programmingLanguage, String topLevelPackage, Collection<Diagnostic> diagnostics) {
+    var programmingLanguage = Decisions.from(inputs).about(ProgrammingLanguage.TOPIC);
     return switch (programmingLanguage) {
-      case "Java" -> javaUnitGenerator(topLevelPackage, diagnostics);
-      case null -> nothing(missingProgrammingLanguageDecision(), diagnostics);
-      default -> nothing(unsupportedProgrammingLanguage(), diagnostics);
+      case "Java" -> JavaUnitTestGenerator.from(inputs, diagnostics);
+      case null -> empty(missingProgrammingLanguageDecision(), diagnostics);
+      default -> empty(unsupportedProgrammingLanguage(), diagnostics);
     };
-  }
-
-  private UnitTestGenerator javaUnitGenerator(
-      String topLevelPackage, Collection<Diagnostic> diagnostics) {
-    if (topLevelPackage == null) {
-      return nothing(
-          new Diagnostic(
-              WARN,
-              "Missing decision on top-level package",
-              null,
-              new Suggestion(
-                  JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE, "Decide on top-level package")),
-          diagnostics);
-    }
-    return new JavaUnitTestGenerator(topLevelPackage);
-  }
-
-  private <T> T nothing(Diagnostic diagnostic, Collection<Diagnostic> diagnostics) {
-    diagnostics.add(diagnostic);
-    return null;
   }
 
   @Override
   public Optional<CodeGenerator> codeGenerator(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var programmingLanguage = Decisions.from(inputs).about(ProgrammingLanguage.TOPIC);
-    return Optional.ofNullable(codeGeneratorFor(programmingLanguage, diagnostics));
+    return switch (programmingLanguage) {
+      case "Java" -> JavaCodeGenerator.from(inputs, diagnostics);
+      case null -> empty(missingProgrammingLanguageDecision(), diagnostics);
+      default -> empty(unsupportedProgrammingLanguage(), diagnostics);
+    };
   }
 
-  private CodeGenerator codeGeneratorFor(
-      String programmingLanguage, Collection<Diagnostic> diagnostics) {
-    return switch (programmingLanguage) {
-      case "Java" -> new JavaCodeGenerator();
-      case null -> nothing(missingProgrammingLanguageDecision(), diagnostics);
-      default -> nothing(unsupportedProgrammingLanguage(), diagnostics);
-    };
+  private <T> Optional<T> empty(Diagnostic diagnostic, Collection<Diagnostic> diagnostics) {
+    diagnostics.add(diagnostic);
+    return Optional.empty();
   }
 
   private Diagnostic unsupportedProgrammingLanguage() {
@@ -131,22 +102,21 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       String projectName,
       Collection<Diagnostic> diagnostics) {
     if (programmingLanguage == null) {
-      return Optional.ofNullable(nothing(missingProgrammingLanguageDecision(), diagnostics));
+      return empty(missingProgrammingLanguageDecision(), diagnostics);
     }
     if (selectedBuildSystem == null) {
-      return Optional.ofNullable(
-          nothing(
-              new Diagnostic(
-                  WARN,
-                  "Missing decision on build system",
-                  null,
-                  new Suggestion(PICK_BUILD_SYSTEM, "Decide on build system")),
-              diagnostics));
+      return empty(
+          new Diagnostic(
+              WARN,
+              "Missing decision on build system",
+              null,
+              new Suggestion(PICK_BUILD_SYSTEM, "Decide on build system")),
+          diagnostics);
     }
 
     return programmingLanguage.equals("Java")
         ? javaBuildSystem(selectedBuildSystem, projectName, diagnostics)
-        : Optional.ofNullable(nothing(unsupportedProgrammingLanguage(), diagnostics));
+        : empty(unsupportedProgrammingLanguage(), diagnostics);
   }
 
   private Diagnostic missingProgrammingLanguageDecision() {
@@ -161,9 +131,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       String selectedBuildSystem, String projectName, Collection<Diagnostic> diagnostics) {
     return selectedBuildSystem.equals("Gradle")
         ? Optional.of(new Gradle(projectName))
-        : Optional.ofNullable(
-            nothing(
-                new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics));
+        : empty(new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics);
   }
 
   @Override
