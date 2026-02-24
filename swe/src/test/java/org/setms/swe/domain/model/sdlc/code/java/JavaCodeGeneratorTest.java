@@ -17,25 +17,28 @@ class JavaCodeGeneratorTest {
   @Test
   void shouldNotDuplicateCommandPackageWhenTopLevelPackageEndsWithSameSegment() {
     var generator = new JavaCodeGenerator("com.company.project");
-    var payload =
-        new Entity(new FullyQualifiedName("project", "Project"))
-            .setFields(
-                List.of(
-                    new Field(new FullyQualifiedName("project", "name")).setType(FieldType.TEXT),
-                    new Field(new FullyQualifiedName("project", "description"))
-                        .setType(FieldType.TEXT)));
+    var payload = givenPayload();
     var command =
         new Command(new FullyQualifiedName("project", "CreateProject"))
             .setDisplay("Create Project")
-            .setPayload(new Link("entity", "Project"));
+            .setPayload(new Link("entity", payload.getName()));
 
     var actual = generator.generate(command, payload);
 
     assertThat(actual).hasSize(1);
-    assertGeneratedArtifact(actual.getFirst());
+    assertThatGeneratedArtifact(actual.getFirst());
   }
 
-  private void assertGeneratedArtifact(CodeArtifact actual) {
+  private Entity givenPayload() {
+    return new Entity(new FullyQualifiedName("project", "Project"))
+        .setFields(
+            List.of(
+                new Field(new FullyQualifiedName("project", "name")).setType(FieldType.TEXT),
+                new Field(new FullyQualifiedName("project", "description"))
+                    .setType(FieldType.TEXT)));
+  }
+
+  private void assertThatGeneratedArtifact(CodeArtifact actual) {
     assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.model");
     assertThat(actual.getName()).isEqualTo("CreateProject");
     assertThat(actual.getCode())

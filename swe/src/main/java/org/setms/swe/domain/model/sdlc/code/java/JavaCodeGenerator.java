@@ -43,14 +43,13 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
 
   private static String toJavaType(FieldType type) {
     return switch (type) {
-      case TEXT -> "String";
+      case TEXT, SELECTION -> "String";
       case NUMBER -> "int";
       case BOOLEAN -> "boolean";
       case DATE -> "LocalDate";
       case TIME -> "LocalTime";
       case DATETIME -> "LocalDateTime";
       case ID -> "UUID";
-      case SELECTION -> "String";
     };
   }
 
