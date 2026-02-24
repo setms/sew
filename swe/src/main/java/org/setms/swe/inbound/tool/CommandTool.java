@@ -58,9 +58,11 @@ public class CommandTool extends ArtifactTool<Command> {
 
   @Override
   public void validate(Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var entities = inputs.get(Entity.class);
-    validatePayload(command, entities, diagnostics);
-    validateCode(command, entities, inputs.get(CodeArtifact.class), diagnostics);
+    var before = diagnostics.size();
+    validatePayload(command, inputs.get(Entity.class), diagnostics);
+    if (diagnostics.size() == before) {
+      validateCode(command, inputs.get(CodeArtifact.class), diagnostics);
+    }
   }
 
   private void validatePayload(
@@ -78,13 +80,8 @@ public class CommandTool extends ArtifactTool<Command> {
   }
 
   private void validateCode(
-      Command command,
-      Collection<Entity> entities,
-      Collection<CodeArtifact> codeArtifacts,
-      Collection<Diagnostic> diagnostics) {
-    var payload = command.getPayload();
-    if (payload != null
-        && payload.resolveFrom(entities).isPresent()
+      Command command, Collection<CodeArtifact> codeArtifacts, Collection<Diagnostic> diagnostics) {
+    if (command.getPayload() != null
         && codeArtifacts.stream()
             .noneMatch(
                 ca ->
