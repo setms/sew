@@ -56,16 +56,19 @@ class CommandToolTest extends ToolTestCase<Command> {
 
   @Test
   void shouldWarnAboutMissingCodeWhenCodeIsInWrongPackage() {
-    var command =
-        new Command(new FullyQualifiedName("design", "WithPayload"))
-            .setDisplay("Do It")
-            .setPayload(new Link("entity", "Payload"));
+    var command = givenCommandWithPayload();
     var inputs = givenCodeInWrongPackage();
     var diagnostics = new ArrayList<Diagnostic>();
 
     ((CommandTool) getTool()).validate(command, inputs, diagnostics);
 
     assertThatSingleMissingCodeDiagnostic(diagnostics);
+  }
+
+  private Command givenCommandWithPayload() {
+    return new Command(new FullyQualifiedName("design", "WithPayload"))
+        .setDisplay("Do It")
+        .setPayload(new Link("entity", "Payload"));
   }
 
   private ResolvedInputs givenCodeInWrongPackage() {
@@ -79,10 +82,7 @@ class CommandToolTest extends ToolTestCase<Command> {
 
   @Test
   void shouldWarnAboutMissingCode() {
-    var command =
-        new Command(new FullyQualifiedName("design", "WithPayload"))
-            .setDisplay("Do It")
-            .setPayload(new Link("entity", "Payload"));
+    var command = givenCommandWithPayload();
     var inputs = givenResolvedPayload();
     var diagnostics = new ArrayList<Diagnostic>();
 

@@ -13,6 +13,7 @@ import static org.setms.swe.inbound.tool.Inputs.entities;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -64,17 +65,16 @@ public class CommandTool extends ArtifactTool<Command> {
 
   private void validatePayload(
       Command command, Collection<Entity> entities, Collection<Diagnostic> diagnostics) {
-    var payload = command.getPayload();
-    if (payload != null) {
-      if (payload.resolveFrom(entities).isEmpty()) {
-        diagnostics.add(
-            new Diagnostic(
-                WARN,
-                "Missing entity %s".formatted(payload.getId()),
-                command.toLocation(),
-                new Suggestion(CREATE_PAYLOAD, "Create entity")));
-      }
-    }
+    Optional.ofNullable(command.getPayload())
+        .filter(payload -> payload.resolveFrom(entities).isEmpty())
+        .ifPresent(
+            payload ->
+                diagnostics.add(
+                    new Diagnostic(
+                        WARN,
+                        "Missing entity %s".formatted(payload.getId()),
+                        command.toLocation(),
+                        new Suggestion(CREATE_PAYLOAD, "Create entity"))));
   }
 
   private void validateCode(
