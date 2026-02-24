@@ -5,12 +5,16 @@ import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.initUpper;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.TreeSet;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
@@ -25,9 +29,14 @@ import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
 @RequiredArgsConstructor
-public class JavaUnitTestGenerator implements UnitTestGenerator {
+public class JavaUnitTestGenerator extends JavaArtifactGenerator implements UnitTestGenerator {
 
   private final String topLevelPackage;
+
+  public static Optional<UnitTestGenerator> from(
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    return topLevelPackage(inputs, diagnostics).map(JavaUnitTestGenerator::new);
+  }
 
   @Override
   public List<CodeArtifact> generate(AcceptanceTest acceptanceTest) {

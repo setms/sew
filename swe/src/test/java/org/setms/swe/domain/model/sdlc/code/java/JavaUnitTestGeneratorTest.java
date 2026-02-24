@@ -2,10 +2,13 @@ package org.setms.swe.domain.model.sdlc.code.java;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
@@ -14,7 +17,10 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.FieldVariable;
 import org.setms.swe.domain.model.sdlc.acceptancetest.PolicyScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Variable;
+import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
+import org.setms.swe.domain.model.sdlc.overview.Initiative;
 
 class JavaUnitTestGeneratorTest {
 
@@ -22,6 +28,31 @@ class JavaUnitTestGeneratorTest {
   private static final String ACCEPTANCE_TEST_PACKAGE = "notifications";
 
   private final JavaUnitTestGenerator generator = new JavaUnitTestGenerator(TOP_LEVEL_PACKAGE);
+
+  @Test
+  void shouldCreateGeneratorWhenPrerequisitesAreMet() {
+    var inputs = givenInputsWithPrerequisites();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    var actual = JavaUnitTestGenerator.from(inputs, diagnostics);
+
+    assertThat(actual).as("Generator").isPresent();
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
+  }
+
+  private ResolvedInputs givenInputsWithPrerequisites() {
+    var initiative =
+        new Initiative(new FullyQualifiedName("overview", "Project"))
+            .setOrganization("Example")
+            .setTitle("Project");
+    var topLevelPackage =
+        new Decision(new FullyQualifiedName("technology", TopLevelPackage.TOPIC))
+            .setTopic(TopLevelPackage.TOPIC)
+            .setChoice("com.example");
+    return new ResolvedInputs()
+        .put("initiatives", List.of(initiative))
+        .put("decisions", List.of(topLevelPackage));
+  }
 
   @Test
   void shouldGenerateUnitTestFromAggregateScenario() {

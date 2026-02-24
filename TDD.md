@@ -10,9 +10,9 @@
 - [x] `JavaArtifactGenerator` should emit "Missing decision on top-level package" (with a suggestion
   to decide) when an initiative is present but the top-level package has not been decided yet.
 - [x] `JavaArtifactGenerator.applySuggestion()` should handle `CREATE_INITIATIVE` by creating an initiative.
-- [ ] `JavaArtifactGenerator.applySuggestion()` should handle `PICK_TOP_LEVEL_PACKAGE` by creating a
+- [x] `JavaArtifactGenerator.applySuggestion()` should handle `PICK_TOP_LEVEL_PACKAGE` by creating a
   top-level package decision.
-- [ ] `TechnologyResolverImpl.applySuggestion()` should delegate to `JavaArtifactGenerator.applySuggestion()`
+- [x] `TechnologyResolverImpl.applySuggestion()` should delegate to `JavaArtifactGenerator.applySuggestion()`
   for `CREATE_INITIATIVE` and `PICK_TOP_LEVEL_PACKAGE`.
 - [ ] `JavaUnitTestGenerator` and `JavaCodeGenerator` should extend `JavaArtifactGenerator`, so they
   get prerequisite validation for free.
