@@ -23,4 +23,4 @@
   `JavaCodeGenerator` when the decision for programming language is `Java`.
 - [x] `CommandTool.validate()` should check if there is a `CodeArtifact` corresponding to the command and issue a
   diagnostic with suggestion to generate if not.
-- [ ] `CommandTool.applySuggestion` should use `TechnologyResolver.codeGenerator()` to generate code for the command.
+- [x] `CommandTool.applySuggestion` should use `TechnologyResolver.codeGenerator()` to generate code for the command.
