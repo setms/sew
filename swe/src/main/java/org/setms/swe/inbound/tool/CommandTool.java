@@ -129,7 +129,11 @@ public class CommandTool extends ArtifactTool<Command> {
     var diagnostics = new ArrayList<Diagnostic>();
     return resolver
         .codeGenerator(inputs, diagnostics)
-        .map(generator -> writeCode(generator.generate(command), commandResource))
+        .flatMap(
+            generator ->
+                Optional.ofNullable(command.getPayload())
+                    .flatMap(link -> link.resolveFrom(inputs.get(Entity.class)))
+                    .map(entity -> writeCode(generator.generate(command, entity), commandResource)))
         .orElseGet(AppliedSuggestion::none);
   }
 

@@ -21,6 +21,8 @@ import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.design.Field;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 
@@ -112,9 +114,13 @@ class CommandToolTest extends ToolTestCase<Command> {
 
   @Test
   void shouldGenerateCodeForCommand() {
-    var command =
-        new Command(new FullyQualifiedName("design", "WithoutPayload")).setDisplay("Do It");
-    var inputs = givenInputsWithAllPrerequisites();
+    var entity =
+        new Entity(new FullyQualifiedName("design", "Payload"))
+            .setFields(
+                List.of(
+                    new Field(new FullyQualifiedName("design", "name")).setType(FieldType.TEXT)));
+    var command = givenCommandWithPayload();
+    var inputs = givenInputsWithAllPrerequisites().put("entities", List.of(entity));
     var workspace = new InMemoryWorkspace();
 
     var actual =

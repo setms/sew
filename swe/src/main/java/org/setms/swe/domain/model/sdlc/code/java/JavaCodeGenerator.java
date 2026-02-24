@@ -1,5 +1,7 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -8,6 +10,8 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
 
@@ -22,11 +26,32 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   }
 
   @Override
-  public List<CodeArtifact> generate(Command command) {
+  public List<CodeArtifact> generate(Command command, Entity payload) {
     var packageName = packageNameFor(command);
     var className = command.getName();
-    var code = "package %s;\n\nclass %s {\n}\n".formatted(packageName, className);
+    var components = componentsFor(payload);
+    var code = "package %s;\n\nrecord %s(%s) {\n}\n".formatted(packageName, className, components);
     return List.of(new CodeArtifact(new FullyQualifiedName(packageName, className)).setCode(code));
+  }
+
+  private String componentsFor(Entity payload) {
+    return Optional.ofNullable(payload.getFields()).stream()
+        .flatMap(Collection::stream)
+        .map(f -> "%s %s".formatted(toJavaType(f.getType()), f.getName()))
+        .collect(joining(", "));
+  }
+
+  private static String toJavaType(FieldType type) {
+    return switch (type) {
+      case TEXT -> "String";
+      case NUMBER -> "int";
+      case BOOLEAN -> "boolean";
+      case DATE -> "LocalDate";
+      case TIME -> "LocalTime";
+      case DATETIME -> "LocalDateTime";
+      case ID -> "UUID";
+      case SELECTION -> "String";
+    };
   }
 
   private String packageNameFor(Command command) {
