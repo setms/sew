@@ -19,5 +19,6 @@ class JavaCodeGeneratorTest {
 
     assertThat(actual).hasSize(1);
     assertThat(actual.getFirst().getPackage()).isEqualTo("com.company.project.domain.model");
+    assertThat(actual.getFirst().getName()).isEqualTo("CreateProject");
   }
 }

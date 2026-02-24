@@ -85,7 +85,7 @@ public class CommandTool extends ArtifactTool<Command> {
         && codeArtifacts.stream()
             .noneMatch(
                 ca ->
-                    ca.getName().equals("%sCommand".formatted(command.getName()))
+                    ca.getName().equals(command.getName())
                         && ca.getPackage().endsWith(".domain.model"))) {
       diagnostics.add(
           new Diagnostic(

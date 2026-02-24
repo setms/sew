@@ -1,3 +1,3 @@
 package valid.domain.model;
 
-class WithPayloadCommand {}
+class WithPayload {}

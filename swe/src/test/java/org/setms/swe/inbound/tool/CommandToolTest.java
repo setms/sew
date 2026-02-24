@@ -76,8 +76,8 @@ class CommandToolTest extends ToolTestCase<Command> {
         .put(
             "codeArtifacts",
             List.of(
-                new CodeArtifact(new FullyQualifiedName("wrong.package", "WithPayloadCommand"))
-                    .setCode("class WithPayloadCommand {}")));
+                new CodeArtifact(new FullyQualifiedName("wrong.package", "WithPayload"))
+                    .setCode("class WithPayload {}")));
   }
 
   @Test

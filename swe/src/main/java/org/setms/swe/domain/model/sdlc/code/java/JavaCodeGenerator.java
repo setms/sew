@@ -24,7 +24,7 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   @Override
   public List<CodeArtifact> generate(Command command) {
     var packageName = packageNameFor(command);
-    var className = "%sCommand".formatted(command.getName());
+    var className = command.getName();
     var code = "package %s;\n\nclass %s {\n}\n".formatted(packageName, className);
     return List.of(new CodeArtifact(new FullyQualifiedName(packageName, className)).setCode(code));
   }
