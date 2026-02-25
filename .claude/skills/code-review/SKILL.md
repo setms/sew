@@ -21,6 +21,8 @@ Review changed code and make sure it follows the following style guide:
 - Method declarations MUST use the most generic type possible for parameters and return types.
   For example, use `Map` instead of `HashMap` and `Collection` instead of `ArrayList`.
 - Don't add `String`s, use `String.formatted()`.
+- IMPORTANT: Re-use as much as possible; duplication is evil.
+  This holds for many things, for example replace multiple instances of the same literal `String` with a constant.
 - IMPORTANT: If a class emits a diagnostic with a suggestion, then that same class must apply the suggestion, not some
   other class.
   This is non-negotiable.

@@ -242,7 +242,16 @@ Never add `Co-Authored-By` lines to commit messages.
   - No other blank lines are allowed
   - No section may be more than 10 lines, extract helper methods is necessary
 - CRITICAL: Always re-use as much as possible, both in production and in test code
-- CRITICAL: Prefer `Stream` and `Optional` over `for` and `if`, especially to avoid nested blocks
+- CRITICAL: Prefer `Stream` and `Optional` over `for` and `if`, especially to avoid nested blocks.
+  However, don't use them if the `filter` and `map` methods have to ignore the item:
+  ```java
+  // Bad, the contents of the Optional is consistently ignored, so we're not dealing with a coherent concept, but an
+  // ugly trick to avoid nested `if`s.
+  Optional.ofNullable(command.getPayload())
+    .flatMap(_ -> resolver.codeGenerator(inputs, diagnostics))
+    .filter(_ -> hasNoCode(command, inputs.get(CodeArtifact.class)))
+    .ifPresent(_ -> diagnostics.add(missingCodeDiagnostic(command)));
+  ```
 - CRITICAL: Instead of writing a comment before a block of code, extract the code into a method and name it properly.
   This is non-negotiable.
 - CRITICAL: Import types rather than use their fully qualified names. This is non-negotiable.

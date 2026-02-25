@@ -25,6 +25,7 @@ import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Level;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
@@ -85,23 +86,25 @@ public class CommandTool extends ArtifactTool<Command> {
 
   private void validateCode(
       Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    Optional.ofNullable(command.getPayload())
-        .flatMap(_ -> resolver.codeGenerator(inputs, diagnostics))
-        .filter(_ -> isMissingCode(command, inputs.get(CodeArtifact.class)))
-        .ifPresent(_ -> diagnostics.add(missingCodeDiagnostic(command)));
+    if (command.getPayload() == null || resolver.codeGenerator(inputs, diagnostics).isEmpty()) {
+      return;
+    }
+    if (codeFor(command, inputs).isEmpty()) {
+      diagnostics.add(
+          new Diagnostic(
+              Level.WARN,
+              "Missing code",
+              command.toLocation(),
+              new Suggestion(GENERATE_CODE, "Generate code")));
+    }
   }
 
-  private boolean isMissingCode(Command command, Collection<CodeArtifact> codeArtifacts) {
-    return codeArtifacts.stream()
-        .noneMatch(
+  private Optional<CodeArtifact> codeFor(Command command, ResolvedInputs inputs) {
+    return inputs.get(CodeArtifact.class).stream()
+        .filter(
             ca ->
-                ca.getName().equals(command.getName())
-                    && ca.getPackage().endsWith(".domain.model"));
-  }
-
-  private Diagnostic missingCodeDiagnostic(Command command) {
-    return new Diagnostic(
-        WARN, "Missing code", command.toLocation(), new Suggestion(GENERATE_CODE, "Generate code"));
+                ca.getName().equals(command.getName()) && ca.getPackage().endsWith(".domain.model"))
+        .findFirst();
   }
 
   @Override
