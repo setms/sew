@@ -1,6 +1,9 @@
 outputs:
-  - src/test/java/com/example/todo/TodoItemsAggregateTest.java
-  - src/test/java/com/example/todo/TestDataBuilder.java
+  - src/main/architecture/BuildSystem.decision
+
+inputs:
+  - file: BuildSystem.decision
+    location: src/main/architecture
 
 diagnostics:
-  - Missing decision on build system
+  - Gradle project isn't initialized

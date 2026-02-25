@@ -11,7 +11,8 @@ import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventions {
 
   private static final Pattern PACKAGE_PATTERN = Pattern.compile("package\\s+([\\w.]+)\\s*;");
-  private static final Pattern CLASS_PATTERN = Pattern.compile("class\\s+(\\w+)");
+  private static final Pattern CLASS_PATTERN =
+      Pattern.compile("(class|interface|record)\\s+(?<name>\\w+)");
   private static final Pattern JAVA_PACKAGE_PATTERN =
       Pattern.compile("[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)*");
 
@@ -52,7 +53,7 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
 
   @Override
   public FullyQualifiedName extractName(String code) {
-    return new FullyQualifiedName(extractPackage(code), extractClassName(code));
+    return new FullyQualifiedName(extractPackage(code), extractTypeName(code));
   }
 
   private String extractPackage(String code) {
@@ -60,8 +61,8 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
     return matcher.find() ? matcher.group(1) : "";
   }
 
-  private String extractClassName(String code) {
+  private String extractTypeName(String code) {
     var matcher = CLASS_PATTERN.matcher(code);
-    return matcher.find() ? matcher.group(1) : "";
+    return matcher.find() ? matcher.group("name") : "";
   }
 }

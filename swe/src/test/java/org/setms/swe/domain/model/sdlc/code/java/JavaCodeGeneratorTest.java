@@ -28,18 +28,18 @@ class JavaCodeGeneratorTest {
     var actual = generator.generate(command, payload);
 
     assertThat(actual).hasSize(1);
-    assertThatGeneratedArtifact(actual.getFirst());
+    assertThatGeneratedCodeImplementsCommand(actual.getFirst());
   }
 
   private Entity givenPayload() {
     return new Entity(new FullyQualifiedName(PACKAGE, "Project"))
         .setFields(
             List.of(
-                new Field(new FullyQualifiedName(PACKAGE, "name")).setType(FieldType.TEXT),
-                new Field(new FullyQualifiedName(PACKAGE, "description")).setType(FieldType.TEXT)));
+                new Field(new FullyQualifiedName(PACKAGE, "Name")).setType(FieldType.TEXT),
+                new Field(new FullyQualifiedName(PACKAGE, "Description")).setType(FieldType.TEXT)));
   }
 
-  private void assertThatGeneratedArtifact(CodeArtifact actual) {
+  private void assertThatGeneratedCodeImplementsCommand(CodeArtifact actual) {
     assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.model");
     assertThat(actual.getName()).isEqualTo("CreateProject");
     assertThat(actual.getCode())
@@ -47,8 +47,7 @@ class JavaCodeGeneratorTest {
             """
             package com.company.project.domain.model;
 
-            record CreateProject(String name, String description) {
-            }
+            public record CreateProject(String name, String description) {}
             """);
   }
 }

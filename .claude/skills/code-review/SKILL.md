@@ -13,7 +13,7 @@ Review changed code and make sure it follows the following style guide:
   Each block MUST NOT start with a comment.
   Each block MUST NOT be longer than 10 lines; extract helper methods where necessary.
   Helper methods in the Arrange block MUST have a name starting with `given` to follow the BDD convention.
-  Helper methods in the Assert block MUST have a name starting with `assertThat`.
+  Helper methods in the Assert block MUST have a name starting with `assertThat` and MUST read as a sentence.
   If the Act block stores an outcome in a single local variable that is then tested in the Assert block, then that
   variable MUST be named `actual`.
 - Use `import` statements instead of using a fully qualified name.
@@ -21,6 +21,8 @@ Review changed code and make sure it follows the following style guide:
 - Method declarations MUST use the most generic type possible for parameters and return types.
   For example, use `Map` instead of `HashMap` and `Collection` instead of `ArrayList`.
 - Don't add `String`s, use `String.formatted()`.
+- If a new tool class has been added, make sure it's registered in
+  `swe/src/main/resources/META-INF/services/org.setms.km.domain.model.tool.Tool`.
 - IMPORTANT: Re-use as much as possible; duplication is evil.
   This holds for many things, for example replace multiple instances of the same literal `String` with a constant.
 - IMPORTANT: If a class emits a diagnostic with a suggestion, then that same class must apply the suggestion, not some

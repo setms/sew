@@ -1,10 +1,11 @@
 outputs:
-  - src/main/architecture/ProgrammingLanguage.decision
+  - src/main/overview/Project.initiative
   - src/main/architecture/Todo.components
 
 inputs:
-  - location: src/main/architecture
-    file: ProgrammingLanguage.decision
+  - location: src/main/overview
+    file: Todo.initiative
+    alias: Project.initiative
 
 diagnostics:
-  - Missing initiative
+  - Missing decision on top-level package

@@ -134,11 +134,14 @@ class CommandToolTest extends ToolTestCase<Command> {
         .allSatisfy(
             d -> {
               assertThat(d.level()).as("Level").isEqualTo(WARN);
-              assertThat(d.message()).as("Message").isEqualTo("Missing code");
+              assertThat(d.message()).as("Message").isEqualTo("Missing command DTO");
               assertThat(d.suggestions())
                   .hasSize(1)
                   .allSatisfy(
-                      s -> assertThat(s.message()).as("Suggestion").isEqualTo("Generate code"));
+                      s ->
+                          assertThat(s.message())
+                              .as("Suggestion")
+                              .isEqualTo("Generate command DTO"));
             });
   }
 
@@ -193,7 +196,7 @@ class CommandToolTest extends ToolTestCase<Command> {
     assertThat(diagnostics).as("Validation diagnostics").hasSize(1);
     var diagnostic = diagnostics.getFirst();
     assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-    assertThat(diagnostic.message()).as("Message").isEqualTo("Missing entity Payload");
+    assertThat(diagnostic.message()).as("Message").isEqualTo("Unknown entity 'Payload'");
     assertThat(diagnostic.location()).as("Location").hasToString("missing/command/WithPayload");
     assertThatCreatedPayload(diagnostic, workspace);
   }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
@@ -30,14 +31,15 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     var packageName = packageNameFor(command);
     var className = command.getName();
     var components = componentsFor(payload);
-    var code = "package %s;\n\nrecord %s(%s) {\n}\n".formatted(packageName, className, components);
+    var code =
+        "package %s;\n\npublic record %s(%s) {}\n".formatted(packageName, className, components);
     return List.of(new CodeArtifact(new FullyQualifiedName(packageName, className)).setCode(code));
   }
 
   private String componentsFor(Entity payload) {
     return Optional.ofNullable(payload.getFields()).stream()
         .flatMap(Collection::stream)
-        .map(f -> "%s %s".formatted(toJavaType(f.getType()), f.getName()))
+        .map(f -> "%s %s".formatted(toJavaType(f.getType()), Strings.initLower(f.getName())))
         .collect(joining(", "));
   }
 

@@ -17,4 +17,5 @@ inputs:
 
 diagnostics:
   - Missing acceptance test for aggregate TodoItems
+  - Missing decision on programming language
   - Subdomains aren't mapped to modules

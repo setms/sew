@@ -2,7 +2,4 @@
 
 ## Test list
 
-- [ ] When running `EndToEndTest`, I see no diagnostic `Missing code` for the command.
-  The command is there, so that diagnostic is expected.
-  Figure out what's wrong and write a test that proves there is a problem.
-  CRITICAL: DO NOT CHANGE `EndToEndTest`.
+- [ ] `JavaCodeGenerator` needs to add import for `LocalDateTime` when the command has a date time field

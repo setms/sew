@@ -3,20 +3,24 @@ package org.setms.swe.domain.model.sdlc.code.java;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class JavaLanguageTest {
 
   private final JavaLanguage language = new JavaLanguage();
 
-  @Test
-  void shouldExtractNameFromJavaCode() {
+  @ParameterizedTest
+  @ValueSource(strings = {"class", "interface", "record"})
+  void shouldExtractClassNameFromJavaCode(String type) {
     var code =
         """
         package com.example;
 
-        class Foo {
+        %s Foo {
         }
-        """;
+        """
+            .formatted(type);
 
     var name = language.extractName(code);
 

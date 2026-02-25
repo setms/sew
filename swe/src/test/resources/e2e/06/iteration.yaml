@@ -1,10 +1,8 @@
 outputs:
-  - src/main/overview/Project.initiative
+  - src/main/architecture/TopLevelPackage.decision
 
 inputs:
-  - location: src/main/overview
-    file: Todo.initiative
-    alias: Project.initiative
 
 diagnostics:
-  - Missing decision on top-level package
+  - Missing command DTO
+  - Missing unit test

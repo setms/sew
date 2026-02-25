@@ -1,9 +1,11 @@
 outputs:
-  - src/main/architecture/BuildSystem.decision
-
-inputs:
-  - file: BuildSystem.decision
-    location: src/main/architecture
-
-diagnostics:
-  - Gradle project isn't initialized
+  - .gitattributes
+  - .gitignore
+  - build.gradle
+  - gradle.properties
+  - gradlew
+  - gradlew.bat
+  - gradle/libs.versions.toml
+  - gradle/wrapper/gradle-wrapper.jar
+  - gradle/wrapper/gradle-wrapper.properties
+  - settings.gradle

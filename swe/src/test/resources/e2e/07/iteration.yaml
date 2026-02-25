@@ -1,5 +1,7 @@
 outputs:
-  - src/main/architecture/TopLevelPackage.decision
+  - src/main/java/com/example/todo/domain/model/AddTodoItem.java
+  - src/test/java/com/example/todo/TodoItemsAggregateTest.java
+  - src/test/java/com/example/todo/TestDataBuilder.java
 
 diagnostics:
-  - Missing unit test
+  - Missing decision on build system

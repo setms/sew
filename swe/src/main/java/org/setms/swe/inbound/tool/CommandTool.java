@@ -79,7 +79,7 @@ public class CommandTool extends ArtifactTool<Command> {
                 diagnostics.add(
                     new Diagnostic(
                         WARN,
-                        "Missing entity %s".formatted(payload.getId()),
+                        "Unknown entity '%s'".formatted(payload.getId()),
                         command.toLocation(),
                         new Suggestion(CREATE_PAYLOAD, "Create entity"))));
   }
@@ -93,9 +93,9 @@ public class CommandTool extends ArtifactTool<Command> {
       diagnostics.add(
           new Diagnostic(
               Level.WARN,
-              "Missing code",
+              "Missing command DTO",
               command.toLocation(),
-              new Suggestion(GENERATE_CODE, "Generate code")));
+              new Suggestion(GENERATE_CODE, "Generate command DTO")));
     }
   }
 

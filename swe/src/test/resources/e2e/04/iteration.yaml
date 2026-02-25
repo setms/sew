@@ -1,11 +1,14 @@
 outputs:
   - src/test/acceptance/TodoItemsAggregate.acceptance
   - src/main/architecture/Todo.modules
+  - src/main/architecture/ProgrammingLanguage.decision
 
 inputs:
   - location: src/test/acceptance
     file: TodoItemsAggregate.acceptance
+  - location: src/main/architecture
+    file: ProgrammingLanguage.decision
 
 diagnostics:
+  - Missing initiative
   - Modules aren't deployed in components
-  - Missing decision on programming language
