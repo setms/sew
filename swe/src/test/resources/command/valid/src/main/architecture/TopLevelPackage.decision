@@ -1,0 +1,6 @@
+package technology
+
+decision TopLevelPackage {
+  choice = "valid"
+  topic  = "TopLevelPackage"
+}

@@ -197,6 +197,16 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldNeedProgrammingLanguageForCodeGenerator() {
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    resolver.codeGenerator(new ResolvedInputs(), diagnostics);
+
+    assertThatSingleWarnDiagnosticHas(
+        diagnostics, "Missing decision on programming language", "Decide on programming language");
+  }
+
+  @Test
   void shouldNeedInitiativeForJavaCodeGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
     var inputs = givenInputsForJavaWithoutInitiative();

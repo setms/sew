@@ -9,7 +9,9 @@ import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.commands;
+import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.entities;
+import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +55,9 @@ public class CommandTool extends ArtifactTool<Command> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Stream.concat(Stream.of(entities()), code().stream()).collect(toSet());
+    return Stream.of(Stream.of(entities(), decisions(), initiatives()), code().stream())
+        .flatMap(s -> s)
+        .collect(toSet());
   }
 
   @Override
@@ -61,7 +65,7 @@ public class CommandTool extends ArtifactTool<Command> {
     var before = diagnostics.size();
     validatePayload(command, inputs.get(Entity.class), diagnostics);
     if (diagnostics.size() == before) {
-      validateCode(command, inputs.get(CodeArtifact.class), diagnostics);
+      validateCode(command, inputs, diagnostics);
     }
   }
 
@@ -80,20 +84,24 @@ public class CommandTool extends ArtifactTool<Command> {
   }
 
   private void validateCode(
-      Command command, Collection<CodeArtifact> codeArtifacts, Collection<Diagnostic> diagnostics) {
-    if (command.getPayload() != null
-        && codeArtifacts.stream()
-            .noneMatch(
-                ca ->
-                    ca.getName().equals(command.getName())
-                        && ca.getPackage().endsWith(".domain.model"))) {
-      diagnostics.add(
-          new Diagnostic(
-              WARN,
-              "Missing code",
-              command.toLocation(),
-              new Suggestion(GENERATE_CODE, "Generate code")));
-    }
+      Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    Optional.ofNullable(command.getPayload())
+        .flatMap(_ -> resolver.codeGenerator(inputs, diagnostics))
+        .filter(_ -> isMissingCode(command, inputs.get(CodeArtifact.class)))
+        .ifPresent(_ -> diagnostics.add(missingCodeDiagnostic(command)));
+  }
+
+  private boolean isMissingCode(Command command, Collection<CodeArtifact> codeArtifacts) {
+    return codeArtifacts.stream()
+        .noneMatch(
+            ca ->
+                ca.getName().equals(command.getName())
+                    && ca.getPackage().endsWith(".domain.model"));
+  }
+
+  private Diagnostic missingCodeDiagnostic(Command command) {
+    return new Diagnostic(
+        WARN, "Missing code", command.toLocation(), new Suggestion(GENERATE_CODE, "Generate code"));
   }
 
   @Override
