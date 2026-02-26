@@ -35,8 +35,6 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 public class CommandTool extends DtoCodeTool<Command> {
 
-  public static final String CREATE_PAYLOAD = "payload.create";
-
   public CommandTool() {}
 
   CommandTool(TechnologyResolver resolver) {

@@ -21,6 +21,14 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 abstract class ResolverToolTestCase<A extends Artifact> extends ToolTestCase<A> {
 
+  protected static final String ENTITY_SKELETON =
+      """
+      package missing
+
+      entity Payload {
+      }
+      """;
+
   protected ResolverToolTestCase(Tool tool, Class<A> type, String sourceLocation) {
     super(tool, type, sourceLocation);
   }

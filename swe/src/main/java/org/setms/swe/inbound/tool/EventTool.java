@@ -1,16 +1,26 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
+import org.setms.km.domain.model.workspace.Resource;
+import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -35,6 +45,29 @@ public class EventTool extends DtoCodeTool<Event> {
 
   @Override
   public void validate(Event event, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var before = diagnostics.size();
+    validatePayload(event, inputs.get(Entity.class), diagnostics);
+    if (diagnostics.size() == before) {
+      validateCode(event, inputs, diagnostics);
+    }
+  }
+
+  private void validatePayload(
+      Event event, Collection<Entity> entities, Collection<Diagnostic> diagnostics) {
+    Optional.ofNullable(event.getPayload())
+        .filter(payload -> payload.resolveFrom(entities).isEmpty())
+        .ifPresent(
+            payload ->
+                diagnostics.add(
+                    new Diagnostic(
+                        WARN,
+                        "Unknown entity '%s'".formatted(payload.getId()),
+                        event.toLocation(),
+                        new Suggestion(CREATE_PAYLOAD, "Create entity"))));
+  }
+
+  private void validateCode(
+      Event event, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (event.getPayload() == null || resolver.codeGenerator(inputs, diagnostics).isEmpty()) {
       return;
     }
@@ -45,6 +78,33 @@ public class EventTool extends DtoCodeTool<Event> {
               "Missing event DTO",
               event.toLocation(),
               new Suggestion(GENERATE_CODE, "Generate event DTO")));
+    }
+  }
+
+  @Override
+  protected AppliedSuggestion doApply(
+      Resource<?> eventResource,
+      Event event,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs) {
+    return switch (suggestionCode) {
+      case CREATE_PAYLOAD -> createPayloadFor(eventResource, event);
+      default -> unknown(suggestionCode);
+    };
+  }
+
+  private AppliedSuggestion createPayloadFor(Resource<?> eventResource, Event event) {
+    try {
+      var entity =
+          new Entity(new FullyQualifiedName(event.getPackage(), event.getPayload().getId()));
+      var entityResource = resourceFor(entity, event, eventResource);
+      try (var output = entityResource.writeTo()) {
+        builderFor(entity).build(entity, output);
+      }
+      return created(entityResource);
+    } catch (Exception e) {
+      return failedWith(e);
     }
   }
 }

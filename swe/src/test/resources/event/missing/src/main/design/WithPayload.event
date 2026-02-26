@@ -1,0 +1,5 @@
+package missing
+
+event WithPayload {
+  payload = entity(Payload)
+}

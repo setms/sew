@@ -9,6 +9,7 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 abstract class DtoCodeTool<A extends Artifact> extends ArtifactTool<A> {
 
+  public static final String CREATE_PAYLOAD = "payload.create";
   public static final String GENERATE_CODE = "code.generate";
 
   final TechnologyResolver resolver;

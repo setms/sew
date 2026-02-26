@@ -26,14 +26,6 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class CommandToolTest extends ResolverToolTestCase<Command> {
 
-  private static final String ENTITY_SKELETON =
-      """
-    package missing
-
-    entity Payload {
-    }
-    """;
-
   CommandToolTest() {
     super(new CommandTool(), Command.class, "main/design");
   }
