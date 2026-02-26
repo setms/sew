@@ -5,10 +5,8 @@
 ### `EventToolTest`
 
 - ~~`shouldNotWarnAboutMissingCodeWhenEventHasNoPayload`~~
-- **[in progress]** `shouldReportDiagnosticsFromResolverWhenCodeIsMissing`: validate an `Event` with a payload using
-  a mock `TechnologyResolver` that adds a diagnostic and returns `Optional.empty()`
-  → expect exactly that diagnostic
-- `shouldWarnAboutMissingEventDto`: validate an `Event` whose payload resolves to an `Entity` but
+- ~~`shouldReportDiagnosticsFromResolverWhenCodeIsMissing`~~
+- **[in progress]** `shouldWarnAboutMissingEventDto`: validate an `Event` whose payload resolves to an `Entity` but
   no matching `CodeArtifact` exists in `ResolvedInputs`
   → expect a single `WARN` diagnostic with message `"Missing event DTO"` and suggestion
   `"Generate event DTO"`
