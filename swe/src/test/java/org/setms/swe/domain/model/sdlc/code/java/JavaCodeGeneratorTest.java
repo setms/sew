@@ -31,12 +31,47 @@ class JavaCodeGeneratorTest {
     assertThatGeneratedCodeImplementsCommand(actual.getFirst());
   }
 
+  @Test
+  void shouldAddImportForLocalDateTimeWhenCommandHasDateTimeField() {
+    var generator = new JavaCodeGenerator("com.company.project");
+    var payload = givenPayloadWithDateTimeField();
+    var command =
+        new Command(new FullyQualifiedName(PACKAGE, "ScheduleMeeting"))
+            .setDisplay("Schedule Meeting")
+            .setPayload(new Link("entity", payload.getName()));
+
+    var actual = generator.generate(command, payload);
+
+    assertThat(actual).hasSize(1);
+    assertThatGeneratedCodeHasLocalDateTimeImport(actual.getFirst());
+  }
+
   private Entity givenPayload() {
     return new Entity(new FullyQualifiedName(PACKAGE, "Project"))
         .setFields(
             List.of(
                 new Field(new FullyQualifiedName(PACKAGE, "Name")).setType(FieldType.TEXT),
                 new Field(new FullyQualifiedName(PACKAGE, "Description")).setType(FieldType.TEXT)));
+  }
+
+  private Entity givenPayloadWithDateTimeField() {
+    return new Entity(new FullyQualifiedName(PACKAGE, "MeetingSchedule"))
+        .setFields(
+            List.of(
+                new Field(new FullyQualifiedName(PACKAGE, "ScheduledAt"))
+                    .setType(FieldType.DATETIME)));
+  }
+
+  private void assertThatGeneratedCodeHasLocalDateTimeImport(CodeArtifact actual) {
+    assertThat(actual.getCode())
+        .isEqualTo(
+            """
+            package com.company.project.domain.model;
+
+            import java.time.LocalDateTime;
+
+            public record ScheduleMeeting(LocalDateTime scheduledAt) {}
+            """);
   }
 
   private void assertThatGeneratedCodeImplementsCommand(CodeArtifact actual) {

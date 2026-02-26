@@ -31,8 +31,11 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     var packageName = packageNameFor(command);
     var className = command.getName();
     var components = componentsFor(payload);
+    var imports = importsFor(payload);
+    var importSection = imports.isEmpty() ? "" : imports + "\n\n";
     var code =
-        "package %s;\n\npublic record %s(%s) {}\n".formatted(packageName, className, components);
+        "package %s;\n\n%spublic record %s(%s) {}\n"
+            .formatted(packageName, importSection, className, components);
     return List.of(new CodeArtifact(new FullyQualifiedName(packageName, className)).setCode(code));
   }
 
@@ -52,6 +55,24 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
       case TIME -> "LocalTime";
       case DATETIME -> "LocalDateTime";
       case ID -> "UUID";
+    };
+  }
+
+  private String importsFor(Entity payload) {
+    return Optional.ofNullable(payload.getFields()).stream()
+        .flatMap(Collection::stream)
+        .map(f -> toImport(f.getType()))
+        .flatMap(Optional::stream)
+        .distinct()
+        .sorted()
+        .map(i -> "import %s;".formatted(i))
+        .collect(joining("\n"));
+  }
+
+  private static Optional<String> toImport(FieldType type) {
+    return switch (type) {
+      case DATETIME -> Optional.of("java.time.LocalDateTime");
+      default -> Optional.empty();
     };
   }
 
