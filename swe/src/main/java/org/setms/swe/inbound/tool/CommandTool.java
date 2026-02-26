@@ -5,8 +5,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
-import static org.setms.km.domain.model.tool.Tools.builderFor;
-import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
@@ -19,14 +17,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.km.domain.model.validation.Level;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
@@ -54,44 +49,6 @@ public class CommandTool extends DtoCodeTool<Command> {
   }
 
   @Override
-  public void validate(Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var before = diagnostics.size();
-    validatePayload(command, inputs.get(Entity.class), diagnostics);
-    if (diagnostics.size() == before) {
-      validateCode(command, inputs, diagnostics);
-    }
-  }
-
-  private void validatePayload(
-      Command command, Collection<Entity> entities, Collection<Diagnostic> diagnostics) {
-    Optional.ofNullable(command.getPayload())
-        .filter(payload -> payload.resolveFrom(entities).isEmpty())
-        .ifPresent(
-            payload ->
-                diagnostics.add(
-                    new Diagnostic(
-                        WARN,
-                        "Unknown entity '%s'".formatted(payload.getId()),
-                        command.toLocation(),
-                        new Suggestion(CREATE_PAYLOAD, "Create entity"))));
-  }
-
-  private void validateCode(
-      Command command, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    if (command.getPayload() == null || resolver.codeGenerator(inputs, diagnostics).isEmpty()) {
-      return;
-    }
-    if (codeFor(command, inputs).isEmpty()) {
-      diagnostics.add(
-          new Diagnostic(
-              Level.WARN,
-              "Missing command DTO",
-              command.toLocation(),
-              new Suggestion(GENERATE_CODE, "Generate command DTO")));
-    }
-  }
-
-  @Override
   protected AppliedSuggestion doApply(
       Resource<?> commandResource,
       Command command,
@@ -103,20 +60,6 @@ public class CommandTool extends DtoCodeTool<Command> {
       case GENERATE_CODE -> generateCodeFor(commandResource, command, inputs);
       default -> unknown(suggestionCode);
     };
-  }
-
-  private AppliedSuggestion createPayloadFor(Resource<?> commandResource, Command command) {
-    try {
-      var entity =
-          new Entity(new FullyQualifiedName(command.getPackage(), command.getPayload().getId()));
-      var entityResource = resourceFor(entity, command, commandResource);
-      try (var output = entityResource.writeTo()) {
-        builderFor(entity).build(entity, output);
-      }
-      return created(entityResource);
-    } catch (Exception e) {
-      return failedWith(e);
-    }
   }
 
   private AppliedSuggestion generateCodeFor(

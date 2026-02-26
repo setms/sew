@@ -15,7 +15,7 @@ import org.setms.km.domain.model.artifact.Link;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Event extends Artifact {
+public class Event extends Artifact implements HasPayload {
 
   @HasType("entity")
   private Link payload;
