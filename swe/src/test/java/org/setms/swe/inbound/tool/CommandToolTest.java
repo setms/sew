@@ -1,17 +1,13 @@
 package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.SequencedCollection;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +28,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
-class CommandToolTest extends ToolTestCase<Command> {
+class CommandToolTest extends ResolverToolTestCase<Command> {
 
   private static final String ENTITY_SKELETON =
       """
@@ -72,18 +68,6 @@ class CommandToolTest extends ToolTestCase<Command> {
     tool.validate(givenCommandWithPayload(), givenResolvedPayload(), diagnostics);
 
     assertThat(diagnostics).containsExactly(diagnostic);
-  }
-
-  private Diagnostic givenResolverAddingDiagnostic(TechnologyResolver resolver) {
-    var diagnostic = new Diagnostic(WARN, "Something's not right");
-    when(resolver.codeGenerator(any(), anyCollection()))
-        .thenAnswer(
-            invocation -> {
-              Collection<Diagnostic> diagnostics = invocation.getArgument(1);
-              diagnostics.add(diagnostic);
-              return Optional.empty();
-            });
-    return diagnostic;
   }
 
   @Test
