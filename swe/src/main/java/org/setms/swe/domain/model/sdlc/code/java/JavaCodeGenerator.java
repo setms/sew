@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.Strings;
@@ -12,6 +13,7 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
@@ -40,10 +42,13 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   }
 
   private String componentsFor(Entity payload) {
-    return Optional.ofNullable(payload.getFields()).stream()
-        .flatMap(Collection::stream)
+    return fieldsOf(payload)
         .map(f -> "%s %s".formatted(toJavaType(f.getType()), Strings.initLower(f.getName())))
         .collect(joining(", "));
+  }
+
+  private static Stream<Field> fieldsOf(Entity payload) {
+    return Optional.ofNullable(payload.getFields()).stream().flatMap(Collection::stream);
   }
 
   private static String toJavaType(FieldType type) {
@@ -59,19 +64,20 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   }
 
   private String importsFor(Entity payload) {
-    return Optional.ofNullable(payload.getFields()).stream()
-        .flatMap(Collection::stream)
+    return fieldsOf(payload)
         .map(f -> toImport(f.getType()))
         .flatMap(Optional::stream)
         .distinct()
         .sorted()
-        .map(i -> "import %s;".formatted(i))
+        .map("import %s;"::formatted)
         .collect(joining("\n"));
   }
 
   private static Optional<String> toImport(FieldType type) {
     return switch (type) {
       case DATETIME -> Optional.of("java.time.LocalDateTime");
+      case DATE -> Optional.of("java.time.LocalDate");
+      case TIME -> Optional.of("java.time.LocalTime");
       default -> Optional.empty();
     };
   }
