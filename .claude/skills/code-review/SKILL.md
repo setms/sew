@@ -23,6 +23,8 @@ Review changed code and make sure it follows the following style guide:
 - Don't add `String`s, use `String.formatted()`.
 - If a new tool class has been added, make sure it's registered in
   `swe/src/main/resources/META-INF/services/org.setms.km.domain.model.tool.Tool`.
+- Use camelCase for identifiers, where acronyms are treated as words.
+  Bad: `XMLHTTPRequest`, good: `XmlHttpRequest`. Bad: `CommandDTO`, good: `CommandDto`.
 - IMPORTANT: Re-use as much as possible; duplication is evil.
   This holds for many things, for example replace multiple instances of the same literal `String` with a constant.
 - IMPORTANT: If a class emits a diagnostic with a suggestion, then that same class must apply the suggestion, not some
