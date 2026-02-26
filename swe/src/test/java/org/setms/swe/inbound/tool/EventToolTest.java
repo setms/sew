@@ -10,14 +10,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SequencedCollection;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Workspace;
+import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.design.Field;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -106,6 +110,25 @@ class EventToolTest extends ResolverToolTestCase<Event> {
     assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
   }
 
+  @Disabled("TODO: Enable")
+  @Test
+  void shouldGenerateCodeForEvent() {
+    var entity =
+        new Entity(new FullyQualifiedName("design", "Payload"))
+            .setFields(
+                List.of(
+                    new Field(new FullyQualifiedName("design", "title")).setType(FieldType.TEXT)));
+    var event = givenEventWithPayload();
+    var inputs = givenInputsWithAllPrerequisites().put("entities", List.of(entity));
+    var workspace = new InMemoryWorkspace();
+
+    var actual =
+        ((EventTool) getTool())
+            .applySuggestion(event, EventTool.GENERATE_CODE, null, inputs, workspace.root());
+
+    assertThat(actual.createdOrChanged()).as("Created artifacts").isNotEmpty();
+  }
+
   private ResolvedInputs givenCodeInWrongPackage() {
     return givenResolvedPayload()
         .put(
@@ -131,12 +154,14 @@ class EventToolTest extends ResolverToolTestCase<Event> {
         .allSatisfy(
             d -> {
               assertThat(d.level()).as("Level").isEqualTo(WARN);
-              assertThat(d.message()).as("Message").isEqualTo("Missing event DTO");
+              assertThat(d.message()).as("Message").isEqualTo("Missing domain object");
               assertThat(d.suggestions())
                   .hasSize(1)
                   .allSatisfy(
                       s ->
-                          assertThat(s.message()).as("Suggestion").isEqualTo("Generate event DTO"));
+                          assertThat(s.message())
+                              .as("Suggestion")
+                              .isEqualTo("Generate domain object"));
             });
   }
 }

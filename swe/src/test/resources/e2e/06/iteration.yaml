@@ -4,5 +4,6 @@ outputs:
 inputs:
 
 diagnostics:
-  - Missing command DTO
+  - Missing domain object
+  - Missing domain object
   - Missing unit test

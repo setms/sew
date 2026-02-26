@@ -67,9 +67,9 @@ abstract class DtoCodeTool<A extends Artifact & HasPayload> extends ArtifactTool
       diagnostics.add(
           new Diagnostic(
               WARN,
-              "Missing %s DTO".formatted(artifact.type()),
+              "Missing domain object",
               artifact.toLocation(),
-              new Suggestion(GENERATE_CODE, "Generate %s DTO".formatted(artifact.type()))));
+              new Suggestion(GENERATE_CODE, "Generate domain object")));
     }
   }
 

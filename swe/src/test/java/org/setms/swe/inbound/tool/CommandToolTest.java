@@ -106,14 +106,14 @@ class CommandToolTest extends ResolverToolTestCase<Command> {
         .allSatisfy(
             d -> {
               assertThat(d.level()).as("Level").isEqualTo(WARN);
-              assertThat(d.message()).as("Message").isEqualTo("Missing command DTO");
+              assertThat(d.message()).as("Message").isEqualTo("Missing domain object");
               assertThat(d.suggestions())
                   .hasSize(1)
                   .allSatisfy(
                       s ->
                           assertThat(s.message())
                               .as("Suggestion")
-                              .isEqualTo("Generate command DTO"));
+                              .isEqualTo("Generate domain object"));
             });
   }
 
