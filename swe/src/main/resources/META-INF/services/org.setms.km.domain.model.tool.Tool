@@ -7,6 +7,7 @@ org.setms.swe.inbound.tool.DecisionTool
 org.setms.swe.inbound.tool.DomainStoryTool
 org.setms.swe.inbound.tool.DomainTool
 org.setms.swe.inbound.tool.EntityTool
+org.setms.swe.inbound.tool.EventTool
 org.setms.swe.inbound.tool.GlossaryTool
 org.setms.swe.inbound.tool.ModulesTool
 org.setms.swe.inbound.tool.UseCaseTool
