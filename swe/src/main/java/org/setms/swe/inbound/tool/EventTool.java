@@ -14,7 +14,7 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
-public class EventTool extends PayloadCodeTool<Event> {
+public class EventTool extends DtoCodeTool<Event> {
 
   public EventTool() {}
 

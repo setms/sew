@@ -7,17 +7,17 @@ import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
-abstract class PayloadCodeTool<A extends Artifact> extends ArtifactTool<A> {
+abstract class DtoCodeTool<A extends Artifact> extends ArtifactTool<A> {
 
   public static final String GENERATE_CODE = "code.generate";
 
   final TechnologyResolver resolver;
 
-  PayloadCodeTool() {
+  DtoCodeTool() {
     this(new TechnologyResolverImpl());
   }
 
-  PayloadCodeTool(TechnologyResolver resolver) {
+  DtoCodeTool(TechnologyResolver resolver) {
     this.resolver = resolver;
   }
 

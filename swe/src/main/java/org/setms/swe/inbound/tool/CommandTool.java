@@ -33,7 +33,7 @@ import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
-public class CommandTool extends PayloadCodeTool<Command> {
+public class CommandTool extends DtoCodeTool<Command> {
 
   public static final String CREATE_PAYLOAD = "payload.create";
 
