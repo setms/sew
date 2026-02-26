@@ -3,30 +3,23 @@ package org.setms.swe.inbound.tool;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
-public class EventTool extends ArtifactTool<Event> {
+public class EventTool extends PayloadCodeTool<Event> {
 
-  public static final String GENERATE_CODE = "code.generate";
-
-  private final TechnologyResolver resolver;
-
-  public EventTool() {
-    this(new TechnologyResolverImpl());
-  }
+  public EventTool() {}
 
   EventTool(TechnologyResolver resolver) {
-    this.resolver = resolver;
+    super(resolver);
   }
 
   @Override
@@ -36,7 +29,8 @@ public class EventTool extends ArtifactTool<Event> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of();
+    return Stream.of(Inputs.entities(), Inputs.decisions(), Inputs.initiatives())
+        .collect(Collectors.toSet());
   }
 
   @Override
@@ -52,12 +46,5 @@ public class EventTool extends ArtifactTool<Event> {
               event.toLocation(),
               new Suggestion(GENERATE_CODE, "Generate event DTO")));
     }
-  }
-
-  private Optional<CodeArtifact> codeFor(Event event, ResolvedInputs inputs) {
-    return inputs.get(CodeArtifact.class).stream()
-        .filter(
-            ca -> ca.getName().equals(event.getName()) && ca.getPackage().endsWith(".domain.model"))
-        .findFirst();
   }
 }

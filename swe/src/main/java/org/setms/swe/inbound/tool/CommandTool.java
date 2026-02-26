@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
-import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -34,19 +33,14 @@ import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
-public class CommandTool extends ArtifactTool<Command> {
+public class CommandTool extends PayloadCodeTool<Command> {
 
   public static final String CREATE_PAYLOAD = "payload.create";
-  public static final String GENERATE_CODE = "code.generate";
 
-  private final TechnologyResolver resolver;
-
-  public CommandTool() {
-    this(new TechnologyResolverImpl());
-  }
+  public CommandTool() {}
 
   CommandTool(TechnologyResolver resolver) {
-    this.resolver = resolver;
+    super(resolver);
   }
 
   @Override
@@ -97,14 +91,6 @@ public class CommandTool extends ArtifactTool<Command> {
               command.toLocation(),
               new Suggestion(GENERATE_CODE, "Generate command DTO")));
     }
-  }
-
-  private Optional<CodeArtifact> codeFor(Command command, ResolvedInputs inputs) {
-    return inputs.get(CodeArtifact.class).stream()
-        .filter(
-            ca ->
-                ca.getName().equals(command.getName()) && ca.getPackage().endsWith(".domain.model"))
-        .findFirst();
   }
 
   @Override

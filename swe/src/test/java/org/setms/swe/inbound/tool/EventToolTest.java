@@ -12,12 +12,8 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
-import org.setms.swe.domain.model.sdlc.architecture.Decision;
-import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
-import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
-import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class EventToolTest extends ResolverToolTestCase<Event> {
@@ -67,25 +63,6 @@ class EventToolTest extends ResolverToolTestCase<Event> {
   private ResolvedInputs givenResolvedPayload() {
     return givenInputsWithAllPrerequisites()
         .put("entities", List.of(new Entity(new FullyQualifiedName("design", "Payload"))));
-  }
-
-  private ResolvedInputs givenInputsWithAllPrerequisites() {
-    return new ResolvedInputs()
-        .put(
-            "initiatives",
-            List.of(
-                new Initiative(new FullyQualifiedName("overview", "Project"))
-                    .setOrganization("Example")
-                    .setTitle("Project")))
-        .put(
-            "decisions",
-            List.of(
-                new Decision(new FullyQualifiedName("technology", "ProgrammingLanguage"))
-                    .setTopic(ProgrammingLanguage.TOPIC)
-                    .setChoice("Java"),
-                new Decision(new FullyQualifiedName("technology", "TopLevelPackage"))
-                    .setTopic(TopLevelPackage.TOPIC)
-                    .setChoice("com.example")));
   }
 
   private void assertThatSingleMissingEventDtoDiagnostic(Collection<Diagnostic> diagnostics) {
