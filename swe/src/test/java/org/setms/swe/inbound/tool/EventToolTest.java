@@ -12,6 +12,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -53,6 +54,26 @@ class EventToolTest extends ResolverToolTestCase<Event> {
     ((EventTool) getTool()).validate(event, inputs, diagnostics);
 
     assertThatSingleMissingEventDtoDiagnostic(diagnostics);
+  }
+
+  @Test
+  void shouldWarnAboutMissingEventDtoWhenCodeIsInWrongPackage() {
+    var event = givenEventWithPayload();
+    var inputs = givenCodeInWrongPackage();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    ((EventTool) getTool()).validate(event, inputs, diagnostics);
+
+    assertThatSingleMissingEventDtoDiagnostic(diagnostics);
+  }
+
+  private ResolvedInputs givenCodeInWrongPackage() {
+    return givenResolvedPayload()
+        .put(
+            "codeArtifacts",
+            List.of(
+                new CodeArtifact(new FullyQualifiedName("wrong.package", "TodoItemAdded"))
+                    .setCode("class TodoItemAdded {}")));
   }
 
   private Event givenEventWithPayload() {
