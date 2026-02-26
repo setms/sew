@@ -4,9 +4,8 @@
 
 ### `EventToolTest`
 
-- **[in progress]** `shouldNotWarnAboutMissingCodeWhenEventHasNoPayload`: validate an `Event` with no `payload` link
-  → expect no diagnostics
-- `shouldReportDiagnosticsFromResolverWhenCodeIsMissing`: validate an `Event` with a payload using
+- ~~`shouldNotWarnAboutMissingCodeWhenEventHasNoPayload`~~
+- **[in progress]** `shouldReportDiagnosticsFromResolverWhenCodeIsMissing`: validate an `Event` with a payload using
   a mock `TechnologyResolver` that adds a diagnostic and returns `Optional.empty()`
   → expect exactly that diagnostic
 - `shouldWarnAboutMissingEventDto`: validate an `Event` whose payload resolves to an `Entity` but
