@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.Tools.builderFor;
@@ -94,5 +95,27 @@ abstract class DtoCodeTool<A extends Artifact & HasPayload> extends ArtifactTool
                 ca.getName().equals(artifact.getName())
                     && ca.getPackage().endsWith(".domain.model"))
         .findFirst();
+  }
+
+  protected AppliedSuggestion writeCode(
+      Collection<CodeArtifact> artifacts, Resource<?> eventResource) {
+    return artifacts.stream()
+        .map(artifact -> writeCodeArtifact(artifact, eventResource))
+        .flatMap(applied -> applied.createdOrChanged().stream())
+        .reduce(AppliedSuggestion.none(), AppliedSuggestion::with, (a, _) -> a);
+  }
+
+  private AppliedSuggestion writeCodeArtifact(CodeArtifact artifact, Resource<?> eventResource) {
+    try {
+      var path = artifact.getPackage().replace('.', '/');
+      var resource =
+          eventResource.select("/src/main/java").select(path).select(artifact.getName() + ".java");
+      try (var output = resource.writeTo()) {
+        output.write(artifact.getCode().getBytes(UTF_8));
+      }
+      return created(resource);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
   }
 }

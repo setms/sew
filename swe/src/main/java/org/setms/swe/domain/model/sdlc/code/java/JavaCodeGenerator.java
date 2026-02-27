@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -16,6 +17,7 @@ import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
+import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
 
 @RequiredArgsConstructor
@@ -30,8 +32,12 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
 
   @Override
   public List<CodeArtifact> generate(Command command, Entity payload) {
-    var packageName = packageNameFor(command);
-    var className = command.getName();
+    return generateDomainObjectFor(command, payload);
+  }
+
+  private List<CodeArtifact> generateDomainObjectFor(Artifact artifact, Entity payload) {
+    var packageName = packageNameFor(artifact);
+    var className = artifact.getName();
     var components = componentsFor(payload);
     var imports = importsFor(payload);
     var importSection = imports.isEmpty() ? "" : imports + "\n\n";
@@ -39,6 +45,14 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
         "package %s;\n\n%spublic record %s(%s) {}\n"
             .formatted(packageName, importSection, className, components);
     return List.of(new CodeArtifact(new FullyQualifiedName(packageName, className)).setCode(code));
+  }
+
+  private String packageNameFor(Artifact artifact) {
+    var commandPackage = artifact.getPackage();
+    var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
+    return lastSegment.equals(commandPackage)
+        ? "%s.domain.model".formatted(topLevelPackage)
+        : "%s.%s.domain.model".formatted(topLevelPackage, commandPackage);
   }
 
   private String componentsFor(Entity payload) {
@@ -82,11 +96,8 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     };
   }
 
-  private String packageNameFor(Command command) {
-    var commandPackage = command.getPackage();
-    var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
-    return lastSegment.equals(commandPackage)
-        ? "%s.domain.model".formatted(topLevelPackage)
-        : "%s.%s.domain.model".formatted(topLevelPackage, commandPackage);
+  @Override
+  public List<CodeArtifact> generate(Event event, Entity payload) {
+    return generateDomainObjectFor(event, payload);
   }
 }
