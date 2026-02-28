@@ -305,4 +305,33 @@ class JavaUnitTestGeneratorTest {
         .doesNotContain("Text::new")
         .doesNotContain("import org.setms.swe.Text");
   }
+
+  @Test
+  void shouldGenerateTestDataBuilderWithDateTimeField() {
+    var acceptanceTest = givenAcceptanceTestWithDateTimeField();
+
+    var actual = generator.generate(acceptanceTest);
+
+    assertThat(actual.get(1).getCode())
+        .contains("import java.time.LocalDateTime")
+        .contains("Arbitraries.defaultFor(LocalDateTime.class)")
+        .doesNotContain("OffsetDateTime");
+  }
+
+  private AcceptanceTest givenAcceptanceTestWithDateTimeField() {
+    var createdAt = new FieldVariable(fqn("createdAt")).setType(FieldType.DATETIME);
+    var notify =
+        elementVariable(
+            "notify",
+            "command",
+            "Notify",
+            new FieldAssignment(fqn("a1"))
+                .setFieldName("CreatedAt")
+                .setValue(variableLink("createdAt")));
+    var scenario = new AggregateScenario(fqn("Accept Notify")).setAccepts(variableLink("notify"));
+    return new AcceptanceTest(fqn("NotificationsAggregate"))
+        .setSut(new Link("aggregate", "Notifications"))
+        .setVariables(List.of(createdAt, notify))
+        .setScenarios(List.of(scenario));
+  }
 }

@@ -294,7 +294,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     }
     var fieldVars = resolveAllFieldVariables(inputVars, acceptanceTest);
     if (fieldVars.stream().anyMatch(f -> f.getType() == FieldType.DATETIME)) {
-      imports.add("java.time.OffsetDateTime");
+      imports.add("java.time.LocalDateTime");
     }
     imports.add("lombok.AccessLevel");
     imports.add("lombok.NoArgsConstructor");
@@ -358,7 +358,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   private String javaType(FieldType type) {
     return switch (type) {
       case TEXT -> "String";
-      case DATETIME -> "OffsetDateTime";
+      case DATETIME -> "LocalDateTime";
       default -> type.name();
     };
   }
@@ -366,7 +366,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   private String arbitraryExpression(FieldVariable fieldVar) {
     return switch (fieldVar.getType()) {
       case TEXT -> textArbitrary(fieldVar.getDefinitions());
-      case DATETIME -> "Arbitraries.defaultFor(OffsetDateTime.class)";
+      case DATETIME -> "Arbitraries.defaultFor(LocalDateTime.class)";
       default -> "Arbitraries.defaultFor(%s.class)".formatted(javaType(fieldVar.getType()));
     };
   }
