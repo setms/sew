@@ -1,4 +1,5 @@
 org.setms.swe.inbound.tool.AcceptanceTestTool
+org.setms.swe.inbound.tool.AggregateTool
 org.setms.swe.inbound.tool.ArchitectureTool
 org.setms.swe.inbound.tool.CodeTool
 org.setms.swe.inbound.tool.CommandTool

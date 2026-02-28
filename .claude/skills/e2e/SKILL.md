@@ -17,10 +17,12 @@ For outside-in TDD, we base the test list on a failing acceptance test:
 3. For each issue that you discover during this analysis, add a test scenario to `TDD.md`.
   Note that a test scenario doesn't have to be a new test, it could also mean updating an existing test.
   In fact, the latter is preferred, since we don't want to add a test that contradicts an existing test.
-4. Order the test scenarios (see below). 
-5. Treat `TDD.md` as a plan, where test scenarios are todo items.
-6. Ask the user to review the test list and address any concerns they may have.
-7. Invoke the `tdd` skill.
+4. Adding test scenarios is an analysis and design task.
+  Pay particular attention to the `High-level architecture` section in `CLAUDE.md`
+5. Order the test scenarios (see `Ordering tests` below). 
+6. Treat `TDD.md` as a plan, where test scenarios are todo items.
+7. Ask the user to review the test list and address any concerns they may have.
+8. Invoke the `tdd` skill.
 
 ## Ordering tests
 

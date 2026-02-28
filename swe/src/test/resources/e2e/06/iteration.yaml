@@ -6,4 +6,5 @@ inputs:
 diagnostics:
   - Missing domain object
   - Missing domain object
+  - Missing domain service
   - Missing unit test

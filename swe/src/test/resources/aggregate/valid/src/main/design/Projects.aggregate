@@ -1,0 +1,6 @@
+package design
+
+aggregate Projects {
+  display = "Projects"
+  root    = entity(Project)
+}

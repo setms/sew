@@ -87,10 +87,14 @@ All domain entities inherit from `Artifact`:
 
 ### Tool pattern
 
-The system uses a plugin-based Tool architecture:
+The system uses a plugin-based Tool architecture (`km` project):
 - Tools declare inputs via `Inputs` class (what artifacts they depend on)
 - Tools discovered via ServiceLoader/reflection
 - Outputs include diagnostics (`.km/diagnostics/`) and reports (`.km/reports/`)
+
+For software engineering (`swe` project), there are artifact types for domain stories, EventStorms artifact types
+(Command, Event, Aggregate, etc), and so forth, each with a corresponding Tool that extends `ArtifactTool`.
+When adding code generation for a new artifact type, use `CommandTool` as the reference implementation.
 
 ### Workspace & file watching
 
