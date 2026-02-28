@@ -45,7 +45,7 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     var code =
         "package %s;\n\n%spublic record %s(%s) {}\n"
             .formatted(packageName, importSection, className, components);
-    return List.of(new CodeArtifact(new FullyQualifiedName(packageName, className)).setCode(code));
+    return List.of(codeArtifact(packageName, className, code));
   }
 
   private String packageFor(Artifact artifact, String subdomain) {
@@ -131,7 +131,7 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     var code =
         "package %s;\n\n%s\n\npublic interface %s {\n\n    %s accept(%s %s);\n}\n"
             .formatted(packageName, imports, serviceName, eventName, commandName, paramName);
-    return new CodeArtifact(new FullyQualifiedName(packageName, serviceName)).setCode(code);
+    return codeArtifact(packageName, serviceName, code);
   }
 
   private CodeArtifact serviceImpl(
@@ -145,7 +145,10 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
         "package %s;\n\n%s\n\nclass %sImpl implements %s {\n\n    public %s accept(%s %s) {}\n}\n"
             .formatted(
                 packageName, imports, serviceName, serviceName, eventName, commandName, paramName);
-    return new CodeArtifact(new FullyQualifiedName(packageName, serviceName + "Impl"))
-        .setCode(code);
+    return codeArtifact(packageName, serviceName + "Impl", code);
+  }
+
+  private static CodeArtifact codeArtifact(String packageName, String name, String code) {
+    return new CodeArtifact(new FullyQualifiedName(packageName, name)).setCode(code);
   }
 }
