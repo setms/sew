@@ -5,5 +5,8 @@ import com.example.todo.domain.model.TodoItemAdded;
 
 public class TodoItemsServiceImpl implements TodoItemsService {
 
-  public TodoItemAdded accept(AddTodoItem addTodoItem) {}
+  @Override
+  public TodoItemAdded accept(AddTodoItem addTodoItem) {
+    return null;
+  }
 }

@@ -46,7 +46,7 @@ class JavaCodeGeneratorTest {
         .contains("class ProjectsServiceImpl implements ProjectsService")
         .contains("import com.company.project.domain.model.CreateProject;")
         .contains("import com.company.project.domain.model.ProjectCreated;")
-        .contains("public ProjectCreated accept(CreateProject createProject) {}");
+        .contains("public ProjectCreated accept(CreateProject createProject) {\n    return null;");
   }
 
   private static final String PACKAGE = "project";

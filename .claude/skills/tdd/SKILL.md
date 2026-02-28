@@ -59,10 +59,10 @@ Implementation notes:
 - Prefer tools from the `jetbrains` MCP server.
   The IntelliJ project lives at `~/dev/setms/sew`.
 
-CRITICAL: You must not conclude you're done until all tests pass (with the possible exception of `EndToEndTest`) and
-all other checks succeed.
+**CRITICAL: You must not conclude you're done until all tests pass (with the possible exception of `EndToEndTest`) and
+all other checks succeed.**
 This is non-negotiable.
 
-CRITICAL: You mustn't run any test more than once, unless there were changes to either the test or the code it tests.
+**CRITICAL: You mustn't run any test more than once, unless there were changes to either the test or the code it tests.**
 If you need more information, look at the test report in the `build` directory instead.
 This is critical for not wasting time.

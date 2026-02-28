@@ -6,6 +6,9 @@ Review changed code and make sure it follows the following style guide:
 
 - Ask the `jetbrains` MCP server for issues in the changed files and address them.
   The IntelliJ project lives at `~/dev/setms/sew`.
+  If you can't connect to the MCP server, or there is any issue in communicating with it STOP IMMEDIATELY and
+  ask the user for support.
+  DO NOT CONTINUE until all issues with the MCP server are resolved.
 - There MUST NOT be duplication.
 - If a method has only one `return` statement that returns a local variable, the name of that variable must be `result`.
 - Methods annotated with `@Test` must consist of at most 3 blocks: Arrange, Act, and Assert.
@@ -25,6 +28,7 @@ Review changed code and make sure it follows the following style guide:
   `swe/src/main/resources/META-INF/services/org.setms.km.domain.model.tool.Tool`.
 - Use camelCase for identifiers, where acronyms are treated as words.
   Bad: `XMLHTTPRequest`, good: `XmlHttpRequest`. Bad: `CommandDTO`, good: `CommandDto`.
+- Don't put newlines as `\n` in strings, use text blocks instead. 
 - IMPORTANT: Re-use as much as possible; duplication is evil.
   This holds for many things, for example replace multiple instances of the same literal `String` with a constant.
 - IMPORTANT: If a class emits a diagnostic with a suggestion, then that same class must apply the suggestion, not some

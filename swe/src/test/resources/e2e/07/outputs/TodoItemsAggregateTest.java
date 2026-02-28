@@ -5,11 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.todo.domain.model.TodoItemAdded;
 import com.example.todo.domain.services.TodoItemsService;
+import com.example.todo.domain.services.TodoItemsServiceImpl;
 import org.junit.jupiter.api.Test;
 
 class TodoItemsAggregateTest {
 
-  private final TodoItemsService service = new TodoItemsService();
+  private final TodoItemsService service = new TodoItemsServiceImpl();
 
   @Test
   void acceptAddTodoItemAndEmitTodoItemAdded() {

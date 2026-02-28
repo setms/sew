@@ -43,7 +43,11 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     var imports = importsFor(payload);
     var importSection = imports.isEmpty() ? "" : imports + "\n\n";
     var code =
-        "package %s;\n\n%spublic record %s(%s) {}\n"
+        """
+            package %s;
+
+            %spublic record %s(%s) {}
+            """
             .formatted(packageName, importSection, className, components);
     return List.of(codeArtifact(packageName, className, code));
   }
@@ -135,7 +139,7 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
 
         public interface %s {
 
-            %s accept(%s %s);
+          %s accept(%s %s);
         }
         """
             .formatted(packageName, imports, serviceName, eventName, commandName, paramName);
@@ -155,9 +159,12 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
 
         %s
 
-        class %sImpl implements %s {
+        public class %sImpl implements %s {
 
-            public %s accept(%s %s) {}
+          @Override
+          public %s accept(%s %s) {
+            return null;
+          }
         }
         """
             .formatted(
