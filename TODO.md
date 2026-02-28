@@ -34,9 +34,9 @@
   - A DSCM may use SQL or native programming language files
   - For Flyway, they're stored in `src/main/resources/db/migration` by default
 
-### Command
+### Code
 
-- Generate domain object
+- `CodeTool` should use Google Java Formatter to format the code properly before persisting a resource
 
 ### Decision
 
@@ -48,10 +48,6 @@
 - Conversion to use case scenario:
   - handle multiple activities in single sentence
   - handle computerSystem as System-under-Design vs external system
-
-### Event
-
-- Generate domain object
 
 ### Glossary
 
