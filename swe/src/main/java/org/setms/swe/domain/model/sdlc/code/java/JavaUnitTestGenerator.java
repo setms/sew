@@ -113,12 +113,14 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     }
     regularImports.add("org.junit.jupiter.api.Test");
     builder.append("\n");
-    for (var imp : staticImports) {
-      builder.append("import static %s;\n".formatted(imp));
-    }
+    appendImports("import static ", staticImports, builder);
     builder.append("\n");
-    for (var imp : regularImports) {
-      builder.append("import %s;\n".formatted(imp));
+    appendImports("import ", regularImports, builder);
+  }
+
+  private void appendImports(String prefix, Collection<String> imports, StringBuilder builder) {
+    for (var imp : imports) {
+      builder.append("%s%s;\n".formatted(prefix, imp));
     }
   }
 
