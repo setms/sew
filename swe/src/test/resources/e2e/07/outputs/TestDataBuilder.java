@@ -1,7 +1,7 @@
 package com.example.todo;
 
 import com.example.todo.domain.model.AddTodoItem;
-import java.time.OffsetDateTime;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import net.jqwik.api.Arbitraries;
@@ -19,11 +19,11 @@ public class TestDataBuilder {
     return Combinators.combine(tasks(), dueDates()).as(AddTodoItem::new);
   }
 
-  private static Arbitrary<Text> tasks() {
-    return Arbitraries.strings().ofMinLength(1).map(Text::new);
+  private static Arbitrary<String> tasks() {
+    return Arbitraries.strings().ofMinLength(1);
   }
 
-  private static Arbitrary<OffsetDateTime> dueDates() {
-    return Arbitraries.defaultFor(OffsetDateTime.class);
+  private static Arbitrary<LocalDateTime> dueDates() {
+    return Arbitraries.defaultFor(LocalDateTime.class);
   }
 }

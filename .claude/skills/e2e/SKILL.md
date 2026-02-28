@@ -15,6 +15,8 @@ For outside-in TDD, we base the test list on a failing acceptance test:
   `swe/build/reports/tests/test/org.setms.swe.e2e.EndToEndTest/shouldGuideSoftwareEngineering().html`.
   Limit yourself to the last iteration, you most likely don't need anything before that to understand the issue.
 3. For each issue that you discover during this analysis, add a test scenario to `TDD.md`.
+  Note that a test scenario doesn't have to be a new test, it could also mean updating an existing test.
+  In fact, the latter is preferred, since we don't want to add a test that contradicts an existing test.
 4. Order the test scenarios (see below). 
 5. Treat `TDD.md` as a plan, where test scenarios are todo items.
 6. Ask the user to review the test list and address any concerns they may have.
