@@ -15,12 +15,14 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
+import org.setms.swe.domain.model.sdlc.technology.CodeTester;
 
 class GradleTest {
 
   private static final String PROJECT_NAME = "MyProject";
 
   private final CodeBuilder codeBuilder = new Gradle(PROJECT_NAME);
+  private final CodeTester codeTester = new Gradle(PROJECT_NAME);
   private final InMemoryWorkspace workspace = new InMemoryWorkspace();
 
   @Test
@@ -174,6 +176,15 @@ class GradleTest {
     var diagnostics = new ArrayList<Diagnostic>();
 
     codeBuilder.build(workspace.root(), diagnostics);
+
+    assertThat(diagnostics).isEmpty();
+  }
+
+  @Test
+  void shouldProduceNoDiagnosticsWhenThereIsNothingToTest() {
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    codeTester.test(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
   }

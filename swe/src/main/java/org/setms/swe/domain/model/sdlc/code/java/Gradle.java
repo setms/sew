@@ -26,9 +26,10 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
+import org.setms.swe.domain.model.sdlc.technology.CodeTester;
 
 @RequiredArgsConstructor
-public class Gradle implements CodeBuilder {
+public class Gradle implements CodeBuilder, CodeTester {
 
   public static final String GENERATE_BUILD_CONFIG = "gradle.generate.build.config";
   private static final String GRADLE_VERSION = "9.3.1";
@@ -104,6 +105,14 @@ public class Gradle implements CodeBuilder {
       return;
     }
     runCompile(resource, diagnostics);
+  }
+
+  @Override
+  public void test(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    if (!resource.select("/build.gradle").exists()
+        || !resource.select("/settings.gradle").exists()) {
+      return;
+    }
   }
 
   private void runCompile(Resource<?> resource, Collection<Diagnostic> diagnostics) {
