@@ -210,7 +210,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
         .map(
             assignment -> {
               var inputFieldName = findMatchingFieldName(assignment.getValue(), inputVar);
-              return "%s.get%s()".formatted(inputVar.getName(), inputFieldName);
+              return "%s.%s()".formatted(inputVar.getName(), initLower(inputFieldName));
             })
         .collect(joining(", "));
   }

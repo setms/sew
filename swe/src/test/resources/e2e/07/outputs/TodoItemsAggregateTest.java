@@ -15,7 +15,7 @@ class TodoItemsAggregateTest {
   @Test
   void acceptAddTodoItemAndEmitTodoItemAdded() {
     var addTodoItem = someAddTodoItem();
-    var expected = new TodoItemAdded(addTodoItem.getTask(), addTodoItem.getDueDate());
+    var expected = new TodoItemAdded(addTodoItem.task(), addTodoItem.dueDate());
 
     var actual = service.accept(addTodoItem);
 
