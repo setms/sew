@@ -6,10 +6,14 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.acceptanceTests;
 import static org.setms.swe.inbound.tool.Inputs.aggregates;
 import static org.setms.swe.inbound.tool.Inputs.code;
+import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
+import static org.setms.swe.inbound.tool.Inputs.events;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -25,8 +29,11 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
+import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
+import org.setms.swe.domain.model.sdlc.eventstorming.Command;
+import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 public class AggregateTool extends ArtifactTool<Aggregate> {
@@ -50,7 +57,9 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Stream.of(Stream.of(acceptanceTests(), decisions(), initiatives()), code().stream())
+    return Stream.of(
+            Stream.of(acceptanceTests(), commands(), events(), decisions(), initiatives()),
+            code().stream())
         .flatMap(s -> s)
         .collect(toSet());
   }
@@ -108,6 +117,51 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   private AppliedSuggestion generateServiceFor(
       Resource<?> aggregateResource, Aggregate aggregate, ResolvedInputs inputs) {
-    return AppliedSuggestion.none();
+    var diagnostics = new ArrayList<Diagnostic>();
+    return resolver
+        .codeGenerator(inputs, diagnostics)
+        .flatMap(
+            generator ->
+                findCommandAndEvent(aggregate, inputs)
+                    .map(
+                        pair ->
+                            CodeWriter.writeCode(
+                                generator.generate(aggregate, pair.command(), pair.event()),
+                                aggregateResource)))
+        .orElseGet(AppliedSuggestion::none);
   }
+
+  private Optional<CommandAndEvent> findCommandAndEvent(
+      Aggregate aggregate, ResolvedInputs inputs) {
+    return inputs.get(AcceptanceTest.class).stream()
+        .filter(at -> referencesAggregate(at, aggregate))
+        .flatMap(
+            at ->
+                at.getScenarios().stream()
+                    .filter(AggregateScenario.class::isInstance)
+                    .map(AggregateScenario.class::cast)
+                    .flatMap(scenario -> toCommandAndEvent(scenario, at, inputs).stream()))
+        .findFirst();
+  }
+
+  private Optional<CommandAndEvent> toCommandAndEvent(
+      AggregateScenario scenario, AcceptanceTest acceptanceTest, ResolvedInputs inputs) {
+    var commandOpt =
+        resolveArtifact(scenario.getAccepts(), acceptanceTest, inputs.get(Command.class));
+    var eventOpt = resolveArtifact(scenario.getEmitted(), acceptanceTest, inputs.get(Event.class));
+    return commandOpt.flatMap(
+        command -> eventOpt.map(event -> new CommandAndEvent(command, event)));
+  }
+
+  private <T extends Artifact> Optional<T> resolveArtifact(
+      Link variableLink, AcceptanceTest acceptanceTest, List<T> candidates) {
+    return acceptanceTest
+        .findVariable(variableLink)
+        .filter(ElementVariable.class::isInstance)
+        .map(ElementVariable.class::cast)
+        .map(ElementVariable::getType)
+        .flatMap(typeLink -> typeLink.resolveFrom(candidates));
+  }
+
+  private record CommandAndEvent(Command command, Event event) {}
 }
