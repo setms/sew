@@ -10,9 +10,23 @@ import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
+import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
+import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 
 class JavaCodeGeneratorTest {
+
+  @Test
+  void shouldGenerateServiceArtifacts() {
+    var generator = new JavaCodeGenerator("com.company.project");
+    var aggregate = new Aggregate(new FullyQualifiedName("project", "Projects"));
+    var command = new Command(new FullyQualifiedName("project", "CreateProject"));
+    var event = new Event(new FullyQualifiedName("project", "ProjectCreated"));
+
+    var actual = generator.generate(aggregate, command, event);
+
+    assertThat(actual).hasSize(2);
+  }
 
   private static final String PACKAGE = "project";
 

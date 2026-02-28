@@ -16,6 +16,7 @@ import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
+import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
@@ -99,5 +100,23 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   @Override
   public List<CodeArtifact> generate(Event event, Entity payload) {
     return generateDomainObjectFor(event, payload);
+  }
+
+  @Override
+  public List<CodeArtifact> generate(Aggregate aggregate, Command command, Event event) {
+    var packageName = servicePackageFor(aggregate);
+    var serviceName = aggregate.getName() + "Service";
+    return List.of(
+        new CodeArtifact(new FullyQualifiedName(packageName, serviceName)).setCode("TODO"),
+        new CodeArtifact(new FullyQualifiedName(packageName, serviceName + "Impl"))
+            .setCode("TODO"));
+  }
+
+  private String servicePackageFor(Aggregate aggregate) {
+    var pkg = aggregate.getPackage();
+    var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
+    return lastSegment.equals(pkg)
+        ? "%s.domain.services".formatted(topLevelPackage)
+        : "%s.%s.domain.services".formatted(topLevelPackage, pkg);
   }
 }
