@@ -70,10 +70,11 @@ class JavaUnitTestGeneratorTest {
         .contains("import static com.example.notifications.TestDataBuilder.someNotifyUser;")
         .contains("import com.example.notifications.domain.model.UserNotified;")
         .contains("import com.example.notifications.domain.services.NotificationsService;")
+        .contains("import com.example.notifications.domain.services.NotificationsServiceImpl;")
         .contains("import static org.assertj.core.api.Assertions.assertThat;")
         .contains("@Test")
         .contains("class NotificationsAggregateTest")
-        .contains("private final NotificationsService service = new NotificationsService();")
+        .contains("private final NotificationsService service = new NotificationsServiceImpl();")
         .contains("var notifyUser = someNotifyUser();")
         .contains(
             "var expected =\n"
@@ -181,7 +182,10 @@ class JavaUnitTestGeneratorTest {
     assertThat(actual.getName()).isEqualTo("SendNotificationPolicyTest");
     assertThat(actual.getCode())
         .contains("class SendNotificationPolicyTest")
-        .contains("private final SendNotificationService service = new SendNotificationService();")
+        .contains("import com.example.notifications.domain.services.SendNotificationService;")
+        .contains("import com.example.notifications.domain.services.SendNotificationServiceImpl;")
+        .contains(
+            "private final SendNotificationService service = new SendNotificationServiceImpl();")
         .contains("var userNotified = someUserNotified();")
         .contains("var expected = new SendEmail().setMessage(userNotified.getMessage());")
         .contains("var actual = service.handle(userNotified);")
@@ -226,7 +230,10 @@ class JavaUnitTestGeneratorTest {
     assertThat(actual.getName()).isEqualTo("NotificationListReadModelTest");
     assertThat(actual.getCode())
         .contains("class NotificationListReadModelTest")
-        .contains("private final NotificationListService service = new NotificationListService();")
+        .contains("import com.example.notifications.domain.services.NotificationListService;")
+        .contains("import com.example.notifications.domain.services.NotificationListServiceImpl;")
+        .contains(
+            "private final NotificationListService service = new NotificationListServiceImpl();")
         .contains("var userNotified = someUserNotified();")
         .contains("service.handle(userNotified);")
         .doesNotContain("assertThat");
