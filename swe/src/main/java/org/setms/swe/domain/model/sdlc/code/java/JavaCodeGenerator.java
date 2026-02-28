@@ -106,9 +106,46 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   public List<CodeArtifact> generate(Aggregate aggregate, Command command, Event event) {
     var packageName = packageFor(aggregate, "domain.services");
     var serviceName = aggregate.getName() + "Service";
+    var commandFqn = "%s.%s".formatted(packageFor(command, "domain.model"), command.getName());
+    var eventFqn = "%s.%s".formatted(packageFor(event, "domain.model"), event.getName());
+    var imports =
+        Stream.of(commandFqn, eventFqn)
+            .sorted()
+            .map("import %s;"::formatted)
+            .collect(joining("\n"));
+    var paramName = Strings.initLower(command.getName());
     return List.of(
-        new CodeArtifact(new FullyQualifiedName(packageName, serviceName)).setCode("TODO"),
-        new CodeArtifact(new FullyQualifiedName(packageName, serviceName + "Impl"))
-            .setCode("TODO"));
+        serviceInterface(
+            packageName, serviceName, command.getName(), event.getName(), imports, paramName),
+        serviceImpl(
+            packageName, serviceName, command.getName(), event.getName(), imports, paramName));
+  }
+
+  private CodeArtifact serviceInterface(
+      String packageName,
+      String serviceName,
+      String commandName,
+      String eventName,
+      String imports,
+      String paramName) {
+    var code =
+        "package %s;\n\n%s\n\npublic interface %s {\n\n    %s accept(%s %s);\n}\n"
+            .formatted(packageName, imports, serviceName, eventName, commandName, paramName);
+    return new CodeArtifact(new FullyQualifiedName(packageName, serviceName)).setCode(code);
+  }
+
+  private CodeArtifact serviceImpl(
+      String packageName,
+      String serviceName,
+      String commandName,
+      String eventName,
+      String imports,
+      String paramName) {
+    var code =
+        "package %s;\n\n%s\n\nclass %sImpl implements %s {\n\n    public %s accept(%s %s) {}\n}\n"
+            .formatted(
+                packageName, imports, serviceName, serviceName, eventName, commandName, paramName);
+    return new CodeArtifact(new FullyQualifiedName(packageName, serviceName + "Impl"))
+        .setCode(code);
   }
 }

@@ -25,7 +25,28 @@ class JavaCodeGeneratorTest {
 
     var actual = generator.generate(aggregate, command, event);
 
-    assertThat(actual).hasSize(2);
+    assertThatGeneratedCodeIsServiceInterface(actual.get(0));
+    assertThatGeneratedCodeIsServiceImplementation(actual.get(1));
+  }
+
+  private void assertThatGeneratedCodeIsServiceInterface(CodeArtifact actual) {
+    assertThat(actual.getName()).isEqualTo("ProjectsService");
+    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
+    assertThat(actual.getCode())
+        .contains("public interface ProjectsService")
+        .contains("import com.company.project.domain.model.CreateProject;")
+        .contains("import com.company.project.domain.model.ProjectCreated;")
+        .contains("ProjectCreated accept(CreateProject createProject);");
+  }
+
+  private void assertThatGeneratedCodeIsServiceImplementation(CodeArtifact actual) {
+    assertThat(actual.getName()).isEqualTo("ProjectsServiceImpl");
+    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
+    assertThat(actual.getCode())
+        .contains("class ProjectsServiceImpl implements ProjectsService")
+        .contains("import com.company.project.domain.model.CreateProject;")
+        .contains("import com.company.project.domain.model.ProjectCreated;")
+        .contains("public ProjectCreated accept(CreateProject createProject) {}");
   }
 
   private static final String PACKAGE = "project";
