@@ -198,22 +198,21 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
       ElementVariable outputVar, ElementVariable inputVar, StringBuilder builder) {
     var typeName = outputVar.getType().getId();
     builder.append(
-        "    var expected = new %s()%s;\n"
-            .formatted(typeName, expectedSetters(outputVar, inputVar)));
+        "    var expected = new %s(%s);\n"
+            .formatted(typeName, constructorArgs(outputVar, inputVar)));
   }
 
-  private String expectedSetters(ElementVariable outputVar, ElementVariable inputVar) {
+  private String constructorArgs(ElementVariable outputVar, ElementVariable inputVar) {
     if (outputVar.getDefinitions() == null || outputVar.getDefinitions().isEmpty()) {
       return "";
     }
-    var result = new StringBuilder();
-    for (var assignment : outputVar.getDefinitions()) {
-      var inputFieldName = findMatchingFieldName(assignment.getValue(), inputVar);
-      result.append(
-          ".set%s(%s.get%s())"
-              .formatted(assignment.getFieldName(), inputVar.getName(), inputFieldName));
-    }
-    return result.toString();
+    return outputVar.getDefinitions().stream()
+        .map(
+            assignment -> {
+              var inputFieldName = findMatchingFieldName(assignment.getValue(), inputVar);
+              return "%s.get%s()".formatted(inputVar.getName(), inputFieldName);
+            })
+        .collect(joining(", "));
   }
 
   private String findMatchingFieldName(Link variableRef, ElementVariable inputVar) {

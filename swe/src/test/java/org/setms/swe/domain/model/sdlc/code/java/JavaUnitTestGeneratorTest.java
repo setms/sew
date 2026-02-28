@@ -87,10 +87,7 @@ class JavaUnitTestGeneratorTest {
         .contains("private final NotificationsService service = new NotificationsServiceImpl();")
         .contains("var notifyUser = someNotifyUser();")
         .contains(
-            "var expected =\n"
-                + "        new UserNotified()"
-                + ".setMessage(notifyUser.getMessage())"
-                + ".setDueDate(notifyUser.getDueDate());")
+            "var expected = new UserNotified(notifyUser.getMessage(), notifyUser.getDueDate());")
         .contains("var actual = service.accept(notifyUser);")
         .contains("assertThat(actual).isEqualTo(expected);");
   }
@@ -201,7 +198,7 @@ class JavaUnitTestGeneratorTest {
         .contains(
             "private final SendNotificationService service = new SendNotificationServiceImpl();")
         .contains("var userNotified = someUserNotified();")
-        .contains("var expected = new SendEmail().setMessage(userNotified.getMessage());")
+        .contains("var expected = new SendEmail(userNotified.getMessage());")
         .contains("var actual = service.handle(userNotified);")
         .contains("assertThat(actual).isEqualTo(expected);");
   }
