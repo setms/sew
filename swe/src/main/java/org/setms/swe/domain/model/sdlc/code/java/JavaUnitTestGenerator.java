@@ -101,6 +101,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     var staticImports = new TreeSet<String>();
     var sutName = acceptanceTest.getSut().getId();
     regularImports.add("%s.domain.services.%sService".formatted(packageName, sutName));
+    regularImports.add("%s.domain.services.%sServiceImpl".formatted(packageName, sutName));
     for (var scenario : acceptanceTest.getScenarios()) {
       collectModelImports(packageName, scenario, acceptanceTest, regularImports);
     }
@@ -148,7 +149,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   private void generateServiceField(AcceptanceTest acceptanceTest, StringBuilder builder) {
     var sutName = acceptanceTest.getSut().getId();
     builder.append(
-        "\n  private final %sService service = new %sService();\n".formatted(sutName, sutName));
+        "\n  private final %sService service = new %sServiceImpl();\n".formatted(sutName, sutName));
   }
 
   private void generateMethodBody(

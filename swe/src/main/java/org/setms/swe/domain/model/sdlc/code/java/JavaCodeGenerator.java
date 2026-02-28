@@ -48,12 +48,11 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     return List.of(codeArtifact(packageName, className, code));
   }
 
-  private String packageFor(Artifact artifact, String subdomain) {
-    var pkg = artifact.getPackage();
+  private String packageFor(Artifact artifact, String additionalPackage) {
     var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
-    return lastSegment.equals(pkg)
-        ? "%s.%s".formatted(topLevelPackage, subdomain)
-        : "%s.%s.%s".formatted(topLevelPackage, pkg, subdomain);
+    return lastSegment.equals(artifact.getPackage())
+        ? "%s.%s".formatted(topLevelPackage, additionalPackage)
+        : "%s.%s.%s".formatted(topLevelPackage, artifact.getPackage(), additionalPackage);
   }
 
   private String componentsFor(Entity payload) {
@@ -129,7 +128,16 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
       String imports,
       String paramName) {
     var code =
-        "package %s;\n\n%s\n\npublic interface %s {\n\n    %s accept(%s %s);\n}\n"
+        """
+        package %s;
+
+        %s
+
+        public interface %s {
+
+            %s accept(%s %s);
+        }
+        """
             .formatted(packageName, imports, serviceName, eventName, commandName, paramName);
     return codeArtifact(packageName, serviceName, code);
   }
@@ -142,7 +150,16 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
       String imports,
       String paramName) {
     var code =
-        "package %s;\n\n%s\n\nclass %sImpl implements %s {\n\n    public %s accept(%s %s) {}\n}\n"
+        """
+        package %s;
+
+        %s
+
+        class %sImpl implements %s {
+
+            public %s accept(%s %s) {}
+        }
+        """
             .formatted(
                 packageName, imports, serviceName, serviceName, eventName, commandName, paramName);
     return codeArtifact(packageName, serviceName + "Impl", code);

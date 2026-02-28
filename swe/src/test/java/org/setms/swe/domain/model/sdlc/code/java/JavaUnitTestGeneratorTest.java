@@ -19,6 +19,7 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.ReadModelScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.Variable;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 
@@ -56,15 +57,24 @@ class JavaUnitTestGeneratorTest {
 
   @Test
   void shouldGenerateUnitTestFromAggregateScenario() {
-    var acceptanceTest = aggregateAcceptanceTest();
+    var acceptanceTest = givenAggregateAcceptanceTest();
 
     var actual = generator.generate(acceptanceTest).getFirst();
 
+    assertThatAggregateTestFileHasCorrectMetadata(actual);
+    assertThatAggregateTestFileHasCorrectCode(actual);
+  }
+
+  private void assertThatAggregateTestFileHasCorrectMetadata(CodeArtifact actual) {
     var expectedPackage = TOP_LEVEL_PACKAGE + "." + ACCEPTANCE_TEST_PACKAGE;
     assertThat(actual).isNotNull();
     assertThat(actual.getName()).isEqualTo("NotificationsAggregateTest");
     assertThat(actual.getPackage()).isEqualTo(expectedPackage);
     assertThat(actual.getCode()).isNotEmpty();
+  }
+
+  private void assertThatAggregateTestFileHasCorrectCode(CodeArtifact actual) {
+    var expectedPackage = TOP_LEVEL_PACKAGE + "." + ACCEPTANCE_TEST_PACKAGE;
     assertThat(actual.getCode())
         .contains("package %s;".formatted(expectedPackage))
         .contains("import static com.example.notifications.TestDataBuilder.someNotifyUser;")
@@ -85,11 +95,11 @@ class JavaUnitTestGeneratorTest {
         .contains("assertThat(actual).isEqualTo(expected);");
   }
 
-  private AcceptanceTest aggregateAcceptanceTest() {
-    return aggregateAcceptanceTest(ACCEPTANCE_TEST_PACKAGE);
+  private AcceptanceTest givenAggregateAcceptanceTest() {
+    return givenAggregateAcceptanceTest(ACCEPTANCE_TEST_PACKAGE);
   }
 
-  private AcceptanceTest aggregateAcceptanceTest(String packageName) {
+  private AcceptanceTest givenAggregateAcceptanceTest(String packageName) {
     var message = fieldVariable();
     var dueDate =
         new FieldVariable(fqn("dueDate"))
@@ -155,7 +165,7 @@ class JavaUnitTestGeneratorTest {
   @Test
   void shouldGenerateUnitTestInCorrectPackage() {
     var acceptanceTest =
-        aggregateAcceptanceTest(
+        givenAggregateAcceptanceTest(
             TOP_LEVEL_PACKAGE.substring(1 + TOP_LEVEL_PACKAGE.lastIndexOf('.')));
 
     var actual = generator.generate(acceptanceTest).getFirst();
@@ -165,7 +175,7 @@ class JavaUnitTestGeneratorTest {
 
   @Test
   void shouldGenerateTestMethodPerScenario() {
-    var acceptanceTest = aggregateAcceptanceTest();
+    var acceptanceTest = givenAggregateAcceptanceTest();
 
     var actual = generator.generate(acceptanceTest).getFirst();
 
@@ -174,12 +184,16 @@ class JavaUnitTestGeneratorTest {
 
   @Test
   void shouldGenerateUnitTestFromPolicyScenario() {
-    var acceptanceTest = policyAcceptanceTest();
+    var acceptanceTest = givenPolicyAcceptanceTest();
 
     var actual = generator.generate(acceptanceTest).getFirst();
 
     assertThat(actual).isNotNull();
     assertThat(actual.getName()).isEqualTo("SendNotificationPolicyTest");
+    assertThatPolicyTestFileHasCorrectCode(actual);
+  }
+
+  private void assertThatPolicyTestFileHasCorrectCode(CodeArtifact actual) {
     assertThat(actual.getCode())
         .contains("class SendNotificationPolicyTest")
         .contains("import com.example.notifications.domain.services.SendNotificationService;")
@@ -192,7 +206,7 @@ class JavaUnitTestGeneratorTest {
         .contains("assertThat(actual).isEqualTo(expected);");
   }
 
-  private AcceptanceTest policyAcceptanceTest() {
+  private AcceptanceTest givenPolicyAcceptanceTest() {
     var message = fieldVariable();
     var userNotified =
         elementVariable(
@@ -222,12 +236,16 @@ class JavaUnitTestGeneratorTest {
 
   @Test
   void shouldGenerateUnitTestFromReadModelScenario() {
-    var acceptanceTest = readModelAcceptanceTest();
+    var acceptanceTest = givenReadModelAcceptanceTest();
 
     var actual = generator.generate(acceptanceTest).getFirst();
 
     assertThat(actual).isNotNull();
     assertThat(actual.getName()).isEqualTo("NotificationListReadModelTest");
+    assertThatReadModelTestFileHasCorrectCode(actual);
+  }
+
+  private void assertThatReadModelTestFileHasCorrectCode(CodeArtifact actual) {
     assertThat(actual.getCode())
         .contains("class NotificationListReadModelTest")
         .contains("import com.example.notifications.domain.services.NotificationListService;")
@@ -239,7 +257,7 @@ class JavaUnitTestGeneratorTest {
         .doesNotContain("assertThat");
   }
 
-  private AcceptanceTest readModelAcceptanceTest() {
+  private AcceptanceTest givenReadModelAcceptanceTest() {
     var message = fieldVariable();
     var userNotified =
         elementVariable(
@@ -259,6 +277,16 @@ class JavaUnitTestGeneratorTest {
 
   @Test
   void shouldGenerateMultipleTestMethods() {
+    var acceptanceTest = givenAcceptanceTestWithMultipleScenarios();
+
+    var actual = generator.generate(acceptanceTest).getFirst();
+
+    assertThat(actual.getCode())
+        .contains("acceptNotifyUserAndEmitUserNotified")
+        .contains("rejectDuplicateNotification");
+  }
+
+  private AcceptanceTest givenAcceptanceTestWithMultipleScenarios() {
     var message = fieldVariable();
     var notifyUser =
         elementVariable(
@@ -284,22 +312,15 @@ class JavaUnitTestGeneratorTest {
         new AggregateScenario(fqn("Reject duplicate notification"))
             .setInit(List.of(variableLink("userNotified")))
             .setAccepts(variableLink("notifyUser"));
-    var acceptanceTest =
-        new AcceptanceTest(fqn("NotificationsAggregate"))
-            .setSut(new Link("aggregate", "Notifications"))
-            .setVariables(List.of(message, notifyUser, userNotified))
-            .setScenarios(List.of(scenario1, scenario2));
-
-    var actual = generator.generate(acceptanceTest).getFirst();
-
-    assertThat(actual.getCode())
-        .contains("acceptNotifyUserAndEmitUserNotified")
-        .contains("rejectDuplicateNotification");
+    return new AcceptanceTest(fqn("NotificationsAggregate"))
+        .setSut(new Link("aggregate", "Notifications"))
+        .setVariables(List.of(message, notifyUser, userNotified))
+        .setScenarios(List.of(scenario1, scenario2));
   }
 
   @Test
   void shouldGenerateTestDataBuilder() {
-    var acceptanceTest = aggregateAcceptanceTest();
+    var acceptanceTest = givenAggregateAcceptanceTest();
 
     var actual = generator.generate(acceptanceTest);
 
