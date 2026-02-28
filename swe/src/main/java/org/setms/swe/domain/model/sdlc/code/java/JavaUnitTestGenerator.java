@@ -55,8 +55,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   private String generateCode(String packageName, String className, AcceptanceTest acceptanceTest) {
     var builder = new StringBuilder();
     builder.append("package %s;\n".formatted(packageName));
-    generateStaticImports(packageName, acceptanceTest, builder);
-    builder.append("\nimport org.junit.jupiter.api.Test;\n");
+    generateImports(packageName, acceptanceTest, builder);
     builder.append("\nclass %s {\n".formatted(className));
     generateServiceField(acceptanceTest, builder);
     for (var scenario : acceptanceTest.getScenarios()) {
@@ -96,23 +95,30 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     return result;
   }
 
-  private void generateStaticImports(
+  private void generateImports(
       String packageName, AcceptanceTest acceptanceTest, StringBuilder builder) {
-    var imports = new TreeSet<String>();
+    var regularImports = new TreeSet<String>();
+    var staticImports = new TreeSet<String>();
     var sutName = acceptanceTest.getSut().getId();
-    imports.add("%s.domain.services.%sService".formatted(packageName, sutName));
+    regularImports.add("%s.domain.services.%sService".formatted(packageName, sutName));
     for (var scenario : acceptanceTest.getScenarios()) {
-      collectModelImports(packageName, scenario, acceptanceTest, imports);
+      collectModelImports(packageName, scenario, acceptanceTest, regularImports);
     }
     for (var inputVar : collectInputVariables(acceptanceTest)) {
-      imports.add("%s.TestDataBuilder.some%s".formatted(packageName, inputVar.getType().getId()));
+      staticImports.add(
+          "%s.TestDataBuilder.some%s".formatted(packageName, inputVar.getType().getId()));
     }
-    if (imports.stream().anyMatch(i -> i.startsWith(packageName + ".domain.model."))) {
-      imports.add("org.assertj.core.api.Assertions.assertThat");
+    if (regularImports.stream().anyMatch(i -> i.startsWith(packageName + ".domain.model."))) {
+      staticImports.add("org.assertj.core.api.Assertions.assertThat");
+    }
+    regularImports.add("org.junit.jupiter.api.Test");
+    builder.append("\n");
+    for (var imp : staticImports) {
+      builder.append("import static %s;\n".formatted(imp));
     }
     builder.append("\n");
-    for (var imp : imports) {
-      builder.append("import static %s;\n".formatted(imp));
+    for (var imp : regularImports) {
+      builder.append("import %s;\n".formatted(imp));
     }
   }
 
