@@ -37,7 +37,7 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   }
 
   private List<CodeArtifact> generateDomainObjectFor(Artifact artifact, Entity payload) {
-    var packageName = packageNameFor(artifact);
+    var packageName = packageFor(artifact, "domain.model");
     var className = artifact.getName();
     var components = componentsFor(payload);
     var imports = importsFor(payload);
@@ -48,12 +48,12 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
     return List.of(new CodeArtifact(new FullyQualifiedName(packageName, className)).setCode(code));
   }
 
-  private String packageNameFor(Artifact artifact) {
-    var commandPackage = artifact.getPackage();
+  private String packageFor(Artifact artifact, String subdomain) {
+    var pkg = artifact.getPackage();
     var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
-    return lastSegment.equals(commandPackage)
-        ? "%s.domain.model".formatted(topLevelPackage)
-        : "%s.%s.domain.model".formatted(topLevelPackage, commandPackage);
+    return lastSegment.equals(pkg)
+        ? "%s.%s".formatted(topLevelPackage, subdomain)
+        : "%s.%s.%s".formatted(topLevelPackage, pkg, subdomain);
   }
 
   private String componentsFor(Entity payload) {
@@ -104,19 +104,11 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
 
   @Override
   public List<CodeArtifact> generate(Aggregate aggregate, Command command, Event event) {
-    var packageName = servicePackageFor(aggregate);
+    var packageName = packageFor(aggregate, "domain.services");
     var serviceName = aggregate.getName() + "Service";
     return List.of(
         new CodeArtifact(new FullyQualifiedName(packageName, serviceName)).setCode("TODO"),
         new CodeArtifact(new FullyQualifiedName(packageName, serviceName + "Impl"))
             .setCode("TODO"));
-  }
-
-  private String servicePackageFor(Aggregate aggregate) {
-    var pkg = aggregate.getPackage();
-    var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
-    return lastSegment.equals(pkg)
-        ? "%s.domain.services".formatted(topLevelPackage)
-        : "%s.%s.domain.services".formatted(topLevelPackage, pkg);
   }
 }
