@@ -357,7 +357,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
 
   private String javaType(FieldType type) {
     return switch (type) {
-      case TEXT -> "Text";
+      case TEXT -> "String";
       case DATETIME -> "OffsetDateTime";
       default -> type.name();
     };
@@ -376,6 +376,6 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     if (definitions != null && definitions.contains("nonempty")) {
       result += ".ofMinLength(1)";
     }
-    return result + ".map(Text::new)";
+    return result;
   }
 }
