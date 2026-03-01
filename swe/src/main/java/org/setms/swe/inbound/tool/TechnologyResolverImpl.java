@@ -106,13 +106,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       return empty(missingProgrammingLanguageDecision(), diagnostics);
     }
     if (selectedBuildSystem == null) {
-      return empty(
-          new Diagnostic(
-              WARN,
-              "Missing decision on build system",
-              null,
-              new Suggestion(PICK_BUILD_SYSTEM, "Decide on build system")),
-          diagnostics);
+      return empty(missingBuildSystemDecision(), diagnostics);
     }
 
     return programmingLanguage.equals("Java")
@@ -134,7 +128,16 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   private Optional<CodeTester> javaCodeTester(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var initiative = inputs.get(Initiative.class).stream().findFirst();
-    return initiative.isEmpty() ? empty(missingInitiative(), diagnostics) : Optional.empty();
+    if (initiative.isEmpty()) {
+      return empty(missingInitiative(), diagnostics);
+    }
+    var buildSystem = Decisions.from(inputs).about(BuildSystem.TOPIC);
+    return switch (buildSystem) {
+      case "Gradle" -> Optional.of(new Gradle(initiative.get().getTitle()));
+      case null -> empty(missingBuildSystemDecision(), diagnostics);
+      default ->
+          empty(new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics);
+    };
   }
 
   private Diagnostic missingProgrammingLanguageDecision() {
@@ -143,6 +146,14 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         "Missing decision on programming language",
         null,
         new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language"));
+  }
+
+  private Diagnostic missingBuildSystemDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on build system",
+        null,
+        new Suggestion(PICK_BUILD_SYSTEM, "Decide on build system"));
   }
 
   private Optional<CodeBuilder> javaBuildSystem(

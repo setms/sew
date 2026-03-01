@@ -217,6 +217,17 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldReturnCodeTesterWhenAllDecisionsPresent() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs = givenInputsForJavaGradleProject();
+
+    var actual = resolver.codeTester(inputs, diagnostics);
+
+    assertThat(actual).as("CodeTester").isPresent();
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
+  }
+
+  @Test
   void shouldNeedProgrammingLanguageForCodeGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
 

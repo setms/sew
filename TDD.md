@@ -8,19 +8,19 @@
   absent, `test()` produces no diagnostics (mirrors `shouldProduceNoDiagnosticsWhenThereIsNothingToBuild`)
 - [x] `GradleTest`: `shouldProduceNoDiagnosticsWhenTestsPass` — given an initialized Gradle project
   with a passing test, `test()` produces no diagnostics
-- [~] `GradleTest`: `shouldEmitDiagnosticWhenTestFails` — given an initialized Gradle project with a
+- [x] `GradleTest`: `shouldEmitDiagnosticWhenTestFails` — given an initialized Gradle project with a
   failing test, `test()` emits an ERROR diagnostic containing the test method name and failure
   message
 
 ### `TechnologyResolver.codeTester()`
 
-- [ ] `TechnologyResolverImplTest`: `shouldNeedProgrammingLanguageForCodeTester` — when no
+- [x] `TechnologyResolverImplTest`: `shouldNeedProgrammingLanguageForCodeTester` — when no
   programming language decision is present, `codeTester()` returns empty and adds a WARN diagnostic
   "Missing decision on programming language" with suggestion "Decide on programming language"
-- [ ] `TechnologyResolverImplTest`: `shouldNeedInitiativeForCodeTester` — when Java is decided but
+- [x] `TechnologyResolverImplTest`: `shouldNeedInitiativeForCodeTester` — when Java is decided but
   no initiative is present, `codeTester()` returns empty and adds a WARN diagnostic
   "Missing initiative" with suggestion "Create initiative"
-- [ ] `TechnologyResolverImplTest`: `shouldReturnCodeTesterWhenAllDecisionsPresent` — when Java,
+- [~] `TechnologyResolverImplTest`: `shouldReturnCodeTesterWhenAllDecisionsPresent` — when Java,
   Gradle, and an initiative are all present, `codeTester()` returns a non-empty Optional and adds
   no diagnostics
 
