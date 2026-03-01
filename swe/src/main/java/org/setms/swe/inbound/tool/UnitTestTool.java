@@ -4,6 +4,7 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,6 +56,16 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
         "Missing decision on build system",
         null,
         new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system"));
+  }
+
+  @Override
+  public UnitTest validate(
+      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var result = super.validate(resource, inputs, diagnostics);
+    technologyResolver
+        .codeTester(inputs, new ArrayList<>())
+        .ifPresent(codeTester -> codeTester.test(resource, diagnostics));
+    return result;
   }
 
   @Override
