@@ -190,6 +190,40 @@ class GradleTest {
   }
 
   @Test
+  void shouldProduceNoDiagnosticsWhenTestsPass(@TempDir File projectDir) throws IOException {
+    var workspace = new DirectoryWorkspace(projectDir);
+    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    givenPassingJavaTest(workspace.root());
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    codeTester.test(workspace.root(), diagnostics);
+
+    assertThat(diagnostics).isEmpty();
+    assertThat(
+            workspace
+                .root()
+                .select("build/test-results/test/TEST-com.example.HelloTest.xml")
+                .exists())
+        .isTrue();
+  }
+
+  private void givenPassingJavaTest(Resource<?> root) throws IOException {
+    var resource = root.select("src/test/java/com/example/HelloTest.java");
+    try (var output = resource.writeTo()) {
+      output.write(
+          """
+          package com.example;
+          import org.junit.jupiter.api.Test;
+          class HelloTest {
+            @Test
+            void shouldPass() {}
+          }
+          """
+              .getBytes());
+    }
+  }
+
+  @Test
   void shouldReturnNoneForUnknownSuggestion() {
     var actual = codeBuilder.applySuggestion("unknown.suggestion", workspace.root());
 

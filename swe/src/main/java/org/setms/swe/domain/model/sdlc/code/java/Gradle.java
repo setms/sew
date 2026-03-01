@@ -113,6 +113,28 @@ public class Gradle implements CodeBuilder, CodeTester {
         || !resource.select("/settings.gradle").exists()) {
       return;
     }
+    runTests(resource, diagnostics);
+  }
+
+  private void runTests(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    var projectDir = new File(resource.toUri());
+    var output = new ByteArrayOutputStream();
+    try (var connection =
+        GradleConnector.newConnector()
+            .forProjectDirectory(projectDir)
+            .useGradleVersion(GRADLE_VERSION)
+            .connect()) {
+      connection
+          .newBuild()
+          .forTasks("test")
+          .setStandardOutput(output)
+          .setStandardError(output)
+          .run();
+    } catch (BuildException e) {
+      // test failure parsing comes in the next scenario
+    } catch (Exception e) {
+      throw new IllegalStateException("gradle test failed", e);
+    }
   }
 
   private void runCompile(Resource<?> resource, Collection<Diagnostic> diagnostics) {
