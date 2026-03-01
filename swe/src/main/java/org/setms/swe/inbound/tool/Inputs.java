@@ -134,6 +134,15 @@ class Inputs {
         .collect(toSet());
   }
 
+  private static Stream<ProgrammingLanguageConventions> programmingLanguageConventions() {
+    return StreamSupport.stream(
+        ServiceLoader.load(
+                ProgrammingLanguageConventions.class,
+                ProgrammingLanguageConventions.class.getClassLoader())
+            .spliterator(),
+        false);
+  }
+
   private static Stream<GlobInput<CodeArtifact>> toBuildConfigurationInputs(
       ProgrammingLanguageConventions conventions) {
     return conventions.buildConfigurationFiles().stream()
@@ -147,15 +156,6 @@ class Inputs {
 
   public static Set<Input<UnitTest>> unitTests() {
     return programmingLanguageConventions().map(Inputs::toUnitTestInput).collect(toSet());
-  }
-
-  private static Stream<ProgrammingLanguageConventions> programmingLanguageConventions() {
-    return StreamSupport.stream(
-        ServiceLoader.load(
-                ProgrammingLanguageConventions.class,
-                ProgrammingLanguageConventions.class.getClassLoader())
-            .spliterator(),
-        false);
   }
 
   private static GlobInput<UnitTest> toUnitTestInput(ProgrammingLanguageConventions conventions) {
