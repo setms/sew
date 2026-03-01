@@ -43,6 +43,24 @@ class JavaLanguageTest {
   }
 
   @Test
+  void shouldMatchUnitTestHelpers() {
+    var glob = language.unitTestHelpersGlob();
+
+    var actual = glob.matches("src/test/java/com/example/SomeHelper.java");
+
+    assertThat(actual).isTrue();
+  }
+
+  @Test
+  void shouldNotMatchUnitTestsAsHelpers() {
+    var glob = language.unitTestHelpersGlob();
+
+    var actual = glob.matches("src/test/java/com/example/SomeTest.java");
+
+    assertThat(actual).isFalse();
+  }
+
+  @Test
   void shouldHandleMissingClass() {
     var code =
         """

@@ -155,9 +155,7 @@ class Inputs {
   private static GlobInput<UnitTestHelper> toUnitTestHelperInput(
       ProgrammingLanguageConventions conventions) {
     return new GlobInput<>(
-        new Glob(conventions.unitTestPath(), conventions.unitTestHelpersPattern()),
-        new CodeFormat(conventions),
-        UnitTestHelper.class);
+        conventions.unitTestHelpersGlob(), new CodeFormat(conventions), UnitTestHelper.class);
   }
 
   public static Set<Input<? extends CodeArtifact>> code() {

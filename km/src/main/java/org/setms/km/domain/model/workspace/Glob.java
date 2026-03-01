@@ -2,7 +2,11 @@ package org.setms.km.domain.model.workspace;
 
 import java.util.regex.Pattern;
 
-public record Glob(String path, String pattern) {
+public record Glob(String path, String pattern, Glob excludes) {
+
+  public Glob(String path, String pattern) {
+    this(path, pattern, null);
+  }
 
   public static final String PATTERN_PREFIX = "**/*.";
 
@@ -15,7 +19,14 @@ public record Glob(String path, String pattern) {
     return index >= 0 ? pattern.substring(index + 1) : null;
   }
 
+  public Glob excluding(Glob other) {
+    return new Glob(path, pattern, other);
+  }
+
   public boolean matches(String path) {
+    if (excludes != null && excludes.matches(path)) {
+      return false;
+    }
     var candidate = path;
     var index = path.isEmpty() ? 0 : candidate.indexOf(this.path);
     if (index < 0) {
