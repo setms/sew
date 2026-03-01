@@ -12,6 +12,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
@@ -40,6 +41,28 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
 
     assertThatSingleWarnDiagnosticWith(
         diagnostics, "Missing decision on build system", "Decide on build system");
+  }
+
+  @Test
+  void shouldNotRequireCodeTesterWhenBuildSystemAlreadyDecided() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var unitTest = newUnitTest();
+    var inputs = givenInputsWithBuildSystemDecision();
+    var tool = (UnitTestTool) getTool();
+
+    tool.validate(unitTest, inputs, diagnostics);
+
+    assertThat(diagnostics).isEmpty();
+  }
+
+  private ResolvedInputs givenInputsWithBuildSystemDecision() {
+    return new ResolvedInputs().put("decisions", List.of(decision(BuildSystem.TOPIC, "Gradle")));
+  }
+
+  private Decision decision(String topic, String choice) {
+    return new Decision(new FullyQualifiedName("technology", topic))
+        .setTopic(topic)
+        .setChoice(choice);
   }
 
   private UnitTest newUnitTest() {
