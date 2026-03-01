@@ -1,12 +1,12 @@
 package org.setms.swe.domain.model.sdlc.code;
 
-import java.util.List;
+import java.util.Collection;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.workspace.Glob;
 
 public interface ProgrammingLanguageConventions {
 
-  List<String> buildConfigurationFiles();
+  Collection<String> buildConfigurationFiles();
 
   String extension();
 
