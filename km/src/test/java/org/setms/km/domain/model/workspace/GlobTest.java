@@ -2,6 +2,7 @@ package org.setms.km.domain.model.workspace;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -26,6 +27,19 @@ class GlobTest {
     var actual = new Glob(path, pattern).matches(candidate);
 
     assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  void shouldNotMatchExcludedPaths() {
+    var glob =
+        new Glob("src/test/java", "**/*.java")
+            .excluding(new Glob("src/test/java", "**/*Test.java"));
+
+    var matchesHelper = glob.matches("src/test/java/com/example/SomeHelper.java");
+    var matchesTest = glob.matches("src/test/java/com/example/SomeTest.java");
+
+    assertThat(matchesHelper).isTrue();
+    assertThat(matchesTest).isFalse();
   }
 
   @ParameterizedTest
