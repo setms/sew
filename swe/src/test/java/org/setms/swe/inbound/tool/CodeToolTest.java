@@ -13,9 +13,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.ArtifactTool;
+import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -33,6 +36,13 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
 
   public CodeToolTest() {
     super(new CodeTool(), CodeArtifact.class, "src");
+  }
+
+  @Override
+  protected void assertValidationContext(Set<Input<? extends Artifact>> inputs) {
+    assertThat(inputs)
+        .anyMatch(input -> input.matches("build.gradle"))
+        .anyMatch(input -> input.matches("settings.gradle"));
   }
 
   @Override

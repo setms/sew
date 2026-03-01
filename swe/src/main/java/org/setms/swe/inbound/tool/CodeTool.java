@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.Inputs.buildConfiguration;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
@@ -42,7 +43,11 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of(decisions(), initiatives());
+    var result = new HashSet<Input<? extends Artifact>>();
+    result.add(decisions());
+    result.add(initiatives());
+    result.addAll(buildConfiguration());
+    return result;
   }
 
   @Override
