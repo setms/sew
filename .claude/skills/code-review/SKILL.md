@@ -4,13 +4,17 @@ description: Review changed code. Use when code was changed.
 
 Review changed code and make sure it follows the following style guide:
 
-- Ask the `jetbrains` MCP server for issues in the changed files and address them.
-  The IntelliJ project lives at `~/dev/setms/sew`.
+- Ask the `jetbrains` MCP server for issues in the changed files and address them via the `get_file_problems` tool.
+  The project prefix is `sew/`.
+  For this tool call to work, the file has to be open in IntelliJ's editor; use the `open_file_in_editor` tool for that.
   If you can't connect to the MCP server, or there is any issue in communicating with it STOP IMMEDIATELY and
   ask the user for support.
   DO NOT CONTINUE until all issues with the MCP server are resolved.
 - There MUST NOT be duplication.
 - If a method has only one `return` statement that returns a local variable, the name of that variable must be `result`.
+- Order methods as follows. First comes a public or `@Test` method, then all the methods it calls, in the order in which
+  they're called.
+  Then the next public or `@Test` method, etc.
 - Methods annotated with `@Test` must consist of at most 3 blocks: Arrange, Act, and Assert.
   Those blocks must be separated by blank lines and no other blank lines must exist in the method.
   Each block MUST NOT start with a comment.

@@ -74,13 +74,13 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
   }
 
   private ResolvedInputs givenInputsWithBuildSystemDecision() {
-    return new ResolvedInputs().put("decisions", List.of(decision(BuildSystem.TOPIC, "Gradle")));
+    return new ResolvedInputs().put("decisions", List.of(buildSystemDecision()));
   }
 
-  private Decision decision(String topic, String choice) {
-    return new Decision(new FullyQualifiedName("technology", topic))
-        .setTopic(topic)
-        .setChoice(choice);
+  private Decision buildSystemDecision() {
+    return new Decision(new FullyQualifiedName("technology", BuildSystem.TOPIC))
+        .setTopic(BuildSystem.TOPIC)
+        .setChoice("Gradle");
   }
 
   private UnitTest newUnitTest() {

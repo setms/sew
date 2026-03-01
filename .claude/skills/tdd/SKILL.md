@@ -41,7 +41,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
 12. Once these tests pass, commit the changes.
   Write a very short commit message using conventional commits.
 13. Now review the code by invoking the `code-review` skill.
-14. Present the changes to the user, as well as the current state of `EndToEndTest`.
+14. Present the changes to the user, as well as the current token budget usage percentage.
   If the user asks for changes, make them and present the code again for approval.
   **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE LATEST VERSION OF THE CODE**.
 15. If you made any changes to the structure, commit them.
@@ -49,9 +49,10 @@ description: Write code following the TDD style. Use when there is a non-empty, 
 16. Once you have approval, consider whether the added unit test fully covers the test scenario.
   If it doesn't, return to step 2.
 17. Mark the test scenario as complete.
-18. If there are test scenarios that aren't complete, return to step 1.
+18. If token usage is over 40% of budget, tell the user to start a new session and halt.
+19. If there are test scenarios that aren't complete, return to step 1.
   CRITICAL: You MUST have explicit approval to continue with the next test scenario.
-19. If `EndToEndTest` still fails after all test scenarios are complete, invoke the `e2e` skill.
+20. If `EndToEndTest` still fails after all test scenarios are complete, invoke the `e2e` skill.
 
 Implementation notes:
 
