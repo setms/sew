@@ -53,6 +53,15 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
   }
 
   @Override
+  public boolean validates(String path) {
+    // Handle issues that aren't related to a specific artifact
+    if ("/".equals(path)) {
+      return true;
+    }
+    return super.validates(path);
+  }
+
+  @Override
   public UnitTest validate(
       Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var result = super.validate(resource, inputs, diagnostics);

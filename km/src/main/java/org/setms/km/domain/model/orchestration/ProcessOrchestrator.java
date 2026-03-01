@@ -401,6 +401,7 @@ public class ProcessOrchestrator {
       artifactTool.validate(workspace.root().select(path), resolvedInputs, diagnostics);
       storeDiagnostics(path, artifactTool, diagnostics);
     } else {
+      clearStaleDiagnosticsAt(path, artifactTool);
       pathsToValidateFor(artifactTool)
           .forEach(
               filePath -> {
@@ -412,7 +413,19 @@ public class ProcessOrchestrator {
     }
   }
 
-  private TreeSet<String> pathsToValidateFor(ArtifactTool<?> artifactTool) {
+  private void clearStaleDiagnosticsAt(String path, Tool tool) {
+    var diagnosticsResource =
+        workspace
+            .root()
+            .select(".km/diagnostics%s/%s.json".formatted(path, tool.getClass().getName()));
+    try {
+      diagnosticsResource.delete();
+    } catch (IOException _) {
+      // Ignore if file doesn't exist
+    }
+  }
+
+  private Collection<String> pathsToValidateFor(ArtifactTool<?> artifactTool) {
     var result = new TreeSet<String>();
     artifactTool
         .validationTargets()

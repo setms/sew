@@ -205,19 +205,19 @@ public class Gradle implements CodeBuilder, CodeTester {
       return AppliedSuggestion.none();
     }
     try {
-      initializeGradleProject(resource);
+      initializeIn(resource);
       return buildConfigResources(resource);
     } catch (Exception e) {
       return AppliedSuggestion.failedWith(e);
     }
   }
 
-  private void initializeGradleProject(Resource<?> resource) {
+  private void initializeIn(Resource<?> root) {
     var stdout = new ByteArrayOutputStream();
     var stderr = new ByteArrayOutputStream();
     try (var connection =
         GradleConnector.newConnector()
-            .forProjectDirectory(toFile(resource))
+            .forProjectDirectory(toFile(root))
             .useGradleVersion(GRADLE_VERSION)
             .connect()) {
       connection
@@ -241,7 +241,7 @@ public class Gradle implements CodeBuilder, CodeTester {
           .setStandardOutput(stdout)
           .setStandardError(stderr)
           .run();
-      connection.notifyDaemonsAboutChangedPaths(cleanUpFiles(resource));
+      connection.notifyDaemonsAboutChangedPaths(cleanUpFiles(root));
     } catch (Exception e) {
       throw new IllegalStateException(
           "gradle init failed%nstdout: %s%nstderr: %s".formatted(stdout, stderr), e);

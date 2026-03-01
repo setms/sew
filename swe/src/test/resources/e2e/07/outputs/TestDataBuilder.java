@@ -20,7 +20,7 @@ public class TestDataBuilder {
   }
 
   private static Arbitrary<String> tasks() {
-    return Arbitraries.strings().ofMinLength(1);
+    return Arbitraries.strings().alpha().ofMinLength(1);
   }
 
   private static Arbitrary<LocalDateTime> dueDates() {

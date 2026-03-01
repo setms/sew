@@ -372,7 +372,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   }
 
   private String textArbitrary(List<String> definitions) {
-    var result = "Arbitraries.strings()";
+    var result = "Arbitraries.strings().alpha()";
     if (definitions != null && definitions.contains("nonempty")) {
       result += ".ofMinLength(1)";
     }

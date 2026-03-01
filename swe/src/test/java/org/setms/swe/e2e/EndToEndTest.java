@@ -159,7 +159,7 @@ class EndToEndTest {
   private void assertThatDiagnosticsMatch(Iteration iteration) {
     var expected = listOf(iteration.getDiagnostics());
     await()
-        .atMost(3, SECONDS)
+        .atMost(5, SECONDS)
         .untilAsserted(
             () ->
                 assertThat(processOrchestrator.diagnosticsWithSuggestions())

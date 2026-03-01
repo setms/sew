@@ -325,7 +325,7 @@ class JavaUnitTestGeneratorTest {
         .contains("class TestDataBuilder")
         .contains("public static NotifyUser someNotifyUser()")
         .contains("Combinators.combine(")
-        .contains("Arbitraries.strings().ofMinLength(1)")
+        .contains("Arbitraries.strings().alpha().ofMinLength(1)")
         .doesNotContain("Text::new")
         .doesNotContain("import org.setms.swe.Text");
   }
