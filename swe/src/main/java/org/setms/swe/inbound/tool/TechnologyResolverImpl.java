@@ -26,6 +26,7 @@ import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
+import org.setms.swe.domain.model.sdlc.technology.CodeTester;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
@@ -117,6 +118,17 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return programmingLanguage.equals("Java")
         ? javaBuildSystem(selectedBuildSystem, projectName, diagnostics)
         : empty(unsupportedProgrammingLanguage(), diagnostics);
+  }
+
+  @Override
+  public Optional<CodeTester> codeTester(
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var programmingLanguage = Decisions.from(inputs).about(ProgrammingLanguage.TOPIC);
+    return switch (programmingLanguage) {
+      case "Java" -> Optional.empty();
+      case null -> empty(missingProgrammingLanguageDecision(), diagnostics);
+      default -> empty(unsupportedProgrammingLanguage(), diagnostics);
+    };
   }
 
   private Diagnostic missingProgrammingLanguageDecision() {

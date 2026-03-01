@@ -34,6 +34,13 @@ public interface TechnologyResolver {
    */
   Optional<CodeGenerator> codeGenerator(ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
+  /**
+   * @param inputs Resolved inputs, including decisions and other artifacts
+   * @param diagnostics where to store any validation issues
+   * @return something that can test code, or empty if there are issues
+   */
+  Optional<CodeTester> codeTester(ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
+
   AppliedSuggestion applySuggestion(
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs);
 }
