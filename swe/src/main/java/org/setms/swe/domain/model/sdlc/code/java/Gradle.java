@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -87,8 +88,7 @@ public class Gradle implements CodeBuilder, CodeTester {
 
   @Override
   public void validate(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    if (!resource.select("/build.gradle").exists()
-        || !resource.select("/settings.gradle").exists()) {
+    if (!isInitialized(resource)) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -98,47 +98,41 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
   }
 
+  private boolean isInitialized(Resource<?> resource) {
+    return resource.select("/build.gradle").exists()
+        && resource.select("/settings.gradle").exists();
+  }
+
   @Override
   public void build(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    if (!resource.select("/build.gradle").exists()
-        || !resource.select("/settings.gradle").exists()) {
-      return;
+    if (isInitialized(resource)) {
+      runCompile(resource, diagnostics);
     }
-    runCompile(resource, diagnostics);
   }
 
   @Override
   public void test(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    if (!resource.select("/build.gradle").exists()
-        || !resource.select("/settings.gradle").exists()) {
-      return;
-    }
-    runTests(resource, diagnostics);
-  }
-
-  private void runTests(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var projectDir = new File(resource.toUri());
-    var output = new ByteArrayOutputStream();
-    try (var connection =
-        GradleConnector.newConnector()
-            .forProjectDirectory(projectDir)
-            .useGradleVersion(GRADLE_VERSION)
-            .connect()) {
-      connection
-          .newBuild()
-          .forTasks("test")
-          .setStandardOutput(output)
-          .setStandardError(output)
-          .run();
-    } catch (BuildException e) {
-      // test failure parsing comes in the next scenario
-    } catch (Exception e) {
-      throw new IllegalStateException("gradle test failed", e);
+    if (isInitialized(resource)) {
+      runTests(resource, diagnostics);
     }
   }
 
   private void runCompile(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    var projectDir = new File(resource.toUri());
+    runGradle(
+        resource,
+        (output, projectDir) ->
+            parseCompilationErrors(output, projectDir.getAbsolutePath(), diagnostics),
+        "compileJava",
+        "compileTestJava");
+  }
+
+  private void runTests(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    runGradle(resource, (_, _) -> {}, "test");
+  }
+
+  private void runGradle(
+      Resource<?> resource, BiConsumer<String, File> onBuildFailure, String... tasks) {
+    var projectDir = toFile(resource);
     var output = new ByteArrayOutputStream();
     try (var connection =
         GradleConnector.newConnector()
@@ -147,14 +141,14 @@ public class Gradle implements CodeBuilder, CodeTester {
             .connect()) {
       connection
           .newBuild()
-          .forTasks("compileJava", "compileTestJava")
+          .forTasks(tasks)
           .setStandardOutput(output)
           .setStandardError(output)
           .run();
     } catch (BuildException e) {
-      parseCompilationErrors(output.toString(), projectDir.getAbsolutePath(), diagnostics);
+      onBuildFailure.accept(output.toString(), projectDir);
     } catch (Exception e) {
-      throw new IllegalStateException("gradle compile failed", e);
+      throw new IllegalStateException("gradle %s failed".formatted(String.join(", ", tasks)), e);
     }
   }
 
