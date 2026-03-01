@@ -207,6 +207,16 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldNeedInitiativeForCodeTester() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs = givenInputsForJavaWithoutInitiative();
+
+    resolver.codeTester(inputs, diagnostics);
+
+    assertThatSingleWarnDiagnosticHas(diagnostics, "Missing initiative", "Create initiative");
+  }
+
+  @Test
   void shouldNeedProgrammingLanguageForCodeGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
 

@@ -125,10 +125,16 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var programmingLanguage = Decisions.from(inputs).about(ProgrammingLanguage.TOPIC);
     return switch (programmingLanguage) {
-      case "Java" -> Optional.empty();
+      case "Java" -> javaCodeTester(inputs, diagnostics);
       case null -> empty(missingProgrammingLanguageDecision(), diagnostics);
       default -> empty(unsupportedProgrammingLanguage(), diagnostics);
     };
+  }
+
+  private Optional<CodeTester> javaCodeTester(
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var initiative = inputs.get(Initiative.class).stream().findFirst();
+    return initiative.isEmpty() ? empty(missingInitiative(), diagnostics) : Optional.empty();
   }
 
   private Diagnostic missingProgrammingLanguageDecision() {
