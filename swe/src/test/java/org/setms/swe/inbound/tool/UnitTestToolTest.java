@@ -113,9 +113,9 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
   }
 
   private TechnologyResolver givenResolverWithCodeTester(CodeTester codeTester) {
-    var resolver = mock(TechnologyResolver.class);
-    when(resolver.codeTester(any(), anyCollection())).thenReturn(Optional.of(codeTester));
-    return resolver;
+    var result = mock(TechnologyResolver.class);
+    when(result.codeTester(any(), anyCollection())).thenReturn(Optional.of(codeTester));
+    return result;
   }
 
   private ResolvedInputs givenInputsWithAllDecisions() {

@@ -43,6 +43,16 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
   }
 
   @Override
+  public UnitTest validate(
+      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var result = super.validate(resource, inputs, diagnostics);
+    technologyResolver
+        .codeTester(inputs, new ArrayList<>())
+        .ifPresent(codeTester -> codeTester.test(resource, diagnostics));
+    return result;
+  }
+
+  @Override
   public void validate(
       UnitTest unitTest, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (Decisions.from(inputs).about(BuildSystem.TOPIC) == null) {
@@ -56,16 +66,6 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
         "Missing decision on build system",
         null,
         new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system"));
-  }
-
-  @Override
-  public UnitTest validate(
-      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var result = super.validate(resource, inputs, diagnostics);
-    technologyResolver
-        .codeTester(inputs, new ArrayList<>())
-        .ifPresent(codeTester -> codeTester.test(resource, diagnostics));
-    return result;
   }
 
   @Override
