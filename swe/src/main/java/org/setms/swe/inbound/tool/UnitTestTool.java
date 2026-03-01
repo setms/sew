@@ -1,8 +1,11 @@
 package org.setms.swe.inbound.tool;
 
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
+import static org.setms.swe.inbound.tool.Inputs.unitTestHelpers;
+import static org.setms.swe.inbound.tool.Inputs.unitTests;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,12 +37,17 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
 
   @Override
   public Set<Input<? extends UnitTest>> validationTargets() {
-    return new HashSet<>(Inputs.unitTests());
+    return new HashSet<>(unitTests());
   }
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of(decisions(), initiatives());
+    var result = new HashSet<Input<? extends Artifact>>();
+    result.add(decisions());
+    result.add(initiatives());
+    result.addAll(unitTestHelpers());
+    result.addAll(code());
+    return result;
   }
 
   @Override
