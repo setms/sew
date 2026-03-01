@@ -58,7 +58,7 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
     var result = super.validate(resource, inputs, diagnostics);
     technologyResolver
         .codeTester(inputs, new ArrayList<>())
-        .ifPresent(codeTester -> codeTester.test(resource, diagnostics));
+        .ifPresent(codeTester -> codeTester.test(resource.root(), diagnostics));
     return result;
   }
 

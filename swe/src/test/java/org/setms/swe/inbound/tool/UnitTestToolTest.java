@@ -3,6 +3,7 @@ package org.setms.swe.inbound.tool;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -105,13 +106,13 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
     var resolver = givenResolverWithCodeTester(codeTester);
     var tool = new UnitTestTool(resolver);
     var workspace = workspaceFor("valid");
-    var resource =
-        workspace.root().matching("src/test/java", "java").stream().findFirst().orElseThrow();
+    var root = workspace.root();
+    var resource = root.matching("src/test/java", "java").stream().findFirst().orElseThrow();
     var diagnostics = new ArrayList<Diagnostic>();
 
     tool.validate(resource, givenInputsWithAllDecisions(), diagnostics);
 
-    verify(codeTester).test(any(), same(diagnostics));
+    verify(codeTester).test(eq(root), same(diagnostics));
   }
 
   private TechnologyResolver givenResolverWithCodeTester(CodeTester codeTester) {
