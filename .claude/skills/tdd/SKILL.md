@@ -15,7 +15,8 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   the exact same terminology used in the test scenario (ubiquitous language).
   Tests should follow the Arrange/Act/Assert pattern, but DO NOT put in comments like `// Arrange`.
 6. Test for material things, like expected values for important properties of an object.
-  For collections, don't just check the number of items, but make sure the items in the collection are as expected.
+  For collections, make sure the items in the collection are as expected - if you do that, you don't need to check
+  the number of items in the collection.
 7. If you use helper methods, follow these naming conventions:
 
    - Methods that only construct an object MUST be called `newXyz()`.

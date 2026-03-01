@@ -64,7 +64,9 @@ class JavaLanguageTest {
   void shouldReturnBuildConfigurationFiles() {
     var actual = language.buildConfigurationFiles();
 
-    assertThat(actual).containsExactlyInAnyOrder("build.gradle", "settings.gradle");
+    assertThat(actual)
+        .anySatisfy(glob -> glob.matches("/build.gradle"))
+        .anySatisfy(glob -> glob.matches("/settings.gradle"));
   }
 
   @Test

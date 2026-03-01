@@ -40,8 +40,8 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
     assertThat(inputs)
         .anySatisfy(input -> assertThat(input.type()).isEqualTo(Decision.class))
         .anySatisfy(input -> assertThat(input.type()).isEqualTo(Initiative.class))
-        .anyMatch(input -> input.matches("build.gradle"))
-        .anyMatch(input -> input.matches("settings.gradle"));
+        .anyMatch(input -> input.matches("/build.gradle"))
+        .anyMatch(input -> input.matches("/settings.gradle"));
   }
 
   @Test

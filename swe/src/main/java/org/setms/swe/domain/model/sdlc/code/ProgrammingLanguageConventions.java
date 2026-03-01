@@ -6,7 +6,7 @@ import org.setms.km.domain.model.workspace.Glob;
 
 public interface ProgrammingLanguageConventions {
 
-  Collection<String> buildConfigurationFiles();
+  Collection<Glob> buildConfigurationFiles();
 
   String extension();
 

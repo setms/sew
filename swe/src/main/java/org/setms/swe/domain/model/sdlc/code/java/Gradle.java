@@ -1,5 +1,6 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
+import static java.util.Collections.emptyList;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
@@ -12,17 +13,24 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.RequiredArgsConstructor;
 import org.gradle.tooling.BuildException;
+import org.gradle.tooling.Failure;
 import org.gradle.tooling.GradleConnector;
+import org.gradle.tooling.events.FailureResult;
+import org.gradle.tooling.events.FinishEvent;
+import org.gradle.tooling.events.ProgressEvent;
+import org.gradle.tooling.events.ProgressListener;
+import org.gradle.tooling.events.test.JvmTestOperationDescriptor;
+import org.gradle.tooling.events.test.TestFailureResult;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
@@ -30,7 +38,6 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeTester;
-import org.w3c.dom.Element;
 
 @RequiredArgsConstructor
 public class Gradle implements CodeBuilder, CodeTester {
@@ -115,24 +122,22 @@ public class Gradle implements CodeBuilder, CodeTester {
 
   private void runCompile(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     runGradle(
-        resource,
-        (output, projectDir) ->
-            parseCompilationErrors(output, projectDir.getAbsolutePath(), diagnostics),
-        "compileJava",
-        "compileTestJava");
+        resource, diagnostics, this::parseCompilationErrors, "compileJava", "compileTestJava");
   }
 
-  private void parseCompilationErrors(
-      String output, String projectDir, Collection<Diagnostic> diagnostics) {
-    output
-        .lines()
+  private Collection<Diagnostic> parseCompilationErrors(File projectDir, FinishEvent event) {
+    return Optional.of(event.getResult()).map(FailureResult.class::cast).stream()
+        .map(FailureResult::getFailures)
+        .flatMap(Collection::stream)
+        .map(Failure::getDescription)
+        .flatMap(description -> Arrays.stream(description.split(System.lineSeparator())))
         .map(COMPILATION_ERROR::matcher)
         .filter(Matcher::matches)
-        .map(matcher -> toCompilationDiagnostic(matcher, projectDir))
-        .forEach(diagnostics::add);
+        .map(matcher -> toCompilationDiagnostic(projectDir.getAbsolutePath(), matcher))
+        .toList();
   }
 
-  private Diagnostic toCompilationDiagnostic(Matcher matcher, String projectDir) {
+  private Diagnostic toCompilationDiagnostic(String projectDir, Matcher matcher) {
     var filePath =
         matcher.group(1).replace(projectDir + File.separator, "").replace(File.separator, "/");
     var lineNumber = matcher.group(2);
@@ -141,7 +146,10 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   private void runGradle(
-      Resource<?> resource, BiConsumer<String, File> onBuildFailure, String... tasks) {
+      Resource<?> resource,
+      Collection<Diagnostic> diagnostics,
+      BiFunction<File, FinishEvent, Collection<Diagnostic>> failureToDiagnostics,
+      String... tasks) {
     var projectDir = toFile(resource);
     var output = new ByteArrayOutputStream();
     try (var connection =
@@ -154,9 +162,10 @@ public class Gradle implements CodeBuilder, CodeTester {
           .forTasks(tasks)
           .setStandardOutput(output)
           .setStandardError(output)
+          .addProgressListener(new FailureListener(projectDir, failureToDiagnostics, diagnostics))
           .run();
-    } catch (BuildException e) {
-      onBuildFailure.accept(output.toString(), projectDir);
+    } catch (BuildException _) {
+      // Ignore, since already caught by progress listener
     } catch (Exception e) {
       throw new IllegalStateException("gradle %s failed".formatted(String.join(", ", tasks)), e);
     }
@@ -170,35 +179,24 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   private void runTests(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    runGradle(resource, (_, _) -> parseTestFailures(resource, diagnostics), "test");
+    runGradle(resource, diagnostics, this::parseTestFailures, "test");
   }
 
-  private void parseTestFailures(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    resource.select("build/test-results/test").children().stream()
-        .filter(xml -> toFile(xml).getName().endsWith(".xml"))
-        .flatMap(xml -> testFailuresIn(xml).stream())
-        .forEach(diagnostics::add);
-  }
-
-  private List<Diagnostic> testFailuresIn(Resource<?> xml) {
-    try {
-      var doc = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(toFile(xml));
-      var testcases = doc.getElementsByTagName("testcase");
-      return IntStream.range(0, testcases.getLength())
-          .mapToObj(i -> (Element) testcases.item(i))
-          .filter(testcase -> testcase.getElementsByTagName("failure").getLength() > 0)
-          .map(this::toFailureDiagnostic)
+  private Collection<Diagnostic> parseTestFailures(File ignored, FinishEvent event) {
+    if (event.getDescriptor() instanceof JvmTestOperationDescriptor testDescriptor
+        && testDescriptor.getMethodName() != null
+        && event.getResult() instanceof TestFailureResult testFailure) {
+      return testFailure.getFailures().stream()
+          .map(Failure::getMessage)
+          .map(
+              message ->
+                  new Diagnostic(
+                      ERROR,
+                      message,
+                      new Location(testDescriptor.getClassName(), testDescriptor.getMethodName())))
           .toList();
-    } catch (Exception e) {
-      throw new IllegalStateException("Failed to parse test results", e);
     }
-  }
-
-  private Diagnostic toFailureDiagnostic(Element testcase) {
-    var failure = (Element) testcase.getElementsByTagName("failure").item(0);
-    var name = testcase.getAttribute("name");
-    var message = failure.getAttribute("message");
-    return new Diagnostic(ERROR, "%s: %s".formatted(name, message), null);
+    return emptyList();
   }
 
   @Override
@@ -309,5 +307,22 @@ public class Gradle implements CodeBuilder, CodeTester {
             AppliedSuggestion.none(),
             (acc, path) -> acc.with(resource.select("/" + path)),
             (a, _) -> a);
+  }
+
+  @RequiredArgsConstructor
+  private static class FailureListener implements ProgressListener {
+
+    private final File projectDir;
+    private final BiFunction<File, FinishEvent, Collection<Diagnostic>> failureToDiagnostics;
+    private final Collection<Diagnostic> diagnostics;
+
+    @Override
+    public void statusChanged(ProgressEvent event) {
+      if (event instanceof FinishEvent finishEvent) {
+        if (finishEvent.getResult() instanceof FailureResult) {
+          diagnostics.addAll(failureToDiagnostics.apply(projectDir, finishEvent));
+        }
+      }
+    }
   }
 }

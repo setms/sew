@@ -11,8 +11,8 @@ class InputsTest {
     var actual = Inputs.buildConfiguration();
 
     assertThat(actual)
-        .anyMatch(input -> input.matches("build.gradle"))
-        .anyMatch(input -> input.matches("settings.gradle"));
+        .anyMatch(input -> input.matches("/build.gradle"))
+        .anyMatch(input -> input.matches("/settings.gradle"));
   }
 
   @Test

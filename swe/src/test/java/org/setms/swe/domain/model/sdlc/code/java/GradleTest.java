@@ -6,7 +6,7 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -14,23 +14,20 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
-import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
-import org.setms.swe.domain.model.sdlc.technology.CodeTester;
 
 class GradleTest {
 
   private static final String PROJECT_NAME = "MyProject";
 
-  private final CodeBuilder codeBuilder = new Gradle(PROJECT_NAME);
-  private final CodeTester codeTester = new Gradle(PROJECT_NAME);
+  private final Gradle gradle = new Gradle(PROJECT_NAME);
   private final InMemoryWorkspace workspace = new InMemoryWorkspace();
 
   @Test
   void shouldEmitDiagnosticWhenBuildGradleMissing() throws IOException {
     createFile("/settings.gradle", "rootProject.name = 'test'");
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeBuilder.validate(workspace.root(), diagnostics);
+    gradle.validate(workspace.root(), diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -48,9 +45,9 @@ class GradleTest {
   @Test
   void shouldEmitDiagnosticWhenSettingsGradleMissing() throws IOException {
     createFile("/build.gradle", "plugins { id 'java' }");
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeBuilder.validate(workspace.root(), diagnostics);
+    gradle.validate(workspace.root(), diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
@@ -66,9 +63,9 @@ class GradleTest {
   void shouldNotEmitDiagnosticWhenConfigurationExists() throws IOException {
     createFile("/build.gradle", "plugins { id 'java' }");
     createFile("/settings.gradle", "rootProject.name = 'test'");
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeBuilder.validate(workspace.root(), diagnostics);
+    gradle.validate(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
   }
@@ -77,7 +74,7 @@ class GradleTest {
   void shouldGenerateBuildConfigViaGradleToolingApi(@TempDir File projectDir) {
     var workspace = new DirectoryWorkspace(projectDir);
 
-    var actual = codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    var actual = gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
 
     assertThat(actual.diagnostics()).isEmpty();
     assertThat(actual.createdOrChanged()).hasSize(10);
@@ -93,7 +90,7 @@ class GradleTest {
     javaFile.createNewFile();
     var workspace = new DirectoryWorkspace(projectDir);
 
-    var actual = codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    var actual = gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
 
     assertThat(actual.diagnostics()).isEmpty();
     assertThat(actual.createdOrChanged()).hasSize(10);
@@ -103,11 +100,11 @@ class GradleTest {
   void shouldProduceNoDiagnosticsWhenSourcesCompileCleanly(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenJavaSourceFile(workspace.root());
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeBuilder.build(workspace.root(), diagnostics);
+    gradle.build(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
     assertThat(workspace.root().select("build/classes/java/main/com/example/Hello.class").exists())
@@ -118,29 +115,32 @@ class GradleTest {
   void shouldEmitDiagnosticWhenSourcesHaveCompilationError(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenJavaSourceFileWithError(workspace.root());
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeBuilder.build(workspace.root(), diagnostics);
+    gradle.build(workspace.root(), diagnostics);
 
-    assertThat(diagnostics).hasSize(1);
-    var actual = diagnostics.getFirst();
-    assertThat(actual.level()).isEqualTo(ERROR);
-    assertThat(actual.message()).isEqualTo("illegal start of expression");
-    assertThat(actual.location())
-        .isEqualTo(new Location("src/main/java/com/example/Hello.java", "3"));
+    assertThat(diagnostics)
+        .hasSize(1)
+        .anySatisfy(
+            diagnostic -> {
+              assertThat(diagnostic.level()).isEqualTo(ERROR);
+              assertThat(diagnostic.message()).isEqualTo("illegal start of expression");
+              assertThat(diagnostic.location())
+                  .isEqualTo(new Location("src/main/java/com/example/Hello.java", "3"));
+            });
   }
 
   @Test
   void shouldEmitDiagnosticWhenTestSourcesHaveCompilationError(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenJavaTestSourceFileWithError(workspace.root());
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeBuilder.build(workspace.root(), diagnostics);
+    gradle.build(workspace.root(), diagnostics);
 
     assertThat(diagnostics).hasSize(1);
     var actual = diagnostics.getFirst();
@@ -173,18 +173,18 @@ class GradleTest {
 
   @Test
   void shouldProduceNoDiagnosticsWhenThereIsNothingToBuild() {
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeBuilder.build(workspace.root(), diagnostics);
+    gradle.build(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
   }
 
   @Test
   void shouldProduceNoDiagnosticsWhenThereIsNothingToTest() {
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeTester.test(workspace.root(), diagnostics);
+    gradle.test(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
   }
@@ -192,11 +192,11 @@ class GradleTest {
   @Test
   void shouldProduceNoDiagnosticsWhenTestsPass(@TempDir File projectDir) throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenPassingJavaTest(workspace.root());
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeTester.test(workspace.root(), diagnostics);
+    gradle.test(workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
     assertThat(
@@ -226,17 +226,21 @@ class GradleTest {
   @Test
   void shouldEmitDiagnosticWhenTestFails(@TempDir File projectDir) throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);
-    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
     givenFailingJavaTest(workspace.root());
-    var diagnostics = new ArrayList<Diagnostic>();
+    var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    codeTester.test(workspace.root(), diagnostics);
+    gradle.test(workspace.root(), diagnostics);
 
-    assertThat(diagnostics).hasSize(1);
-    var actual = diagnostics.getFirst();
-    assertThat(actual.level()).isEqualTo(ERROR);
-    assertThat(actual.message()).contains("shouldFail");
-    assertThat(actual.message()).contains("test failure reason");
+    assertThat(diagnostics)
+        .hasSize(1)
+        .allSatisfy(
+            diagnostic -> {
+              assertThat(diagnostic.level()).isEqualTo(ERROR);
+              assertThat(diagnostic.message()).isEqualTo("test failure reason");
+              assertThat(diagnostic.location().toString())
+                  .isEqualTo("com.example.HelloTest/shouldFail()");
+            });
   }
 
   private void givenFailingJavaTest(Resource<?> root) throws IOException {
@@ -260,7 +264,7 @@ class GradleTest {
 
   @Test
   void shouldReturnNoneForUnknownSuggestion() {
-    var actual = codeBuilder.applySuggestion("unknown.suggestion", workspace.root());
+    var actual = gradle.applySuggestion("unknown.suggestion", workspace.root());
 
     assertThat(actual.createdOrChanged()).isEmpty();
     assertThat(actual.diagnostics()).isEmpty();

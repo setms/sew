@@ -146,12 +146,12 @@ class Inputs {
   private static Stream<GlobInput<CodeArtifact>> toBuildConfigurationInputs(
       ProgrammingLanguageConventions conventions) {
     return conventions.buildConfigurationFiles().stream()
-        .map(file -> toBuildConfigurationInput(file, conventions));
+        .map(glob -> toBuildConfigurationInput(glob, conventions));
   }
 
   private static GlobInput<CodeArtifact> toBuildConfigurationInput(
-      String file, ProgrammingLanguageConventions conventions) {
-    return new GlobInput<>(new Glob("", file), new CodeFormat(conventions), CodeArtifact.class);
+      Glob glob, ProgrammingLanguageConventions conventions) {
+    return new GlobInput<>(glob, new CodeFormat(conventions), CodeArtifact.class);
   }
 
   public static Set<Input<UnitTest>> unitTests() {

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.workspace.Glob;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
@@ -19,8 +20,8 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
       Pattern.compile("[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)*");
 
   @Override
-  public Collection<String> buildConfigurationFiles() {
-    return List.of("build.gradle", "settings.gradle");
+  public Collection<Glob> buildConfigurationFiles() {
+    return List.of(new Glob("/", "build.gradle"), new Glob("/", "settings.gradle"));
   }
 
   @Override

@@ -41,8 +41,8 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   @Override
   protected void assertValidationContext(Set<Input<? extends Artifact>> inputs) {
     assertThat(inputs)
-        .anyMatch(input -> input.matches("build.gradle"))
-        .anyMatch(input -> input.matches("settings.gradle"));
+        .anyMatch(input -> input.matches("/build.gradle"))
+        .anyMatch(input -> input.matches("/settings.gradle"));
   }
 
   @Override
