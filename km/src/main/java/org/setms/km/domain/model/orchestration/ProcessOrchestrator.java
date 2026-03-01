@@ -66,6 +66,7 @@ public class ProcessOrchestrator {
     var paths =
         workspace.root().matching(input.path(), input.extension()).stream()
             .map(Resource::path)
+            .filter(input::matches)
             .collect(toSet());
     writeInputPaths(resourceContainingPathsFor(input), paths);
   }
