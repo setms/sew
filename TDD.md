@@ -6,9 +6,9 @@
 
 - [x] `GradleTest`: `shouldProduceNoDiagnosticsWhenThereIsNothingToTest` — when build files are
   absent, `test()` produces no diagnostics (mirrors `shouldProduceNoDiagnosticsWhenThereIsNothingToBuild`)
-- [~] `GradleTest`: `shouldProduceNoDiagnosticsWhenTestsPass` — given an initialized Gradle project
+- [x] `GradleTest`: `shouldProduceNoDiagnosticsWhenTestsPass` — given an initialized Gradle project
   with a passing test, `test()` produces no diagnostics
-- [ ] `GradleTest`: `shouldEmitDiagnosticWhenTestFails` — given an initialized Gradle project with a
+- [~] `GradleTest`: `shouldEmitDiagnosticWhenTestFails` — given an initialized Gradle project with a
   failing test, `test()` emits an ERROR diagnostic containing the test method name and failure
   message
 

@@ -224,6 +224,41 @@ class GradleTest {
   }
 
   @Test
+  void shouldEmitDiagnosticWhenTestFails(@TempDir File projectDir) throws IOException {
+    var workspace = new DirectoryWorkspace(projectDir);
+    codeBuilder.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    givenFailingJavaTest(workspace.root());
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    codeTester.test(workspace.root(), diagnostics);
+
+    assertThat(diagnostics).hasSize(1);
+    var actual = diagnostics.getFirst();
+    assertThat(actual.level()).isEqualTo(ERROR);
+    assertThat(actual.message()).contains("shouldFail");
+    assertThat(actual.message()).contains("test failure reason");
+  }
+
+  private void givenFailingJavaTest(Resource<?> root) throws IOException {
+    var resource = root.select("src/test/java/com/example/HelloTest.java");
+    try (var output = resource.writeTo()) {
+      output.write(
+          """
+          package com.example;
+          import org.junit.jupiter.api.Test;
+          import static org.junit.jupiter.api.Assertions.fail;
+          class HelloTest {
+            @Test
+            void shouldFail() {
+              fail("test failure reason");
+            }
+          }
+          """
+              .getBytes());
+    }
+  }
+
+  @Test
   void shouldReturnNoneForUnknownSuggestion() {
     var actual = codeBuilder.applySuggestion("unknown.suggestion", workspace.root());
 

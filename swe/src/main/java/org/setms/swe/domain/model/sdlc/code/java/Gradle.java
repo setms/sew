@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.RequiredArgsConstructor;
 import org.gradle.tooling.BuildException;
 import org.gradle.tooling.GradleConnector;
@@ -28,6 +30,7 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeTester;
+import org.w3c.dom.Element;
 
 @RequiredArgsConstructor
 public class Gradle implements CodeBuilder, CodeTester {
@@ -110,13 +113,6 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
   }
 
-  @Override
-  public void test(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    if (isInitialized(resource)) {
-      runTests(resource, diagnostics);
-    }
-  }
-
   private void runCompile(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     runGradle(
         resource,
@@ -126,8 +122,22 @@ public class Gradle implements CodeBuilder, CodeTester {
         "compileTestJava");
   }
 
-  private void runTests(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    runGradle(resource, (_, _) -> {}, "test");
+  private void parseCompilationErrors(
+      String output, String projectDir, Collection<Diagnostic> diagnostics) {
+    output
+        .lines()
+        .map(COMPILATION_ERROR::matcher)
+        .filter(Matcher::matches)
+        .map(matcher -> toCompilationDiagnostic(matcher, projectDir))
+        .forEach(diagnostics::add);
+  }
+
+  private Diagnostic toCompilationDiagnostic(Matcher matcher, String projectDir) {
+    var filePath =
+        matcher.group(1).replace(projectDir + File.separator, "").replace(File.separator, "/");
+    var lineNumber = matcher.group(2);
+    var message = matcher.group(3);
+    return new Diagnostic(ERROR, message, new Location(filePath, lineNumber));
   }
 
   private void runGradle(
@@ -152,22 +162,43 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
   }
 
-  private void parseCompilationErrors(
-      String output, String projectDir, Collection<Diagnostic> diagnostics) {
-    output
-        .lines()
-        .map(COMPILATION_ERROR::matcher)
-        .filter(Matcher::matches)
-        .map(matcher -> toCompilationDiagnostic(matcher, projectDir))
+  @Override
+  public void test(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    if (isInitialized(resource)) {
+      runTests(resource, diagnostics);
+    }
+  }
+
+  private void runTests(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    runGradle(resource, (_, _) -> parseTestFailures(resource, diagnostics), "test");
+  }
+
+  private void parseTestFailures(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    resource.select("build/test-results/test").children().stream()
+        .filter(xml -> toFile(xml).getName().endsWith(".xml"))
+        .flatMap(xml -> testFailuresIn(xml).stream())
         .forEach(diagnostics::add);
   }
 
-  private Diagnostic toCompilationDiagnostic(Matcher matcher, String projectDir) {
-    var filePath =
-        matcher.group(1).replace(projectDir + File.separator, "").replace(File.separator, "/");
-    var lineNumber = matcher.group(2);
-    var message = matcher.group(3);
-    return new Diagnostic(ERROR, message, new Location(filePath, lineNumber));
+  private List<Diagnostic> testFailuresIn(Resource<?> xml) {
+    try {
+      var doc = DocumentBuilderFactory.newDefaultInstance().newDocumentBuilder().parse(toFile(xml));
+      var testcases = doc.getElementsByTagName("testcase");
+      return IntStream.range(0, testcases.getLength())
+          .mapToObj(i -> (Element) testcases.item(i))
+          .filter(testcase -> testcase.getElementsByTagName("failure").getLength() > 0)
+          .map(this::toFailureDiagnostic)
+          .toList();
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to parse test results", e);
+    }
+  }
+
+  private Diagnostic toFailureDiagnostic(Element testcase) {
+    var failure = (Element) testcase.getElementsByTagName("failure").item(0);
+    var name = testcase.getAttribute("name");
+    var message = failure.getAttribute("message");
+    return new Diagnostic(ERROR, "%s: %s".formatted(name, message), null);
   }
 
   @Override
