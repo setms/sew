@@ -61,6 +61,13 @@ class JavaLanguageTest {
   }
 
   @Test
+  void shouldReturnBuildConfigurationFiles() {
+    var actual = language.buildConfigurationFiles();
+
+    assertThat(actual).containsExactlyInAnyOrder("build.gradle", "settings.gradle");
+  }
+
+  @Test
   void shouldHandleMissingClass() {
     var code =
         """

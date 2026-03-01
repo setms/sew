@@ -1,5 +1,6 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
@@ -15,6 +16,11 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
       Pattern.compile("(class|interface|record)\\s+(?<name>\\w+)");
   private static final Pattern JAVA_PACKAGE_PATTERN =
       Pattern.compile("[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)*");
+
+  @Override
+  public List<String> buildConfigurationFiles() {
+    return List.of("build.gradle", "settings.gradle");
+  }
 
   @Override
   public boolean isValidChoice(String topic, String choice) {
