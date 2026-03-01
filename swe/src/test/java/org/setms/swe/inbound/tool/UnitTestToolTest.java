@@ -38,7 +38,9 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
   protected void assertValidationContext(Set<Input<? extends Artifact>> inputs) {
     assertThat(inputs)
         .anySatisfy(input -> assertThat(input.type()).isEqualTo(Decision.class))
-        .anySatisfy(input -> assertThat(input.type()).isEqualTo(Initiative.class));
+        .anySatisfy(input -> assertThat(input.type()).isEqualTo(Initiative.class))
+        .anyMatch(input -> input.matches("build.gradle"))
+        .anyMatch(input -> input.matches("settings.gradle"));
   }
 
   @Test

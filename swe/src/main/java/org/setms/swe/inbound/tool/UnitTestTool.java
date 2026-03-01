@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.Inputs.buildConfiguration;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
@@ -47,6 +48,7 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
     result.add(initiatives());
     result.addAll(unitTestHelpers());
     result.addAll(code());
+    result.addAll(buildConfiguration());
     return result;
   }
 
