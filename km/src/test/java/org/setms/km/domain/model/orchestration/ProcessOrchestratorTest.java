@@ -115,7 +115,9 @@ class ProcessOrchestratorTest {
     var globPaths =
         workspace
             .root()
-            .select(".km/inputs/%s/%s.paths".formatted(input.path(), input.extension()));
+            .select(
+                ".km/inputs/%s/%s/%s.paths"
+                    .formatted(input.name(), input.path(), input.extension()));
     try (var reader = new BufferedReader(new InputStreamReader(globPaths.readFrom()))) {
       return reader.lines().toList();
     }

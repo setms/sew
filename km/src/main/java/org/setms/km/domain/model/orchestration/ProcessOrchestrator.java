@@ -74,7 +74,9 @@ public class ProcessOrchestrator {
   private Resource<?> resourceContainingPathsFor(Input<?> input) {
     return workspace
         .root()
-        .select(".km/%s/%s/%s.%s".formatted(INPUTS, input.path(), input.extension(), PATHS));
+        .select(
+            ".km/%s/%s/%s/%s.%s"
+                .formatted(INPUTS, input.name(), input.path(), input.extension(), PATHS));
   }
 
   private void writeInputPaths(
