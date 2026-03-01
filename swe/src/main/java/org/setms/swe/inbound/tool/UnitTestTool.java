@@ -1,13 +1,20 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
+import org.setms.km.domain.model.tool.ResolvedInputs;
+import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Suggestion;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
+import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
 public class UnitTestTool extends ArtifactTool<UnitTest> {
@@ -22,5 +29,21 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(decisions(), initiatives());
+  }
+
+  @Override
+  public void validate(
+      UnitTest unitTest, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    if (Decisions.from(inputs).about(BuildSystem.TOPIC) == null) {
+      diagnostics.add(missingBuildSystemDecision());
+    }
+  }
+
+  private Diagnostic missingBuildSystemDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on build system",
+        null,
+        new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system"));
   }
 }
