@@ -39,8 +39,26 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
 
     tool.validate(unitTest, new ResolvedInputs(), diagnostics);
 
-    assertThatSingleWarnDiagnosticWith(
-        diagnostics, "Missing decision on build system", "Decide on build system");
+    assertThatMissingBuildSystemDiagnosticIsEmitted(diagnostics);
+  }
+
+  private void assertThatMissingBuildSystemDiagnosticIsEmitted(List<Diagnostic> diagnostics) {
+    assertThat(diagnostics)
+        .hasSize(1)
+        .allSatisfy(
+            diagnostic -> {
+              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
+              assertThat(diagnostic.message())
+                  .as("Message")
+                  .isEqualTo("Missing decision on build system");
+              assertThat(diagnostic.suggestions())
+                  .hasSize(1)
+                  .allSatisfy(
+                      suggestion ->
+                          assertThat(suggestion.message())
+                              .as("Suggestion")
+                              .isEqualTo("Decide on build system"));
+            });
   }
 
   @Test
@@ -67,23 +85,5 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
 
   private UnitTest newUnitTest() {
     return new UnitTest(new FullyQualifiedName("com.example", "ExampleTest"));
-  }
-
-  private void assertThatSingleWarnDiagnosticWith(
-      List<Diagnostic> diagnostics, String message, String suggestionMessage) {
-    assertThat(diagnostics)
-        .hasSize(1)
-        .allSatisfy(
-            diagnostic -> {
-              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
-              assertThat(diagnostic.message()).as("Message").isEqualTo(message);
-              assertThat(diagnostic.suggestions())
-                  .hasSize(1)
-                  .allSatisfy(
-                      suggestion ->
-                          assertThat(suggestion.message())
-                              .as("Suggestion")
-                              .isEqualTo(suggestionMessage));
-            });
   }
 }
