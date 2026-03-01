@@ -128,6 +128,23 @@ class Inputs {
     return newInput(PATH_STAKEHOLDERS, User.class);
   }
 
+  public static Set<Input<? extends CodeArtifact>> buildConfiguration() {
+    return programmingLanguageConventions()
+        .flatMap(Inputs::toBuildConfigurationInputs)
+        .collect(toSet());
+  }
+
+  private static Stream<GlobInput<CodeArtifact>> toBuildConfigurationInputs(
+      ProgrammingLanguageConventions conventions) {
+    return conventions.buildConfigurationFiles().stream()
+        .map(file -> toBuildConfigurationInput(file, conventions));
+  }
+
+  private static GlobInput<CodeArtifact> toBuildConfigurationInput(
+      String file, ProgrammingLanguageConventions conventions) {
+    return new GlobInput<>(new Glob("", file), new CodeFormat(conventions), CodeArtifact.class);
+  }
+
   public static Set<Input<UnitTest>> unitTests() {
     return programmingLanguageConventions().map(Inputs::toUnitTestInput).collect(toSet());
   }

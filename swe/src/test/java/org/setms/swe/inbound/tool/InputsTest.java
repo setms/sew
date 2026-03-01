@@ -7,6 +7,15 @@ import org.junit.jupiter.api.Test;
 class InputsTest {
 
   @Test
+  void shouldGetBuildConfigurationInputsFromProgrammingLanguageConventions() {
+    var actual = Inputs.buildConfiguration();
+
+    assertThat(actual)
+        .anyMatch(input -> input.matches("build.gradle"))
+        .anyMatch(input -> input.matches("settings.gradle"));
+  }
+
+  @Test
   void shouldGetUnitTestInputsFromProgrammingLanguageConventions() {
     var actual = Inputs.unitTests();
 
