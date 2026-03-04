@@ -78,7 +78,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
     if (resolver.codeGenerator(inputs, diagnostics).isEmpty()) {
       return;
     }
-    if (!hasServiceCode(aggregate, inputs)) {
+    if (!hasCode(aggregate, "Service", inputs)) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -88,26 +88,6 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
       return;
     }
     checkForMissingController(aggregate, inputs, diagnostics);
-  }
-
-  private void checkForMissingController(
-      Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var frameworkDiagnostics = new ArrayList<Diagnostic>();
-    if (resolver.frameworkCodeGenerator(inputs, frameworkDiagnostics).isPresent()
-        && !hasControllerCode(aggregate, inputs)) {
-      diagnostics.add(
-          new Diagnostic(
-              WARN,
-              "Missing controller",
-              aggregate.toLocation(),
-              new Suggestion(GENERATE_CONTROLLER, "Generate controller")));
-    }
-  }
-
-  private boolean hasControllerCode(Aggregate aggregate, ResolvedInputs inputs) {
-    var controllerName = aggregate.getName() + "Controller";
-    return inputs.get(CodeArtifact.class).stream()
-        .anyMatch(ca -> ca.getName().equals(controllerName));
   }
 
   private boolean hasAggregateScenario(Aggregate aggregate, ResolvedInputs inputs) {
@@ -124,9 +104,23 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         .isPresent();
   }
 
-  private boolean hasServiceCode(Aggregate aggregate, ResolvedInputs inputs) {
-    var serviceName = aggregate.getName() + "Service";
-    return inputs.get(CodeArtifact.class).stream().anyMatch(ca -> ca.getName().equals(serviceName));
+  private boolean hasCode(Aggregate aggregate, String suffix, ResolvedInputs inputs) {
+    var name = aggregate.getName() + suffix;
+    return inputs.get(CodeArtifact.class).stream().anyMatch(ca -> ca.getName().equals(name));
+  }
+
+  private void checkForMissingController(
+      Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var frameworkDiagnostics = new ArrayList<Diagnostic>();
+    if (resolver.frameworkCodeGenerator(inputs, frameworkDiagnostics).isPresent()
+        && !hasCode(aggregate, "Controller", inputs)) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing controller",
+              aggregate.toLocation(),
+              new Suggestion(GENERATE_CONTROLLER, "Generate controller")));
+    }
   }
 
   @Override

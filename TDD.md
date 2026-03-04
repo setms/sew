@@ -10,7 +10,7 @@
   when the Framework decision is "Spring Boot".
   Add a test to `TechnologyResolverImplTest`, following the pattern of
   `shouldReturnJavaCodeGeneratorWhenProgrammingLanguageIsJava`.
-- [ ] `SpringBootCodeGenerator.generateControllerFor(Aggregate, Command, Entity commandPayload, Event event)`
+- [x] `SpringBootCodeGenerator.generateControllerFor(Aggregate, Command, Entity commandPayload, Event event)`
   should generate a Spring Boot REST controller that injects the aggregate's domain service and
   maps the command to a POST endpoint returning the event.
   Add a new `SpringBootCodeGeneratorTest` class.
@@ -39,7 +39,7 @@
     }
   }
   ```
-- [ ] `AggregateTool.validate` should emit a diagnostic for creating a controller when the code for its domain service
+- [~] `AggregateTool.validate` should emit a diagnostic for creating a controller when the code for its domain service
   is there but there is no code for the controller yet.
 - [ ] `AggregateTool` should generate the controller via `TechnologyResolver.frameworkCodeGenerator().generateControllerFor()`
   when asked to apply the suggestion for the above diagnostic.
