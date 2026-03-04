@@ -18,6 +18,7 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Decisions;
+import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
@@ -27,6 +28,7 @@ import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.CodeTester;
+import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
@@ -34,6 +36,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
   static final String PICK_BUILD_SYSTEM = "build-system.decide";
+  static final String PICK_FRAMEWORK = "framework.decide";
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
@@ -146,6 +149,24 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         "Missing decision on programming language",
         null,
         new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language"));
+  }
+
+  @Override
+  public Optional<FrameworkCodeGenerator> frameworkCodeGenerator(
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var framework = Decisions.from(inputs).about(Framework.TOPIC);
+    if (framework == null) {
+      return empty(missingFrameworkDecision(), diagnostics);
+    }
+    return Optional.empty();
+  }
+
+  private Diagnostic missingFrameworkDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on framework",
+        null,
+        new Suggestion(PICK_FRAMEWORK, "Decide on framework"));
   }
 
   private Diagnostic missingBuildSystemDecision() {

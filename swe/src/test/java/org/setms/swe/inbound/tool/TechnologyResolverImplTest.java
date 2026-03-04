@@ -278,6 +278,17 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldNeedFrameworkDecisionForFrameworkCodeGenerator() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs = givenInputsForJavaWithTopLevelPackage();
+
+    resolver.frameworkCodeGenerator(inputs, diagnostics);
+
+    assertThatSingleWarnDiagnosticHas(
+        diagnostics, "Missing decision on framework", "Decide on framework");
+  }
+
+  @Test
   void shouldRequireProjectForCodeBuilder() {
     var diagnostics = new ArrayList<Diagnostic>();
     var workspace = new InMemoryWorkspace();
