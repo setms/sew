@@ -23,10 +23,36 @@ class JavaCodeGeneratorTest {
     var command = new Command(new FullyQualifiedName("project", "CreateProject"));
     var event = new Event(new FullyQualifiedName("project", "ProjectCreated"));
 
-    var actual = generator.generate(aggregate, command, event);
+    var actual = generator.generate(aggregate, command, null, event, null);
 
     assertThatGeneratedCodeIsServiceInterface(actual.get(0));
     assertThatGeneratedCodeIsServiceImplementation(actual.get(1));
+  }
+
+  @Test
+  void shouldBuildReturnExpressionWhenAllEventFieldsMatchCommand() {
+    var generator = new JavaCodeGenerator("com.example.todo");
+    var aggregate = new Aggregate(new FullyQualifiedName("todo", "TodoItems"));
+    var command = new Command(new FullyQualifiedName("todo", "AddTodoItem"));
+    var event = new Event(new FullyQualifiedName("todo", "TodoItemAdded"));
+    var payload = givenTodoItemPayload();
+
+    var actual = generator.generate(aggregate, command, payload, event, payload);
+
+    assertThatServiceImplCreatesNewEvent(actual.get(1));
+  }
+
+  private Entity givenTodoItemPayload() {
+    return new Entity(new FullyQualifiedName("todo", "TodoItem"))
+        .setFields(
+            List.of(
+                new Field(new FullyQualifiedName("todo", "Task")).setType(FieldType.TEXT),
+                new Field(new FullyQualifiedName("todo", "DueDate")).setType(FieldType.DATETIME)));
+  }
+
+  private void assertThatServiceImplCreatesNewEvent(CodeArtifact actual) {
+    assertThat(actual.getCode())
+        .contains("return new TodoItemAdded(addTodoItem.task(), addTodoItem.dueDate());");
   }
 
   private void assertThatGeneratedCodeIsServiceInterface(CodeArtifact actual) {

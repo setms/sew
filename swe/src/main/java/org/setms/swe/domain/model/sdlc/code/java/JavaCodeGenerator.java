@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 
 import java.util.Collection;
 import java.util.List;
@@ -66,7 +67,7 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   }
 
   private static Stream<Field> fieldsOf(Entity payload) {
-    return Optional.ofNullable(payload.getFields()).stream().flatMap(Collection::stream);
+    return Optional.ofNullable(payload).map(Entity::getFields).stream().flatMap(Collection::stream);
   }
 
   private static String toJavaType(FieldType type) {
@@ -106,7 +107,12 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
   }
 
   @Override
-  public List<CodeArtifact> generate(Aggregate aggregate, Command command, Event event) {
+  public List<CodeArtifact> generate(
+      Aggregate aggregate,
+      Command command,
+      Entity commandPayload,
+      Event event,
+      Entity eventPayload) {
     var packageName = packageFor(aggregate, "domain.services");
     var serviceName = aggregate.getName() + "Service";
     var commandFqn = "%s.%s".formatted(packageFor(command, "domain.model"), command.getName());
@@ -117,11 +123,39 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
             .map("import %s;"::formatted)
             .collect(joining("\n"));
     var paramName = Strings.initLower(command.getName());
+    var returnExpression =
+        buildReturnExpression(event.getName(), eventPayload, commandPayload, paramName);
     return List.of(
         serviceInterface(
             packageName, serviceName, command.getName(), event.getName(), imports, paramName),
         serviceImpl(
-            packageName, serviceName, command.getName(), event.getName(), imports, paramName));
+            packageName,
+            serviceName,
+            command.getName(),
+            event.getName(),
+            imports,
+            paramName,
+            returnExpression));
+  }
+
+  private String buildReturnExpression(
+      String eventName, Entity eventPayload, Entity commandPayload, String paramName) {
+    if (eventPayload == null) {
+      return "null";
+    }
+    var eventFields = fieldsOf(eventPayload).toList();
+    if (eventFields.isEmpty()) {
+      return "new %s()".formatted(eventName);
+    }
+    var commandFieldNames = fieldsOf(commandPayload).map(Field::getName).collect(toSet());
+    if (commandFieldNames.containsAll(eventFields.stream().map(Field::getName).collect(toSet()))) {
+      var params =
+          eventFields.stream()
+              .map(f -> "%s.%s()".formatted(paramName, Strings.initLower(f.getName())))
+              .collect(joining(", "));
+      return "new %s(%s)".formatted(eventName, params);
+    }
+    return "null";
   }
 
   private CodeArtifact serviceInterface(
@@ -152,7 +186,8 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
       String commandName,
       String eventName,
       String imports,
-      String paramName) {
+      String paramName,
+      String returnExpression) {
     var code =
         """
         package %s;
@@ -163,12 +198,19 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
 
           @Override
           public %s accept(%s %s) {
-            return null;
+            return %s;
           }
         }
         """
             .formatted(
-                packageName, imports, serviceName, serviceName, eventName, commandName, paramName);
+                packageName,
+                imports,
+                serviceName,
+                serviceName,
+                eventName,
+                commandName,
+                paramName,
+                returnExpression);
     return codeArtifact(packageName, serviceName + "Impl", code);
   }
 

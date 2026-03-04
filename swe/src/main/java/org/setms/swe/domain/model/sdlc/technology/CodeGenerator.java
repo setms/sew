@@ -14,5 +14,10 @@ public interface CodeGenerator {
 
   List<CodeArtifact> generate(Event event, Entity payload);
 
-  List<CodeArtifact> generate(Aggregate aggregate, Command command, Event event);
+  List<CodeArtifact> generate(
+      Aggregate aggregate,
+      Command command,
+      Entity commandPayload,
+      Event event,
+      Entity eventPayload);
 }

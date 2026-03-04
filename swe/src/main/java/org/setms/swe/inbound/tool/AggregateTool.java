@@ -31,9 +31,11 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
+import org.setms.swe.domain.model.sdlc.eventstorming.HasPayload;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 public class AggregateTool extends ArtifactTool<Aggregate> {
@@ -126,9 +128,20 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
                     .map(
                         pair ->
                             CodeWriter.writeCode(
-                                generator.generate(aggregate, pair.command(), pair.event()),
+                                generator.generate(
+                                    aggregate,
+                                    pair.command(),
+                                    resolvePayload(pair.command(), inputs),
+                                    pair.event(),
+                                    resolvePayload(pair.event(), inputs)),
                                 aggregateResource)))
         .orElseGet(AppliedSuggestion::none);
+  }
+
+  private Entity resolvePayload(HasPayload artifact, ResolvedInputs inputs) {
+    return Optional.ofNullable(artifact.getPayload())
+        .flatMap(link -> link.resolveFrom(inputs.get(Entity.class)))
+        .orElse(null);
   }
 
   private Optional<CommandAndEvent> findCommandAndEvent(
