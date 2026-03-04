@@ -189,4 +189,34 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
         .put("events", List.of(event))
         .put("entities", List.of(entity));
   }
+
+  @Test
+  void shouldGenerateControllerCode() {
+    var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
+    var command =
+        new Command(new FullyQualifiedName("design", "CreateProject")).setDisplay("Create project");
+    var event = new Event(new FullyQualifiedName("design", "ProjectCreated"));
+    var inputs =
+        givenInputsForSpringBootWithFullAggregateScenario(
+            aggregate, command, event, newEntityWithTaskAndDueDate());
+    var workspace = new InMemoryWorkspace();
+
+    var actual =
+        ((AggregateTool) getTool())
+            .applySuggestion(
+                aggregate, AggregateTool.GENERATE_CONTROLLER, null, inputs, workspace.root());
+
+    assertThat(actual.createdOrChanged())
+        .anySatisfy(
+            resource ->
+                assertThat(contentOf(resource))
+                    .contains("@RestController")
+                    .contains("public class ProjectsController"));
+  }
+
+  private ResolvedInputs givenInputsForSpringBootWithFullAggregateScenario(
+      Aggregate aggregate, Command command, Event event, Entity entity) {
+    return givenInputsWithFullAggregateScenario(aggregate, command, event, entity)
+        .put("decisions", List.of(newDecision(Framework.TOPIC, "Spring Boot")));
+  }
 }

@@ -132,6 +132,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
       ResolvedInputs inputs) {
     return switch (suggestionCode) {
       case GENERATE_SERVICE -> generateServiceFor(resource, aggregate, inputs);
+      case GENERATE_CONTROLLER -> generateControllerFor(resource, aggregate, inputs);
       default -> unknown(suggestionCode);
     };
   }
@@ -153,6 +154,26 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
                                     resolvePayload(pair.command(), inputs),
                                     pair.event(),
                                     resolvePayload(pair.event(), inputs)),
+                                aggregateResource)))
+        .orElseGet(AppliedSuggestion::none);
+  }
+
+  private AppliedSuggestion generateControllerFor(
+      Resource<?> aggregateResource, Aggregate aggregate, ResolvedInputs inputs) {
+    var diagnostics = new ArrayList<Diagnostic>();
+    return resolver
+        .frameworkCodeGenerator(inputs, diagnostics)
+        .flatMap(
+            generator ->
+                findCommandAndEvent(aggregate, inputs)
+                    .map(
+                        pair ->
+                            CodeWriter.writeCode(
+                                generator.generateControllerFor(
+                                    aggregate,
+                                    pair.command(),
+                                    resolvePayload(pair.command(), inputs),
+                                    pair.event()),
                                 aggregateResource)))
         .orElseGet(AppliedSuggestion::none);
   }
