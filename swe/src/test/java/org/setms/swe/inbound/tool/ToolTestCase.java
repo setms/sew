@@ -6,6 +6,8 @@ import static org.setms.km.domain.model.format.Strings.initLower;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -288,5 +290,13 @@ abstract class ToolTestCase<A extends Artifact> {
     tool.buildReports(
         resolveBuildInputs(workspace.root(), result), workspace.root().select("build"), result);
     return result;
+  }
+
+  protected String contentOf(Resource<?> resource) {
+    try (var input = resource.readFrom()) {
+      return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 }

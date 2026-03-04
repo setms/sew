@@ -16,6 +16,9 @@ import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.design.Field;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
@@ -54,11 +57,16 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
 
   @Test
   void shouldGenerateServiceCode() {
+    var entity = newEntityWithTaskAndDueDate();
     var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
     var command =
-        new Command(new FullyQualifiedName("design", "CreateProject")).setDisplay("Create project");
-    var event = new Event(new FullyQualifiedName("design", "ProjectCreated"));
-    var inputs = givenInputsWithFullAggregateScenario(aggregate, command, event);
+        new Command(new FullyQualifiedName("design", "CreateProject"))
+            .setDisplay("Create project")
+            .setPayload(new Link("entity", entity.getName()));
+    var event =
+        new Event(new FullyQualifiedName("design", "ProjectCreated"))
+            .setPayload(new Link("entity", entity.getName()));
+    var inputs = givenInputsWithFullAggregateScenario(aggregate, command, event, entity);
     var workspace = new InMemoryWorkspace();
 
     var actual =
@@ -66,11 +74,25 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
             .applySuggestion(
                 aggregate, AggregateTool.GENERATE_SERVICE, null, inputs, workspace.root());
 
-    assertThat(actual.createdOrChanged()).hasSize(2);
+    assertThat(actual.createdOrChanged())
+        .hasSize(2)
+        .anySatisfy(
+            resource ->
+                assertThat(contentOf(resource))
+                    .contains(
+                        "return new ProjectCreated(createProject.task(), createProject.dueDate())"));
+  }
+
+  private Entity newEntityWithTaskAndDueDate() {
+    return new Entity(new FullyQualifiedName("design", "ProjectData"))
+        .setFields(
+            List.of(
+                new Field(new FullyQualifiedName("design", "task")).setType(FieldType.TEXT),
+                new Field(new FullyQualifiedName("design", "dueDate")).setType(FieldType.DATE)));
   }
 
   private ResolvedInputs givenInputsWithFullAggregateScenario(
-      Aggregate aggregate, Command command, Event event) {
+      Aggregate aggregate, Command command, Event event, Entity entity) {
     var commandVar =
         new ElementVariable(new FullyQualifiedName("test", "createProject"))
             .setType(new Link("command", command.getName()));
@@ -89,7 +111,8 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
     return givenInputsWithAllPrerequisites()
         .put("acceptanceTests", List.of(acceptanceTest))
         .put("commands", List.of(command))
-        .put("events", List.of(event));
+        .put("events", List.of(event))
+        .put("entities", List.of(entity));
   }
 
   private ResolvedInputs givenInputsWithAggregateScenario(Aggregate aggregate) {

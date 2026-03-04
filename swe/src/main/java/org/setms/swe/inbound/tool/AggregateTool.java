@@ -8,6 +8,7 @@ import static org.setms.swe.inbound.tool.Inputs.aggregates;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.commands;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
+import static org.setms.swe.inbound.tool.Inputs.entities;
 import static org.setms.swe.inbound.tool.Inputs.events;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
@@ -60,7 +61,8 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
     return Stream.of(
-            Stream.of(acceptanceTests(), commands(), events(), decisions(), initiatives()),
+            Stream.of(
+                acceptanceTests(), commands(), entities(), events(), decisions(), initiatives()),
             code().stream())
         .flatMap(s -> s)
         .collect(toSet());
