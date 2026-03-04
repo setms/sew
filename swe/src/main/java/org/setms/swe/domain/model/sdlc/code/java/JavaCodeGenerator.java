@@ -7,9 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -22,14 +20,15 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
 
-@RequiredArgsConstructor
-public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGenerator {
+public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGenerator {
 
-  private final String topLevelPackage;
+  public JavaCodeGenerator(String topLevelPackage) {
+    super(topLevelPackage);
+  }
 
   public static Optional<CodeGenerator> from(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    return topLevelPackage(inputs, diagnostics).map(JavaCodeGenerator::new);
+    return JavaArtifactGenerator.topLevelPackage(inputs, diagnostics).map(JavaCodeGenerator::new);
   }
 
   @Override
@@ -51,13 +50,6 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
             """
             .formatted(packageName, importSection, className, components);
     return List.of(codeArtifact(packageName, className, code));
-  }
-
-  private String packageFor(Artifact artifact, String additionalPackage) {
-    var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
-    return lastSegment.equals(artifact.getPackage())
-        ? "%s.%s".formatted(topLevelPackage, additionalPackage)
-        : "%s.%s.%s".formatted(topLevelPackage, artifact.getPackage(), additionalPackage);
   }
 
   private String componentsFor(Entity payload) {
@@ -212,9 +204,5 @@ public class JavaCodeGenerator extends JavaArtifactGenerator implements CodeGene
                 paramName,
                 returnExpression);
     return codeArtifact(packageName, serviceName + "Impl", code);
-  }
-
-  private static CodeArtifact codeArtifact(String packageName, String name, String code) {
-    return new CodeArtifact(new FullyQualifiedName(packageName, name)).setCode(code);
   }
 }
