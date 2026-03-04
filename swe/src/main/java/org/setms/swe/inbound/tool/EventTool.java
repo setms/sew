@@ -59,7 +59,7 @@ public class EventTool extends DtoCodeTool<Event> {
   private AppliedSuggestion generateCodeFor(
       Resource<?> eventResource, Event event, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
-    return resolver
+    return getResolver()
         .codeGenerator(inputs, diagnostics)
         .flatMap(
             generator ->

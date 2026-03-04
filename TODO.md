@@ -56,3 +56,7 @@
 ### Modules
 
 - Other deployment options than monolith
+
+### Unit test
+
+- Make test pass

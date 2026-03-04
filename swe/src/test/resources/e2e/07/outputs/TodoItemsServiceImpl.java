@@ -7,6 +7,6 @@ public class TodoItemsServiceImpl implements TodoItemsService {
 
   @Override
   public TodoItemAdded accept(AddTodoItem addTodoItem) {
-    return null;
+    return new TodoItemAdded(addTodoItem.task(), addTodoItem.dueDate());
   }
 }

@@ -7,6 +7,8 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.Collection;
 import java.util.Optional;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
@@ -20,19 +22,16 @@ import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.HasPayload;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
+@RequiredArgsConstructor
 abstract class DtoCodeTool<A extends Artifact & HasPayload> extends ArtifactTool<A> {
 
   public static final String CREATE_PAYLOAD = "payload.create";
   public static final String GENERATE_CODE = "code.generate";
 
-  final TechnologyResolver resolver;
+  @Getter private final TechnologyResolver resolver;
 
   DtoCodeTool() {
     this(new TechnologyResolverImpl());
-  }
-
-  DtoCodeTool(TechnologyResolver resolver) {
-    this.resolver = resolver;
   }
 
   @Override
@@ -63,7 +62,7 @@ abstract class DtoCodeTool<A extends Artifact & HasPayload> extends ArtifactTool
     if (artifact.getPayload() == null || resolver.codeGenerator(inputs, diagnostics).isEmpty()) {
       return;
     }
-    if (codeFor(artifact, inputs).isEmpty()) {
+    if (domainObjectFor(artifact, inputs).isEmpty()) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -87,7 +86,7 @@ abstract class DtoCodeTool<A extends Artifact & HasPayload> extends ArtifactTool
     }
   }
 
-  protected Optional<CodeArtifact> codeFor(A artifact, ResolvedInputs inputs) {
+  protected Optional<CodeArtifact> domainObjectFor(A artifact, ResolvedInputs inputs) {
     return inputs.get(CodeArtifact.class).stream()
         .filter(
             ca ->

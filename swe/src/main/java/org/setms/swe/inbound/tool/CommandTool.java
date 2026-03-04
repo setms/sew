@@ -60,7 +60,7 @@ public class CommandTool extends DtoCodeTool<Command> {
   private AppliedSuggestion generateCodeFor(
       Resource<?> commandResource, Command command, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
-    return resolver
+    return getResolver()
         .codeGenerator(inputs, diagnostics)
         .flatMap(
             generator ->

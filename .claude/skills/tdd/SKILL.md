@@ -24,6 +24,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
    - Methods in the Assert section MUST be called `assertThatXyz()`.
      Also ensure that the entire method name reads like an English sentence.
    - NEVER use technical terms, like `mock`, in a method name. Adopt the domain language of the project instead.
+   - Helper methods must directly follow the first method that calls them.
 
 8. Make sure the test fails for the correct reason.
   If you invented new types or methods, you'll first have to write just enough code to make the test compile.
@@ -53,13 +54,14 @@ description: Write code following the TDD style. Use when there is a non-empty, 
 18. If token usage is over 40% of budget, tell the user to start a new session and halt.
 19. If there are test scenarios that aren't complete, return to step 1.
   CRITICAL: You MUST have explicit approval to continue with the next test scenario.
-20. If `EndToEndTest` still fails after all test scenarios are complete, invoke the `e2e` skill.
+20. If all test scenarios are complete, clear the test list.
+21. If `EndToEndTest` still fails after all test scenarios are complete, invoke the `e2e` skill.
 
 Implementation notes:
 
 - Don't use tools like `sed` that require constant approval.
 - Prefer tools from the `jetbrains` MCP server.
-  The IntelliJ project lives at `~/dev/setms/sew`.
+  The project prefix is `sew/`.
 
 **CRITICAL: You must not conclude you're done until all tests pass (with the possible exception of `EndToEndTest`) and
 all other checks succeed.**

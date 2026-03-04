@@ -24,6 +24,7 @@ Review changed code and make sure it follows the following style guide:
   If the Act block stores an outcome in a single local variable that is then tested in the Assert block, then that
   variable MUST be named `actual`.
 - Use `import` statements instead of using a fully qualified name.
+- Use Lombok to reduce boilerplate code like getters and constructors for final fields.
 - Don't use technical terms like `mock` in identifier names.
 - Method declarations MUST use the most generic type possible for parameters and return types.
   For example, use `Map` instead of `HashMap` and `Collection` instead of `ArrayList`.
