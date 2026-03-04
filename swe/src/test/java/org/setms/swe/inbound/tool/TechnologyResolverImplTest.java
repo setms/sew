@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_BUILD_SYSTEM;
+import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_FRAMEWORK;
 import static org.setms.swe.inbound.tool.TechnologyResolverImpl.PICK_PROGRAMMING_LANGUAGE;
 
 import java.io.File;
@@ -286,6 +287,23 @@ class TechnologyResolverImplTest {
 
     assertThatSingleWarnDiagnosticHas(
         diagnostics, "Missing decision on framework", "Decide on framework");
+  }
+
+  @Test
+  void shouldCreateFrameworkDecision() {
+    var workspace = new InMemoryWorkspace();
+
+    var actual = resolver.applySuggestion(PICK_FRAMEWORK, workspace.root(), new ResolvedInputs());
+
+    assertThat(actual.diagnostics()).as("Diagnostics").isEmpty();
+    assertThat(actual.createdOrChanged())
+        .as("Created")
+        .hasSize(1)
+        .allSatisfy(
+            resource ->
+                assertThat(resource.path())
+                    .as("Path")
+                    .isEqualTo("/src/main/architecture/Framework.decision"));
   }
 
   @Test

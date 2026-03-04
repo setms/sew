@@ -151,6 +151,21 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         new Suggestion(PICK_PROGRAMMING_LANGUAGE, "Decide on programming language"));
   }
 
+  private Diagnostic missingBuildSystemDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on build system",
+        null,
+        new Suggestion(PICK_BUILD_SYSTEM, "Decide on build system"));
+  }
+
+  private Optional<CodeBuilder> javaBuildSystem(
+      String selectedBuildSystem, String projectName, Collection<Diagnostic> diagnostics) {
+    return selectedBuildSystem.equals("Gradle")
+        ? Optional.of(new Gradle(projectName))
+        : empty(new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics);
+  }
+
   @Override
   public Optional<FrameworkCodeGenerator> frameworkCodeGenerator(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
@@ -169,21 +184,6 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         new Suggestion(PICK_FRAMEWORK, "Decide on framework"));
   }
 
-  private Diagnostic missingBuildSystemDecision() {
-    return new Diagnostic(
-        WARN,
-        "Missing decision on build system",
-        null,
-        new Suggestion(PICK_BUILD_SYSTEM, "Decide on build system"));
-  }
-
-  private Optional<CodeBuilder> javaBuildSystem(
-      String selectedBuildSystem, String projectName, Collection<Diagnostic> diagnostics) {
-    return selectedBuildSystem.equals("Gradle")
-        ? Optional.of(new Gradle(projectName))
-        : empty(new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics);
-  }
-
   @Override
   public AppliedSuggestion applySuggestion(
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs) {
@@ -193,6 +193,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       case JavaArtifactGenerator.CREATE_INITIATIVE, JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE ->
           JavaArtifactGenerator.applySuggestion(suggestionCode, resource, inputs);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
+      case PICK_FRAMEWORK -> pickDecision(resource, Framework.TOPIC, Framework.TOPIC);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
