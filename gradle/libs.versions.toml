@@ -17,7 +17,6 @@ lombok-plugin = "9.2.0"
 mapstruct-plugin = "1.0.9"
 mockito = "5.22.0"
 pitest-plugin = "1.19.0-rc.3"
-pitest-junit5 = "1.2.1"
 slf4j = "2.0.17"
 snakeyaml = "2.6"
 spotless-plugin = "8.2.1"
@@ -47,6 +46,7 @@ junit5-runtime = { module = "org.junit.jupiter:junit-jupiter-engine", version.re
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
 snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
@@ -67,7 +67,7 @@ jackson = ["jackson-databind"]
 json = ["json"]
 junit = ["junit5", "junit5-params", "mockito", "mockito-junit", "assertj", "awaitility", "jqwik"]
 junit-runtime = ["junit5-runtime", "junit5-launcher"]
-slf4f = ["slf4j-api"]
+slf4f = ["slf4j-api", "slf4j-nop"]
 spring-boot = ["spring-thymeleaf", "spring-validation", "spring-web"]
 spring-test = ["spring-test"]
 validation = ["validation"]

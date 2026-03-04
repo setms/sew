@@ -84,6 +84,7 @@ pitest {
     // DO NOT add to this list.
     excludedClasses = ["*.generated.*", "*.config.*"]
     useClasspathFile = true
+    jvmArgs = ['-XX:+EnableDynamicAgentLoading', '--enable-native-access=ALL-UNNAMED']
 
     // NEGATE_CONDITIONALS and VOID_METHOD_CALLS time out
     mutators = ['INVERT_NEGS', 'MATH', 'CONDITIONALS_BOUNDARY', 'INCREMENTS', 'TRUE_RETURNS',

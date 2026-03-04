@@ -100,6 +100,7 @@ pitest {
     excludedClasses = ["*.generated.*", "*.config.*"]
     excludedTestClasses = ['org.setms.swe.e2e.EndToEndTest']
     useClasspathFile = true
+    jvmArgs = ['-XX:+EnableDynamicAgentLoading', '--enable-native-access=ALL-UNNAMED']
 
     // NEGATE_CONDITIONALS times out
     mutators = ['INVERT_NEGS', 'MATH', 'VOID_METHOD_CALLS', 'CONDITIONALS_BOUNDARY', 'INCREMENTS', 'TRUE_RETURNS',
