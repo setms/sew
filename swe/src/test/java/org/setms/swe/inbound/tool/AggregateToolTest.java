@@ -40,6 +40,34 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
     assertThatDiagnosticsWarnAboutMissingDomainService(diagnostics);
   }
 
+  private ResolvedInputs givenInputsWithAggregateScenario(Aggregate aggregate) {
+    var scenario = new AggregateScenario(new FullyQualifiedName("test", "CreateProject"));
+    var acceptanceTest =
+        new AcceptanceTest(new FullyQualifiedName("test", "Projects"))
+            .setSut(new Link("aggregate", aggregate.getName()))
+            .setVariables(List.of())
+            .setScenarios(List.of(scenario));
+    return givenInputsWithAllPrerequisites().put("acceptanceTests", List.of(acceptanceTest));
+  }
+
+  private void assertThatDiagnosticsWarnAboutMissingDomainService(
+      Collection<Diagnostic> diagnostics) {
+    assertThat(diagnostics)
+        .hasSize(1)
+        .allSatisfy(
+            d -> {
+              assertThat(d.level()).as("Level").isEqualTo(WARN);
+              assertThat(d.message()).as("Message").isEqualTo("Missing domain service");
+              assertThat(d.suggestions())
+                  .hasSize(1)
+                  .allSatisfy(
+                      s ->
+                          assertThat(s.message())
+                              .as("Suggestion")
+                              .isEqualTo("Generate domain service"));
+            });
+  }
+
   @Test
   void shouldNotWarnWhenDomainServiceCodeExists() {
     var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
@@ -113,33 +141,5 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
         .put("commands", List.of(command))
         .put("events", List.of(event))
         .put("entities", List.of(entity));
-  }
-
-  private ResolvedInputs givenInputsWithAggregateScenario(Aggregate aggregate) {
-    var scenario = new AggregateScenario(new FullyQualifiedName("test", "CreateProject"));
-    var acceptanceTest =
-        new AcceptanceTest(new FullyQualifiedName("test", "Projects"))
-            .setSut(new Link("aggregate", aggregate.getName()))
-            .setVariables(List.of())
-            .setScenarios(List.of(scenario));
-    return givenInputsWithAllPrerequisites().put("acceptanceTests", List.of(acceptanceTest));
-  }
-
-  private void assertThatDiagnosticsWarnAboutMissingDomainService(
-      Collection<Diagnostic> diagnostics) {
-    assertThat(diagnostics)
-        .hasSize(1)
-        .allSatisfy(
-            d -> {
-              assertThat(d.level()).as("Level").isEqualTo(WARN);
-              assertThat(d.message()).as("Message").isEqualTo("Missing domain service");
-              assertThat(d.suggestions())
-                  .hasSize(1)
-                  .allSatisfy(
-                      s ->
-                          assertThat(s.message())
-                              .as("Suggestion")
-                              .isEqualTo("Generate domain service"));
-            });
   }
 }
