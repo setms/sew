@@ -42,6 +42,7 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 public class AggregateTool extends ArtifactTool<Aggregate> {
 
   static final String GENERATE_SERVICE = "service.generate";
+  static final String GENERATE_CONTROLLER = "controller.generate";
 
   private final TechnologyResolver resolver;
 
@@ -84,7 +85,29 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
               "Missing domain service",
               aggregate.toLocation(),
               new Suggestion(GENERATE_SERVICE, "Generate domain service")));
+      return;
     }
+    checkForMissingController(aggregate, inputs, diagnostics);
+  }
+
+  private void checkForMissingController(
+      Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var frameworkDiagnostics = new ArrayList<Diagnostic>();
+    if (resolver.frameworkCodeGenerator(inputs, frameworkDiagnostics).isPresent()
+        && !hasControllerCode(aggregate, inputs)) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing controller",
+              aggregate.toLocation(),
+              new Suggestion(GENERATE_CONTROLLER, "Generate controller")));
+    }
+  }
+
+  private boolean hasControllerCode(Aggregate aggregate, ResolvedInputs inputs) {
+    var controllerName = aggregate.getName() + "Controller";
+    return inputs.get(CodeArtifact.class).stream()
+        .anyMatch(ca -> ca.getName().equals(controllerName));
   }
 
   private boolean hasAggregateScenario(Aggregate aggregate, ResolvedInputs inputs) {

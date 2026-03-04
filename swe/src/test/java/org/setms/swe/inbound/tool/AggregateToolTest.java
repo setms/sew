@@ -15,6 +15,8 @@ import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
+import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.design.Field;
@@ -81,6 +83,51 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
     ((AggregateTool) getTool()).validate(aggregate, inputs, diagnostics);
 
     assertThat(diagnostics).isEmpty();
+  }
+
+  @Test
+  void shouldWarnAboutMissingControllerWhenServiceCodeExists() {
+    var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
+    var inputs = givenInputsForSpringBootWithServiceCode(aggregate);
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    ((AggregateTool) getTool()).validate(aggregate, inputs, diagnostics);
+
+    assertThatDiagnosticsWarnAboutMissingController(diagnostics);
+  }
+
+  private ResolvedInputs givenInputsForSpringBootWithServiceCode(Aggregate aggregate) {
+    var serviceCode =
+        new CodeArtifact(
+                new FullyQualifiedName(
+                    "com.example.domain.services", aggregate.getName() + "Service"))
+            .setCode("// existing");
+    return givenInputsWithAggregateScenario(aggregate)
+        .put("codeArtifacts", List.of(serviceCode))
+        .put("decisions", List.of(newDecision(Framework.TOPIC, "Spring Boot")));
+  }
+
+  private static Decision newDecision(String topic, String choice) {
+    return new Decision(new FullyQualifiedName("technology", topic))
+        .setTopic(topic)
+        .setChoice(choice);
+  }
+
+  private void assertThatDiagnosticsWarnAboutMissingController(Collection<Diagnostic> diagnostics) {
+    assertThat(diagnostics)
+        .hasSize(1)
+        .allSatisfy(
+            d -> {
+              assertThat(d.level()).as("Level").isEqualTo(WARN);
+              assertThat(d.message()).as("Message").isEqualTo("Missing controller");
+              assertThat(d.suggestions())
+                  .hasSize(1)
+                  .allSatisfy(
+                      s ->
+                          assertThat(s.message())
+                              .as("Suggestion")
+                              .isEqualTo("Generate controller"));
+            });
   }
 
   @Test
