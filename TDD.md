@@ -6,7 +6,7 @@
   Framework decision when programming language and top-level package decisions are present.
   Add a test to `TechnologyResolverImplTest`, following the pattern of
   `shouldNeedBuildSystemForCodeTester`.
-- [-] `TechnologyResolverImpl.frameworkCodeGenerator()` should return a `SpringBootCodeGenerator`
+- [x] `TechnologyResolverImpl.frameworkCodeGenerator()` should return a `SpringBootCodeGenerator`
   when the Framework decision is "Spring Boot".
   Add a test to `TechnologyResolverImplTest`, following the pattern of
   `shouldReturnJavaCodeGeneratorWhenProgrammingLanguageIsJava`.
