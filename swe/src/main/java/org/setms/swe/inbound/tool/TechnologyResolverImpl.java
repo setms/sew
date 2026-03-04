@@ -24,6 +24,7 @@ import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
+import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
@@ -170,10 +171,12 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   public Optional<FrameworkCodeGenerator> frameworkCodeGenerator(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     var framework = Decisions.from(inputs).about(Framework.TOPIC);
-    if (framework == null) {
-      return empty(missingFrameworkDecision(), diagnostics);
-    }
-    return Optional.empty();
+    return switch (framework) {
+      case null -> empty(missingFrameworkDecision(), diagnostics);
+      case "Spring Boot" -> Optional.of(new SpringBootCodeGenerator());
+      default ->
+          empty(new Diagnostic(ERROR, "Decided on unsupported framework", null), diagnostics);
+    };
   }
 
   private Diagnostic missingFrameworkDecision() {

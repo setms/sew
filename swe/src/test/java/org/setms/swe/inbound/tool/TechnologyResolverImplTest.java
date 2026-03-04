@@ -22,11 +22,13 @@ import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
+import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -287,6 +289,29 @@ class TechnologyResolverImplTest {
 
     assertThatSingleWarnDiagnosticHas(
         diagnostics, "Missing decision on framework", "Decide on framework");
+  }
+
+  @Test
+  void shouldReturnSpringBootFrameworkCodeGeneratorWhenFrameworkIsSpringBoot() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs = givenInputsForJavaSpringBootProject();
+
+    var actual = resolver.frameworkCodeGenerator(inputs, diagnostics);
+
+    assertThat(actual).as("Generator").isPresent();
+    assertThat(actual.get()).as("Generator type").isInstanceOf(SpringBootCodeGenerator.class);
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
+  }
+
+  private ResolvedInputs givenInputsForJavaSpringBootProject() {
+    return new ResolvedInputs()
+        .put("initiatives", List.of(initiative()))
+        .put(
+            "decisions",
+            List.of(
+                decision(ProgrammingLanguage.TOPIC, "Java"),
+                decision(TopLevelPackage.TOPIC, "com.example"),
+                decision(Framework.TOPIC, "Spring Boot")));
   }
 
   @Test

@@ -2,18 +2,18 @@
 
 ## Test list
 
-- [-] `TechnologyResolverImpl.frameworkCodeGenerator()` should emit a diagnostic about a missing
+- [x] `TechnologyResolverImpl.frameworkCodeGenerator()` should emit a diagnostic about a missing
   Framework decision when programming language and top-level package decisions are present.
   Add a test to `TechnologyResolverImplTest`, following the pattern of
   `shouldNeedBuildSystemForCodeTester`.
-- [ ] `TechnologyResolverImpl.frameworkCodeGenerator()` should return a `SpringBootFrameworkCodeGenerator`
+- [-] `TechnologyResolverImpl.frameworkCodeGenerator()` should return a `SpringBootCodeGenerator`
   when the Framework decision is "Spring Boot".
   Add a test to `TechnologyResolverImplTest`, following the pattern of
   `shouldReturnJavaCodeGeneratorWhenProgrammingLanguageIsJava`.
-- [ ] `SpringBootFrameworkCodeGenerator.generateControllerFor(Aggregate, Command, Entity commandPayload, Event event)`
+- [ ] `SpringBootCodeGenerator.generateControllerFor(Aggregate, Command, Entity commandPayload, Event event)`
   should generate a Spring Boot REST controller that injects the aggregate's domain service and
   maps the command to a POST endpoint returning the event.
-  Add a new `SpringBootFrameworkCodeGeneratorTest` class.
+  Add a new `SpringBootCodeGeneratorTest` class.
   The generated controller should look like
   `swe/src/test/resources/e2e/07/outputs/TodoItemsServiceImpl.java` in spirit, but for the
   inbound layer, e.g.:
