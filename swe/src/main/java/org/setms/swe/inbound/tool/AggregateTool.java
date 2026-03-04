@@ -138,12 +138,6 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         .orElseGet(AppliedSuggestion::none);
   }
 
-  private Entity resolvePayload(HasPayload artifact, ResolvedInputs inputs) {
-    return Optional.ofNullable(artifact.getPayload())
-        .flatMap(link -> link.resolveFrom(inputs.get(Entity.class)))
-        .orElse(null);
-  }
-
   private Optional<CommandAndEvent> findCommandAndEvent(
       Aggregate aggregate, ResolvedInputs inputs) {
     return inputs.get(AcceptanceTest.class).stream()
@@ -174,6 +168,12 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         .map(ElementVariable.class::cast)
         .map(ElementVariable::getType)
         .flatMap(typeLink -> typeLink.resolveFrom(candidates));
+  }
+
+  private Entity resolvePayload(HasPayload artifact, ResolvedInputs inputs) {
+    return Optional.ofNullable(artifact.getPayload())
+        .flatMap(link -> link.resolveFrom(inputs.get(Entity.class)))
+        .orElse(null);
   }
 
   private record CommandAndEvent(Command command, Event event) {}

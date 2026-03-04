@@ -29,6 +29,26 @@ class JavaCodeGeneratorTest {
     assertThatGeneratedCodeIsServiceImplementation(actual.get(1));
   }
 
+  private void assertThatGeneratedCodeIsServiceInterface(CodeArtifact actual) {
+    assertThat(actual.getName()).isEqualTo("ProjectsService");
+    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
+    assertThat(actual.getCode())
+        .contains("public interface ProjectsService")
+        .contains("import com.company.project.domain.model.CreateProject;")
+        .contains("import com.company.project.domain.model.ProjectCreated;")
+        .contains("ProjectCreated accept(CreateProject createProject);");
+  }
+
+  private void assertThatGeneratedCodeIsServiceImplementation(CodeArtifact actual) {
+    assertThat(actual.getName()).isEqualTo("ProjectsServiceImpl");
+    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
+    assertThat(actual.getCode())
+        .contains("class ProjectsServiceImpl implements ProjectsService")
+        .contains("import com.company.project.domain.model.CreateProject;")
+        .contains("import com.company.project.domain.model.ProjectCreated;")
+        .contains("public ProjectCreated accept(CreateProject createProject) {\n    return null;");
+  }
+
   @Test
   void shouldBuildReturnExpressionWhenAllEventFieldsMatchCommand() {
     var generator = new JavaCodeGenerator("com.example.todo");
@@ -55,26 +75,6 @@ class JavaCodeGeneratorTest {
         .contains("return new TodoItemAdded(addTodoItem.task(), addTodoItem.dueDate());");
   }
 
-  private void assertThatGeneratedCodeIsServiceInterface(CodeArtifact actual) {
-    assertThat(actual.getName()).isEqualTo("ProjectsService");
-    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
-    assertThat(actual.getCode())
-        .contains("public interface ProjectsService")
-        .contains("import com.company.project.domain.model.CreateProject;")
-        .contains("import com.company.project.domain.model.ProjectCreated;")
-        .contains("ProjectCreated accept(CreateProject createProject);");
-  }
-
-  private void assertThatGeneratedCodeIsServiceImplementation(CodeArtifact actual) {
-    assertThat(actual.getName()).isEqualTo("ProjectsServiceImpl");
-    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
-    assertThat(actual.getCode())
-        .contains("class ProjectsServiceImpl implements ProjectsService")
-        .contains("import com.company.project.domain.model.CreateProject;")
-        .contains("import com.company.project.domain.model.ProjectCreated;")
-        .contains("public ProjectCreated accept(CreateProject createProject) {\n    return null;");
-  }
-
   private static final String PACKAGE = "project";
 
   @Test
@@ -92,6 +92,26 @@ class JavaCodeGeneratorTest {
     assertThatGeneratedCodeImplementsCommand(actual.getFirst());
   }
 
+  private Entity givenPayload() {
+    return new Entity(new FullyQualifiedName(PACKAGE, "Project"))
+        .setFields(
+            List.of(
+                new Field(new FullyQualifiedName(PACKAGE, "Name")).setType(FieldType.TEXT),
+                new Field(new FullyQualifiedName(PACKAGE, "Description")).setType(FieldType.TEXT)));
+  }
+
+  private void assertThatGeneratedCodeImplementsCommand(CodeArtifact actual) {
+    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.model");
+    assertThat(actual.getName()).isEqualTo("CreateProject");
+    assertThat(actual.getCode())
+        .isEqualTo(
+            """
+            package com.company.project.domain.model;
+
+            public record CreateProject(String name, String description) {}
+            """);
+  }
+
   @Test
   void shouldAddImportForLocalDateTimeWhenCommandHasDateTimeField() {
     var generator = new JavaCodeGenerator("com.company.project");
@@ -105,14 +125,6 @@ class JavaCodeGeneratorTest {
 
     assertThat(actual).hasSize(1);
     assertThatGeneratedCodeHasLocalDateTimeImport(actual.getFirst());
-  }
-
-  private Entity givenPayload() {
-    return new Entity(new FullyQualifiedName(PACKAGE, "Project"))
-        .setFields(
-            List.of(
-                new Field(new FullyQualifiedName(PACKAGE, "Name")).setType(FieldType.TEXT),
-                new Field(new FullyQualifiedName(PACKAGE, "Description")).setType(FieldType.TEXT)));
   }
 
   private Entity givenPayloadWithDateTimeField() {
@@ -132,18 +144,6 @@ class JavaCodeGeneratorTest {
             import java.time.LocalDateTime;
 
             public record ScheduleMeeting(LocalDateTime scheduledAt) {}
-            """);
-  }
-
-  private void assertThatGeneratedCodeImplementsCommand(CodeArtifact actual) {
-    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.model");
-    assertThat(actual.getName()).isEqualTo("CreateProject");
-    assertThat(actual.getCode())
-        .isEqualTo(
-            """
-            package com.company.project.domain.model;
-
-            public record CreateProject(String name, String description) {}
             """);
   }
 }
