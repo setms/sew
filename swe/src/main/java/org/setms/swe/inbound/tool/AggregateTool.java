@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.Link;
@@ -111,8 +112,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   private void checkForMissingController(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var frameworkDiagnostics = new ArrayList<Diagnostic>();
-    if (resolver.frameworkCodeGenerator(inputs, frameworkDiagnostics).isPresent()
+    if (resolver.frameworkCodeGenerator(inputs, new ArrayList<>()).isPresent()
         && !hasCode(aggregate, "Controller", inputs)) {
       diagnostics.add(
           new Diagnostic(
@@ -139,42 +139,34 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   private AppliedSuggestion generateServiceFor(
       Resource<?> aggregateResource, Aggregate aggregate, ResolvedInputs inputs) {
-    var diagnostics = new ArrayList<Diagnostic>();
-    return resolver
-        .codeGenerator(inputs, diagnostics)
-        .flatMap(
-            generator ->
-                findCommandAndEvent(aggregate, inputs)
-                    .map(
-                        pair ->
-                            CodeWriter.writeCode(
-                                generator.generate(
-                                    aggregate,
-                                    pair.command(),
-                                    resolvePayload(pair.command(), inputs),
-                                    pair.event(),
-                                    resolvePayload(pair.event(), inputs)),
-                                aggregateResource)))
-        .orElseGet(AppliedSuggestion::none);
+    return generateCode(
+        aggregateResource,
+        aggregate,
+        inputs,
+        resolver.codeGenerator(inputs, new ArrayList<>()),
+        (generator, pair) ->
+            generator.generate(
+                aggregate,
+                pair.command(),
+                resolvePayload(pair.command(), inputs),
+                pair.event(),
+                resolvePayload(pair.event(), inputs)));
   }
 
-  private AppliedSuggestion generateControllerFor(
-      Resource<?> aggregateResource, Aggregate aggregate, ResolvedInputs inputs) {
-    var diagnostics = new ArrayList<Diagnostic>();
-    return resolver
-        .frameworkCodeGenerator(inputs, diagnostics)
+  private <G> AppliedSuggestion generateCode(
+      Resource<?> aggregateResource,
+      Aggregate aggregate,
+      ResolvedInputs inputs,
+      Optional<G> generatorOpt,
+      BiFunction<G, CommandAndEvent, List<CodeArtifact>> codeFunction) {
+    return generatorOpt
         .flatMap(
             generator ->
                 findCommandAndEvent(aggregate, inputs)
                     .map(
                         pair ->
                             CodeWriter.writeCode(
-                                generator.generateControllerFor(
-                                    aggregate,
-                                    pair.command(),
-                                    resolvePayload(pair.command(), inputs),
-                                    pair.event()),
-                                aggregateResource)))
+                                codeFunction.apply(generator, pair), aggregateResource)))
         .orElseGet(AppliedSuggestion::none);
   }
 
@@ -214,6 +206,18 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
     return Optional.ofNullable(artifact.getPayload())
         .flatMap(link -> link.resolveFrom(inputs.get(Entity.class)))
         .orElse(null);
+  }
+
+  private AppliedSuggestion generateControllerFor(
+      Resource<?> aggregateResource, Aggregate aggregate, ResolvedInputs inputs) {
+    return generateCode(
+        aggregateResource,
+        aggregate,
+        inputs,
+        resolver.frameworkCodeGenerator(inputs, new ArrayList<>()),
+        (generator, pair) ->
+            generator.generateControllerFor(
+                aggregate, pair.command(), resolvePayload(pair.command(), inputs), pair.event()));
   }
 
   private record CommandAndEvent(Command command, Event event) {}
