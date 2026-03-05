@@ -112,7 +112,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   private void checkForMissingController(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    if (resolver.frameworkCodeGenerator(inputs, new ArrayList<>()).isPresent()
+    if (resolver.frameworkCodeGenerator(inputs, diagnostics).isPresent()
         && !hasCode(aggregate, "Controller", inputs)) {
       diagnostics.add(
           new Diagnostic(

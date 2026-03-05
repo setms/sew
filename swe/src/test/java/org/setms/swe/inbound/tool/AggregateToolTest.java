@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.ArrayList;
@@ -71,7 +72,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
   }
 
   @Test
-  void shouldNotWarnWhenDomainServiceCodeExists() {
+  void shouldWarnAboutMissingFrameworkDecisionWhenDomainServiceCodeExists() {
     var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
     var serviceCode =
         new CodeArtifact(new FullyQualifiedName("com.example.domain.services", "ProjectsService"))
@@ -82,7 +83,18 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
 
     ((AggregateTool) getTool()).validate(aggregate, inputs, diagnostics);
 
-    assertThat(diagnostics).isEmpty();
+    assertThatDiagnosticsWarnAboutMissingFrameworkDecision(diagnostics);
+  }
+
+  private void assertThatDiagnosticsWarnAboutMissingFrameworkDecision(
+      Collection<Diagnostic> diagnostics) {
+    assertThat(diagnostics)
+        .extracting(Diagnostic::level, Diagnostic::message)
+        .containsExactly(tuple(WARN, "Missing decision on framework"));
+    assertThat(diagnostics)
+        .flatExtracting(Diagnostic::suggestions)
+        .extracting(s -> s.message())
+        .containsExactly("Decide on framework");
   }
 
   @Test
