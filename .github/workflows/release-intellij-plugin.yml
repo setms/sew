@@ -32,6 +32,8 @@ jobs:
             caches/modules-2
             caches/jars-9
             wrapper
+          gradle-home-cache-excludes: |
+            **/transforms/
           validate-wrappers: false
 
       - name: Cache Pitest analysis
