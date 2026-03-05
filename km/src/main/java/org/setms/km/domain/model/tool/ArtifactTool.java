@@ -49,7 +49,7 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
    * @param context additional inputs required for validation
    * @param diagnostics where to store any validation issues
    */
-  public A validate(
+  public final A validate(
       Resource<?> resource, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
     var input =
         validationTargets().stream()
@@ -58,7 +58,7 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
             .orElseGet(() -> validationTargets().iterator().next());
     try (var sutStream = resource.readFrom()) {
       var result = input.format().newParser().parse(sutStream, input.type(), true);
-      validate(result, context, diagnostics);
+      validate(resource, result, context, diagnostics);
       return result;
     } catch (Exception e) {
       var messages = Optional.ofNullable(e.getMessage()).orElse(e.getClass().getSimpleName());
@@ -77,20 +77,36 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
     return null;
   }
 
-  private String normalize(String message) {
-    var matcher = VALIDATION_ERROR.matcher(message);
-    return matcher.matches() ? matcher.group("message") : message;
+  /**
+   * Validate an artifact.
+   *
+   * @param resource the input to validate
+   * @param artifact the parsed input to validate
+   * @param context additional inputs required for validation
+   * @param diagnostics where to any validation issues
+   */
+  public void validate(
+      Resource<?> resource,
+      A artifact,
+      ResolvedInputs context,
+      Collection<Diagnostic> diagnostics) {
+    validate(artifact, context, diagnostics);
   }
 
   /**
    * Validate an artifact.
    *
-   * @param artifact the input to validate
+   * @param artifact the parsed input to validate
    * @param context additional inputs required for validation
    * @param diagnostics where to any validation issues
    */
   public void validate(A artifact, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
     // For descendants to override
+  }
+
+  private String normalize(String message) {
+    var matcher = VALIDATION_ERROR.matcher(message);
+    return matcher.matches() ? matcher.group("message") : message;
   }
 
   /**

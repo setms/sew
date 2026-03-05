@@ -50,7 +50,7 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
     var unitTest = newUnitTest();
     var tool = (UnitTestTool) getTool();
 
-    tool.validate(unitTest, new ResolvedInputs(), diagnostics);
+    tool.validate(null, unitTest, new ResolvedInputs(), diagnostics);
 
     assertThatMissingBuildSystemDiagnosticIsEmitted(diagnostics);
   }

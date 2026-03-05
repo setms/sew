@@ -62,19 +62,16 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
   }
 
   @Override
-  public UnitTest validate(
-      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var result = super.validate(resource, inputs, diagnostics);
-    technologyResolver
-        .codeTester(inputs, new ArrayList<>())
-        .ifPresent(codeTester -> codeTester.test(resource.root(), diagnostics));
-    return result;
-  }
-
-  @Override
   public void validate(
-      UnitTest unitTest, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    if (Decisions.from(inputs).about(BuildSystem.TOPIC) == null) {
+      Resource<?> resource,
+      UnitTest unitTest,
+      ResolvedInputs inputs,
+      Collection<Diagnostic> diagnostics) {
+    if (Decisions.from(inputs).existFor(BuildSystem.TOPIC)) {
+      technologyResolver
+          .codeTester(inputs, new ArrayList<>())
+          .ifPresent(codeTester -> codeTester.test(resource.root(), diagnostics));
+    } else {
       diagnostics.add(missingBuildSystemDecision());
     }
   }

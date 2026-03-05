@@ -154,7 +154,7 @@ public class ProcessOrchestrator {
       var diagnostics = new LinkedHashSet<Diagnostic>();
       var typedTool = (ArtifactTool<T>) tool;
       var typedArtifact = (T) artifact;
-      typedTool.validate(typedArtifact, inputs, diagnostics);
+      typedTool.validate(workspace.root().select(path), typedArtifact, inputs, diagnostics);
       storeDiagnostics(path, tool, diagnostics);
       if (result && diagnostics.stream().map(Diagnostic::level).anyMatch(ERROR::equals)) {
         result = false;

@@ -60,29 +60,18 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   }
 
   @Override
-  public CodeArtifact validate(
-      Resource<?> resource, ResolvedInputs context, Collection<Diagnostic> diagnostics) {
-    var result = super.validate(resource, context, diagnostics);
-    validateCodeBuilder(resource.select("/"), context, diagnostics);
-    return result;
-  }
-
-  private void validateCodeBuilder(
-      Resource<?> root, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+  public void validate(
+      Resource<?> resource,
+      CodeArtifact codeArtifact,
+      ResolvedInputs inputs,
+      Collection<Diagnostic> diagnostics) {
     var decisions = Decisions.from(inputs);
     if (decisions.existFor(BuildSystem.TOPIC)) {
+      var root = resource.select("/");
       technologyResolver
           .codeBuilder(root, inputs, diagnostics)
           .ifPresent(bt -> bt.build(root, diagnostics));
-    }
-  }
-
-  @Override
-  public void validate(
-      CodeArtifact codeArtifact, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    var decisions = Decisions.from(inputs);
-    var selectedBuildSystem = decisions.about(BuildSystem.TOPIC);
-    if (selectedBuildSystem == null) {
+    } else {
       diagnostics.add(
           new Diagnostic(
               WARN,

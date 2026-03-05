@@ -71,7 +71,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
     var inputs = new ResolvedInputs().put("decisions", List.of(decisions));
     var tool = (CodeTool) getTool();
 
-    tool.validate(codeArtifact, inputs, diagnostics);
+    tool.validate(null, codeArtifact, inputs, diagnostics);
 
     assertThat(diagnostics)
         .hasSize(1)
