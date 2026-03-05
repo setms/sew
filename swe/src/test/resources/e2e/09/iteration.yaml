@@ -9,3 +9,4 @@ outputs:
   - gradle/wrapper/gradle-wrapper.jar
   - gradle/wrapper/gradle-wrapper.properties
   - settings.gradle
+  - src/main/java/com/example/todo/inbound/http/TodoItemsController.java

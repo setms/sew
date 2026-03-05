@@ -36,6 +36,9 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   Pretend we're working on something seemingly unrelated and the test unexpectedly fails: does it then give enough
   information to understand what's wrong?
   The failure message is critically important to get right.
+  A message like `Expected size: 1 but was: 0` is NOT acceptable, because it doesn't reveal anything useful.
+  Neither does `Expecting any element of: [] to satisfy the given assertions requirements but none did`.
+  The message needs to show the failed expectation.
 9. Show the test to the user and ask them to review it.
   If the user asks for changes, make them and **present the test again for approval**.
   **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE LATEST VERSION OF THE TEST**.

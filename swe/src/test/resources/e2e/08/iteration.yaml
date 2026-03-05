@@ -1,9 +1,13 @@
 outputs:
   - src/main/architecture/BuildSystem.decision
+  - src/main/architecture/Framework.decision
 
 inputs:
   - file: BuildSystem.decision
     location: src/main/architecture
+  - file: Framework.decision
+    location: src/main/architecture
 
 diagnostics:
   - Gradle project isn't initialized
+  - Missing controller

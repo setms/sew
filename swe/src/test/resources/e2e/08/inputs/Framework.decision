@@ -1,0 +1,6 @@
+package technology
+
+decision Framework {
+  topic  = "Framework"
+  choice = "Spring Boot"
+}
