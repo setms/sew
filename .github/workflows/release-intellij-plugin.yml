@@ -31,6 +31,7 @@ jobs:
           gradle-home-cache-includes: |
             caches/modules-2
             caches/jars-9
+            wrapper
           validate-wrappers: false
 
       - name: Cache Pitest analysis
