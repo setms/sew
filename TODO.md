@@ -1,5 +1,10 @@
 # Things to do
 
+## Generic
+
+- Add Checkstyle
+
+
 ## End-to-end test
 
 - Finish workflow

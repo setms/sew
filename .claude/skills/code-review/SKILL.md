@@ -33,7 +33,8 @@ Review changed code and make sure it follows the following style guide:
   `swe/src/main/resources/META-INF/services/org.setms.km.domain.model.tool.Tool`.
 - Use camelCase for identifiers, where acronyms are treated as words.
   Bad: `XMLHTTPRequest`, good: `XmlHttpRequest`. Bad: `CommandDTO`, good: `CommandDto`.
-- Don't put newlines as `\n` in strings, use text blocks instead. 
+- Don't put newlines as `\n` in strings, use text blocks instead.
+- IMPORTANT: Use meaningful names as identifiers. For example `topLevelPackage` instead of `tlp`.
 - IMPORTANT: Re-use as much as possible; duplication is evil.
   This holds for many things, for example replace multiple instances of the same literal `String` with a constant.
 - IMPORTANT: If a class emits a diagnostic with a suggestion, then that same class must apply the suggestion, not some

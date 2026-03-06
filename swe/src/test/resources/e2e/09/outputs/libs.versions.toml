@@ -3,6 +3,7 @@ assertj = "3.27.7"
 jqwik = "1.9.3"
 junit-jupiter = "6.0.3"
 lombok-plugin = "9.2.0"
+springframework-boot = "4.0.3"
 
 [libraries]
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
@@ -16,3 +17,4 @@ test-runtime = ["junit-jupiter-launcher"]
 
 [plugins]
 lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
+springframework-boot = { id = "org.springframework.boot", version.ref = "springframework-boot" }
