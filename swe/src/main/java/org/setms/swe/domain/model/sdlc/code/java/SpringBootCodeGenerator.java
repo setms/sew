@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.workspace.Resource;
@@ -18,6 +19,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 
+@Slf4j
 public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     implements FrameworkCodeGenerator {
 
@@ -54,6 +56,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     ensureSpringBootWebDependency(resource);
     var result = new ArrayList<CodeArtifact>();
     ensureMainClass(resource).ifPresent(result::add);
+    ensureDomainServiceIsSpringBean(aggregate, resource).ifPresent(result::add);
     result.add(controllerFor(aggregate, command, event));
     return result;
   }
@@ -82,11 +85,39 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         new CodeArtifact(new FullyQualifiedName(mainPackage, mainClass)).setCode(code));
   }
 
+  private Optional<CodeArtifact> ensureDomainServiceIsSpringBean(
+      Aggregate aggregate, Resource<?> resource) {
+    var serviceName = serviceNameFor(aggregate) + "Impl";
+    var serviceFqn = serviceFqnFor(aggregate, serviceName);
+    var serviceResource =
+        resource.select("src/main/java").select("%s.java".formatted(serviceFqn.replace('.', '/')));
+    if (!serviceResource.exists()) {
+      log.error("Missing domain service for controller at {}", serviceResource.path());
+      return Optional.empty();
+    }
+    var code = serviceResource.readAsString();
+    if (code.contains("@Service")) {
+      return Optional.empty();
+    }
+    var service = new CodeArtifact(new FullyQualifiedName(serviceFqn));
+    code = code.replaceFirst("import", "import org.springframework.stereotype.Service;\n\nimport");
+    code = code.replace("public class", "@Service\npublic class");
+    return Optional.of(service.setCode(code));
+  }
+
+  private String serviceFqnFor(Aggregate aggregate, String serviceName) {
+    return "%s.%s".formatted(packageFor(aggregate, "domain.services"), serviceName);
+  }
+
+  private String serviceNameFor(Aggregate aggregate) {
+    return aggregate.getName() + "Service";
+  }
+
   private CodeArtifact controllerFor(Aggregate aggregate, Command command, Event event) {
     var packageName = packageFor(aggregate, "inbound.http");
     var name = aggregate.getName() + "Controller";
-    var serviceName = aggregate.getName() + "Service";
-    var serviceFqn = "%s.%s".formatted(packageFor(aggregate, "domain.services"), serviceName);
+    var serviceName = serviceNameFor(aggregate);
+    var serviceFqn = serviceFqnFor(aggregate, serviceName);
     var commandFqn = "%s.%s".formatted(packageFor(command, "domain.model"), command.getName());
     var eventFqn = "%s.%s".formatted(packageFor(event, "domain.model"), event.getName());
     var imports =

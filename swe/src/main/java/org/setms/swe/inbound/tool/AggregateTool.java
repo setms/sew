@@ -79,7 +79,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
     if (resolver.codeGenerator(inputs, diagnostics).isEmpty()) {
       return;
     }
-    if (!hasCode(aggregate, "Service", inputs)) {
+    if (missesCode(aggregate, "Service", inputs)) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -105,15 +105,15 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         .isPresent();
   }
 
-  private boolean hasCode(Aggregate aggregate, String suffix, ResolvedInputs inputs) {
+  private boolean missesCode(Aggregate aggregate, String suffix, ResolvedInputs inputs) {
     var name = aggregate.getName() + suffix;
-    return inputs.get(CodeArtifact.class).stream().anyMatch(ca -> ca.getName().equals(name));
+    return inputs.get(CodeArtifact.class).stream().noneMatch(ca -> ca.getName().equals(name));
   }
 
   private void checkForMissingController(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (resolver.frameworkCodeGenerator(inputs, diagnostics).isPresent()
-        && !hasCode(aggregate, "Controller", inputs)) {
+        && missesCode(aggregate, "Controller", inputs)) {
       diagnostics.add(
           new Diagnostic(
               WARN,
