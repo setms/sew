@@ -250,9 +250,7 @@ public class ProcessOrchestrator {
             .root()
             .select(".km/diagnostics%s/%s.json".formatted(path, tool.getClass().getName()));
     try {
-      try (var writer = new PrintWriter(diagnosticsResource.writeTo())) {
-        writer.println(new JSONObject(serialize(diagnostics)).toString(2));
-      }
+      diagnosticsResource.writeAsString(new JSONObject(serialize(diagnostics)).toString(2));
     } catch (IOException e) {
       throw new IllegalStateException("Failed to store diagnostics", e);
     }

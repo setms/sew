@@ -71,9 +71,7 @@ public abstract class JavaArtifactGenerator {
 
   private static AppliedSuggestion writeContent(Resource<?> resource, String content) {
     try {
-      try (var output = resource.writeTo()) {
-        output.write(content.getBytes());
-      }
+      resource.writeAsString(content);
       return created(resource);
     } catch (Exception e) {
       return failedWith(e);

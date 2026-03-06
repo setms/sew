@@ -9,7 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -202,6 +201,7 @@ public class Gradle implements CodeBuilder, CodeTester {
 
   @Override
   public void addBuildPlugin(String pluginId, Resource<?> resource) {
+    initializeIn(resource);
     var key = pluginKey(pluginId);
     var version = latestVersionOf(pluginId);
     addToVersionCatalog(pluginId, key, version, resource);
@@ -224,7 +224,7 @@ public class Gradle implements CodeBuilder, CodeTester {
           .matcher(content)
           .results()
           .map(m -> m.group(1))
-          .reduce((a, b) -> b)
+          .reduce((_, b) -> b)
           .orElseThrow(
               () -> new IllegalStateException("No stable version found at %s".formatted(url)));
     } catch (IOException e) {
@@ -273,7 +273,10 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
   }
 
-  private void initializeIn(Resource<?> root) {
+  private synchronized void initializeIn(Resource<?> root) {
+    if (root.select("build.gradle").exists()) {
+      return;
+    }
     var stdout = new ByteArrayOutputStream();
     var stderr = new ByteArrayOutputStream();
     try (var connection =
@@ -322,18 +325,16 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   private void cleanUpBuild(Resource<?> resource, Collection<Path> changed) throws IOException {
-    try (var output = resource.select("build.gradle").writeTo()) {
-      output.write(BUILD_GRADLE.getBytes(StandardCharsets.UTF_8));
-    }
+    resource.select("build.gradle").writeAsString(BUILD_GRADLE);
     var lib = resource.select("lib");
     lib.delete();
     changed.add(toFile(lib).toPath().toAbsolutePath());
   }
 
   private void cleanUpSettings(Resource<?> resource) throws IOException {
+    var settings = resource.select("settings.gradle");
     String rootProject;
-    try (var reader =
-        new BufferedReader(new InputStreamReader(resource.select("settings.gradle").readFrom()))) {
+    try (var reader = new BufferedReader(new InputStreamReader(settings.readFrom()))) {
       rootProject =
           reader
               .lines()
@@ -341,18 +342,15 @@ public class Gradle implements CodeBuilder, CodeTester {
               .findFirst()
               .orElseThrow();
     }
-    try (var writer = new PrintWriter(resource.select("settings.gradle").writeTo())) {
-      writer.println(rootProject);
-    }
+    settings.writeAsString(rootProject);
   }
 
   private void cleanUpVersionCatalog(Resource<?> resource) throws IOException {
-    try (var output = resource.select("gradle/libs.versions.toml").writeTo()) {
-      output.write(VERSION_CATALOG.getBytes(StandardCharsets.UTF_8));
-    }
+    resource.select("gradle/libs.versions.toml").writeAsString(VERSION_CATALOG);
   }
 
   private AppliedSuggestion buildConfigResources(Resource<?> resource) {
+    var root = resource.select("/");
     return Stream.of(
             ".gitattributes",
             ".gitignore",
@@ -364,10 +362,7 @@ public class Gradle implements CodeBuilder, CodeTester {
             "gradle/wrapper/gradle-wrapper.jar",
             "gradle/wrapper/gradle-wrapper.properties",
             "settings.gradle")
-        .reduce(
-            AppliedSuggestion.none(),
-            (acc, path) -> acc.with(resource.select("/" + path)),
-            (a, _) -> a);
+        .reduce(AppliedSuggestion.none(), (acc, path) -> acc.with(root.select(path)), (a, _) -> a);
   }
 
   @RequiredArgsConstructor

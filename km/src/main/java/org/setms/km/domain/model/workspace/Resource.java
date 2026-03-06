@@ -48,8 +48,8 @@ public interface Resource<T extends Resource<T>> {
   OutputStream writeTo() throws IOException;
 
   default void writeAsString(String content) throws IOException {
-    try (var out = new OutputStreamWriter(writeTo())) {
-      out.write(content);
+    try (var writer = new OutputStreamWriter(writeTo())) {
+      writer.write(content);
     }
   }
 

@@ -128,9 +128,7 @@ public class AcceptanceTestTool extends ArtifactTool<AcceptanceTest> {
       var result = new AppliedSuggestion();
       for (var artifact : codeArtifacts) {
         var resource = packageDir.select(artifact.getName() + ".java");
-        try (var writer = new PrintWriter(resource.writeTo())) {
-          writer.print(artifact.getCode());
-        }
+        resource.writeAsString(artifact.getCode());
         result = result.with(resource);
       }
       return result;

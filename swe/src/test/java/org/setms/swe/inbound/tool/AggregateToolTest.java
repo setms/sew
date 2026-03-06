@@ -4,15 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
+import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
@@ -172,7 +175,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
         .hasSize(2)
         .anySatisfy(
             resource ->
-                assertThat(contentOf(resource))
+                assertThat(resource.readAsString())
                     .contains(
                         "return new ProjectCreated(createProject.task(), createProject.dueDate())"));
   }
@@ -210,7 +213,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
   }
 
   @Test
-  void shouldGenerateControllerCode() {
+  void shouldGenerateControllerCode(@TempDir File tempDir) {
     var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
     var command =
         new Command(new FullyQualifiedName("design", "CreateProject")).setDisplay("Create project");
@@ -218,7 +221,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
     var inputs =
         givenInputsForSpringBootWithFullAggregateScenario(
             aggregate, command, event, newEntityWithTaskAndDueDate());
-    var workspace = new InMemoryWorkspace();
+    var workspace = new DirectoryWorkspace(tempDir);
 
     var actual =
         ((AggregateTool) getTool())
@@ -228,7 +231,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
     assertThat(actual.createdOrChanged())
         .anySatisfy(
             resource ->
-                assertThat(contentOf(resource))
+                assertThat(resource.readAsString())
                     .contains("@RestController")
                     .contains("public class ProjectsController"));
   }

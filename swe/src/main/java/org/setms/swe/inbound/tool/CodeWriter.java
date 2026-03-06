@@ -1,6 +1,5 @@
 package org.setms.swe.inbound.tool;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static lombok.AccessLevel.PRIVATE;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
@@ -26,9 +25,7 @@ class CodeWriter {
       var path = artifact.getPackage().replace('.', '/');
       var target =
           resource.select("/src/main/java").select(path).select(artifact.getName() + ".java");
-      try (var output = target.writeTo()) {
-        output.write(artifact.getCode().getBytes(UTF_8));
-      }
+      target.writeAsString(artifact.getCode());
       return created(target);
     } catch (Exception e) {
       return failedWith(e);

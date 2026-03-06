@@ -32,8 +32,12 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
       Entity commandPayload,
       Event event) {
     codeBuilder.addBuildPlugin("org.springframework.boot", resource);
-    var controllerPackage = packageFor(aggregate, "inbound.http");
-    var controllerName = aggregate.getName() + "Controller";
+    return List.of(controllerFor(aggregate, command, event));
+  }
+
+  private CodeArtifact controllerFor(Aggregate aggregate, Command command, Event event) {
+    var packageName = packageFor(aggregate, "inbound.http");
+    var name = aggregate.getName() + "Controller";
     var serviceName = aggregate.getName() + "Service";
     var serviceFqn = "%s.%s".formatted(packageFor(aggregate, "domain.services"), serviceName);
     var commandFqn = "%s.%s".formatted(packageFor(command, "domain.model"), command.getName());
@@ -72,9 +76,9 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         }
         """
             .formatted(
-                controllerPackage,
+                packageName,
                 imports,
-                controllerName,
+                name,
                 serviceName,
                 serviceFieldName,
                 endpointUrl,
@@ -84,6 +88,6 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
                 paramName,
                 serviceFieldName,
                 paramName);
-    return List.of(codeArtifact(controllerPackage, controllerName, code));
+    return codeArtifact(packageName, name, code);
   }
 }
