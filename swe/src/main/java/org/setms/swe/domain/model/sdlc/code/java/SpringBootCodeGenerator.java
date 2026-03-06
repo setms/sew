@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import java.util.List;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.format.Strings;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
@@ -25,7 +26,12 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
 
   @Override
   public List<CodeArtifact> generateControllerFor(
-      Aggregate aggregate, Command command, Entity commandPayload, Event event) {
+      Resource<?> resource,
+      Aggregate aggregate,
+      Command command,
+      Entity commandPayload,
+      Event event) {
+    codeBuilder.addBuildPlugin("org.springframework.boot", resource);
     var controllerPackage = packageFor(aggregate, "inbound.http");
     var controllerName = aggregate.getName() + "Controller";
     var serviceName = aggregate.getName() + "Service";

@@ -217,7 +217,11 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         resolver.frameworkCodeGenerator(inputs, new ArrayList<>()),
         (generator, pair) ->
             generator.generateControllerFor(
-                aggregate, pair.command(), resolvePayload(pair.command(), inputs), pair.event()));
+                aggregateResource.select("/"),
+                aggregate,
+                pair.command(),
+                resolvePayload(pair.command(), inputs),
+                pair.event()));
   }
 
   private record CommandAndEvent(Command command, Event event) {}

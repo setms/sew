@@ -1,12 +1,15 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
@@ -18,14 +21,24 @@ class SpringBootCodeGeneratorTest {
 
   @Mock CodeBuilder codeBuilder;
 
+  private InMemoryWorkspace workspace;
+  private SpringBootCodeGenerator generator;
+  private Aggregate aggregate;
+  private Command command;
+  private Event event;
+
+  @BeforeEach
+  void setUp() {
+    workspace = new InMemoryWorkspace();
+    generator = new SpringBootCodeGenerator("com.example.todo", codeBuilder);
+    aggregate = new Aggregate(new FullyQualifiedName("todo", "TodoItems"));
+    command = new Command(new FullyQualifiedName("todo", "AddTodoItem"));
+    event = new Event(new FullyQualifiedName("todo", "TodoItemAdded"));
+  }
+
   @Test
   void shouldGenerateController() {
-    var generator = new SpringBootCodeGenerator("com.example.todo", codeBuilder);
-    var aggregate = new Aggregate(new FullyQualifiedName("todo", "TodoItems"));
-    var command = new Command(new FullyQualifiedName("todo", "AddTodoItem"));
-    var event = new Event(new FullyQualifiedName("todo", "TodoItemAdded"));
-
-    var actual = generator.generateControllerFor(aggregate, command, null, event);
+    var actual = generator.generateControllerFor(workspace.root(), aggregate, command, null, event);
 
     assertThat(actual)
         .as("Generated controller artifacts")
@@ -51,5 +64,12 @@ class SpringBootCodeGeneratorTest {
         .contains("@PostMapping(\"/todoItems\")")
         .contains("public TodoItemAdded addTodoItem(@RequestBody AddTodoItem addTodoItem)")
         .contains("return todoItemsService.accept(addTodoItem);");
+  }
+
+  @Test
+  void shouldAddSpringBootPluginWhenGeneratingController() {
+    generator.generateControllerFor(workspace.root(), aggregate, command, null, event);
+
+    verify(codeBuilder).addBuildPlugin("org.springframework.boot", workspace.root());
   }
 }
