@@ -224,9 +224,9 @@ public class Gradle implements CodeBuilder, CodeTester {
       if (matcher.find()) {
         return matcher.group(1);
       }
-      throw new IllegalStateException("No release version found at " + url);
+      throw new IllegalStateException("No release version found at %s".formatted(url));
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to fetch plugin version from " + url, e);
+      throw new IllegalStateException("Failed to fetch plugin version from %s".formatted(url), e);
     }
   }
 
@@ -235,16 +235,10 @@ public class Gradle implements CodeBuilder, CodeTester {
     var catalog = resource.select("gradle/libs.versions.toml");
     var content = catalog.readAsString();
     content =
-        content.replace("\n\n[libraries]", "\n" + key + " = \"" + version + "\"\n\n[libraries]");
+        content.replace("\n\n[libraries]", "\n%s = \"%s\"\n\n[libraries]".formatted(key, version));
     content =
-        content.stripTrailing()
-            + "\n"
-            + key
-            + " = { id = \""
-            + pluginId
-            + "\", version.ref = \""
-            + key
-            + "\" }\n";
+        "%s\n%s = { id = \"%s\", version.ref = \"%s\" }\n"
+            .formatted(content.stripTrailing(), key, pluginId, key);
     try {
       catalog.writeAsString(content);
     } catch (IOException e) {
@@ -255,8 +249,8 @@ public class Gradle implements CodeBuilder, CodeTester {
   private void addToBuildGradle(String key, Resource<?> resource) {
     var buildGradle = resource.select("build.gradle");
     var content = buildGradle.readAsString();
-    var alias = "    alias libs.plugins." + key.replace('-', '.');
-    content = content.replace("}\n\nrepositories", alias + "\n}\n\nrepositories");
+    var alias = "    alias libs.plugins.%s".formatted(key.replace('-', '.'));
+    content = content.replace("}\n\nrepositories", "%s\n}\n\nrepositories".formatted(alias));
     try {
       buildGradle.writeAsString(content);
     } catch (IOException e) {
