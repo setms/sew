@@ -112,6 +112,17 @@ class GradleTest {
   }
 
   @Test
+  void shouldEnableBuildPlugin(@TempDir File projectDir) {
+    var workspace = new DirectoryWorkspace(projectDir);
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+
+    gradle.enableBuildPlugin("io.spring.dependency-management", workspace.root());
+
+    var buildGradle = workspace.root().select("build.gradle").readAsString();
+    assertThat(buildGradle).contains("apply plugin: 'io.spring.dependency-management'");
+  }
+
+  @Test
   void shouldAddDependencyWithoutVersionToVersionCatalogAndBuildGradle(@TempDir File projectDir) {
     var workspace = new DirectoryWorkspace(projectDir);
     gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());

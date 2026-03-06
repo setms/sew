@@ -32,6 +32,14 @@ public interface CodeBuilder {
   void addBuildPlugin(String pluginId, Resource<?> resource);
 
   /**
+   * Enable a plugin in the build.
+   *
+   * @param plugin the plugin to enable
+   * @param resource the project root resource
+   */
+  void enableBuildPlugin(String plugin, Resource<?> resource);
+
+  /**
    * Add a dependency to the project.
    *
    * @param dependency the dependency ID (e.g. "org.springframework.boot:spring-boot-starter-web")

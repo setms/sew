@@ -270,6 +270,19 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   @Override
+  public void enableBuildPlugin(String plugin, Resource<?> resource) {
+    var buildGradle = resource.select("build.gradle");
+    var content = buildGradle.readAsString();
+    var apply = "apply plugin: '%s'".formatted(plugin);
+    content = content.replace("dependencies {", "%s\n\ndependencies {".formatted(apply));
+    try {
+      buildGradle.writeAsString(content);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update build.gradle", e);
+    }
+  }
+
+  @Override
   public void addDependency(String dependency, Resource<?> resource) {
     initializeIn(resource);
     var parts = dependency.split(":");
