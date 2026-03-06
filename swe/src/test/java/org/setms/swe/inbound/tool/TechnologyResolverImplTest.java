@@ -294,22 +294,27 @@ class TechnologyResolverImplTest {
   @Test
   void shouldReturnSpringBootFrameworkCodeGeneratorWhenFrameworkIsSpringBoot() {
     var diagnostics = new ArrayList<Diagnostic>();
-    var inputs = givenInputsForJavaSpringBootProject();
+    var inputs = givenInputsForJavaGradleSpringBootProject();
 
     var actual = resolver.frameworkCodeGenerator(inputs, diagnostics);
 
     assertThat(actual).as("Generator").isPresent();
-    assertThat(actual.get()).as("Generator type").isInstanceOf(SpringBootCodeGenerator.class);
+    assertThat(actual.get())
+        .as("Generator type")
+        .isInstanceOf(SpringBootCodeGenerator.class)
+        .extracting("codeBuilder")
+        .isNotNull();
     assertThat(diagnostics).as("Diagnostics").isEmpty();
   }
 
-  private ResolvedInputs givenInputsForJavaSpringBootProject() {
+  private ResolvedInputs givenInputsForJavaGradleSpringBootProject() {
     return new ResolvedInputs()
         .put("initiatives", List.of(initiative()))
         .put(
             "decisions",
             List.of(
                 decision(ProgrammingLanguage.TOPIC, "Java"),
+                decision(BuildSystem.TOPIC, "Gradle"),
                 decision(TopLevelPackage.TOPIC, "com.example"),
                 decision(Framework.TOPIC, "Spring Boot")));
   }

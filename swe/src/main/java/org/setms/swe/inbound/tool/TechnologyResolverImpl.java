@@ -173,12 +173,30 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     var framework = Decisions.from(inputs).about(Framework.TOPIC);
     return switch (framework) {
       case null -> empty(missingFrameworkDecision(), diagnostics);
-      case "Spring Boot" ->
-          JavaArtifactGenerator.topLevelPackage(inputs, diagnostics)
-              .map(SpringBootCodeGenerator::new);
+      case "Spring Boot" -> springBootCodeGenerator(inputs, diagnostics);
       default ->
           empty(new Diagnostic(ERROR, "Decided on unsupported framework", null), diagnostics);
     };
+  }
+
+  private Optional<FrameworkCodeGenerator> springBootCodeGenerator(
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var initiative = inputs.get(Initiative.class).stream().findFirst();
+    if (initiative.isEmpty()) {
+      return empty(missingInitiative(), diagnostics);
+    }
+    var decisions = Decisions.from(inputs);
+    return codeBuilderFor(
+            decisions.about(ProgrammingLanguage.TOPIC),
+            decisions.about(BuildSystem.TOPIC),
+            initiative.get().getTitle(),
+            diagnostics)
+        .flatMap(
+            codeBuilder ->
+                JavaArtifactGenerator.topLevelPackage(inputs, diagnostics)
+                    .map(
+                        topLevelPackage ->
+                            new SpringBootCodeGenerator(topLevelPackage, codeBuilder)));
   }
 
   private Diagnostic missingFrameworkDecision() {

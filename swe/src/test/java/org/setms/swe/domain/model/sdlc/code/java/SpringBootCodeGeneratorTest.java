@@ -3,17 +3,24 @@ package org.setms.swe.domain.model.sdlc.code.java;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
+import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 
+@ExtendWith(MockitoExtension.class)
 class SpringBootCodeGeneratorTest {
+
+  @Mock CodeBuilder codeBuilder;
 
   @Test
   void shouldGenerateController() {
-    var generator = new SpringBootCodeGenerator("com.example.todo");
+    var generator = new SpringBootCodeGenerator("com.example.todo", codeBuilder);
     var aggregate = new Aggregate(new FullyQualifiedName("todo", "TodoItems"));
     var command = new Command(new FullyQualifiedName("todo", "AddTodoItem"));
     var event = new Event(new FullyQualifiedName("todo", "TodoItemAdded"));

@@ -10,13 +10,17 @@ import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
+import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 
 public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     implements FrameworkCodeGenerator {
 
-  public SpringBootCodeGenerator(String topLevelPackage) {
+  private final CodeBuilder codeBuilder;
+
+  public SpringBootCodeGenerator(String topLevelPackage, CodeBuilder codeBuilder) {
     super(topLevelPackage);
+    this.codeBuilder = codeBuilder;
   }
 
   @Override

@@ -12,10 +12,12 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
@@ -93,7 +95,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
         .containsExactly(tuple(WARN, "Missing decision on framework"));
     assertThat(diagnostics)
         .flatExtracting(Diagnostic::suggestions)
-        .extracting(s -> s.message())
+        .extracting(Suggestion::message)
         .containsExactly("Decide on framework");
   }
 
@@ -116,7 +118,12 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
             .setCode("// existing");
     return givenInputsWithAggregateScenario(aggregate)
         .put("codeArtifacts", List.of(serviceCode))
-        .put("decisions", List.of(newDecision(Framework.TOPIC, "Spring Boot")));
+        .put("decisions", springBootDecisions());
+  }
+
+  private List<Decision> springBootDecisions() {
+    return List.of(
+        newDecision(BuildSystem.TOPIC, "Gradle"), newDecision(Framework.TOPIC, "Spring Boot"));
   }
 
   private static Decision newDecision(String topic, String choice) {
@@ -229,6 +236,6 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
   private ResolvedInputs givenInputsForSpringBootWithFullAggregateScenario(
       Aggregate aggregate, Command command, Event event, Entity entity) {
     return givenInputsWithFullAggregateScenario(aggregate, command, event, entity)
-        .put("decisions", List.of(newDecision(Framework.TOPIC, "Spring Boot")));
+        .put("decisions", springBootDecisions());
   }
 }
