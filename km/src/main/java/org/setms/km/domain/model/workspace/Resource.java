@@ -2,7 +2,9 @@ package org.setms.km.domain.model.workspace;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +37,21 @@ public interface Resource<T extends Resource<T>> {
 
   InputStream readFrom() throws IOException;
 
+  default String readAsString() {
+    try (var reader = new InputStreamReader(readFrom())) {
+      return reader.readAllAsString();
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
   OutputStream writeTo() throws IOException;
+
+  default void writeAsString(String content) throws IOException {
+    try (var out = new OutputStreamWriter(writeTo())) {
+      out.write(content);
+    }
+  }
 
   void delete() throws IOException;
 

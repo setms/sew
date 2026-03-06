@@ -97,6 +97,21 @@ class GradleTest {
   }
 
   @Test
+  void shouldAddBuildPluginToVersionCatalogAndBuildGradle(@TempDir File projectDir) {
+    var workspace = new DirectoryWorkspace(projectDir);
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+
+    gradle.addBuildPlugin("org.springframework.boot", workspace.root());
+
+    var versionCatalog = workspace.root().select("gradle/libs.versions.toml").readAsString();
+    assertThat(versionCatalog)
+        .contains("springframework-boot")
+        .contains("\"org.springframework.boot\"");
+    var buildGradle = workspace.root().select("build.gradle").readAsString();
+    assertThat(buildGradle).contains("springframework.boot");
+  }
+
+  @Test
   void shouldProduceNoDiagnosticsWhenSourcesCompileCleanly(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);

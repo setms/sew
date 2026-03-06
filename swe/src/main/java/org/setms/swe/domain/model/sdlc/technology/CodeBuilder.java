@@ -24,6 +24,14 @@ public interface CodeBuilder {
   void build(Resource<?> resource, Collection<Diagnostic> diagnostics);
 
   /**
+   * Add a build plugin to the project, fetching its latest version from the plugin portal.
+   *
+   * @param pluginId the plugin ID (e.g. "org.springframework.boot")
+   * @param resource the project root resource
+   */
+  void addBuildPlugin(String pluginId, Resource<?> resource);
+
+  /**
    * Apply a suggestion to fix an issue reported earlier.
    *
    * @param suggestionCode the suggestion code from the diagnostic

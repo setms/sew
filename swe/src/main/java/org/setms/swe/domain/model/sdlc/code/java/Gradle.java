@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -197,6 +198,70 @@ public class Gradle implements CodeBuilder, CodeTester {
           .toList();
     }
     return emptyList();
+  }
+
+  @Override
+  public void addBuildPlugin(String pluginId, Resource<?> resource) {
+    var key = pluginKey(pluginId);
+    var version = latestVersionOf(pluginId);
+    addToVersionCatalog(pluginId, key, version, resource);
+    addToBuildGradle(key, resource);
+  }
+
+  private String pluginKey(String pluginId) {
+    var parts = pluginId.split("\\.", 2);
+    return parts.length > 1 ? parts[1].replace('.', '-') : pluginId;
+  }
+
+  private String latestVersionOf(String pluginId) {
+    var groupPath = pluginId.replace('.', '/');
+    var url =
+        "https://plugins.gradle.org/m2/%s/%s.gradle.plugin/maven-metadata.xml"
+            .formatted(groupPath, pluginId);
+    try (var stream = URI.create(url).toURL().openStream()) {
+      var content = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+      var matcher = Pattern.compile("<release>(.*?)</release>").matcher(content);
+      if (matcher.find()) {
+        return matcher.group(1);
+      }
+      throw new IllegalStateException("No release version found at " + url);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to fetch plugin version from " + url, e);
+    }
+  }
+
+  private void addToVersionCatalog(
+      String pluginId, String key, String version, Resource<?> resource) {
+    var catalog = resource.select("gradle/libs.versions.toml");
+    var content = catalog.readAsString();
+    content =
+        content.replace("\n\n[libraries]", "\n" + key + " = \"" + version + "\"\n\n[libraries]");
+    content =
+        content.stripTrailing()
+            + "\n"
+            + key
+            + " = { id = \""
+            + pluginId
+            + "\", version.ref = \""
+            + key
+            + "\" }\n";
+    try {
+      catalog.writeAsString(content);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update version catalog", e);
+    }
+  }
+
+  private void addToBuildGradle(String key, Resource<?> resource) {
+    var buildGradle = resource.select("build.gradle");
+    var content = buildGradle.readAsString();
+    var alias = "    alias libs.plugins." + key.replace('-', '.');
+    content = content.replace("}\n\nrepositories", alias + "\n}\n\nrepositories");
+    try {
+      buildGradle.writeAsString(content);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update build.gradle", e);
+    }
   }
 
   @Override
