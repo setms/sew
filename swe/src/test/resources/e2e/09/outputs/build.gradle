@@ -9,6 +9,7 @@ repositories {
 }
 
 dependencies {
+    implementation libs.spring.boot.starter.web
     testImplementation libs.bundles.test
 
     testRuntimeOnly libs.bundles.test.runtime

@@ -112,6 +112,42 @@ class GradleTest {
   }
 
   @Test
+  void shouldAddDependencyWithoutVersionToVersionCatalogAndBuildGradle(@TempDir File projectDir) {
+    var workspace = new DirectoryWorkspace(projectDir);
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+
+    gradle.addDependency("org.springframework.boot:spring-boot-starter-web", workspace.root());
+
+    var versionCatalog = workspace.root().select("gradle/libs.versions.toml").readAsString();
+    assertThat(versionCatalog)
+        .contains(
+            """
+            spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }""");
+    var buildGradle = workspace.root().select("build.gradle").readAsString();
+    assertThat(buildGradle).contains("implementation libs.spring.boot.starter.web");
+  }
+
+  @Test
+  void shouldAddDependencyWithVersionToVersionCatalogAndBuildGradle(@TempDir File projectDir) {
+    var workspace = new DirectoryWorkspace(projectDir);
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+
+    gradle.addDependency("com.foo:foo-bar:1.2.3", workspace.root());
+
+    var versionCatalog = workspace.root().select("gradle/libs.versions.toml").readAsString();
+    assertThat(versionCatalog)
+        .contains(
+            """
+            foo-bar = "1.2.3"
+            """)
+        .contains(
+            """
+            foo-bar = { module = "com.foo:foo-bar", version.ref = "foo-bar" }""");
+    var buildGradle = workspace.root().select("build.gradle").readAsString();
+    assertThat(buildGradle).contains("implementation libs.foo.bar");
+  }
+
+  @Test
   void shouldProduceNoDiagnosticsWhenSourcesCompileCleanly(@TempDir File projectDir)
       throws IOException {
     var workspace = new DirectoryWorkspace(projectDir);

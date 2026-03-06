@@ -93,6 +93,15 @@ public class Gradle implements CodeBuilder, CodeTester {
       [plugins]
       lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
       """;
+  private static final String VERSION_REF = ", version.ref = \"%s\"";
+  private static final String LIBRARY =
+      """
+      %s = { module = "%s:%s"%s }""";
+  private static final String VERSION =
+      """
+      [versions]
+      %s = "%s"
+      """;
 
   private final String projectName;
 
@@ -203,9 +212,9 @@ public class Gradle implements CodeBuilder, CodeTester {
   public void addBuildPlugin(String pluginId, Resource<?> resource) {
     initializeIn(resource);
     var key = pluginKey(pluginId);
-    var version = latestVersionOf(pluginId);
-    addToVersionCatalog(pluginId, key, version, resource);
-    addToBuildGradle(key, resource);
+    var version = latestVersionOfPlugin(pluginId);
+    addPluginToVersionCatalog(pluginId, key, version, resource);
+    addPluginToBuildGradle(key, resource);
   }
 
   private String pluginKey(String pluginId) {
@@ -213,7 +222,7 @@ public class Gradle implements CodeBuilder, CodeTester {
     return parts.length > 1 ? parts[1].replace('.', '-') : pluginId;
   }
 
-  private String latestVersionOf(String pluginId) {
+  private String latestVersionOfPlugin(String pluginId) {
     var groupPath = pluginId.replace('.', '/');
     var url =
         "https://plugins.gradle.org/m2/%s/%s.gradle.plugin/maven-metadata.xml"
@@ -232,7 +241,7 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
   }
 
-  private void addToVersionCatalog(
+  private void addPluginToVersionCatalog(
       String pluginId, String key, String version, Resource<?> resource) {
     var catalog = resource.select("gradle/libs.versions.toml");
     var content = catalog.readAsString();
@@ -248,11 +257,49 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
   }
 
-  private void addToBuildGradle(String key, Resource<?> resource) {
+  private void addPluginToBuildGradle(String key, Resource<?> resource) {
     var buildGradle = resource.select("build.gradle");
     var content = buildGradle.readAsString();
     var alias = "    alias libs.plugins.%s".formatted(key.replace('-', '.'));
     content = content.replace("}\n\nrepositories", "%s\n}\n\nrepositories".formatted(alias));
+    try {
+      buildGradle.writeAsString(content);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update build.gradle", e);
+    }
+  }
+
+  @Override
+  public void addDependency(String dependency, Resource<?> resource) {
+    initializeIn(resource);
+    var parts = dependency.split(":");
+    addDependencyToVersionCatalog(resource, parts[0], parts[1], parts.length < 3 ? null : parts[2]);
+    addDependencyToBuildGradle(resource, parts[1]);
+  }
+
+  private void addDependencyToVersionCatalog(
+      Resource<?> resource, String module, String artifact, String version) {
+    var catalog = resource.select("gradle/libs.versions.toml");
+    var content = catalog.readAsString();
+    if (version != null) {
+      content = content.replace("[versions]", VERSION.formatted(artifact, version));
+    }
+    var versionRef =
+        Optional.ofNullable(version).map(_ -> artifact).map(VERSION_REF::formatted).orElse("");
+    var dependency = LIBRARY.formatted(artifact, module, artifact, versionRef);
+    content = content.replace("[libraries]", "[libraries]\n%s".formatted(dependency));
+    try {
+      catalog.writeAsString(content);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update version catalog", e);
+    }
+  }
+
+  private void addDependencyToBuildGradle(Resource<?> resource, String artifact) {
+    var buildGradle = resource.select("build.gradle");
+    var content = buildGradle.readAsString();
+    var dependency = "    implementation libs.%s".formatted(artifact.replace('-', '.'));
+    content = content.replace("dependencies {", "dependencies {\n%s".formatted(dependency));
     try {
       buildGradle.writeAsString(content);
     } catch (IOException e) {

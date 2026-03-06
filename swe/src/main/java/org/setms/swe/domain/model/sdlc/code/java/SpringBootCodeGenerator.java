@@ -32,6 +32,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
       Entity commandPayload,
       Event event) {
     codeBuilder.addBuildPlugin("org.springframework.boot", resource);
+    codeBuilder.addDependency("org.springframework.boot:spring-boot-starter-web", resource);
     return List.of(controllerFor(aggregate, command, event));
   }
 

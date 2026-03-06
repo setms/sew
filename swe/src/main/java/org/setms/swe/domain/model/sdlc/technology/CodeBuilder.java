@@ -32,6 +32,14 @@ public interface CodeBuilder {
   void addBuildPlugin(String pluginId, Resource<?> resource);
 
   /**
+   * Add a dependency to the project.
+   *
+   * @param dependency the dependency ID (e.g. "org.springframework.boot:spring-boot-starter-web")
+   * @param resource the project root resource
+   */
+  void addDependency(String dependency, Resource<?> resource);
+
+  /**
    * Apply a suggestion to fix an issue reported earlier.
    *
    * @param suggestionCode the suggestion code from the diagnostic

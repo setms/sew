@@ -71,5 +71,7 @@ class SpringBootCodeGeneratorTest {
     generator.generateControllerFor(workspace.root(), aggregate, command, null, event);
 
     verify(codeBuilder).addBuildPlugin("org.springframework.boot", workspace.root());
+    verify(codeBuilder)
+        .addDependency("org.springframework.boot:spring-boot-starter-web", workspace.root());
   }
 }
