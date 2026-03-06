@@ -220,11 +220,13 @@ public class Gradle implements CodeBuilder, CodeTester {
             .formatted(groupPath, pluginId);
     try (var stream = URI.create(url).toURL().openStream()) {
       var content = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-      var matcher = Pattern.compile("<release>(.*?)</release>").matcher(content);
-      if (matcher.find()) {
-        return matcher.group(1);
-      }
-      throw new IllegalStateException("No release version found at %s".formatted(url));
+      return Pattern.compile("<version>(\\d+(?:\\.\\d+)*)</version>")
+          .matcher(content)
+          .results()
+          .map(m -> m.group(1))
+          .reduce((a, b) -> b)
+          .orElseThrow(
+              () -> new IllegalStateException("No stable version found at %s".formatted(url)));
     } catch (IOException e) {
       throw new IllegalStateException("Failed to fetch plugin version from %s".formatted(url), e);
     }
