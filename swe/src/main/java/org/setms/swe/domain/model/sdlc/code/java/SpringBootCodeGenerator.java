@@ -1,9 +1,13 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
 import static java.util.stream.Collectors.joining;
+import static org.setms.km.domain.model.format.Strings.initUpper;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
+import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
@@ -16,6 +20,22 @@ import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 
 public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     implements FrameworkCodeGenerator {
+
+  private static final String MAIN_CLASS_CODE =
+      """
+      package %1$s;
+
+      import org.springframework.boot.SpringApplication;
+      import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+      @SpringBootApplication
+      public class %2$s {
+
+        public static void main(String... args) {
+          SpringApplication.run(%2$s.class, args);
+        }
+      }
+      """;
 
   private final CodeBuilder codeBuilder;
 
@@ -31,10 +51,35 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
       Command command,
       Entity commandPayload,
       Event event) {
+    ensureSpringBootWebDependency(resource);
+    var result = new ArrayList<CodeArtifact>();
+    ensureMainClass(resource).ifPresent(result::add);
+    result.add(controllerFor(aggregate, command, event));
+    return result;
+  }
+
+  private void ensureSpringBootWebDependency(Resource<?> resource) {
     codeBuilder.addBuildPlugin("org.springframework.boot", resource);
     codeBuilder.enableBuildPlugin("io.spring.dependency-management", resource);
     codeBuilder.addDependency("org.springframework.boot:spring-boot-starter-web", resource);
-    return List.of(controllerFor(aggregate, command, event));
+  }
+
+  private Optional<CodeArtifact> ensureMainClass(Resource<?> resource) {
+    var mainPackage = getTopLevelPackage();
+    var mainClass =
+        "%sApplication"
+            .formatted(initUpper(mainPackage.substring(mainPackage.lastIndexOf('.') + 1)));
+    var mainResource =
+        resource
+            .select("src/main/java")
+            .select(mainPackage.replace(".", "/"))
+            .select("%s.java".formatted(mainClass));
+    if (mainResource.exists()) {
+      return Optional.empty();
+    }
+    var code = MAIN_CLASS_CODE.formatted(mainPackage, mainClass);
+    return Optional.of(
+        new CodeArtifact(new FullyQualifiedName(mainPackage, mainClass)).setCode(code));
   }
 
   private CodeArtifact controllerFor(Aggregate aggregate, Command command, Event event) {

@@ -42,8 +42,8 @@ class SpringBootCodeGeneratorTest {
 
     assertThat(actual)
         .as("Generated controller artifacts")
-        .singleElement()
-        .satisfies(this::assertThatGeneratedCodeIsController);
+        .anySatisfy(this::assertThatGeneratedCodeIsController)
+        .anySatisfy(this::assertThatGeneratedCodeIsMainClass);
   }
 
   private void assertThatGeneratedCodeIsController(CodeArtifact actual) {
@@ -64,6 +64,14 @@ class SpringBootCodeGeneratorTest {
         .contains("@PostMapping(\"/todoItems\")")
         .contains("public TodoItemAdded addTodoItem(@RequestBody AddTodoItem addTodoItem)")
         .contains("return todoItemsService.accept(addTodoItem);");
+  }
+
+  private void assertThatGeneratedCodeIsMainClass(CodeArtifact codeArtifact) {
+    assertThat(codeArtifact.getName()).as("Name").endsWith("Application");
+    assertThat(codeArtifact.getCode())
+        .as("Code")
+        .contains("@SpringBootApplication")
+        .contains("SpringApplication.run");
   }
 
   @Test
