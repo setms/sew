@@ -258,26 +258,22 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     var diagnostics = new ArrayList<Diagnostic>();
     return codePackager(inputs, diagnostics)
         .map(packager -> packager.applySuggestion(suggestionCode, resource))
-        .orElseGet(
-            () ->
-                diagnostics.stream()
-                    .reduce(
-                        AppliedSuggestion.none(),
-                        AppliedSuggestion::with,
-                        (appliedSuggestion, _) -> appliedSuggestion));
+        .orElseGet(() -> fromDiagnostics(diagnostics));
   }
 
   private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
     return codeBuilder(resource, inputs, diagnostics)
         .map(bt -> bt.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, resource))
-        .orElseGet(
-            () ->
-                diagnostics.stream()
-                    .reduce(
-                        AppliedSuggestion.none(),
-                        AppliedSuggestion::with,
-                        (appliedSuggestion, _) -> appliedSuggestion));
+        .orElseGet(() -> fromDiagnostics(diagnostics));
+  }
+
+  private AppliedSuggestion fromDiagnostics(Collection<Diagnostic> diagnostics) {
+    return diagnostics.stream()
+        .reduce(
+            AppliedSuggestion.none(),
+            AppliedSuggestion::with,
+            (appliedSuggestion, _) -> appliedSuggestion);
   }
 
   private AppliedSuggestion pickDecision(Resource<?> resource, String decisionName, String topic) {
