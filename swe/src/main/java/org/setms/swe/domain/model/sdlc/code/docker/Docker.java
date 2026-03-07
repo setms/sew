@@ -65,6 +65,14 @@ public class Docker implements CodePackager {
     }
   }
 
+  private Diagnostic buildFailureDiagnostic(String output) {
+    if (output.contains("open Dockerfile: no such file or directory")) {
+      return new Diagnostic(
+          WARN, "Missing Dockerfile", null, new Suggestion(CREATE_DOCKERFILE, "Create Dockerfile"));
+    }
+    return new Diagnostic(ERROR, output, null);
+  }
+
   @Override
   public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
     if (!CREATE_DOCKERFILE.equals(suggestionCode)) {
@@ -77,13 +85,5 @@ public class Docker implements CodePackager {
     } catch (Exception e) {
       return failedWith(e);
     }
-  }
-
-  private Diagnostic buildFailureDiagnostic(String output) {
-    if (output.contains("open Dockerfile: no such file or directory")) {
-      return new Diagnostic(
-          WARN, "Missing Dockerfile", null, new Suggestion(CREATE_DOCKERFILE, "Create Dockerfile"));
-    }
-    return new Diagnostic(ERROR, output, null);
   }
 }
