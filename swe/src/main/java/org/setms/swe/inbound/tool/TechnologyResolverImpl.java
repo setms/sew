@@ -19,6 +19,7 @@ import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
+import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
@@ -28,6 +29,7 @@ import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
+import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 import org.setms.swe.domain.model.sdlc.technology.CodeTester;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -38,6 +40,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   static final String PICK_PROGRAMMING_LANGUAGE = "programming-language.decide";
   static final String PICK_BUILD_SYSTEM = "build-system.decide";
   static final String PICK_FRAMEWORK = "framework.decide";
+  static final String PICK_PACKAGING = "packaging.decide";
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
@@ -165,6 +168,25 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return selectedBuildSystem.equals("Gradle")
         ? Optional.of(new Gradle(projectName))
         : empty(new Diagnostic(ERROR, "Decided on unsupported build system", null), diagnostics);
+  }
+
+  @Override
+  public Optional<CodePackager> codePackager(
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var packaging = Decisions.from(inputs).about(Packaging.TOPIC);
+    return switch (packaging) {
+      case null -> empty(missingPackagingDecision(), diagnostics);
+      default ->
+          empty(new Diagnostic(ERROR, "Decided on unsupported packaging", null), diagnostics);
+    };
+  }
+
+  private Diagnostic missingPackagingDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on packaging",
+        null,
+        new Suggestion(PICK_PACKAGING, "Decide on packaging"));
   }
 
   @Override

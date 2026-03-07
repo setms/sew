@@ -281,6 +281,16 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldNeedPackagingDecisionForCodePackager() {
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    resolver.codePackager(new ResolvedInputs(), diagnostics);
+
+    assertThatSingleWarnDiagnosticHas(
+        diagnostics, "Missing decision on packaging", "Decide on packaging");
+  }
+
+  @Test
   void shouldNeedFrameworkDecisionForFrameworkCodeGenerator() {
     var diagnostics = new ArrayList<Diagnostic>();
     var inputs = givenInputsForJavaWithTopLevelPackage();
@@ -349,6 +359,7 @@ class TechnologyResolverImplTest {
   private void assertThatSingleWarnDiagnosticHas(
       List<Diagnostic> diagnostics, String message, String suggestionMessage) {
     assertThat(diagnostics)
+        .as("Expected diagnostic '%s' with suggestion '%s'".formatted(message, suggestionMessage))
         .hasSize(1)
         .allSatisfy(
             diagnostic -> {

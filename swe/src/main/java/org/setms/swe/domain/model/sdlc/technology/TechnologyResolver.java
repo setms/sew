@@ -44,6 +44,13 @@ public interface TechnologyResolver {
   /**
    * @param inputs Resolved inputs, including decisions and other artifacts
    * @param diagnostics where to store any validation issues
+   * @return something that can package code, or empty if there are issues
+   */
+  Optional<CodePackager> codePackager(ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
+
+  /**
+   * @param inputs Resolved inputs, including decisions and other artifacts
+   * @param diagnostics where to store any validation issues
    * @return something that can generate framework-specific code, or empty if there are issues
    */
   Optional<FrameworkCodeGenerator> frameworkCodeGenerator(
