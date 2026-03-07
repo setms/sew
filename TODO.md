@@ -42,6 +42,7 @@
 ### Code
 
 - `CodeTool` should use Google Java Formatter to format the code properly before persisting a resource
+- Run linters (without tests)
 
 ### Decision
 
