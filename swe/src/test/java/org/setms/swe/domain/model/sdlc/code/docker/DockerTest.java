@@ -2,6 +2,7 @@ package org.setms.swe.domain.model.sdlc.code.docker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.ERROR;
+import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,38 @@ class DockerTest {
             diagnostic -> {
               assertThat(diagnostic.level()).as("Level").isEqualTo(ERROR);
               assertThat(diagnostic.message()).as("Message").isEqualTo(errorOutput);
+            });
+  }
+
+  @Test
+  void shouldReportMissingDockerfileAsDiagnosticWithSuggestion() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var docker =
+        new Docker(
+            "my-project",
+            command ->
+                new Docker.Result(
+                    1,
+                    "ERROR: failed to build: failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory"));
+
+    docker.packageCode(workspace.root(), diagnostics);
+
+    assertThat(diagnostics)
+        .as("Missing Dockerfile should produce a warning with a suggestion to create it")
+        .hasSize(1)
+        .allSatisfy(
+            diagnostic -> {
+              assertThat(diagnostic.level()).as("Level").isEqualTo(WARN);
+              assertThat(diagnostic.message()).as("Message").isEqualTo("Missing Dockerfile");
+              assertThat(diagnostic.suggestions())
+                  .as("Suggestion to create Dockerfile")
+                  .hasSize(1)
+                  .first()
+                  .satisfies(
+                      suggestion ->
+                          assertThat(suggestion.code())
+                              .as("Suggestion code")
+                              .isEqualTo(Docker.CREATE_DOCKERFILE));
             });
   }
 }

@@ -1,16 +1,20 @@
 package org.setms.swe.domain.model.sdlc.code.docker;
 
 import static org.setms.km.domain.model.validation.Level.ERROR;
+import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 
 /** Packages code into a Docker image. */
 public class Docker implements CodePackager {
+
+  public static final String CREATE_DOCKERFILE = "dockerfile.create";
 
   record Result(int exitCode, String output) {}
 
@@ -44,10 +48,18 @@ public class Docker implements CodePackager {
     try {
       var result = commandRunner.run("docker", "build", "-t", projectName, ".");
       if (result.exitCode() != 0) {
-        diagnostics.add(new Diagnostic(ERROR, result.output(), null));
+        diagnostics.add(buildFailureDiagnostic(result.output()));
       }
     } catch (Exception e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage(), null));
     }
+  }
+
+  private Diagnostic buildFailureDiagnostic(String output) {
+    if (output.contains("open Dockerfile: no such file or directory")) {
+      return new Diagnostic(
+          WARN, "Missing Dockerfile", null, new Suggestion(CREATE_DOCKERFILE, "Create Dockerfile"));
+    }
+    return new Diagnostic(ERROR, output, null);
   }
 }
