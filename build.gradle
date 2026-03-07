@@ -1,3 +1,7 @@
+plugins {
+    alias(libs.plugins.spotless) apply false
+}
+
 tasks.register('installGitHooks') {
     description = 'Installs git pre-commit hook that runs spotlessApply'
     group = 'git hooks'
