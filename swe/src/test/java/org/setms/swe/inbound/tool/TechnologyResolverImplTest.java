@@ -283,10 +283,20 @@ class TechnologyResolverImplTest {
   }
 
   @Test
-  void shouldNeedPackagingDecisionForCodePackager() {
+  void shouldNeedInitiativeForCodePackager() {
     var diagnostics = new ArrayList<Diagnostic>();
 
     resolver.codePackager(new ResolvedInputs(), diagnostics);
+
+    assertThatSingleWarnDiagnosticHas(diagnostics, "Missing initiative", "Create initiative");
+  }
+
+  @Test
+  void shouldNeedPackagingDecisionForCodePackager() {
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    resolver.codePackager(
+        new ResolvedInputs().put("initiatives", List.of(initiative())), diagnostics);
 
     assertThatSingleWarnDiagnosticHas(
         diagnostics, "Missing decision on packaging", "Decide on packaging");
@@ -296,7 +306,9 @@ class TechnologyResolverImplTest {
   void shouldReturnDockerCodePackagerWhenPackagingIsDocker() {
     var diagnostics = new ArrayList<Diagnostic>();
     var inputs =
-        new ResolvedInputs().put("decisions", List.of(decision(Packaging.TOPIC, "Docker")));
+        new ResolvedInputs()
+            .put("initiatives", List.of(initiative()))
+            .put("decisions", List.of(decision(Packaging.TOPIC, "Docker")));
 
     var actual = resolver.codePackager(inputs, diagnostics);
 

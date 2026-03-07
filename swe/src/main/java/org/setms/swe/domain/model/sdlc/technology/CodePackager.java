@@ -1,4 +1,17 @@
 package org.setms.swe.domain.model.sdlc.technology;
 
+import java.util.Collection;
+import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.workspace.Resource;
+
 /** Packages built code into a distributable artifact. */
-public interface CodePackager {}
+public interface CodePackager {
+
+  /**
+   * Package the built code into a distributable artifact.
+   *
+   * @param resource the workspace root resource
+   * @param diagnostics where to add diagnostics for any errors found
+   */
+  void packageCode(Resource<?> resource, Collection<Diagnostic> diagnostics);
+}

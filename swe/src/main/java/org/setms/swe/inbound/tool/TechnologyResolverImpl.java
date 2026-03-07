@@ -174,10 +174,14 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   @Override
   public Optional<CodePackager> codePackager(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var initiative = inputs.get(Initiative.class).stream().findFirst();
+    if (initiative.isEmpty()) {
+      return empty(missingInitiative(), diagnostics);
+    }
     var packaging = Decisions.from(inputs).about(Packaging.TOPIC);
     return switch (packaging) {
       case null -> empty(missingPackagingDecision(), diagnostics);
-      case "Docker" -> Optional.of(new Docker());
+      case "Docker" -> Optional.of(new Docker(initiative.get().getTitle()));
       default ->
           empty(new Diagnostic(ERROR, "Decided on unsupported packaging", null), diagnostics);
     };
