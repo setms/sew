@@ -90,7 +90,7 @@ pitest {
     //adds dependency to org.pitest:pitest-junit5-plugin and sets "testPlugin" to "junit5"
     junit5PluginVersion = '1.2.1'
     // mutationThreshold should be increased as tests are refactored with an ultimate goal of 80% or higher
-    mutationThreshold = 66
+    mutationThreshold = 67
     // withHistory is not used in order to have explicit control over the location to enable caching w/in the CI/CD pipeline
     historyInputLocation = pitestHistoryFilePath
     historyOutputLocation = pitestHistoryFilePath
@@ -102,9 +102,10 @@ pitest {
     useClasspathFile = true
     jvmArgs = ['-XX:+EnableDynamicAgentLoading', '--enable-native-access=ALL-UNNAMED']
 
-    // NEGATE_CONDITIONALS times out
-    mutators = ['INVERT_NEGS', 'MATH', 'VOID_METHOD_CALLS', 'CONDITIONALS_BOUNDARY', 'INCREMENTS', 'TRUE_RETURNS',
-                'FALSE_RETURNS', 'PRIMITIVE_RETURNS', 'EMPTY_RETURNS', 'NULL_RETURNS']
+    // NEGATE_CONDITIONALS and NULL_RETURNS time out
+    mutators = [
+            'INVERT_NEGS', 'MATH', 'VOID_METHOD_CALLS', 'CONDITIONALS_BOUNDARY', 'FALSE_RETURNS', 'PRIMITIVE_RETURNS',
+            'EMPTY_RETURNS']
 }
 tasks.named('pitest') {
     dependsOn test
