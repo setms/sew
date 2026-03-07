@@ -26,44 +26,45 @@ description: Write code following the TDD style. Use when there is a non-empty, 
    - NEVER use technical terms, like `mock`, in a method name. Adopt the domain language of the project instead.
    - Helper methods must directly follow the first method that calls them.
 
-8. Make sure the test fails for the correct reason.
+8. ALWAYS add `.as()` to assertions and provide a descriptive message.
+   Pretend we're working on something seemingly unrelated and the test unexpectedly fails: does it then give enough
+   information to understand what's wrong?
+   The failure message is critically important to get right.
+   A message like `Expected size: 1 but was: 0` is NOT acceptable, because it doesn't reveal anything useful.
+   Neither does `Expecting any element of: [] to satisfy the given assertions requirements but none did`.
+   The message needs to show the failed expectation.
+9. Make sure the test fails for the correct reason.
   If you invented new types or methods, you'll first have to write just enough code to make the test compile.
   Then run the test.
   **CRITICAL: If the test passes or fails for the wrong reason, update the test until it fails for the correct reason.**
   This is non-negotiable.
   In particular, a passing test is a mortal sin.
   Also make sure the test failure clearly indicates what's wrong.
-  Pretend we're working on something seemingly unrelated and the test unexpectedly fails: does it then give enough
-  information to understand what's wrong?
-  The failure message is critically important to get right.
-  A message like `Expected size: 1 but was: 0` is NOT acceptable, because it doesn't reveal anything useful.
-  Neither does `Expecting any element of: [] to satisfy the given assertions requirements but none did`.
-  The message needs to show the failed expectation.
-9. Show the test to the user and ask them to review it.
+10. Show the test to the user and ask them to review it.
   If the user asks for changes, make them and **present the test again for approval**.
   **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE LATEST VERSION OF THE TEST**.
-10. Once you have approval, write code to make the failing test pass.
+11. Once you have approval, write code to make the failing test pass.
   Write the minimal amount of code you can get away with.
   Don't look ahead to other tests, just optimize for the minimum amount of code change that makes this single test pass.
-11. Once this single test passes, run all the tests in the project to ensure the new code didn't break anything.
+12. Once this single test passes, run all the tests in the project to ensure the new code didn't break anything.
   If any test **other than `EndToEndTest`** fails, fix it and run all tests again until they all pass.
   **CRITICAL: DO NOT attempt to fix `EndToEnd` test.**
-12. Once these tests pass, commit the changes.
+13. Once these tests pass, commit the changes.
   Write a very short commit message using conventional commits.
-13. Now review the code by invoking the `code-review` skill.
-14. Present the changes to the user, as well as the current token budget usage percentage.
+14. Now review the code by invoking the `code-review` skill.
+15. Present the changes to the user, as well as the current token budget usage percentage.
   If the user asks for changes, make them and present the code again for approval.
   **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE LATEST VERSION OF THE CODE**.
-15. If you made any changes to the structure, commit them.
+16. If you made any changes to the structure, commit them.
   Write a very short commit message using conventional commits.
-16. Once you have approval, consider whether the added unit test fully covers the test scenario.
+17. Once you have approval, consider whether the added unit test fully covers the test scenario.
   If it doesn't, return to step 2.
-17. Mark the test scenario as complete.
-18. If token usage is over 40% of budget, tell the user to start a new session and halt.
-19. If there are test scenarios that aren't complete, return to step 1.
+18. Re-read `TDD.md` and mark the test scenario as complete.
+19. If token usage is over 40% of budget, tell the user to start a new session and halt.
+20. If there are test scenarios that aren't complete, return to step 1.
   CRITICAL: You MUST have explicit approval to continue with the next test scenario.
-20. If all test scenarios are complete, clear the test list.
-21. If `EndToEndTest` still fails after all test scenarios are complete, invoke the `e2e` skill.
+21. If all test scenarios are complete, clear the test list.
+22. If `EndToEndTest` still fails after all test scenarios are complete, invoke the `e2e` skill.
 
 Implementation notes:
 

@@ -26,12 +26,12 @@ import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
-import org.setms.swe.domain.model.sdlc.code.docker.Docker;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
+import org.setms.swe.domain.model.sdlc.packaging.docker.Docker;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class TechnologyResolverImplTest {

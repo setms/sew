@@ -1,4 +1,4 @@
-package org.setms.swe.domain.model.sdlc.code.docker;
+package org.setms.swe.domain.model.sdlc.packaging.docker;
 
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;

@@ -21,13 +21,13 @@ import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
-import org.setms.swe.domain.model.sdlc.code.docker.Docker;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
+import org.setms.swe.domain.model.sdlc.packaging.docker.Docker;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.CodePackager;
@@ -246,18 +246,16 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case PICK_FRAMEWORK -> pickDecision(resource, Framework.TOPIC, Framework.TOPIC);
       case PICK_PACKAGING -> pickDecision(resource, Packaging.TOPIC, Packaging.TOPIC);
-      case Docker.CREATE_DOCKERFILE ->
-          applyPackagerSuggestion(Docker.CREATE_DOCKERFILE, resource, inputs);
+      case Docker.CREATE_DOCKERFILE -> applyPackagerSuggestion(resource, inputs);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
   }
 
-  private AppliedSuggestion applyPackagerSuggestion(
-      String suggestionCode, Resource<?> resource, ResolvedInputs inputs) {
+  private AppliedSuggestion applyPackagerSuggestion(Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
     return codePackager(inputs, diagnostics)
-        .map(packager -> packager.applySuggestion(suggestionCode, resource))
+        .map(packager -> packager.applySuggestion(Docker.CREATE_DOCKERFILE, resource))
         .orElseGet(() -> fromDiagnostics(diagnostics));
   }
 

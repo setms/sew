@@ -1,4 +1,4 @@
-package org.setms.swe.domain.model.sdlc.code.docker;
+package org.setms.swe.domain.model.sdlc.packaging.docker;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.validation.Level.ERROR;
@@ -39,7 +39,7 @@ class DockerTest {
   void shouldReportDockerBuildErrorsAsDiagnostics() {
     var diagnostics = new ArrayList<Diagnostic>();
     var errorOutput = "failed to solve: Dockerfile not found";
-    var docker = new Docker("my-project", command -> new Docker.Result(1, errorOutput));
+    var docker = new Docker("my-project", _ -> new Docker.Result(1, errorOutput));
 
     docker.packageCode(workspace.root(), diagnostics);
 
@@ -59,7 +59,7 @@ class DockerTest {
     var docker =
         new Docker(
             "my-project",
-            command ->
+            _ ->
                 new Docker.Result(
                     1,
                     "ERROR: failed to build: failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory"));
