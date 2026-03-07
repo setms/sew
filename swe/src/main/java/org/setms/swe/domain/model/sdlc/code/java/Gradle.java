@@ -181,6 +181,13 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   @Override
+  public void assemblePackage(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    if (isInitialized(resource)) {
+      runGradle(resource, diagnostics, this::parseCompilationErrors, "assemble");
+    }
+  }
+
+  @Override
   public void test(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     if (isInitialized(resource)) {
       runTests(resource, diagnostics);

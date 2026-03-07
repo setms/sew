@@ -325,6 +325,20 @@ class GradleTest {
   }
 
   @Test
+  void shouldCreateJarWhenAssemblingPackage(@TempDir File projectDir) throws IOException {
+    var workspace = new DirectoryWorkspace(projectDir);
+    gradle.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, workspace.root());
+    givenJavaSourceFile(workspace.root());
+    var diagnostics = new LinkedHashSet<Diagnostic>();
+
+    gradle.assemblePackage(workspace.root(), diagnostics);
+
+    var jarPath = "build/libs/%s.jar".formatted(PROJECT_NAME);
+    assertThat(diagnostics).isEmpty();
+    assertThat(workspace.root().select(jarPath).exists()).as(jarPath).isTrue();
+  }
+
+  @Test
   void shouldReturnNoneForUnknownSuggestion() {
     var actual = gradle.applySuggestion("unknown.suggestion", workspace.root());
 
