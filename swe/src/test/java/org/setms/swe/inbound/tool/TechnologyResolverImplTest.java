@@ -23,8 +23,10 @@ import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
+import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.code.docker.Docker;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
@@ -288,6 +290,19 @@ class TechnologyResolverImplTest {
 
     assertThatSingleWarnDiagnosticHas(
         diagnostics, "Missing decision on packaging", "Decide on packaging");
+  }
+
+  @Test
+  void shouldReturnDockerCodePackagerWhenPackagingIsDocker() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs =
+        new ResolvedInputs().put("decisions", List.of(decision(Packaging.TOPIC, "Docker")));
+
+    var actual = resolver.codePackager(inputs, diagnostics);
+
+    assertThat(actual).as("CodePackager for Docker packaging").isPresent();
+    assertThat(actual.get()).as("CodePackager type").isInstanceOf(Docker.class);
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
   }
 
   @Test

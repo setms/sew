@@ -21,6 +21,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.code.docker.Docker;
 import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
@@ -176,6 +177,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     var packaging = Decisions.from(inputs).about(Packaging.TOPIC);
     return switch (packaging) {
       case null -> empty(missingPackagingDecision(), diagnostics);
+      case "Docker" -> Optional.of(new Docker());
       default ->
           empty(new Diagnostic(ERROR, "Decided on unsupported packaging", null), diagnostics);
     };
