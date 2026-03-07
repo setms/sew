@@ -13,8 +13,7 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        intellijIdeaCommunity("2024.3.5")
-        instrumentationTools()
+        intellijIdeaCommunity(libs.versions.intellij.idea) // Run printProductsReleases Gradle task to find acceptable versions
         pluginVerifier()
     }
 }
