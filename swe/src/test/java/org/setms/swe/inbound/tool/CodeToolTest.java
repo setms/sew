@@ -186,6 +186,19 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
     verify(codeBuilder).build(any(), any());
   }
 
+  @Test
+  void shouldAssemblePackageWhenBuildingReports() throws IOException {
+    var codeBuilder = mock(CodeBuilder.class);
+    var tool = givenToolWith(codeBuilder);
+    var workspace = givenWorkspaceWithTestSource();
+    var inputs = givenInputsWithBuildSystemDecision();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    tool.buildReportsFor(codeArtifact(), inputs, workspace.root(), diagnostics);
+
+    verify(codeBuilder).assemblePackage(any(), any());
+  }
+
   private ArtifactTool<CodeArtifact> givenToolWith(CodeBuilder codeBuilder) {
     var resolver = mock(TechnologyResolver.class);
     when(resolver.codeBuilder(any(), any(), any())).thenReturn(Optional.of(codeBuilder));

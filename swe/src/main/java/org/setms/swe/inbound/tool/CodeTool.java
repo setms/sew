@@ -82,6 +82,18 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
   }
 
   @Override
+  public void buildReportsFor(
+      CodeArtifact artifact,
+      ResolvedInputs inputs,
+      Resource<?> output,
+      Collection<Diagnostic> diagnostics) {
+    var root = output.select("/");
+    technologyResolver
+        .codeBuilder(root, inputs, diagnostics)
+        .ifPresent(codeBuilder -> codeBuilder.assemblePackage(root, diagnostics));
+  }
+
+  @Override
   protected AppliedSuggestion doApply(
       Resource<?> resource,
       CodeArtifact artifact,
