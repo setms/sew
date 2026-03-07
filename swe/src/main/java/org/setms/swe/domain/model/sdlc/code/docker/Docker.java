@@ -1,11 +1,14 @@
 package org.setms.swe.domain.model.sdlc.code.docker;
 
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
@@ -15,6 +18,13 @@ import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 public class Docker implements CodePackager {
 
   public static final String CREATE_DOCKERFILE = "dockerfile.create";
+  private static final String DEFAULT_DOCKERFILE =
+      """
+      FROM eclipse-temurin:25
+      COPY . .
+      RUN ./gradlew assemble
+      ENTRYPOINT ["java", "-jar", "build/libs/app.jar"]
+      """;
 
   record Result(int exitCode, String output) {}
 
@@ -52,6 +62,20 @@ public class Docker implements CodePackager {
       }
     } catch (Exception e) {
       diagnostics.add(new Diagnostic(ERROR, e.getMessage(), null));
+    }
+  }
+
+  @Override
+  public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
+    if (!CREATE_DOCKERFILE.equals(suggestionCode)) {
+      return AppliedSuggestion.none();
+    }
+    try {
+      var dockerfile = resource.select("/Dockerfile");
+      dockerfile.writeAsString(DEFAULT_DOCKERFILE);
+      return created(dockerfile);
+    } catch (Exception e) {
+      return failedWith(e);
     }
   }
 

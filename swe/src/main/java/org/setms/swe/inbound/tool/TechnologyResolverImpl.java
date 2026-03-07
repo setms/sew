@@ -246,9 +246,25 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case PICK_FRAMEWORK -> pickDecision(resource, Framework.TOPIC, Framework.TOPIC);
       case PICK_PACKAGING -> pickDecision(resource, Packaging.TOPIC, Packaging.TOPIC);
+      case Docker.CREATE_DOCKERFILE ->
+          applyPackagerSuggestion(Docker.CREATE_DOCKERFILE, resource, inputs);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
+  }
+
+  private AppliedSuggestion applyPackagerSuggestion(
+      String suggestionCode, Resource<?> resource, ResolvedInputs inputs) {
+    var diagnostics = new ArrayList<Diagnostic>();
+    return codePackager(inputs, diagnostics)
+        .map(packager -> packager.applySuggestion(suggestionCode, resource))
+        .orElseGet(
+            () ->
+                diagnostics.stream()
+                    .reduce(
+                        AppliedSuggestion.none(),
+                        AppliedSuggestion::with,
+                        (appliedSuggestion, _) -> appliedSuggestion));
   }
 
   private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {

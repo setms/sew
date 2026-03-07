@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.technology;
 
 import java.util.Collection;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 
@@ -14,4 +15,15 @@ public interface CodePackager {
    * @param diagnostics where to add diagnostics for any errors found
    */
   void packageCode(Resource<?> resource, Collection<Diagnostic> diagnostics);
+
+  /**
+   * Apply a suggestion to fix an issue reported earlier.
+   *
+   * @param suggestionCode the suggestion code from the diagnostic
+   * @param resource the project root resource
+   * @return applied suggestion result with created resources
+   */
+  default AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
+    return AppliedSuggestion.none();
+  }
 }
