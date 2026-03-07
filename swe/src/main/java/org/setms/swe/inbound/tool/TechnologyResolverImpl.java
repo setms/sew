@@ -239,6 +239,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
           JavaArtifactGenerator.applySuggestion(suggestionCode, resource, inputs);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case PICK_FRAMEWORK -> pickDecision(resource, Framework.TOPIC, Framework.TOPIC);
+      case PICK_PACKAGING -> pickDecision(resource, Packaging.TOPIC, Packaging.TOPIC);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
