@@ -60,6 +60,6 @@ jobs:
 
       - name: Report on tests
         uses: mikepenz/action-junit-report@v6
-        if: failure()
+        if: always()
         with:
           report_paths: '**/TEST-*.xml'
