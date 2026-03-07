@@ -2,6 +2,8 @@ package org.setms.swe.domain.model.sdlc.code.docker;
 
 import static org.setms.km.domain.model.validation.Level.ERROR;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
@@ -10,13 +12,20 @@ import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 /** Packages code into a Docker image. */
 public class Docker implements CodePackager {
 
+  record Result(int exitCode, String output) {}
+
   @FunctionalInterface
   interface CommandRunner {
-    void run(String... command) throws Exception;
+    Result run(String... command) throws Exception;
   }
 
   private static final CommandRunner SYSTEM =
-      command -> new ProcessBuilder(command).inheritIO().start().waitFor();
+      command -> {
+        var output = new ByteArrayOutputStream();
+        var process = new ProcessBuilder(command).redirectErrorStream(true).start();
+        process.getInputStream().transferTo(output);
+        return new Result(process.waitFor(), output.toString(StandardCharsets.UTF_8));
+      };
 
   private final String projectName;
   private final CommandRunner commandRunner;
@@ -33,9 +42,12 @@ public class Docker implements CodePackager {
   @Override
   public void packageCode(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     try {
-      commandRunner.run("docker", "build", "-t", projectName, ".");
+      var result = commandRunner.run("docker", "build", "-t", projectName, ".");
+      if (result.exitCode() != 0) {
+        diagnostics.add(new Diagnostic(ERROR, result.output(), null));
+      }
     } catch (Exception e) {
-      diagnostics.add(new Diagnostic(ERROR, "docker build failed", null));
+      diagnostics.add(new Diagnostic(ERROR, e.getMessage(), null));
     }
   }
 }
