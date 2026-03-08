@@ -62,7 +62,7 @@ jobs:
         id: transcript
         if: always()
         run: |
-          if [ -d "path/to/dir" ]; then
+          if [ -d "swe/build/e2e-transcript" ]; then
             cd swe/build/e2e-transcript
             zip -r ../e2e-transcript.zip .
             echo "created=true" >> "$GITHUB_OUTPUT"

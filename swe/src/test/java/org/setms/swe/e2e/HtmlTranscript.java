@@ -19,6 +19,7 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
   private final PrintWriter writer;
   private final Resource<?> root;
   private boolean inCode = false;
+  private boolean alignRight;
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   public HtmlTranscript(Workspace<?> workspace) {
@@ -52,6 +53,7 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
                     .workspace {
                       font-size: smaller;
                       font-weight: bold;
+                      text-align: left;
                     }
                   </style>
                 </head>
@@ -69,13 +71,15 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
       writer.printf("</div><hr/>%n<h1>%s</h1>%n<hr/><div>%n", line.replace("━", "").trim());
     } else if ("Human".equals(line)) {
       writer.printf("</div><h2>%s</h2><div>%n", line);
+      alignRight = false;
     } else if ("SEW".equals(line)) {
       writer.printf("</div><h2 class='right'>%s</h2><div class='right'>", line);
+      alignRight = true;
     } else if (line.contains("Workspace")) {
-      writer.printf("<br/>%n<span class='workspace'>Workspace</span><pre>%n");
+      writer.printf("</div>%n<span class='workspace'>Workspace</span><pre>%n");
       inCode = true;
     } else if (inCode && raw.isBlank()) {
-      writer.println("</pre>");
+      writer.printf("</pre>%n<div%s>%n", alignRight ? " class='right'" : "");
       inCode = false;
     } else if (inCode) {
       writer.println(raw);
