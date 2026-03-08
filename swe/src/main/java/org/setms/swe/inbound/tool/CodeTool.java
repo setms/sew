@@ -70,7 +70,7 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
       var root = resource.select("/");
       technologyResolver
           .codeBuilder(root, inputs, diagnostics)
-          .ifPresent(bt -> bt.build(root, diagnostics));
+          .ifPresent(codeBuilder -> codeBuilder.build(root, diagnostics));
     } else {
       diagnostics.add(
           new Diagnostic(
@@ -79,18 +79,6 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
               null,
               new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system")));
     }
-  }
-
-  @Override
-  public void buildReportsFor(
-      CodeArtifact artifact,
-      ResolvedInputs inputs,
-      Resource<?> output,
-      Collection<Diagnostic> diagnostics) {
-    var root = output.select("/");
-    technologyResolver
-        .codeBuilder(root, inputs, diagnostics)
-        .ifPresent(codeBuilder -> codeBuilder.assemblePackage(root, diagnostics));
   }
 
   @Override

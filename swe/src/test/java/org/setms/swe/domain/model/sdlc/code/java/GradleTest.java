@@ -204,7 +204,7 @@ class GradleTest {
 
     gradle.build(workspace.root(), diagnostics);
 
-    assertThat(diagnostics).hasSize(1);
+    assertThat(diagnostics).as("# diagnostics").hasSize(1);
     var actual = diagnostics.getFirst();
     assertThat(actual.level()).isEqualTo(ERROR);
     assertThat(actual.message()).isEqualTo("illegal start of expression");
@@ -331,7 +331,7 @@ class GradleTest {
     givenJavaSourceFile(workspace.root());
     var diagnostics = new LinkedHashSet<Diagnostic>();
 
-    gradle.assemblePackage(workspace.root(), diagnostics);
+    gradle.build(workspace.root(), diagnostics);
 
     var jarPath = "build/libs/%s.jar".formatted(PROJECT_NAME);
     assertThat(diagnostics).isEmpty();

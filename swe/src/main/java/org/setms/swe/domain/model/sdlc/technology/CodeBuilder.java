@@ -16,20 +16,12 @@ public interface CodeBuilder {
   void validate(Resource<?> resource, Collection<Diagnostic> diagnostics);
 
   /**
-   * Compile the project and collect diagnostics for any errors found.
-   *
-   * @param resource the workspace root resource
-   * @param diagnostics where to add diagnostics for compilation errors
-   */
-  void build(Resource<?> resource, Collection<Diagnostic> diagnostics);
-
-  /**
-   * Assemble the project into a distributable package.
+   * Compile and assemble the project into a distributable package.
    *
    * @param resource the workspace root resource
    * @param diagnostics where to add diagnostics for any errors found
    */
-  void assemblePackage(Resource<?> resource, Collection<Diagnostic> diagnostics);
+  void build(Resource<?> resource, Collection<Diagnostic> diagnostics);
 
   /**
    * Add a build plugin to the project, fetching its latest version from the plugin portal.

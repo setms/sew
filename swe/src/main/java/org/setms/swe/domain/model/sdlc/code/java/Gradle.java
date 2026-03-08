@@ -122,18 +122,6 @@ public class Gradle implements CodeBuilder, CodeTester {
         && resource.select("/settings.gradle").exists();
   }
 
-  @Override
-  public void build(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    if (isInitialized(resource)) {
-      runCompile(resource, diagnostics);
-    }
-  }
-
-  private void runCompile(Resource<?> resource, Collection<Diagnostic> diagnostics) {
-    runGradle(
-        resource, diagnostics, this::parseCompilationErrors, "compileJava", "compileTestJava");
-  }
-
   private Collection<Diagnostic> parseCompilationErrors(File projectDir, FinishEvent event) {
     return Optional.of(event.getResult()).map(FailureResult.class::cast).stream()
         .map(FailureResult::getFailures)
@@ -181,9 +169,9 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   @Override
-  public void assemblePackage(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+  public void build(Resource<?> resource, Collection<Diagnostic> diagnostics) {
     if (isInitialized(resource)) {
-      runGradle(resource, diagnostics, this::parseCompilationErrors, "assemble");
+      runGradle(resource, diagnostics, this::parseCompilationErrors, "assemble", "compileTestJava");
     }
   }
 
