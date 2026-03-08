@@ -81,7 +81,7 @@ class EndToEndTest {
       chat.topic("The End");
       processOrchestrator
           .diagnostics()
-          .forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
+          .forEach(diagnostic -> writers.forEach(writer -> writer.accept(diagnostic.message())));
     }
   }
 

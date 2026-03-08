@@ -15,7 +15,7 @@ import org.setms.km.domain.model.workspace.Workspace;
 
 public class HtmlTranscript implements Consumer<String>, Closeable {
 
-  private final File dir = new File("build/e2e-transript");
+  private final File dir = new File("build/e2e-transcript");
   private final PrintWriter writer;
   private final Resource<?> root;
   private boolean inCode = false;
