@@ -69,10 +69,6 @@ jobs:
           else
             echo "created=false" >> "$GITHUB_OUTPUT"
             echo "Directory not found; skipping zip."
-            ls -la .
-            ls -la swe
-            ls -la swe/build
-            ls -la swe/build/e2e-transcript
           fi
 
       - name: Upload transcript
