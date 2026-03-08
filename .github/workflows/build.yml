@@ -76,7 +76,7 @@ jobs:
           fi
 
       - name: Upload transcript
-        if: steps.transcript.outputs.created == 'true'
+        if: always() && steps.transcript.outputs.created == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: e2e-transcript
