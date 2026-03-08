@@ -55,6 +55,10 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
                       font-weight: bold;
                       text-align: left;
                     }
+                    .code {
+                      white-space: pre;
+                      font-family: ui-monospace, "Courier New", monospace;
+                    }
                   </style>
                 </head>
                 <body>
@@ -69,6 +73,10 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
     var line = inCode ? raw : raw.trim();
     if (line.contains("━━━")) {
       writer.printf("</div><hr/>%n<h1>%s</h1>%n<hr/><div>%n", line.replace("━", "").trim());
+      if (line.contains("The End")) {
+        writer.println("</div><div class='code'>");
+        inCode = true;
+      }
     } else if ("Human".equals(line)) {
       writer.printf("</div><h2>%s</h2><div>%n", line);
       alignRight = false;
@@ -133,7 +141,7 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
 
   @Override
   public void close() {
-    writer.println("</p></body></html>");
+    writer.println("</div></body></html>");
     writer.close();
   }
 }
