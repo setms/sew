@@ -31,6 +31,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.ExternalSystem;
 import org.setms.swe.domain.model.sdlc.eventstorming.Policy;
 import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
+import org.setms.swe.domain.model.sdlc.packaging.Packager;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTestHelper;
@@ -184,5 +185,23 @@ class Inputs {
         Glob.of(conventions.codePath(), conventions.extension()),
         new CodeFormat(conventions),
         CodeArtifact.class);
+  }
+
+  public static Set<Input<? extends CodeArtifact>> packageDescriptions() {
+    return packagers().flatMap(Inputs::toPackageDescriptionInputs).collect(toSet());
+  }
+
+  private static Stream<Packager> packagers() {
+    return StreamSupport.stream(
+        ServiceLoader.load(Packager.class, Packager.class.getClassLoader()).spliterator(), false);
+  }
+
+  private static Stream<GlobInput<CodeArtifact>> toPackageDescriptionInputs(Packager packager) {
+    return packager.packagingDescriptions().stream()
+        .map(glob -> toPackageDescriptionInput(glob, packager));
+  }
+
+  private static GlobInput<CodeArtifact> toPackageDescriptionInput(Glob glob, Packager packager) {
+    return new GlobInput<>(glob, new CodeFormat(packager), CodeArtifact.class);
   }
 }

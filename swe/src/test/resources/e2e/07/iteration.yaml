@@ -9,3 +9,4 @@ outputs:
 diagnostics:
   - Missing decision on build system
   - Missing decision on framework
+  - Missing decision on packaging

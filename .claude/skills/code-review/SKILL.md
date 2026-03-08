@@ -5,7 +5,7 @@ description: Review changed code. Use when code was changed.
 Review changed code and make sure it follows the following style guide:
 
 - Ask the `jetbrains` MCP server for issues in the changed files and address them via the `get_file_problems` tool.
-  The project prefix is `sew/`.
+  Prefix paths with `sew/`.
   For this tool call to work, the file has to be open in IntelliJ's editor; use the `open_file_in_editor` tool for that.
   If you can't connect to the MCP server, or there is any issue in communicating with it STOP IMMEDIATELY and
   ask the user for support.

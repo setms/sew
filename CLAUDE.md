@@ -216,6 +216,9 @@ To add a new technology decision:
   - Write files: use `Write` or `mcp__jetbrains__create_new_file`
   - Reserve `Bash` exclusively for running build/test commands (e.g., `./gradlew test`)
 
+The prefix for paths in `jetbrain` tool calls is `sew/`.
+
+
 ### Git commits
 
 Never add `Co-Authored-By` lines to commit messages.

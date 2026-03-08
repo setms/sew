@@ -118,8 +118,8 @@ public class DomainTool extends BaseDiagramTool<Domain> {
   }
 
   @Override
-  public Set<Input<? extends Artifact>> reportingContext() {
-    return Set.of(domains());
+  public Input<? extends Artifact> reportingTargetInput() {
+    return domains();
   }
 
   @Override

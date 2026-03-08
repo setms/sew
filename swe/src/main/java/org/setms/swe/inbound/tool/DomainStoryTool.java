@@ -150,8 +150,8 @@ public class DomainStoryTool extends BaseDiagramTool<DomainStory> {
   }
 
   @Override
-  public Optional<Input<? extends Artifact>> reportingTarget() {
-    return Optional.of(domainStories());
+  public Input<? extends Artifact> reportingTargetInput() {
+    return domainStories();
   }
 
   @Override

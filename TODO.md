@@ -48,11 +48,6 @@
 
 - Render ADR
 
-### Docker
-
-- `Docker` generates a `Dockerfile` that's Java-specific.
-  Figure out a way to make it programming-language agnostic, then let "something else" fix it for Java.
-
 ### Domain story
 
 - Fix rendering

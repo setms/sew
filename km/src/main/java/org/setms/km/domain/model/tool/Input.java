@@ -2,6 +2,7 @@ package org.setms.km.domain.model.tool;
 
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.format.Format;
+import org.setms.km.domain.model.workspace.Glob;
 
 public interface Input<T extends Artifact> {
 
@@ -18,4 +19,6 @@ public interface Input<T extends Artifact> {
   String path();
 
   String extension();
+
+  Glob glob();
 }

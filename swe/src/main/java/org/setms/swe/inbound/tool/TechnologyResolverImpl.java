@@ -255,7 +255,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   private AppliedSuggestion applyPackagerSuggestion(Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
     return codePackager(inputs, diagnostics)
-        .map(packager -> packager.applySuggestion(Docker.CREATE_DOCKERFILE, resource))
+        .map(packager -> packager.applySuggestion(Docker.CREATE_DOCKERFILE, resource, inputs))
         .orElseGet(() -> fromDiagnostics(diagnostics));
   }
 

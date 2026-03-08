@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.file.Files;
@@ -55,13 +56,15 @@ class EndToEndTest {
   private final File root = new File("build/e2e");
   private Workspace<?> workspace;
   private ProcessOrchestrator processOrchestrator;
-  private final Chat chat = new Chat("Human", "SEW");
+  private Chat chat;
+  private List<Consumer<String>> writers;
 
   @BeforeEach
   void init() {
     Files.delete(root);
     workspace = new DirectoryWorkspace(root);
     processOrchestrator = new ProcessOrchestrator(workspace);
+    writers = List.of(System.out::println, new HtmlTranscript(workspace));
 
     // Force initialization of Hibernate, so that its output doesn't interfere with our chat output
     validate(new Object());
@@ -69,12 +72,17 @@ class EndToEndTest {
 
   @Test
   void shouldGuideSoftwareEngineering() throws IOException {
-    for (var iteration : loadIterations()) {
-      chat.topic(iteration.getDirectory().getName());
-      assertThatIterationIsCorrect(iteration);
+    try (var chat = new Chat("Human", "SEW", writers)) {
+      this.chat = chat;
+      for (var iteration : loadIterations()) {
+        chat.topic(iteration.getDirectory().getName());
+        assertThatIterationIsCorrect(iteration);
+      }
+      chat.topic("The End");
+      processOrchestrator
+          .diagnostics()
+          .forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
     }
-    chat.topic("The End");
-    processOrchestrator.diagnostics().forEach(diagnostic -> System.out.printf("%s%n", diagnostic));
   }
 
   private List<Iteration> loadIterations() {
@@ -226,7 +234,11 @@ class EndToEndTest {
   }
 
   private void showWorkspace() {
-    System.out.printf("%nWorkspace:%n");
-    workspace.root().dump(false);
+    writers.forEach(
+        writer -> {
+          writer.accept("\nWorkspace:");
+          workspace.root().dump(false, writer);
+          writer.accept("");
+        });
   }
 }

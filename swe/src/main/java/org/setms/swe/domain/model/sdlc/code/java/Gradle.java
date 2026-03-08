@@ -159,7 +159,7 @@ public class Gradle implements CodeBuilder, CodeTester {
       Collection<Diagnostic> diagnostics,
       BiFunction<File, FinishEvent, Collection<Diagnostic>> failureToDiagnostics,
       String... tasks) {
-    var projectDir = toFile(resource);
+    var projectDir = resource.toFile();
     var output = new ByteArrayOutputStream();
     try (var connection =
         GradleConnector.newConnector()
@@ -346,41 +346,39 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
     var stdout = new ByteArrayOutputStream();
     var stderr = new ByteArrayOutputStream();
-    try (var connection =
-        GradleConnector.newConnector()
-            .forProjectDirectory(toFile(root))
-            .useGradleVersion(GRADLE_VERSION)
-            .connect()) {
-      connection
-          .newBuild()
-          .withArguments(
-              "init",
-              "--type",
-              "java-library",
-              "--java-version",
-              Integer.toString(Runtime.version().feature()),
-              "--dsl",
-              "groovy",
-              "--project-name",
-              projectName,
-              "--test-framework",
-              "junit-jupiter",
-              "--use-defaults",
-              "--no-comments",
-              "--no-split-project",
-              "--overwrite")
-          .setStandardOutput(stdout)
-          .setStandardError(stderr)
-          .run();
-      connection.notifyDaemonsAboutChangedPaths(cleanUpFiles(root));
+    try {
+      try (var connection =
+          GradleConnector.newConnector()
+              .forProjectDirectory(root.toFile())
+              .useGradleVersion(GRADLE_VERSION)
+              .connect()) {
+        connection
+            .newBuild()
+            .withArguments(
+                "init",
+                "--type",
+                "java-library",
+                "--java-version",
+                Integer.toString(Runtime.version().feature()),
+                "--dsl",
+                "groovy",
+                "--project-name",
+                projectName,
+                "--test-framework",
+                "junit-jupiter",
+                "--use-defaults",
+                "--no-comments",
+                "--no-split-project",
+                "--overwrite")
+            .setStandardOutput(stdout)
+            .setStandardError(stderr)
+            .run();
+        connection.notifyDaemonsAboutChangedPaths(cleanUpFiles(root));
+      }
     } catch (Exception e) {
       throw new IllegalStateException(
           "gradle init failed%nstdout: %s%nstderr: %s".formatted(stdout, stderr), e);
     }
-  }
-
-  private File toFile(Resource<?> resource) {
-    return new File(resource.toUri());
   }
 
   private List<Path> cleanUpFiles(Resource<?> resource) throws IOException {
@@ -395,7 +393,7 @@ public class Gradle implements CodeBuilder, CodeTester {
     resource.select("build.gradle").writeAsString(BUILD_GRADLE);
     var lib = resource.select("lib");
     lib.delete();
-    changed.add(toFile(lib).toPath().toAbsolutePath());
+    changed.add(lib.toFile().toPath().toAbsolutePath());
   }
 
   private void cleanUpSettings(Resource<?> resource) throws IOException {

@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.ArtifactTool;
@@ -15,6 +16,7 @@ public class PackagerTool extends ArtifactTool<CodeArtifact> {
 
   private final TechnologyResolver resolver;
 
+  @SuppressWarnings("unused") // Called by ServiceLoader
   public PackagerTool() {
     this(new TechnologyResolverImpl());
   }
@@ -25,12 +27,15 @@ public class PackagerTool extends ArtifactTool<CodeArtifact> {
 
   @Override
   public Set<Input<? extends CodeArtifact>> validationTargets() {
-    return Set.of();
+    return new LinkedHashSet<>(Inputs.code());
   }
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of();
+    var result = new LinkedHashSet<Input<? extends Artifact>>(Inputs.packageDescriptions());
+    result.add(Inputs.decisions());
+    result.add(Inputs.initiatives());
+    return result;
   }
 
   @Override

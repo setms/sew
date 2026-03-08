@@ -5,19 +5,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.DataString;
 import org.setms.km.domain.model.format.Parser;
 import org.setms.km.domain.model.format.RootObject;
+import org.setms.swe.domain.model.sdlc.technology.NameExtractor;
 
+@RequiredArgsConstructor
 class CodeParser implements Parser {
 
-  private final ProgrammingLanguageConventions conventions;
-
-  CodeParser(ProgrammingLanguageConventions conventions) {
-    this.conventions = conventions;
-  }
+  private final NameExtractor nameExtractor;
 
   @Override
   public RootObject parse(InputStream input) throws IOException {
@@ -43,7 +42,7 @@ class CodeParser implements Parser {
   }
 
   private FullyQualifiedName extractName(String code) {
-    return Optional.ofNullable(conventions)
+    return Optional.ofNullable(nameExtractor)
         .map(c -> c.extractName(code))
         .orElseGet(() -> new FullyQualifiedName("", ""));
   }

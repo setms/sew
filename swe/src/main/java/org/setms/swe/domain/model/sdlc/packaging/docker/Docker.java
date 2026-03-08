@@ -1,62 +1,78 @@
 package org.setms.swe.domain.model.sdlc.packaging.docker;
 
+import static lombok.AccessLevel.PACKAGE;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
+import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
+import org.setms.swe.domain.model.sdlc.architecture.Decisions;
+import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 
 /** Packages code into a Docker image. */
+@RequiredArgsConstructor(access = PACKAGE)
 public class Docker implements CodePackager {
 
   public static final String CREATE_DOCKERFILE = "dockerfile.create";
-  private static final String DEFAULT_DOCKERFILE =
+  private static final String NEUTRAL_DOCKERFILE =
+      """
+      FROM ubuntu:latest
+      """;
+  private static final String JAVA_DOCKERFILE =
       """
       FROM eclipse-temurin:25
-      COPY . .
-      RUN ./gradlew assemble
-      ENTRYPOINT ["java", "-jar", "build/libs/app.jar"]
+      %s
+      ENTRYPOINT ["java", "-jar", "/app/app.jar"]
       """;
 
   record Result(int exitCode, String output) {}
 
   @FunctionalInterface
   interface CommandRunner {
-    Result run(String... command) throws Exception;
+    Result run(File directory, String... command) throws Exception;
   }
 
   private static final CommandRunner SYSTEM =
-      command -> {
+      (workingDirectory, command) -> {
         var output = new ByteArrayOutputStream();
-        var process = new ProcessBuilder(command).redirectErrorStream(true).start();
+        var process =
+            new ProcessBuilder(command)
+                .directory(workingDirectory)
+                .redirectErrorStream(true)
+                .start();
         process.getInputStream().transferTo(output);
         return new Result(process.waitFor(), output.toString(StandardCharsets.UTF_8));
       };
 
-  private final String projectName;
+  private final String applicationName;
   private final CommandRunner commandRunner;
 
-  public Docker(String projectName) {
-    this(projectName, SYSTEM);
-  }
-
-  Docker(String projectName, CommandRunner commandRunner) {
-    this.projectName = projectName;
-    this.commandRunner = commandRunner;
+  public Docker(String applicationName) {
+    this(applicationName, SYSTEM);
   }
 
   @Override
   public void packageCode(Resource<?> resource, Collection<Diagnostic> diagnostics) {
+    if (!resource.select("Dockerfile").exists()) {
+      diagnostics.add(missingDockerFile());
+      return;
+    }
     try {
-      var result = commandRunner.run("docker", "build", "-t", projectName, ".");
+      var result =
+          commandRunner.run(
+              resource.toFile(), "docker", "build", "-t", applicationName.toLowerCase(), ".");
       if (result.exitCode() != 0) {
         diagnostics.add(buildFailureDiagnostic(result.output()));
       }
@@ -67,23 +83,52 @@ public class Docker implements CodePackager {
 
   private Diagnostic buildFailureDiagnostic(String output) {
     if (output.contains("open Dockerfile: no such file or directory")) {
-      return new Diagnostic(
-          WARN, "Missing Dockerfile", null, new Suggestion(CREATE_DOCKERFILE, "Create Dockerfile"));
+      return missingDockerFile();
     }
     return new Diagnostic(ERROR, output, null);
   }
 
+  private Diagnostic missingDockerFile() {
+    return new Diagnostic(
+        WARN, "Missing Dockerfile", null, new Suggestion(CREATE_DOCKERFILE, "Create Dockerfile"));
+  }
+
   @Override
-  public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
+  public AppliedSuggestion applySuggestion(
+      String suggestionCode, Resource<?> resource, ResolvedInputs inputs) {
     if (!CREATE_DOCKERFILE.equals(suggestionCode)) {
       return AppliedSuggestion.none();
     }
     try {
       var dockerfile = resource.select("/Dockerfile");
-      dockerfile.writeAsString(DEFAULT_DOCKERFILE);
+      dockerfile.writeAsString(dockerFileFor(Decisions.from(inputs)));
       return created(dockerfile);
     } catch (Exception e) {
       return failedWith(e);
     }
+  }
+
+  private String dockerFileFor(Decisions decisions) {
+    var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
+    return switch (programmingLanguage) {
+      case null -> NEUTRAL_DOCKERFILE;
+      case "Java" -> javaDockerFileFor(decisions);
+      default ->
+          throw new IllegalStateException(
+              "Don't know how to build Dockerfile for " + programmingLanguage);
+    };
+  }
+
+  private String javaDockerFileFor(Decisions decisions) {
+    return switch (decisions.about(BuildSystem.TOPIC)) {
+      case null -> JAVA_DOCKERFILE.formatted("");
+      case "Gradle" -> gradleDockerFileFor();
+      default -> JAVA_DOCKERFILE.formatted("");
+    };
+  }
+
+  private String gradleDockerFileFor() {
+    return JAVA_DOCKERFILE.formatted(
+        "COPY build/libs/%s.jar /app/app.jar".formatted(applicationName));
   }
 }

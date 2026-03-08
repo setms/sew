@@ -146,8 +146,13 @@ public class ModulesTool extends BaseDiagramTool<Modules> {
   }
 
   @Override
+  public Input<? extends Artifact> reportingTargetInput() {
+    return modules();
+  }
+
+  @Override
   public Set<Input<? extends Artifact>> reportingContext() {
-    return Set.of(domains(), modules());
+    return Set.of(domains());
   }
 
   @Override

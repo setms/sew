@@ -1,0 +1,6 @@
+package technology
+
+decision Packaging {
+  topic  = "Packaging"
+  choice = "Docker"
+}

@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.format.Builder;
 import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.format.Parser;
+import org.setms.swe.domain.model.sdlc.technology.NameExtractor;
 
 @RequiredArgsConstructor
 public class CodeFormat implements Format {
 
-  private final ProgrammingLanguageConventions conventions;
+  private final NameExtractor nameExtractor;
 
   public CodeFormat() {
     this(null);
@@ -16,7 +17,7 @@ public class CodeFormat implements Format {
 
   @Override
   public Parser newParser() {
-    return new CodeParser(conventions);
+    return new CodeParser(nameExtractor);
   }
 
   @Override

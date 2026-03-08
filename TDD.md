@@ -1,27 +1,20 @@
 # TDD
 
+## Root cause
+
+`ProcessOrchestrator.registerArtifactDefinitions()` reconstructs globs via
+`Glob.of(input.path(), input.extension())` instead of using the input's actual glob.
+For inputs like `Glob("/", "Dockerfile")` (pattern without a dot), `extension()` returns `null`,
+producing `Glob("/", "**/*.null")` — a bogus pattern that never matches `/Dockerfile`.
+When the Dockerfile is created, the workspace doesn't recognize it as an artifact,
+`artifactChanged` never fires, and stale "Missing Dockerfile" diagnostics persist.
+
+## Fix
+
+Add `Glob glob()` to `Input` interface (default: `Glob.of(path(), extension())`).
+`GlobInput.glob()` already exists as a record accessor and naturally overrides.
+`registerArtifactDefinitions()` uses `input.glob()` instead of reconstructing.
+
 ## Test list
 
-- [x] `CodeBuilder` should have an `assemblePackage()` method. `Gradle` should implement that by running the `assemble`
-  Gradle task.
-- [x] `CodeTool.buildReportsFor()` should call `CodeBuilder.assemblePackage()`
-- [x] `TechnologyResolver` should have a `codePackager` method returning a new `CodePackager` interface.
-  This should force a decision for the `Packaging` topic.
-- [x] For choice `Docker` of decision topic `Packaging`, `TechnologyResolverImpl` should return a new `Docker` class as
-  implementation of `CodePackager`.
-- [x] The `CodePackager` interface should have a `packageCode()` method. `Docker` should implement this by running
-  `docker build -t <project> .`, where <project> is the title of the `Inititative` artifact.
-- [x] `Docker` should report any issues with building as diagnostics.
-- [x] `Docker` should recognize `Dockerfile: no such file or directory` in the build output as a missing `Dockerfile`
-  and report it as a diagnostic with a suggestion to create the `Dockerfile`.
-- [>] Move `Docker` to the `org.setms.swe.domain.model.sdlc.packaging.docker` package.
-- [ ] A new `PackagerTool` derived from `ArtifactTool` should call `CodePackager.packageCode()` from its
-  `validate()` method.
-  It should work similar to `AggregateTool` in getting the `CodePackager` from `TechnologyResolver`.
-  It should delegate the suggestion to create `Dockerfile`.
-- [ ] Introduce a new `Packager` interface with a `packagingDescriptions()` method that works similarly to
-  `ProgrammingLanguageConvention.buildConfigurationFiles()`.
-- [ ] Add `Inputs.packageDescriptions()` that works similar to `buildConfiguration()`, but uses
-  `Packager.packagindDescriptions()`.
-- [ ] `PackagerTool.validationTargets()` should include `Inputs.packageDescriptions()`.
-- [ ] `PackagerTool.validationContext()` should include `Inputs.code()`.
+- [ ] Add `ProcessOrchestratorTest.shouldRevalidateWhenContextFileWithoutExtensionChanges()` — a standalone tool whose `validationContext()` includes an input with a non-standard glob (`Glob("/", "SomeFile")`, no dot-extension) should be re-validated when a matching file is created, clearing its stale diagnostics

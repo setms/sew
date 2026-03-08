@@ -1,5 +1,6 @@
 package org.setms.km.domain.model.workspace;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,6 +10,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 public interface Resource<T extends Resource<T>> {
@@ -20,6 +22,10 @@ public interface Resource<T extends Resource<T>> {
   String path();
 
   URI toUri();
+
+  default File toFile() {
+    return new File(toUri());
+  }
 
   Optional<T> parent();
 
@@ -64,24 +70,31 @@ public interface Resource<T extends Resource<T>> {
    */
   boolean exists();
 
+  @SuppressWarnings("unused")
   default void dump(boolean showAll) {
-    show(root(), "", showAll);
+    dump(showAll, System.out::println);
   }
 
-  private void show(Resource<?> resource, String indent, boolean showAll) {
+  default void dump(boolean showAll, Consumer<String> writer) {
+    show(root(), "", showAll, writer);
+  }
+
+  private void show(Resource<?> resource, String indent, boolean showAll, Consumer<String> writer) {
     var children = resource.children().stream().filter(child -> isVisible(child, showAll)).toList();
     IntStream.range(0, children.size())
-        .forEach(i -> showChild(children.get(i), indent, i == children.size() - 1, showAll));
+        .forEach(
+            i -> showChild(children.get(i), indent, i == children.size() - 1, showAll, writer));
   }
 
   default boolean isVisible(Resource<?> child, boolean showAll) {
     return !child.name().startsWith(".") && (showAll || !"build".equals(child.name()));
   }
 
-  private void showChild(Resource<?> child, String indent, boolean isLast, boolean showAll) {
-    System.out.println(indent + (isLast ? "└─ " : "├─ ") + child.name());
+  private void showChild(
+      Resource<?> child, String indent, boolean isLast, boolean showAll, Consumer<String> writer) {
+    writer.accept(indent + (isLast ? "└─ " : "├─ ") + child.name());
     Optional.of(child)
         .filter(c -> !c.children().isEmpty())
-        .ifPresent(c -> show(c, indent + (isLast ? "   " : "│  "), showAll));
+        .ifPresent(c -> show(c, indent + (isLast ? "   " : "│  "), showAll, writer));
   }
 }

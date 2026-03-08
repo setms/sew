@@ -1,0 +1,46 @@
+name: Verify
+
+concurrency: verify
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          validate-wrappers: false
+
+      - name: Restore Pitest analysis cache
+        id: restore-pitest-cache
+        uses: actions/cache/restore@v5
+        with:
+          key: ${{ runner.os }}-pitest-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-pitest-
+          path: ~/.pitest/cache/*_pitest_history.bin
+
+      - name: Check
+        run: ./gradlew check
+
+      - name: Report on tests
+        uses: mikepenz/action-junit-report@v6
+        if: failure()
+        with:
+          report_paths: '**/TEST-*.xml'

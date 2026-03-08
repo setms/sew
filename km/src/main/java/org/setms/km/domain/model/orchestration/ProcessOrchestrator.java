@@ -30,7 +30,6 @@ import org.setms.km.domain.model.validation.Level;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.ArtifactDefinition;
-import org.setms.km.domain.model.workspace.Glob;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 import tools.jackson.databind.ObjectMapper;
@@ -455,7 +454,7 @@ public class ProcessOrchestrator {
             input ->
                 new ArtifactDefinition(
                     input.type(),
-                    Glob.of(input.path(), input.extension()),
+                    input.glob(),
                     Optional.ofNullable(input.format()).map(Format::newParser).orElse(null)))
         .distinct()
         .forEach(workspace::registerArtifactDefinition);

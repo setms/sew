@@ -1,10 +1,10 @@
 package org.setms.swe.domain.model.sdlc.code;
 
 import java.util.Collection;
-import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.workspace.Glob;
+import org.setms.swe.domain.model.sdlc.technology.NameExtractor;
 
-public interface ProgrammingLanguageConventions {
+public interface ProgrammingLanguageConventions extends NameExtractor {
 
   Collection<Glob> buildConfigurationFiles();
 
@@ -22,6 +22,4 @@ public interface ProgrammingLanguageConventions {
     return new Glob(unitTestPath(), unitTestHelpersPattern())
         .excluding(new Glob(unitTestPath(), unitTestPattern()));
   }
-
-  FullyQualifiedName extractName(String code);
 }
