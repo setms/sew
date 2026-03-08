@@ -35,6 +35,7 @@ public class PackagerTool extends ArtifactTool<CodeArtifact> {
     var result = new LinkedHashSet<Input<? extends Artifact>>(Inputs.packageDescriptions());
     result.add(Inputs.decisions());
     result.add(Inputs.initiatives());
+    result.addAll(Inputs.buildConfiguration());
     return result;
   }
 
