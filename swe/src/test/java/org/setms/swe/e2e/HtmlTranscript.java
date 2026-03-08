@@ -130,7 +130,8 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
   }
 
   private void showIconFor(String text) {
-    var name = "%s.png".formatted(text.substring(text.lastIndexOf('.') + 1));
+    var type = typeOf(text);
+    var name = "%s.png".formatted(type);
     Optional.ofNullable(getClass().getClassLoader().getResource("icons/%s".formatted(name)))
         .ifPresent(
             url -> {
@@ -139,6 +140,24 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
                   "&nbsp;<img src='%s' width='16px' float='%s'/>%n",
                   name, alignRight ? "right" : "left");
             });
+  }
+
+  private String typeOf(String text) {
+    if (text.contains("gradle")) {
+      return "gradle";
+    }
+    var fileName = text.substring(text.lastIndexOf('/') + 1);
+    if (fileName.contains(".")) {
+      var extension = text.substring(text.lastIndexOf('.') + 1);
+      if (extension.contains("git")) {
+        return "git";
+      }
+      return extension;
+    }
+    if (fileName.endsWith("Dockerfile")) {
+      return "docker";
+    }
+    return "unknown";
   }
 
   private void copy(String name, InputStreamSupplier inputSupplier) {
