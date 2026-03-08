@@ -69,6 +69,7 @@ jobs:
           else
             echo "created=false" >> "$GITHUB_OUTPUT"
             echo "Directory not found; skipping zip."
+            tree .
           fi
 
       - name: Upload transcript
