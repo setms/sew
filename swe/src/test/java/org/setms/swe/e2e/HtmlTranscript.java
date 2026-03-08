@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.workspace.Resource;
@@ -49,6 +50,9 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
                     }
                     .fix {
                       color: green;
+                    }
+                    .location {
+                      color: #6482B9;
                     }
                     .workspace {
                       font-size: smaller;
@@ -96,16 +100,26 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
       var start = item.indexOf("`");
       if (start > 0) {
         var end = item.lastIndexOf("`");
+        var isIssue = isIssue(item);
+        var separator = isIssue ? " in " : " to ";
+        var remainder = item.substring(end + 1);
+        if (remainder.contains(separator)) {
+          remainder = remainder.substring(remainder.indexOf(separator) + separator.length());
+        } else {
+          separator = "";
+        }
         item =
-            "%s<span class='%s'>%s</span>%s"
+            "%s<span class='%s'>%s</span>%s<span class='location'>%s</span>"
                 .formatted(
                     item.substring(0, start),
-                    isIssue(item) ? "issue" : "fix",
+                    isIssue ? "issue" : "fix",
                     item.substring(start + 1, end),
-                    item.substring(end + 1));
+                    separator,
+                    remainder);
       }
       writer.printf("%s", item);
-      showImageFor(item);
+      showIconFor(item);
+      showDiagramFor(item);
       writer.println("<br/>");
     }
     writer.flush();
@@ -115,7 +129,33 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
     return item.startsWith("Found issue");
   }
 
-  private void showImageFor(String item) {
+  private void showIconFor(String text) {
+    var name = "%s.png".formatted(text.substring(text.lastIndexOf('.') + 1));
+    Optional.ofNullable(getClass().getClassLoader().getResource("icons/%s".formatted(name)))
+        .ifPresent(
+            url -> {
+              copy(name, url::openStream);
+              writer.printf(
+                  "&nbsp;<img src='%s' width='16px' float='%s'/>%n",
+                  name, alignRight ? "right" : "left");
+            });
+  }
+
+  private void copy(String name, InputStreamSupplier inputSupplier) {
+    var copy = new File(dir, name);
+    if (copy.isFile()) {
+      return;
+    }
+    try (var output = new FileOutputStream(copy)) {
+      try (var input = inputSupplier.get()) {
+        input.transferTo(output);
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
+  private void showDiagramFor(String item) {
     if (item.startsWith("Created") || item.startsWith("Updated")) {
       var path = item.substring(item.indexOf(" ") + 1);
       root.select(".km/reports")
@@ -126,14 +166,7 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
                     "%s-%s.png"
                         .formatted(
                             image.name().substring(0, image.name().length() - 4), randomUUID());
-                var copy = new File(dir, name);
-                try (var output = new FileOutputStream(copy)) {
-                  try (var input = image.readFrom()) {
-                    input.transferTo(output);
-                  }
-                } catch (IOException e) {
-                  throw new IllegalStateException(e);
-                }
+                copy(name, image::readFrom);
                 writer.printf("<br/>%n<img src='%s'/>%n", name);
               });
     }
