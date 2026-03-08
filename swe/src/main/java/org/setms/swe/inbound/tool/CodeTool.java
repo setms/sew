@@ -4,6 +4,7 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.buildConfiguration;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.initiatives;
+import static org.setms.swe.inbound.tool.Inputs.packageDescriptions;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
     result.add(decisions());
     result.add(initiatives());
     result.addAll(buildConfiguration());
+    result.addAll(packageDescriptions());
     return result;
   }
 

@@ -84,7 +84,7 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
       writer.printf("</div><h2 class='right'>%s</h2><div class='right'>", line);
       alignRight = true;
     } else if (line.contains("Workspace")) {
-      writer.printf("</div>%n<span class='workspace'>Workspace</span><pre>%n");
+      writer.printf("</div><br/>%n<span class='workspace'>Workspace</span><pre>%n");
       inCode = true;
     } else if (inCode && raw.isBlank()) {
       writer.printf("</pre>%n<div%s>%n", alignRight ? " class='right'" : "");
