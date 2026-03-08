@@ -130,7 +130,7 @@ public class ProcessOrchestrator {
     var result = new TreeSet<String>();
     try (var reader = new BufferedReader(new InputStreamReader(resource.readFrom()))) {
       reader.lines().forEach(result::add);
-    } catch (IOException _) {
+    } catch (IOException ignored) {
       // Ignore
     }
     return result;
@@ -219,7 +219,7 @@ public class ProcessOrchestrator {
         .map(Input::type)
         .filter(artifact.getClass()::equals)
         .ifPresentOrElse(
-            _ -> {
+            ignored -> {
               A typedArtifact = (A) artifact;
               artifactTool.buildReportsFor(typedArtifact, inputs, output, diagnostics);
             },
@@ -417,7 +417,7 @@ public class ProcessOrchestrator {
             .select(".km/diagnostics%s/%s.json".formatted(path, tool.getClass().getName()));
     try {
       diagnosticsResource.delete();
-    } catch (IOException _) {
+    } catch (IOException ignored) {
       // Ignore if file doesn't exist
     }
   }

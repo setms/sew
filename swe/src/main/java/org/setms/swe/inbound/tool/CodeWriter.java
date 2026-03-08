@@ -17,7 +17,7 @@ class CodeWriter {
     return artifacts.stream()
         .map(artifact -> writeCodeArtifact(artifact, resource))
         .flatMap(applied -> applied.createdOrChanged().stream())
-        .reduce(AppliedSuggestion.none(), AppliedSuggestion::with, (a, _) -> a);
+        .reduce(AppliedSuggestion.none(), AppliedSuggestion::with, (a, ignored) -> a);
   }
 
   private static AppliedSuggestion writeCodeArtifact(CodeArtifact artifact, Resource<?> resource) {

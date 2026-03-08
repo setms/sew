@@ -20,7 +20,7 @@ public class ResolvedInputs implements LinkResolver {
   private final Map<String, List<Artifact>> values = new HashMap<>();
 
   public ResolvedInputs put(String name, List<? extends Artifact> resolved) {
-    values.computeIfAbsent(name, _ -> new ArrayList<>()).addAll(resolved);
+    values.computeIfAbsent(name, ignored -> new ArrayList<>()).addAll(resolved);
     return this;
   }
 

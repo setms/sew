@@ -271,7 +271,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         .reduce(
             AppliedSuggestion.none(),
             AppliedSuggestion::with,
-            (appliedSuggestion, _) -> appliedSuggestion);
+            (appliedSuggestion, ignored) -> appliedSuggestion);
   }
 
   private AppliedSuggestion pickDecision(Resource<?> resource, String decisionName, String topic) {

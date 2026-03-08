@@ -3,8 +3,10 @@ package org.setms.km.domain.model.file;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.util.Collections.emptyList;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -75,5 +77,14 @@ public class Files {
     var result = file.toURI().toString();
     result = result.replaceFirst("^file:/([^/])", "file:///$1");
     return URI.create(result);
+  }
+
+  public static String readAllAsString(InputStream stream) {
+    try (var output = new ByteArrayOutputStream()) {
+      stream.transferTo(output);
+      return output.toString();
+    } catch (IOException e) {
+      return null;
+    }
   }
 }

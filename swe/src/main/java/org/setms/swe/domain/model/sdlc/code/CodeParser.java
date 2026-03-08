@@ -1,9 +1,9 @@
 package org.setms.swe.domain.model.sdlc.code;
 
-import java.io.BufferedReader;
+import static org.setms.km.domain.model.file.Files.readAllAsString;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -20,17 +20,15 @@ class CodeParser implements Parser {
 
   @Override
   public RootObject parse(InputStream input) throws IOException {
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(input))) {
-      return new RootObject(null, null, null).set("code", new DataString(reader.readAllAsString()));
-    }
+    return new RootObject(null, null, null).set("code", new DataString(readAllAsString(input)));
   }
 
   @Override
   public <T extends Artifact> T parse(InputStream input, Class<T> type, boolean validate)
       throws IOException {
-    try (var reader = new BufferedReader(new InputStreamReader(input))) {
-      var code = reader.readAllAsString();
-      var name = extractName(code);
+    var code = readAllAsString(input);
+    var name = extractName(code);
+    try {
       var result = type.getConstructor(FullyQualifiedName.class).newInstance(name);
       if (result instanceof CodeArtifact codeArtifact) {
         codeArtifact.setCode(code);

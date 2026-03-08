@@ -161,7 +161,7 @@ public class Gradle implements CodeBuilder, CodeTester {
           .setStandardError(output)
           .addProgressListener(new FailureListener(projectDir, failureToDiagnostics, diagnostics))
           .run();
-    } catch (BuildException _) {
+    } catch (BuildException ignored) {
       // Ignore, since already caught by progress listener
     } catch (Exception e) {
       throw new IllegalStateException("gradle %s failed".formatted(String.join(", ", tasks)), e);
@@ -228,7 +228,7 @@ public class Gradle implements CodeBuilder, CodeTester {
           .matcher(content)
           .results()
           .map(m -> m.group(1))
-          .reduce((_, b) -> b)
+          .reduce((ignored, b) -> b)
           .orElseThrow(
               () -> new IllegalStateException("No stable version found at %s".formatted(url)));
     } catch (IOException e) {
@@ -293,7 +293,10 @@ public class Gradle implements CodeBuilder, CodeTester {
       content = content.replace("[versions]", VERSION.formatted(artifact, version));
     }
     var versionRef =
-        Optional.ofNullable(version).map(_ -> artifact).map(VERSION_REF::formatted).orElse("");
+        Optional.ofNullable(version)
+            .map(ignored -> artifact)
+            .map(VERSION_REF::formatted)
+            .orElse("");
     var dependency = LIBRARY.formatted(artifact, module, artifact, versionRef);
     content = content.replace("[libraries]", "[libraries]\n%s".formatted(dependency));
     try {
@@ -415,7 +418,10 @@ public class Gradle implements CodeBuilder, CodeTester {
             "gradle/wrapper/gradle-wrapper.jar",
             "gradle/wrapper/gradle-wrapper.properties",
             "settings.gradle")
-        .reduce(AppliedSuggestion.none(), (acc, path) -> acc.with(root.select(path)), (a, _) -> a);
+        .reduce(
+            AppliedSuggestion.none(),
+            (acc, path) -> acc.with(root.select(path)),
+            (a, ignored) -> a);
   }
 
   @RequiredArgsConstructor

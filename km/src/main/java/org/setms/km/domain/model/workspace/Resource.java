@@ -1,9 +1,10 @@
 package org.setms.km.domain.model.workspace;
 
+import static org.setms.km.domain.model.file.Files.readAllAsString;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
@@ -44,8 +45,8 @@ public interface Resource<T extends Resource<T>> {
   InputStream readFrom() throws IOException;
 
   default String readAsString() {
-    try (var reader = new InputStreamReader(readFrom())) {
-      return reader.readAllAsString();
+    try (var input = readFrom()) {
+      return readAllAsString(input);
     } catch (IOException e) {
       return null;
     }

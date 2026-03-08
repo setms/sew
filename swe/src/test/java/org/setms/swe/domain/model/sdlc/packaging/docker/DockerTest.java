@@ -37,7 +37,7 @@ class DockerTest {
     var docker =
         new Docker(
             PROJECT_NAME,
-            (_, command) -> {
+            (ignored, command) -> {
               capturedCommands.add(Arrays.asList(command));
               return new Docker.Result(0, "");
             });
@@ -61,7 +61,7 @@ class DockerTest {
     givenDockerfileIn(workspace.root());
     var diagnostics = new ArrayList<Diagnostic>();
     var errorOutput = "failed to solve: Dockerfile not found";
-    var docker = new Docker(PROJECT_NAME, (_, _) -> new Docker.Result(1, errorOutput));
+    var docker = new Docker(PROJECT_NAME, (dir, commands) -> new Docker.Result(1, errorOutput));
 
     docker.packageCode(workspace.root(), diagnostics);
 
@@ -82,7 +82,7 @@ class DockerTest {
     var docker =
         new Docker(
             PROJECT_NAME,
-            (_, _) ->
+            (dir, commands) ->
                 new Docker.Result(
                     1,
                     "ERROR: failed to build: failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory"));

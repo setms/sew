@@ -49,7 +49,7 @@ public class Chat implements Closeable {
             closeable -> {
               try {
                 closeable.close();
-              } catch (IOException _) {
+              } catch (IOException ignored) {
                 // Ignore
               }
             });
