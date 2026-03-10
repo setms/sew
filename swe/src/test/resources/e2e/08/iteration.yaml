@@ -13,5 +13,5 @@ inputs:
 
 diagnostics:
   - Gradle project isn't initialized
-  - Missing controller
+  - Missing endpoint
   - Missing Dockerfile

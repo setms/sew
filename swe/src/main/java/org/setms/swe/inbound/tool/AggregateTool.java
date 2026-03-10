@@ -43,7 +43,7 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 public class AggregateTool extends ArtifactTool<Aggregate> {
 
   static final String GENERATE_SERVICE = "service.generate";
-  static final String GENERATE_CONTROLLER = "controller.generate";
+  static final String GENERATE_ENDPOINT = "endpoint.generate";
 
   private final TechnologyResolver resolver;
 
@@ -117,9 +117,9 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
       diagnostics.add(
           new Diagnostic(
               WARN,
-              "Missing controller",
+              "Missing endpoint",
               aggregate.toLocation(),
-              new Suggestion(GENERATE_CONTROLLER, "Generate controller")));
+              new Suggestion(GENERATE_ENDPOINT, "Generate endpoint")));
     }
   }
 
@@ -132,7 +132,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
       ResolvedInputs inputs) {
     return switch (suggestionCode) {
       case GENERATE_SERVICE -> generateServiceFor(resource, aggregate, inputs);
-      case GENERATE_CONTROLLER -> generateControllerFor(resource, aggregate, inputs);
+      case GENERATE_ENDPOINT -> generateEndpointFor(resource, aggregate, inputs);
       default -> unknown(suggestionCode);
     };
   }
@@ -208,7 +208,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         .orElse(null);
   }
 
-  private AppliedSuggestion generateControllerFor(
+  private AppliedSuggestion generateEndpointFor(
       Resource<?> aggregateResource, Aggregate aggregate, ResolvedInputs inputs) {
     return generateCode(
         aggregateResource,

@@ -141,14 +141,11 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
         .allSatisfy(
             d -> {
               assertThat(d.level()).as("Level").isEqualTo(WARN);
-              assertThat(d.message()).as("Message").isEqualTo("Missing controller");
+              assertThat(d.message()).as("Message").isEqualTo("Missing endpoint");
               assertThat(d.suggestions())
                   .hasSize(1)
                   .allSatisfy(
-                      s ->
-                          assertThat(s.message())
-                              .as("Suggestion")
-                              .isEqualTo("Generate controller"));
+                      s -> assertThat(s.message()).as("Suggestion").isEqualTo("Generate endpoint"));
             });
   }
 
@@ -226,7 +223,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
     var actual =
         ((AggregateTool) getTool())
             .applySuggestion(
-                aggregate, AggregateTool.GENERATE_CONTROLLER, null, inputs, workspace.root());
+                aggregate, AggregateTool.GENERATE_ENDPOINT, null, inputs, workspace.root());
 
     assertThat(actual.createdOrChanged())
         .anySatisfy(
