@@ -23,6 +23,7 @@ dependencies {
 }
 
 intellijPlatform {
+    buildSearchableOptions = false
     pluginConfiguration {
         id = 'sew'
         version = providers.gradleProperty("pluginVersion")
