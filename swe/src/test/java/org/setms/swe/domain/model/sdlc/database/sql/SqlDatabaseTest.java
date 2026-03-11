@@ -7,6 +7,22 @@ import org.junit.jupiter.api.Test;
 class SqlDatabaseTest {
 
   @Test
+  void shouldExtractTableNameFromCreateTableSql() {
+    var sql =
+        """
+        CREATE TABLE product (
+          id UUID,
+          name VARCHAR(255)
+        );
+        """;
+
+    var actual = new SqlDatabase().extractName(sql);
+
+    assertThat(actual).as("Name extracted from CREATE TABLE SQL").isNotNull();
+    assertThat(actual.getName()).as("Table name from SQL").isEqualTo("product");
+  }
+
+  @Test
   void shouldProvideGlobForSqlFiles() {
     var actual = new SqlDatabase().databaseSchemas();
 
