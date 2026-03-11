@@ -109,7 +109,7 @@ class FileResource implements Resource<FileResource> {
   }
 
   @Override
-  public void delete() throws IOException {
+  public void doDelete() {
     var path = file.toPath();
     Files.delete(file);
     workspace.fileChanged(new DirectoryChangeEvent(DELETE, false, path, null, 1, null));

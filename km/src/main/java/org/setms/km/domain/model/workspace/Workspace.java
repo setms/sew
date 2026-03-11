@@ -42,7 +42,8 @@ public abstract class Workspace<T> {
     artifactChangedHandlers.add(handler);
   }
 
-  protected void onChanged(String path, Artifact artifact) {
+  protected void onChanged(String path) {
+    var artifact = parse(path).orElse(null);
     artifactChangedHandlers.forEach(handler -> handler.changed(path, artifact));
   }
 

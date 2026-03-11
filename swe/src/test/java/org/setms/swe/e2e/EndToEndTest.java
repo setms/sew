@@ -32,6 +32,7 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
+import org.setms.swe.domain.model.sdlc.SdlcOrchestrator;
 import org.yaml.snakeyaml.Yaml;
 
 class EndToEndTest {
@@ -63,7 +64,7 @@ class EndToEndTest {
   void init() {
     Files.delete(root);
     workspace = new DirectoryWorkspace(root);
-    processOrchestrator = new ProcessOrchestrator(workspace);
+    processOrchestrator = new SdlcOrchestrator(workspace);
     writers = List.of(System.out::println, new HtmlTranscript(workspace));
 
     // Force initialization of Hibernate, so that its output doesn't interfere with our chat output

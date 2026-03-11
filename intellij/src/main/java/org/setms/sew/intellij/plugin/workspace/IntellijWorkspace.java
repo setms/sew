@@ -38,7 +38,7 @@ public class IntellijWorkspace extends Workspace<VirtualFile> {
     if (resource == null) {
       return;
     }
-    parse(resource.path()).ifPresent(artifact -> onChanged(resource.path(), artifact));
+    onChanged(resource.path());
   }
 
   public void deleted(Resource<?> resource) {

@@ -129,7 +129,7 @@ record InMemoryResource(
   }
 
   @Override
-  public void delete() {
+  public void doDelete() {
     artifactsByPath.keySet().stream()
         .filter(candidate -> candidate.equals(path) || candidate.startsWith(path + "/"))
         .toList()

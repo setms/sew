@@ -61,7 +61,7 @@ public class DirectoryWorkspace extends Workspace<File> {
     if (event.eventType() == DELETE) {
       onDeleted(path);
     } else {
-      parse(path).ifPresent(artifact -> onChanged(path, artifact));
+      onChanged(path);
     }
   }
 

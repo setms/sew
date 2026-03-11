@@ -14,8 +14,4 @@ public class InMemoryWorkspace extends Workspace<Void> {
   public Resource<?> find(Void unsupported) {
     return null;
   }
-
-  void onChanged(String path) {
-    parse(path).ifPresent(artifact -> onChanged(path, artifact));
-  }
 }

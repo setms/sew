@@ -60,7 +60,13 @@ public interface Resource<T extends Resource<T>> {
     }
   }
 
-  void delete() throws IOException;
+  default void delete() throws IOException {
+    if (exists()) {
+      doDelete();
+    }
+  }
+
+  void doDelete() throws IOException;
 
   LocalDateTime lastModifiedAt();
 

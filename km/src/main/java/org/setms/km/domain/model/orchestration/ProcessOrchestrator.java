@@ -93,7 +93,7 @@ public class ProcessOrchestrator {
   }
 
   private synchronized void artifactChanged(String path, Artifact artifact) {
-    if (isInternalResource(path)) {
+    if (artifact == null || isInternalResource(path)) {
       return;
     }
     addToInputs(path);

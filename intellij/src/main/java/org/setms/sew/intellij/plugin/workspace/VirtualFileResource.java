@@ -129,7 +129,7 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   }
 
   @Override
-  public void delete() throws IOException {
+  public void doDelete() throws IOException {
     if (virtualFile == null) {
       Files.delete(file);
     } else {
