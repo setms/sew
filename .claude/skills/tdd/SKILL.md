@@ -35,7 +35,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
    The message needs to show the failed expectation.
 9. Make sure the test fails for the correct reason.
   If you invented new types or methods, you'll first have to write just enough code to make the test compile.
-  Then run the test.
+  Then run the test using `./gradlew test --tests '*' --exclude-tests 'EndToEndTest'`
   **CRITICAL: If the test passes or fails for the wrong reason, update the test until it fails for the correct reason.**
   This is non-negotiable.
   In particular, a passing test is a mortal sin.
@@ -60,7 +60,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
 17. Once you have approval, consider whether the added unit test fully covers the test scenario.
   If it doesn't, return to step 2.
 18. Re-read `TDD.md` and mark the test scenario as complete.
-19. If token usage is over 40% of budget, tell the user to start a new session and halt.
+19. Report token usage as percentage of budget. If it's over 40%, tell the user to start a new session and halt.
 20. If there are test scenarios that aren't complete, return to step 1.
   CRITICAL: You MUST have explicit approval to continue with the next test scenario.
 21. If all test scenarios are complete, clear the test list.

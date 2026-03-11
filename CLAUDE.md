@@ -124,6 +124,16 @@ Output:
 
 See [Custom DSLs and file formats](docs/format.md)
 
+## Validation architecture
+
+- **Bean validation** (Jakarta `@Constraint` annotations on artifacts): infrastructure-level, run by the orchestrator or
+  base tool classes on already-parsed artifacts. NEVER call `Validation.validate()` from a `Tool` subclass.
+- **Semantic validation**: tool-level, implemented by overriding `validate(A artifact, ResolvedInputs context,
+  Collection<Diagnostic> diagnostics)` in `ArtifactTool` subclasses.
+
+Tools validate SEMANTICS only. They must NEVER invoke `Validation.validate()`, `jakarta.validation.Validator`, or any
+bean validation API directly.
+
 ## Testing approach
 
 ### Acceptance test-driven development

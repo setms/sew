@@ -20,7 +20,7 @@ public class Decision extends Artifact {
 
   private String context;
   @NotEmpty private String topic;
-  @NotEmpty private String choice;
+  private String choice;
   private String rationale;
 
   public Decision(FullyQualifiedName fullyQualifiedName) {
