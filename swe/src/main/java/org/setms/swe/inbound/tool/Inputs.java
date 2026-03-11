@@ -19,6 +19,8 @@ import org.setms.swe.domain.model.sdlc.architecture.Modules;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.code.CodeFormat;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
+import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
+import org.setms.swe.domain.model.sdlc.database.DatabaseTechnology;
 import org.setms.swe.domain.model.sdlc.ddd.Domain;
 import org.setms.swe.domain.model.sdlc.ddd.Term;
 import org.setms.swe.domain.model.sdlc.design.Entity;
@@ -185,6 +187,28 @@ class Inputs {
         Glob.of(conventions.codePath(), conventions.extension()),
         new CodeFormat(conventions),
         CodeArtifact.class);
+  }
+
+  public static Set<Input<? extends DatabaseSchema>> databaseSchemas() {
+    return databaseTechnologies().flatMap(Inputs::toDatabaseSchemaInputs).collect(toSet());
+  }
+
+  private static Stream<DatabaseTechnology> databaseTechnologies() {
+    return StreamSupport.stream(
+        ServiceLoader.load(DatabaseTechnology.class, DatabaseTechnology.class.getClassLoader())
+            .spliterator(),
+        false);
+  }
+
+  private static Stream<GlobInput<DatabaseSchema>> toDatabaseSchemaInputs(
+      DatabaseTechnology technology) {
+    return technology.databaseSchemas().stream()
+        .map(glob -> toDatabaseSchemaInput(glob, technology));
+  }
+
+  private static GlobInput<DatabaseSchema> toDatabaseSchemaInput(
+      Glob glob, DatabaseTechnology technology) {
+    return new GlobInput<>(glob, new CodeFormat(technology), DatabaseSchema.class);
   }
 
   public static Set<Input<? extends CodeArtifact>> packageDescriptions() {

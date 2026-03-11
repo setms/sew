@@ -27,4 +27,13 @@ class InputsTest {
               assertThat(input.extension()).as("Extension").isEqualTo("java");
             });
   }
+
+  @Test
+  void shouldGetDatabaseSchemaInputsFromDatabaseTechnology() {
+    var actual = Inputs.databaseSchemas();
+
+    assertThat(actual)
+        .as("Database schema inputs from database technology")
+        .anyMatch(input -> input.matches("src/main/database/shop/product.sql"));
+  }
 }
