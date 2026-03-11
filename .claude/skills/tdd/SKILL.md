@@ -41,6 +41,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   In particular, a passing test is a mortal sin.
   Also make sure the test failure clearly indicates what's wrong.
 10. Show the test to the user and ask them to review it.
+  Use the `jetbrains` MCP server's `open_file_in_editor` tool for that. 
   If the user asks for changes, make them and **present the test again for approval**.
   **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE LATEST VERSION OF THE TEST**.
 11. Once you have approval, write code to make the failing test pass.
