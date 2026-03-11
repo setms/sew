@@ -138,12 +138,12 @@ class Inputs {
   }
 
   private static Stream<ProgrammingLanguageConventions> programmingLanguageConventions() {
+    return loadServices(ProgrammingLanguageConventions.class);
+  }
+
+  private static <T> Stream<T> loadServices(Class<T> serviceType) {
     return StreamSupport.stream(
-        ServiceLoader.load(
-                ProgrammingLanguageConventions.class,
-                ProgrammingLanguageConventions.class.getClassLoader())
-            .spliterator(),
-        false);
+        ServiceLoader.load(serviceType, serviceType.getClassLoader()).spliterator(), false);
   }
 
   private static Stream<GlobInput<CodeArtifact>> toBuildConfigurationInputs(
@@ -194,10 +194,7 @@ class Inputs {
   }
 
   private static Stream<DatabaseTechnology> databaseTechnologies() {
-    return StreamSupport.stream(
-        ServiceLoader.load(DatabaseTechnology.class, DatabaseTechnology.class.getClassLoader())
-            .spliterator(),
-        false);
+    return loadServices(DatabaseTechnology.class);
   }
 
   private static Stream<GlobInput<DatabaseSchema>> toDatabaseSchemaInputs(
@@ -216,8 +213,7 @@ class Inputs {
   }
 
   private static Stream<Packager> packagers() {
-    return StreamSupport.stream(
-        ServiceLoader.load(Packager.class, Packager.class.getClassLoader()).spliterator(), false);
+    return loadServices(Packager.class);
   }
 
   private static Stream<GlobInput<CodeArtifact>> toPackageDescriptionInputs(Packager packager) {
