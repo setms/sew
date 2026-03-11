@@ -45,6 +45,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   static final String PICK_BUILD_SYSTEM = "build-system.decide";
   static final String PICK_FRAMEWORK = "framework.decide";
   static final String PICK_PACKAGING = "packaging.decide";
+  static final String PICK_DATABASE = "database.decide";
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
@@ -242,8 +243,17 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   public Optional<Database> database(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     return switch (Decisions.from(inputs).about(DatabaseTopicProvider.TOPIC)) {
       case "PostgreSql" -> Optional.of(new PostgreSql());
+      case null -> empty(missingDatabaseDecision(), diagnostics);
       default -> Optional.empty();
     };
+  }
+
+  private Diagnostic missingDatabaseDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on database",
+        null,
+        new Suggestion(PICK_DATABASE, "Decide on database"));
   }
 
   @Override
@@ -257,6 +267,8 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case PICK_FRAMEWORK -> pickDecision(resource, Framework.TOPIC, Framework.TOPIC);
       case PICK_PACKAGING -> pickDecision(resource, Packaging.TOPIC, Packaging.TOPIC);
+      case PICK_DATABASE ->
+          pickDecision(resource, DatabaseTopicProvider.TOPIC, DatabaseTopicProvider.TOPIC);
       case Docker.CREATE_DOCKERFILE -> applyPackagerSuggestion(resource, inputs);
       case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();

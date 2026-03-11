@@ -424,6 +424,16 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldNeedDatabaseDecisionWhenNoDatabaseDecisionExists() {
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    resolver.database(new ResolvedInputs(), diagnostics);
+
+    assertThatSingleWarnDiagnosticHas(
+        diagnostics, "Missing decision on database", "Decide on database");
+  }
+
+  @Test
   void shouldReturnPostgreSqlWhenDatabaseDecisionIsPostgreSql() {
     var diagnostics = new ArrayList<Diagnostic>();
     var inputs =
