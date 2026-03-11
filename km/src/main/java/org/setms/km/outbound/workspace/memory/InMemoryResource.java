@@ -148,7 +148,8 @@ record InMemoryResource(
 
   @Override
   public boolean exists() {
-    return artifactsByPath.containsKey(path);
+    return artifactsByPath.keySet().stream()
+        .anyMatch(candidate -> candidate.equals(path) || candidate.startsWith(path + "/"));
   }
 
   @Override
