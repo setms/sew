@@ -2,7 +2,9 @@ package org.setms.swe.domain.model.sdlc.architecture;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class RegisteredTopicAndChoiceValidator
     implements ConstraintValidator<RegisteredTopicAndChoice, Decision> {
 
@@ -13,6 +15,6 @@ public class RegisteredTopicAndChoiceValidator
       return false;
     }
     var choice = decision.getChoice();
-    return choice != null && Topics.isValidChoice(topic, choice);
+    return choice == null || Topics.isValidChoice(topic, choice);
   }
 }

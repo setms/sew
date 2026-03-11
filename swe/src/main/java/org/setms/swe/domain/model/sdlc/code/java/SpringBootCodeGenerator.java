@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.workspace.Resource;
+import org.setms.swe.domain.model.sdlc.architecture.Framework;
+import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
@@ -21,7 +23,7 @@ import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 
 @Slf4j
 public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
-    implements FrameworkCodeGenerator {
+    implements FrameworkCodeGenerator, TopicProvider {
 
   private static final String MAIN_CLASS_CODE =
       """
@@ -41,9 +43,19 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
 
   private final CodeBuilder codeBuilder;
 
+  @SuppressWarnings("unused") // Called by ServiceLoader
+  public SpringBootCodeGenerator() {
+    this(null, null);
+  }
+
   public SpringBootCodeGenerator(String topLevelPackage, CodeBuilder codeBuilder) {
     super(topLevelPackage);
     this.codeBuilder = codeBuilder;
+  }
+
+  @Override
+  public boolean isValidChoice(String topic, String choice) {
+    return Framework.TOPIC.equals(topic) && "Spring Boot".equals(choice);
   }
 
   @Override

@@ -201,10 +201,8 @@ class ProcessOrchestratorTest {
     }
   }
 
-  private void assertThatIsEmpty(Resource<?> resource) throws IOException {
-    try (var input = resource.readFrom()) {
-      assertThat(input.available()).as("Size of old report").isZero();
-    }
+  private void assertThatIsEmpty(Resource<?> resource) {
+    assertThat(resource.readAsString()).as("Content of " + resource.path()).isEmpty();
   }
 
   @Test

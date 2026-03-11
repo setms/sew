@@ -29,6 +29,8 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Level;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
+import org.setms.km.domain.model.validation.Validation;
+import org.setms.km.domain.model.validation.ValidationException;
 import org.setms.km.domain.model.workspace.ArtifactDefinition;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -97,6 +99,9 @@ public class ProcessOrchestrator {
       return;
     }
     addToInputs(path);
+    if (isInvalid(path, artifact)) {
+      return;
+    }
     validateAndBuildArtifact(path, artifact);
   }
 
@@ -134,6 +139,16 @@ public class ProcessOrchestrator {
       // Ignore
     }
     return result;
+  }
+
+  private boolean isInvalid(String path, Artifact artifact) {
+    try {
+      Validation.validate(artifact);
+    } catch (ValidationException e) {
+      storeDiagnostics(path, Validation.class, e.getDiagnostics());
+      return true;
+    }
+    return false;
   }
 
   private void validateAndBuildArtifact(String path, Artifact artifact) {
@@ -244,10 +259,13 @@ public class ProcessOrchestrator {
   }
 
   private void storeDiagnostics(String path, Tool tool, Collection<Diagnostic> diagnostics) {
+    storeDiagnostics(path, tool.getClass(), diagnostics);
+  }
+
+  private void storeDiagnostics(
+      String path, Class<?> toolClass, Collection<Diagnostic> diagnostics) {
     var diagnosticsResource =
-        workspace
-            .root()
-            .select(".km/diagnostics%s/%s.json".formatted(path, tool.getClass().getName()));
+        workspace.root().select(".km/diagnostics%s/%s.json".formatted(path, toolClass.getName()));
     try {
       diagnosticsResource.writeAsString(new JSONObject(serialize(diagnostics)).toString(2));
     } catch (IOException e) {

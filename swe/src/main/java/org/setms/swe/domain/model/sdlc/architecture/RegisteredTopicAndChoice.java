@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RegisteredTopicAndChoice {
 
-  String message() default "unknown topic or invalid choice for topic";
+  String message() default "Unknown topic or invalid choice for topic";
 
   Class<?>[] groups() default {};
 
