@@ -109,8 +109,8 @@ public class SdlcOrchestrator extends ProcessOrchestrator {
     toSection(reports, "Domain stories", ".domainStory").ifPresent(result::add);
     toSection(reports, "Use cases", ".useCase").ifPresent(result::add);
     toSection(reports, "Domains", ".domain").ifPresent(result::add);
-    toSection(reports, "Acceptance tests", ".acceptance").ifPresent(result::add);
     toSection(reports, "Modules", ".modules").ifPresent(result::add);
+    toSection(reports, "Acceptance tests", ".acceptance").ifPresent(result::add);
     return result;
   }
 
