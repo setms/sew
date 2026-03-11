@@ -65,14 +65,14 @@ class EntityToolTest extends ToolTestCase<Entity> {
   }
 
   private Diagnostic givenResolverIndicatingNoDatabaseDecision(TechnologyResolver resolver) {
-    var diagnostic = new Diagnostic(WARN, "Missing database");
+    var result = new Diagnostic(WARN, "Missing database");
     when(resolver.database(any(), anyCollection()))
         .thenAnswer(
             invocation -> {
               Collection<Diagnostic> diagnostics = invocation.getArgument(1);
-              diagnostics.add(diagnostic);
+              diagnostics.add(result);
               return Optional.empty();
             });
-    return diagnostic;
+    return result;
   }
 }
