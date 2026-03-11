@@ -56,6 +56,13 @@ public interface TechnologyResolver {
   Optional<FrameworkCodeGenerator> frameworkCodeGenerator(
       ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
+  /**
+   * @param inputs Resolved inputs, including decisions and other artifacts
+   * @param diagnostics where to store any validation issues
+   * @return the database technology, or empty if no database decision has been made
+   */
+  Optional<Database> database(ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
+
   AppliedSuggestion applySuggestion(
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs);
 }

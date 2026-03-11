@@ -16,6 +16,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
+import org.setms.swe.domain.model.sdlc.architecture.DatabaseTopicProvider;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
@@ -26,12 +27,14 @@ import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
+import org.setms.swe.domain.model.sdlc.database.postgresql.PostgreSql;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.packaging.docker.Docker;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
 import org.setms.swe.domain.model.sdlc.technology.CodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 import org.setms.swe.domain.model.sdlc.technology.CodeTester;
+import org.setms.swe.domain.model.sdlc.technology.Database;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
@@ -233,6 +236,14 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         "Missing decision on framework",
         null,
         new Suggestion(PICK_FRAMEWORK, "Decide on framework"));
+  }
+
+  @Override
+  public Optional<Database> database(ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    return switch (Decisions.from(inputs).about(DatabaseTopicProvider.TOPIC)) {
+      case "PostgreSql" -> Optional.of(new PostgreSql());
+      default -> Optional.empty();
+    };
   }
 
   @Override

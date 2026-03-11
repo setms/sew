@@ -21,6 +21,7 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
+import org.setms.swe.domain.model.sdlc.architecture.DatabaseTopicProvider;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.Packaging;
@@ -30,6 +31,7 @@ import org.setms.swe.domain.model.sdlc.code.java.Gradle;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
+import org.setms.swe.domain.model.sdlc.database.postgresql.PostgreSql;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.packaging.docker.Docker;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -419,6 +421,20 @@ class TechnologyResolverImplTest {
                 assertThat(resource.path())
                     .as("Path")
                     .isEqualTo("/src/main/overview/Project.initiative"));
+  }
+
+  @Test
+  void shouldReturnPostgreSqlWhenDatabaseDecisionIsPostgreSql() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs =
+        new ResolvedInputs()
+            .put("decisions", List.of(decision(DatabaseTopicProvider.TOPIC, "PostgreSql")));
+
+    var actual = resolver.database(inputs, diagnostics);
+
+    assertThat(actual).as("Database for PostgreSql decision").isPresent();
+    assertThat(actual.get()).as("Database type").isInstanceOf(PostgreSql.class);
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
   }
 
   @Test
