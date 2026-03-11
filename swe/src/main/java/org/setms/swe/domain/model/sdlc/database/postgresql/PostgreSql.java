@@ -13,19 +13,20 @@ public class PostgreSql implements Database {
 
   @Override
   public DatabaseSchema schemaFor(Entity entity) {
-    var tableName = entity.getName().toLowerCase();
-    var columns =
-        entity.getFields().stream().map(this::columnFor).collect(Collectors.joining(",\n"));
-    var code =
-        """
-        CREATE TABLE %s (
-        %s
-        );
-        """
-            .formatted(tableName, columns);
     var result = new DatabaseSchema(new FullyQualifiedName(entity.getPackage(), entity.getName()));
-    result.setCode(code);
+    result.setCode(codeFor(entity));
     return result;
+  }
+
+  private String codeFor(Entity entity) {
+    return """
+    CREATE TABLE %s (
+    %s
+    );
+    """
+        .formatted(
+            entity.getName().toLowerCase(),
+            entity.getFields().stream().map(this::columnFor).collect(Collectors.joining(",\n")));
   }
 
   private String columnFor(Field field) {
@@ -40,7 +41,7 @@ public class PostgreSql implements Database {
       case BOOLEAN -> "BOOLEAN";
       case DATE -> "DATE";
       case TIME -> "TIME";
-      case DATETIME -> "TIMESTAMP";
+      case DATETIME -> "TIMESTAMPTZ";
     };
   }
 }

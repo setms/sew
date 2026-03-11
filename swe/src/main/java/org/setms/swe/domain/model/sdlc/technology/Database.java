@@ -7,7 +7,7 @@ import org.setms.swe.domain.model.sdlc.design.Entity;
 public interface Database {
 
   /**
-   * @return a SQL schema for the given entity's table
+   * @return a schema that describes persistence for the given entity
    */
   DatabaseSchema schemaFor(Entity entity);
 }
