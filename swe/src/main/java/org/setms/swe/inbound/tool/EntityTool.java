@@ -5,12 +5,21 @@ import static org.setms.swe.inbound.tool.Inputs.entities;
 
 import java.util.HashSet;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
+@RequiredArgsConstructor
 public class EntityTool extends ArtifactTool<Entity> {
+
+  private final TechnologyResolver resolver;
+
+  public EntityTool() {
+    this(new TechnologyResolverImpl());
+  }
 
   @Override
   public Set<Input<? extends Entity>> validationTargets() {

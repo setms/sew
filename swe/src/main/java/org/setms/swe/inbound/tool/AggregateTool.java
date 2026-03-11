@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
@@ -40,6 +41,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.eventstorming.HasPayload;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
+@RequiredArgsConstructor
 public class AggregateTool extends ArtifactTool<Aggregate> {
 
   static final String GENERATE_SERVICE = "service.generate";
@@ -49,10 +51,6 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   public AggregateTool() {
     this(new TechnologyResolverImpl());
-  }
-
-  AggregateTool(TechnologyResolver resolver) {
-    this.resolver = resolver;
   }
 
   @Override
