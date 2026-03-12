@@ -1,21 +1,22 @@
 outputs:
   - src/main/analysis/Todo.domain
-  - src/main/design/TodoItems.aggregate
-  - src/main/design/AddTodoItem.command
-  - src/main/design/TodoItemAdded.event
+  - src/main/design/logical/TodoItems.aggregate
+  - src/main/design/logical/AddTodoItem.command
+  - src/main/design/logical/TodoItemAdded.event
   - src/main/stakeholders/User.user
 
 inputs:
   - file: TodoItem.entity
-    location: src/main/design
+    location: src/main/design/logical
   - file: AddTodoItem.command
-    location: src/main/design
+    location: src/main/design/logical
   - file: TodoItemAdded.event
-    location: src/main/design
+    location: src/main/design/logical
   - file: TodoItems.aggregate
-    location: src/main/design
+    location: src/main/design/logical
 
 diagnostics:
   - Missing acceptance test for aggregate TodoItems
+  - Missing decision on database
   - Missing decision on programming language
   - Subdomains aren't mapped to modules

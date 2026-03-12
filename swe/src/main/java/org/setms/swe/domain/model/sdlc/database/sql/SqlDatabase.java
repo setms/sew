@@ -15,7 +15,7 @@ public class SqlDatabase implements DatabaseTechnology {
 
   @Override
   public Collection<Glob> databaseSchemas() {
-    return List.of(Glob.of("src/main/database", "sql"));
+    return List.of(Glob.of("src/main/design/physical", "sql"));
   }
 
   @Override

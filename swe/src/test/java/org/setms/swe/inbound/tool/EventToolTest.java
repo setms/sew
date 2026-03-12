@@ -28,12 +28,12 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 class EventToolTest extends ResolverToolTestCase<Event> {
 
   EventToolTest() {
-    super(new EventTool(), Event.class, "main/design");
+    super(new EventTool(), Event.class, "main/design/logical");
   }
 
   @AfterEach
   void cleanupGeneratedFiles() throws IOException {
-    workspaceFor("missing").root().select("src/main/design/Payload.entity").delete();
+    workspaceFor("missing").root().select("src/main/design/logical/Payload.entity").delete();
   }
 
   @Test
@@ -105,7 +105,7 @@ class EventToolTest extends ResolverToolTestCase<Event> {
     var suggestion = diagnostic.suggestions().getFirst();
     assertThat(suggestion.message()).as("Suggestion").isEqualTo("Create entity");
     var created = apply(suggestion, diagnostic, workspace).createdOrChanged();
-    var payload = workspace.root().select("src/main/design/Payload.entity");
+    var payload = workspace.root().select("src/main/design/logical/Payload.entity");
     assertThat(created).as("Apply diagnostics").hasSize(1).contains(payload);
     assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
   }

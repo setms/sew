@@ -49,6 +49,7 @@ class Inputs {
   static final String PATH_USE_CASES = PATH_REQUIREMENTS + "/use-cases";
   static final String PATH_DOMAIN_STORIES = PATH_REQUIREMENTS + "/domain-stories";
   static final String PATH_DESIGN = "src/main/design";
+  static final String PATH_LOGICAL_DESIGN = PATH_DESIGN + "/logical";
   static final String PATH_ACCEPTANCE_TESTS = "src/test/acceptance";
   static final String PATH_ANALYSIS = "src/main/analysis";
   static final String PATH_ARCHITECTURE = "src/main/architecture";
@@ -60,7 +61,7 @@ class Inputs {
   }
 
   static Input<Aggregate> aggregates() {
-    return newInput(PATH_DESIGN, Aggregate.class);
+    return newInput(PATH_LOGICAL_DESIGN, Aggregate.class);
   }
 
   private static <T extends Artifact> Input<T> newInput(String path, Class<T> type) {
@@ -68,11 +69,11 @@ class Inputs {
   }
 
   static Input<ClockEvent> clockEvents() {
-    return newInput(PATH_DESIGN, ClockEvent.class);
+    return newInput(PATH_LOGICAL_DESIGN, ClockEvent.class);
   }
 
   static Input<Command> commands() {
-    return newInput(PATH_DESIGN, Command.class);
+    return newInput(PATH_LOGICAL_DESIGN, Command.class);
   }
 
   static Input<Components> components() {
@@ -92,15 +93,15 @@ class Inputs {
   }
 
   static Input<Entity> entities() {
-    return newInput(PATH_DESIGN, Entity.class);
+    return newInput(PATH_LOGICAL_DESIGN, Entity.class);
   }
 
   static Input<ExternalSystem> externalSystems() {
-    return newInput(PATH_DESIGN, ExternalSystem.class);
+    return newInput(PATH_LOGICAL_DESIGN, ExternalSystem.class);
   }
 
   static Input<Event> events() {
-    return newInput(PATH_DESIGN, Event.class);
+    return newInput(PATH_LOGICAL_DESIGN, Event.class);
   }
 
   static Input<Modules> modules() {
@@ -108,7 +109,7 @@ class Inputs {
   }
 
   static Input<Policy> policies() {
-    return newInput(PATH_DESIGN, Policy.class);
+    return newInput(PATH_LOGICAL_DESIGN, Policy.class);
   }
 
   static Input<Initiative> initiatives() {
@@ -116,7 +117,7 @@ class Inputs {
   }
 
   static Input<ReadModel> readModels() {
-    return newInput(PATH_DESIGN, ReadModel.class);
+    return newInput(PATH_LOGICAL_DESIGN, ReadModel.class);
   }
 
   static Input<Term> terms() {

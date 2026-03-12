@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static org.setms.swe.inbound.tool.Inputs.databaseSchemas;
+import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.entities;
 
 import java.util.Collection;
@@ -32,7 +33,9 @@ public class EntityTool extends ArtifactTool<Entity> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return new HashSet<>(databaseSchemas());
+    var result = new HashSet<Input<? extends Artifact>>(databaseSchemas());
+    result.add(decisions());
+    return result;
   }
 
   @Override
