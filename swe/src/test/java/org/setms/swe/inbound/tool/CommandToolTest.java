@@ -27,7 +27,7 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 class CommandToolTest extends ResolverToolTestCase<Command> {
 
   CommandToolTest() {
-    super(new CommandTool(), Command.class, "main/design");
+    super(new CommandTool(), Command.class, "main/design/logical");
   }
 
   @AfterEach

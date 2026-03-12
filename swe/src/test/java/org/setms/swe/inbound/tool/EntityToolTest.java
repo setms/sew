@@ -25,14 +25,14 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 class EntityToolTest extends ToolTestCase<Entity> {
 
   public EntityToolTest() {
-    super(new EntityTool(), Entity.class, "main/design");
+    super(new EntityTool(), Entity.class, "main/design/logical");
   }
 
   @Override
   protected void assertValidationContext(Set<Input<? extends Artifact>> inputs) {
     assertThat(inputs)
         .as("Validation context includes database schemas")
-        .anyMatch(input -> input.matches("src/main/database/shop/product.sql"));
+        .anyMatch(input -> input.matches("src/main/design/physical/shop/product.sql"));
   }
 
   @Override

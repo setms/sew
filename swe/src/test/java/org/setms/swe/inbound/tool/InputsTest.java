@@ -34,6 +34,6 @@ class InputsTest {
 
     assertThat(actual)
         .as("Database schema inputs from database technology")
-        .anyMatch(input -> input.matches("src/main/database/shop/product.sql"));
+        .anyMatch(input -> input.matches("src/main/design/physical/shop/product.sql"));
   }
 }

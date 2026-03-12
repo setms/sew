@@ -34,7 +34,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
 
   AggregateToolTest() {
-    super(new AggregateTool(), Aggregate.class, "main/design");
+    super(new AggregateTool(), Aggregate.class, "main/design/logical");
   }
 
   @Test
