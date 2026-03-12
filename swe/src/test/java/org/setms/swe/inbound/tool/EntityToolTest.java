@@ -20,6 +20,7 @@ import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.technology.Database;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 class EntityToolTest extends ToolTestCase<Entity> {
@@ -62,6 +63,40 @@ class EntityToolTest extends ToolTestCase<Entity> {
     assertThat(diagnostics)
         .as("Database technology check should run when entity has no database schema")
         .containsExactly(noDatabaseDiagnostic);
+  }
+
+  @Test
+  void shouldAddDiagnosticWhenEntityHasNoSchemaButDatabaseIsDecided() {
+    var entity = new Entity(new FullyQualifiedName("design", "Product"));
+    var resolver = mock(TechnologyResolver.class);
+    givenResolverIndicatingDatabaseIsDecided(resolver);
+    var inputs = new ResolvedInputs();
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    new EntityTool(resolver).validate(entity, inputs, diagnostics);
+
+    assertThat(diagnostics)
+        .as(
+            "Should produce one diagnostic when entity '%s' has no schema but database is decided"
+                .formatted(entity.getName()))
+        .singleElement()
+        .satisfies(
+            diagnostic ->
+                assertThat(diagnostic.suggestions())
+                    .as(
+                        "Diagnostic for missing schema of entity '%s' should suggest generating it"
+                            .formatted(entity.getName()))
+                    .anySatisfy(
+                        suggestion ->
+                            assertThat(suggestion.code())
+                                .as(
+                                    "Suggestion for entity '%s' should be for generating database schema"
+                                        .formatted(entity.getName()))
+                                .isEqualTo(EntityTool.GENERATE_SCHEMA)));
+  }
+
+  private void givenResolverIndicatingDatabaseIsDecided(TechnologyResolver resolver) {
+    when(resolver.database(any(), anyCollection())).thenReturn(Optional.of(mock(Database.class)));
   }
 
   private Diagnostic givenResolverIndicatingNoDatabaseDecision(TechnologyResolver resolver) {

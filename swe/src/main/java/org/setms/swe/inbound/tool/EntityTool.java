@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.databaseSchemas;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.entities;
@@ -13,12 +14,15 @@ import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 @RequiredArgsConstructor
 public class EntityTool extends ArtifactTool<Entity> {
+
+  static final String GENERATE_SCHEMA = "schema.generate";
 
   private final TechnologyResolver resolver;
 
@@ -43,7 +47,17 @@ public class EntityTool extends ArtifactTool<Entity> {
     if (hasDatabaseSchema(entity, inputs)) {
       return;
     }
-    resolver.database(inputs, diagnostics);
+    resolver
+        .database(inputs, diagnostics)
+        .ifPresent(database -> diagnostics.add(missingSchemaFor(entity)));
+  }
+
+  private Diagnostic missingSchemaFor(Entity entity) {
+    return new Diagnostic(
+        WARN,
+        "Missing database schema",
+        entity.toLocation(),
+        new Suggestion(GENERATE_SCHEMA, "Generate database schema"));
   }
 
   private boolean hasDatabaseSchema(Entity entity, ResolvedInputs inputs) {
