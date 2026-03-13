@@ -29,6 +29,28 @@ class PostgreSqlTest {
             """);
   }
 
+  @Test
+  void shouldAddIdColumnWhenEntityHasNoIdField() {
+    var entity = newProductEntityWithoutId();
+
+    var actual = new PostgreSql().schemaFor(entity);
+
+    assertThat(actual.getCode())
+        .as("SQL CREATE TABLE for Product without id field should still include id UUID column")
+        .isEqualTo(
+            """
+            CREATE TABLE product (
+              id UUID,
+              name VARCHAR(255)
+            );
+            """);
+  }
+
+  private Entity newProductEntityWithoutId() {
+    return new Entity(new FullyQualifiedName("shop", "Product"))
+        .setFields(List.of(newField("Name", FieldType.TEXT)));
+  }
+
   private Entity newProductEntity() {
     return new Entity(new FullyQualifiedName("shop", "Product"))
         .setFields(List.of(newField("ID", FieldType.ID), newField("Name", FieldType.TEXT)));
