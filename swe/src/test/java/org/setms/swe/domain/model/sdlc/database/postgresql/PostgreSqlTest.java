@@ -31,7 +31,7 @@ class PostgreSqlTest {
 
   private Entity newProductEntity() {
     return new Entity(new FullyQualifiedName("shop", "Product"))
-        .setFields(List.of(newField("id", FieldType.ID), newField("name", FieldType.TEXT)));
+        .setFields(List.of(newField("ID", FieldType.ID), newField("Name", FieldType.TEXT)));
   }
 
   private Field newField(String name, FieldType type) {

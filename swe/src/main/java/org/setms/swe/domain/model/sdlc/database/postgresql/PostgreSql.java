@@ -1,5 +1,7 @@
 package org.setms.swe.domain.model.sdlc.database.postgresql;
 
+import static org.setms.km.domain.model.format.Strings.toSnakeCase;
+
 import java.util.stream.Collectors;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
@@ -14,23 +16,23 @@ public class PostgreSql implements Database {
   @Override
   public DatabaseSchema schemaFor(Entity entity) {
     var result = new DatabaseSchema(new FullyQualifiedName(entity.getPackage(), entity.getName()));
-    result.setCode(codeFor(entity));
+    result.setCode(createTableScriptFor(entity));
     return result;
   }
 
-  private String codeFor(Entity entity) {
+  private String createTableScriptFor(Entity entity) {
     return """
     CREATE TABLE %s (
     %s
     );
     """
         .formatted(
-            entity.getName().toLowerCase(),
+            toSnakeCase(entity.getName()),
             entity.getFields().stream().map(this::columnFor).collect(Collectors.joining(",\n")));
   }
 
   private String columnFor(Field field) {
-    return "  %s %s".formatted(field.getName(), sqlTypeFor(field.getType()));
+    return "  %s %s".formatted(toSnakeCase(field.getName()), sqlTypeFor(field.getType()));
   }
 
   private String sqlTypeFor(FieldType type) {

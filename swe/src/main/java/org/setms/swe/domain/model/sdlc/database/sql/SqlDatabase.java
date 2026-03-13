@@ -1,5 +1,7 @@
 package org.setms.swe.domain.model.sdlc.database.sql;
 
+import static org.setms.km.domain.model.format.Strings.toPascalCase;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -21,6 +23,8 @@ public class SqlDatabase implements DatabaseTechnology {
   @Override
   public FullyQualifiedName extractName(String code) {
     var matcher = TABLE_NAME_PATTERN.matcher(code);
-    return matcher.find() ? new FullyQualifiedName("database", matcher.group(1)) : null;
+    return matcher.find()
+        ? new FullyQualifiedName("database", toPascalCase(matcher.group(1)))
+        : null;
   }
 }

@@ -50,6 +50,7 @@ class Inputs {
   static final String PATH_DOMAIN_STORIES = PATH_REQUIREMENTS + "/domain-stories";
   static final String PATH_DESIGN = "src/main/design";
   static final String PATH_LOGICAL_DESIGN = PATH_DESIGN + "/logical";
+  static final String PATH_PHYSICAL_DESIGN = PATH_DESIGN + "/physical";
   static final String PATH_ACCEPTANCE_TESTS = "src/test/acceptance";
   static final String PATH_ANALYSIS = "src/main/analysis";
   static final String PATH_ARCHITECTURE = "src/main/architecture";

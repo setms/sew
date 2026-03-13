@@ -10,7 +10,7 @@ class SqlDatabaseTest {
   void shouldExtractTableNameFromCreateTableSql() {
     var sql =
         """
-        CREATE TABLE product (
+        CREATE TABLE line_item (
           id UUID,
           name VARCHAR(255)
         );
@@ -19,7 +19,7 @@ class SqlDatabaseTest {
     var actual = new SqlDatabase().extractName(sql);
 
     assertThat(actual).as("Name extracted from CREATE TABLE SQL").isNotNull();
-    assertThat(actual.getName()).as("Table name from SQL").isEqualTo("product");
+    assertThat(actual.getName()).as("Table name from SQL").isEqualTo("LineItem");
   }
 
   @Test

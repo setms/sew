@@ -13,5 +13,6 @@ inputs:
     file: ProgrammingLanguage.decision
 
 diagnostics:
+  - Missing database schema
   - Missing initiative
   - Modules aren't deployed in components

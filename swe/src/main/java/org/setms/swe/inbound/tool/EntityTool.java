@@ -94,11 +94,11 @@ public class EntityTool extends ArtifactTool<Entity> {
 
   private AppliedSuggestion writeSchema(DatabaseSchema schema, Resource<?> resource) {
     try {
-      var path = schema.getPackage().replace('.', '/');
       var target =
           resource
-              .select("/src/main/design/physical")
-              .select(path)
+              .select("/")
+              .select(Inputs.PATH_PHYSICAL_DESIGN)
+              .select(schema.getPackage().replace('.', '/'))
               .select(schema.getName() + ".sql");
       target.writeAsString(schema.getCode());
       return created(target);

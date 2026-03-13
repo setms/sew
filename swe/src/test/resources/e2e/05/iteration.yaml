@@ -1,6 +1,7 @@
 outputs:
-  - src/main/overview/Project.initiative
   - src/main/architecture/Todo.components
+  - src/main/design/physical/todo/TodoItem.sql
+  - src/main/overview/Project.initiative
 
 inputs:
   - location: src/main/overview

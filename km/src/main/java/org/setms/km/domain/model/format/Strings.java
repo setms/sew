@@ -1,6 +1,7 @@
 package org.setms.km.domain.model.format;
 
 import static java.lang.Character.isUpperCase;
+import static java.lang.Character.toLowerCase;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,7 +27,7 @@ public class Strings {
     if (value == null || value.isEmpty()) {
       return value;
     }
-    return Character.toLowerCase(value.charAt(0)) + value.substring(1);
+    return toLowerCase(value.charAt(0)) + value.substring(1);
   }
 
   public static boolean isNotBlank(String value) {
@@ -47,7 +48,7 @@ public class Strings {
     var builder = new StringBuilder(name);
     for (var i = 1; i < builder.length() - 1; i++) {
       if (isUpperCase(builder.charAt(i)) && !isUpperCase(builder.charAt(i + 1))) {
-        builder.setCharAt(i, Character.toLowerCase(builder.charAt(i)));
+        builder.setCharAt(i, toLowerCase(builder.charAt(i)));
         builder.insert(i, ' ');
       }
     }
@@ -55,6 +56,41 @@ public class Strings {
     REPLACEMENTS.forEach(
         (text, replacement) -> result.set(result.get().replace(text, replacement)));
     return result.get();
+  }
+
+  public static String toSnakeCase(String name) {
+    if (name == null || name.isBlank()) {
+      return "";
+    }
+    var result = new StringBuilder();
+    var prev = '\0';
+    for (var i = 0; i < name.length(); i++) {
+      var c = name.charAt(i);
+      if (isUpperCase(c) && i > 0 && !isUpperCase(prev)) {
+        result.append('_');
+      }
+      result.append(toLowerCase(c));
+      prev = c;
+    }
+    return result.toString();
+  }
+
+  public static String toPascalCase(String name) {
+    if (name == null || name.isBlank()) {
+      return "";
+    }
+    var result = new StringBuilder();
+    var capitalizeNext = true;
+    for (var i = 0; i < name.length(); i++) {
+      var c = name.charAt(i);
+      if (c == '_') {
+        capitalizeNext = true;
+      } else {
+        result.append(capitalizeNext ? Character.toUpperCase(c) : c);
+        capitalizeNext = false;
+      }
+    }
+    return result.toString();
   }
 
   public static String wrap(String text, int maxLength) {
