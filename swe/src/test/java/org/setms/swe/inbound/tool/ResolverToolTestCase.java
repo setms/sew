@@ -14,7 +14,9 @@ import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
@@ -68,5 +70,16 @@ abstract class ResolverToolTestCase<A extends Artifact> extends ToolTestCase<A> 
                 new Decision(new FullyQualifiedName("technology", "TopLevelPackage"))
                     .setTopic(TopLevelPackage.TOPIC)
                     .setChoice("com.example")));
+  }
+
+  protected List<Decision> newSpringBootDecisions() {
+    return List.of(
+        newDecision(BuildSystem.TOPIC, "Gradle"), newDecision(Framework.TOPIC, "Spring Boot"));
+  }
+
+  protected static Decision newDecision(String topic, String choice) {
+    return new Decision(new FullyQualifiedName("technology", topic))
+        .setTopic(topic)
+        .setChoice(choice);
   }
 }

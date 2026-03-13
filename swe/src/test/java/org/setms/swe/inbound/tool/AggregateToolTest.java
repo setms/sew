@@ -20,9 +20,6 @@ import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AcceptanceTest;
 import org.setms.swe.domain.model.sdlc.acceptancetest.AggregateScenario;
 import org.setms.swe.domain.model.sdlc.acceptancetest.ElementVariable;
-import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
-import org.setms.swe.domain.model.sdlc.architecture.Decision;
-import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.design.Field;
@@ -121,18 +118,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
             .setCode("// existing");
     return givenInputsWithAggregateScenario(aggregate)
         .put("codeArtifacts", List.of(serviceCode))
-        .put("decisions", springBootDecisions());
-  }
-
-  private List<Decision> springBootDecisions() {
-    return List.of(
-        newDecision(BuildSystem.TOPIC, "Gradle"), newDecision(Framework.TOPIC, "Spring Boot"));
-  }
-
-  private static Decision newDecision(String topic, String choice) {
-    return new Decision(new FullyQualifiedName("technology", topic))
-        .setTopic(topic)
-        .setChoice(choice);
+        .put("decisions", newSpringBootDecisions());
   }
 
   private void assertThatDiagnosticsWarnAboutMissingController(Collection<Diagnostic> diagnostics) {
@@ -236,6 +222,6 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
   private ResolvedInputs givenInputsForSpringBootWithFullAggregateScenario(
       Aggregate aggregate, Command command, Event event, Entity entity) {
     return givenInputsWithFullAggregateScenario(aggregate, command, event, entity)
-        .put("decisions", springBootDecisions());
+        .put("decisions", newSpringBootDecisions());
   }
 }

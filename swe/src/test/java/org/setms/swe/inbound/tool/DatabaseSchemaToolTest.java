@@ -6,7 +6,6 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.Artifact;
@@ -16,9 +15,6 @@ import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
-import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
-import org.setms.swe.domain.model.sdlc.architecture.Decision;
-import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
 
 class DatabaseSchemaToolTest extends ResolverToolTestCase<DatabaseSchema> {
@@ -56,18 +52,7 @@ class DatabaseSchemaToolTest extends ResolverToolTestCase<DatabaseSchema> {
   }
 
   private ResolvedInputs givenInputsForSpringBoot() {
-    return givenInputsWithAllPrerequisites().put("decisions", springBootDecisions());
-  }
-
-  private List<Decision> springBootDecisions() {
-    return List.of(
-        newDecision(BuildSystem.TOPIC, "Gradle"), newDecision(Framework.TOPIC, "Spring Boot"));
-  }
-
-  private static Decision newDecision(String topic, String choice) {
-    return new Decision(new FullyQualifiedName("technology", topic))
-        .setTopic(topic)
-        .setChoice(choice);
+    return givenInputsWithAllPrerequisites().put("decisions", newSpringBootDecisions());
   }
 
   private void assertThatDiagnosticsWarnAboutMissingEntityObject(
