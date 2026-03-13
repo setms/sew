@@ -4,6 +4,7 @@ org.setms.swe.inbound.tool.ArchitectureTool
 org.setms.swe.inbound.tool.CodeTool
 org.setms.swe.inbound.tool.CommandTool
 org.setms.swe.inbound.tool.ContextMapTool
+org.setms.swe.inbound.tool.DatabaseSchemaTool
 org.setms.swe.inbound.tool.DecisionTool
 org.setms.swe.inbound.tool.DomainStoryTool
 org.setms.swe.inbound.tool.DomainTool
