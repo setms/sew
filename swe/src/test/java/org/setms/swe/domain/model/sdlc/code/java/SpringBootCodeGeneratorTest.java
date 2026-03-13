@@ -3,6 +3,7 @@ package org.setms.swe.domain.model.sdlc.code.java;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
+import java.util.Collection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
@@ -37,16 +39,16 @@ class SpringBootCodeGeneratorTest {
   }
 
   @Test
-  void shouldGenerateController() {
-    var actual = generator.generateControllerFor(workspace.root(), aggregate, command, null, event);
+  void shouldGenerateEndpoint() {
+    var actual = generator.generateEndpointFor(workspace.root(), aggregate, command, null, event);
 
     assertThat(actual)
-        .as("Generated controller artifacts")
-        .anySatisfy(this::assertThatGeneratedCodeIsController)
+        .as("Generated endpoint")
+        .anySatisfy(this::assertThatGeneratedCodeImplementsEndpoint)
         .anySatisfy(this::assertThatGeneratedCodeIsMainClass);
   }
 
-  private void assertThatGeneratedCodeIsController(CodeArtifact actual) {
+  private void assertThatGeneratedCodeImplementsEndpoint(CodeArtifact actual) {
     assertThat(actual.getName()).as("Name").isEqualTo("TodoItemsController");
     assertThat(actual.getPackage()).as("Package").isEqualTo("com.example.todo.inbound.http");
     assertThat(actual.getCode())
@@ -75,8 +77,45 @@ class SpringBootCodeGeneratorTest {
   }
 
   @Test
-  void shouldAddSpringBootPluginWhenGeneratingController() {
-    generator.generateControllerFor(workspace.root(), aggregate, command, null, event);
+  void shouldGenerateEntity() {
+    var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+
+    var actual = generator.generateEntityFor(schema);
+
+    assertThat(actual)
+        .as("SpringBootCodeGenerator should generate a JPA entity and repository for TodoItem")
+        .extracting(CodeArtifact::getName)
+        .contains("TodoItemEntity", "TodoItemRepository");
+    assertThatEntityArtifactHasJpaAnnotations(actual);
+    assertThatRepositoryArtifactExtendsJpaRepository(actual);
+  }
+
+  private void assertThatEntityArtifactHasJpaAnnotations(Collection<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .filteredOn(a -> "TodoItemEntity".equals(a.getName()))
+        .singleElement()
+        .satisfies(
+            entity ->
+                assertThat(entity.getCode())
+                    .as("TodoItemEntity code should have JPA annotations")
+                    .contains("@Entity", "@Id"));
+  }
+
+  private void assertThatRepositoryArtifactExtendsJpaRepository(
+      Collection<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .filteredOn(a -> "TodoItemRepository".equals(a.getName()))
+        .singleElement()
+        .satisfies(
+            repository ->
+                assertThat(repository.getCode())
+                    .as("TodoItemRepository code should extend JpaRepository")
+                    .contains("JpaRepository"));
+  }
+
+  @Test
+  void shouldAddSpringBootPluginWhenGeneratingEndpoint() {
+    generator.generateEndpointFor(workspace.root(), aggregate, command, null, event);
 
     verify(codeBuilder).addBuildPlugin("org.springframework.boot", workspace.root());
     verify(codeBuilder).enableBuildPlugin("io.spring.dependency-management", workspace.root());

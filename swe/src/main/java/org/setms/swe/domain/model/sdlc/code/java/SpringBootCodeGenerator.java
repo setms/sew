@@ -14,6 +14,7 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
@@ -59,7 +60,60 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   }
 
   @Override
-  public List<CodeArtifact> generateControllerFor(
+  public List<CodeArtifact> generateEntityFor(DatabaseSchema schema) {
+    var entityPackage = getTopLevelPackage() + ".infrastructure.repository";
+    var entityName = schema.getName() + "Entity";
+    var repositoryName = schema.getName() + "Repository";
+    return List.of(
+        entityFor(entityPackage, entityName),
+        repositoryFor(entityPackage, entityName, repositoryName));
+  }
+
+  private CodeArtifact entityFor(String entityPackage, String entityName) {
+    var code =
+        """
+        package %s;
+
+        import jakarta.persistence.Entity;
+        import jakarta.persistence.GeneratedValue;
+        import jakarta.persistence.GenerationType;
+        import jakarta.persistence.Id;
+        import java.util.UUID;
+        import lombok.Getter;
+        import lombok.Setter;
+
+        @Entity
+        @Getter
+        @Setter
+        public class %s {
+
+          @Id
+          @GeneratedValue(strategy = GenerationType.UUID)
+          private UUID id;
+        }
+        """
+            .formatted(entityPackage, entityName);
+    return codeArtifact(entityPackage, entityName, code);
+  }
+
+  private CodeArtifact repositoryFor(
+      String entityPackage, String entityName, String repositoryName) {
+    var code =
+        """
+        package %s;
+
+        import java.util.UUID;
+        import org.springframework.data.jpa.repository.JpaRepository;
+
+        public interface %s extends JpaRepository<%s, UUID> {
+        }
+        """
+            .formatted(entityPackage, repositoryName, entityName);
+    return codeArtifact(entityPackage, repositoryName, code);
+  }
+
+  @Override
+  public List<CodeArtifact> generateEndpointFor(
       Resource<?> resource,
       Aggregate aggregate,
       Command command,
