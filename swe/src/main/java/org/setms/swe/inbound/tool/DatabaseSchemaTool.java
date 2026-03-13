@@ -61,6 +61,12 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
                         new Suggestion(CREATE_ENTITY, "Create entity object"))));
   }
 
+  private boolean hasEntityCode(DatabaseSchema schema, ResolvedInputs inputs) {
+    var entityName = schema.getName() + "Entity";
+    return inputs.get(CodeArtifact.class).stream()
+        .anyMatch(code -> code.getName().equals(entityName));
+  }
+
   @Override
   protected AppliedSuggestion doApply(
       Resource<?> resource,
@@ -80,11 +86,5 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
         .frameworkCodeGenerator(inputs, new ArrayList<>())
         .map(generator -> CodeWriter.writeCode(generator.generateEntityFor(schema), resource))
         .orElseGet(AppliedSuggestion::none);
-  }
-
-  private boolean hasEntityCode(DatabaseSchema schema, ResolvedInputs inputs) {
-    var entityName = schema.getName() + "Entity";
-    return inputs.get(CodeArtifact.class).stream()
-        .anyMatch(code -> code.getName().equals(entityName));
   }
 }
