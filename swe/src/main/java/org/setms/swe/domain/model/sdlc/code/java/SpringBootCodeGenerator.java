@@ -60,13 +60,18 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   }
 
   @Override
-  public List<CodeArtifact> generateEntityFor(DatabaseSchema schema) {
+  public List<CodeArtifact> generateEntityFor(DatabaseSchema schema, Resource<?> resource) {
+    ensureSpringBootJpaDependency(resource);
     var entityPackage = getTopLevelPackage() + ".infrastructure.repository";
     var entityName = schema.getName() + "Entity";
     var repositoryName = schema.getName() + "Repository";
     return List.of(
         entityFor(entityPackage, entityName),
         repositoryFor(entityPackage, entityName, repositoryName));
+  }
+
+  private void ensureSpringBootJpaDependency(Resource<?> resource) {
+    codeBuilder.addDependency("org.springframework.boot:spring-boot-starter-data-jpa", resource);
   }
 
   private CodeArtifact entityFor(String entityPackage, String entityName) {

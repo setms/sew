@@ -80,7 +80,7 @@ class SpringBootCodeGeneratorTest {
   void shouldGenerateEntity() {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
 
-    var actual = generator.generateEntityFor(schema);
+    var actual = generator.generateEntityFor(schema, workspace.root());
 
     assertThat(actual)
         .as("SpringBootCodeGenerator should generate a JPA entity and repository for TodoItem")
@@ -111,6 +111,16 @@ class SpringBootCodeGeneratorTest {
                 assertThat(repository.getCode())
                     .as("TodoItemRepository code should extend JpaRepository")
                     .contains("JpaRepository"));
+  }
+
+  @Test
+  void shouldAddJpaDependencyWhenGeneratingEntity() {
+    var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+
+    generator.generateEntityFor(schema, workspace.root());
+
+    verify(codeBuilder)
+        .addDependency("org.springframework.boot:spring-boot-starter-data-jpa", workspace.root());
   }
 
   @Test

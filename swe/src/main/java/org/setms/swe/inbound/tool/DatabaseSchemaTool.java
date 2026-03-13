@@ -84,7 +84,9 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
       Resource<?> resource, DatabaseSchema schema, ResolvedInputs inputs) {
     return resolver
         .frameworkCodeGenerator(inputs, new ArrayList<>())
-        .map(generator -> CodeWriter.writeCode(generator.generateEntityFor(schema), resource))
+        .map(
+            generator ->
+                CodeWriter.writeCode(generator.generateEntityFor(schema, resource), resource))
         .orElseGet(AppliedSuggestion::none);
   }
 }
