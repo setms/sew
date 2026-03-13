@@ -4,16 +4,20 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.databaseSchemas;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
+import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -57,8 +61,30 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
                         new Suggestion(CREATE_ENTITY, "Create entity object"))));
   }
 
+  @Override
+  protected AppliedSuggestion doApply(
+      Resource<?> resource,
+      DatabaseSchema schema,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs) {
+    return switch (suggestionCode) {
+      case CREATE_ENTITY -> generateEntityFor(resource, schema, inputs);
+      default -> AppliedSuggestion.unknown(suggestionCode);
+    };
+  }
+
+  private AppliedSuggestion generateEntityFor(
+      Resource<?> resource, DatabaseSchema schema, ResolvedInputs inputs) {
+    return resolver
+        .frameworkCodeGenerator(inputs, new ArrayList<>())
+        .map(generator -> CodeWriter.writeCode(generator.generateEntityFor(schema), resource))
+        .orElseGet(AppliedSuggestion::none);
+  }
+
   private boolean hasEntityCode(DatabaseSchema schema, ResolvedInputs inputs) {
     var entityName = schema.getName() + "Entity";
-    return inputs.get(CodeArtifact.class).stream().anyMatch(ca -> ca.getName().equals(entityName));
+    return inputs.get(CodeArtifact.class).stream()
+        .anyMatch(code -> code.getName().equals(entityName));
   }
 }
