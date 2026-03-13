@@ -2,8 +2,8 @@ package org.setms.swe.domain.model.sdlc.database.postgresql;
 
 import static org.setms.km.domain.model.format.Strings.toSnakeCase;
 
-import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
 import org.setms.swe.domain.model.sdlc.design.Entity;
@@ -33,12 +33,9 @@ public class PostgreSql implements Database {
   private String columnsFor(Entity entity) {
     var fields = entity.getFields();
     var hasIdField = fields.stream().anyMatch(f -> toSnakeCase(f.getName()).equals("id"));
-    var columns = new ArrayList<String>();
-    if (!hasIdField) {
-      columns.add("  id UUID");
-    }
-    fields.stream().map(this::columnFor).forEach(columns::add);
-    return columns.stream().collect(Collectors.joining(",\n"));
+    var idColumn = hasIdField ? Stream.<String>empty() : Stream.of("  id UUID");
+    return Stream.concat(idColumn, fields.stream().map(this::columnFor))
+        .collect(Collectors.joining(",\n"));
   }
 
   private String columnFor(Field field) {
