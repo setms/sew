@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.format.Format;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.tool.Tool;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -31,6 +32,11 @@ abstract class ResolverToolTestCase<A extends Artifact> extends ToolTestCase<A> 
 
   protected ResolverToolTestCase(Tool tool, Class<A> type, String sourceLocation) {
     super(tool, type, sourceLocation);
+  }
+
+  protected ResolverToolTestCase(
+      Tool tool, Class<? extends Format> formatType, String sourceLocation, String extension) {
+    super(tool, formatType, sourceLocation, extension);
   }
 
   protected Diagnostic givenResolverAddingDiagnostic(TechnologyResolver resolver) {
