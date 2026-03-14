@@ -1,0 +1,6 @@
+package technology
+
+decision Database {
+  topic  = "Database"
+  choice = "PostgreSql"
+}

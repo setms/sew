@@ -31,8 +31,6 @@
 ### Aggregate
 
 - Generate domain object
-- Generate entity
-  - Requires decision on framework (e.g. Spring Boot / Spring Data)
 
 ### Code
 
@@ -49,10 +47,6 @@
 - Conversion to use case scenario:
   - handle multiple activities in single sentence
   - handle computerSystem as System-under-Design vs external system
-
-### Entity
-
-- Move generation of entity object to `AggegrateTool`
 
 ### Glossary
 
