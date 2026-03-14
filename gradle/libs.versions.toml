@@ -23,6 +23,7 @@ slf4j = "2.0.17"
 snakeyaml = "2.6"
 spotless-plugin = "8.3.0"
 spring-boot-plugin = "4.0.3"
+toml4j = "0.7.3"
 validation = "3.1.1"
 validation-el = "4.0.2"
 validation-runtime = "9.1.0.Final"
@@ -54,6 +55,7 @@ spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 spring-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+toml4j = { module = "io.hotmoka:toml4j", version.ref = "toml4j" }
 validation = { module = "jakarta.validation:jakarta.validation-api", version.ref = "validation" }
 validation-el = { module = "org.glassfish:jakarta.el", version.ref = "validation-el" }
 validation-runtime = { module = "org.hibernate.validator:hibernate-validator", version.ref = "validation-runtime" }
@@ -72,6 +74,7 @@ junit-runtime = ["junit5-runtime", "junit5-launcher"]
 slf4f = ["slf4j-api", "slf4j-nop"]
 spring-boot = ["spring-thymeleaf", "spring-validation", "spring-web"]
 spring-test = ["spring-test"]
+toml = ["toml4j"]
 validation = ["validation"]
 validation-runtime = ["validation-runtime", "validation-el"]
 yaml = ["snakeyaml"]

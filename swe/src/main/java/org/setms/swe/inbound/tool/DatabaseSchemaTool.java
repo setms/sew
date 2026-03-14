@@ -3,6 +3,8 @@ package org.setms.swe.inbound.tool;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.databaseSchemas;
+import static org.setms.swe.inbound.tool.Inputs.decisions;
+import static org.setms.swe.inbound.tool.Inputs.initiatives;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +27,7 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 @RequiredArgsConstructor
 public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
 
-  static final String CREATE_ENTITY = "entity.create";
+  static final String CREATE_ENTITY = "entity.object.create";
 
   private final TechnologyResolver resolver;
 
@@ -40,7 +42,10 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return new HashSet<>(code());
+    var result = new HashSet<Input<? extends Artifact>>(code());
+    result.add(decisions());
+    result.add(initiatives());
+    return result;
   }
 
   @Override

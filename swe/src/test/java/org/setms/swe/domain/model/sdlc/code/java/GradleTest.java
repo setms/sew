@@ -14,6 +14,7 @@ import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
+import org.setms.swe.domain.model.sdlc.code.java.gradle.Gradle;
 
 class GradleTest {
 
@@ -38,7 +39,7 @@ class GradleTest {
               assertThat(diagnostic.message()).isEqualTo("Gradle project isn't initialized");
               assertThat(diagnostic.suggestions()).hasSize(1);
               assertThat(diagnostic.suggestions().getFirst().message())
-                  .isEqualTo("Generate build configuration files");
+                  .isEqualTo("Initialize Gradle project");
             });
   }
 

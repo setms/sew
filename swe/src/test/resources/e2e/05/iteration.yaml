@@ -1,6 +1,6 @@
 outputs:
   - src/main/architecture/Todo.components
-  - src/main/design/physical/todo/TodoItem.sql
+  - src/main/design/physical/TodoItem.sql
   - src/main/overview/Project.initiative
 
 inputs:
@@ -9,4 +9,5 @@ inputs:
     alias: Project.initiative
 
 diagnostics:
+  - Missing decision on framework
   - Missing decision on top-level package

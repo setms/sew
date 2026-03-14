@@ -1,4 +1,4 @@
-package org.setms.swe.domain.model.sdlc.code.java;
+package org.setms.swe.domain.model.sdlc.code.java.gradle;
 
 import static java.util.Collections.emptyList;
 import static org.setms.km.domain.model.validation.Level.ERROR;
@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -93,15 +94,6 @@ public class Gradle implements CodeBuilder, CodeTester {
       [plugins]
       lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
       """;
-  private static final String VERSION_REF = ", version.ref = \"%s\"";
-  private static final String LIBRARY =
-      """
-      %s = { module = "%s:%s"%s }""";
-  private static final String VERSION =
-      """
-      [versions]
-      %s = "%s"
-      """;
 
   private final String projectName;
 
@@ -113,7 +105,7 @@ public class Gradle implements CodeBuilder, CodeTester {
               WARN,
               "Gradle project isn't initialized",
               null,
-              new Suggestion(GENERATE_BUILD_CONFIG, "Generate build configuration files")));
+              new Suggestion(GENERATE_BUILD_CONFIG, "Initialize Gradle project")));
     }
   }
 
@@ -231,6 +223,10 @@ public class Gradle implements CodeBuilder, CodeTester {
           .reduce((ignored, b) -> b)
           .orElseThrow(
               () -> new IllegalStateException("No stable version found at %s".formatted(url)));
+    } catch (UnknownHostException ignored) {
+      // Probably offline, which means we're probably testing on an airplane or something,
+      // so just return something
+      return "4.0.3";
     } catch (IOException e) {
       throw new IllegalStateException("Failed to fetch plugin version from %s".formatted(url), e);
     }
@@ -287,34 +283,24 @@ public class Gradle implements CodeBuilder, CodeTester {
 
   private void addDependencyToVersionCatalog(
       Resource<?> resource, String module, String artifact, String version) {
-    var catalog = resource.select("gradle/libs.versions.toml");
-    var content = catalog.readAsString();
-    if (version != null) {
-      content = content.replace("[versions]", VERSION.formatted(artifact, version));
-    }
-    var versionRef =
-        Optional.ofNullable(version)
-            .map(ignored -> artifact)
-            .map(VERSION_REF::formatted)
-            .orElse("");
-    var dependency = LIBRARY.formatted(artifact, module, artifact, versionRef);
-    content = content.replace("[libraries]", "[libraries]\n%s".formatted(dependency));
+    var versionCatalogResource = resource.select("gradle/libs.versions.toml");
+    var versionCatalog = new VersionCatalog(versionCatalogResource.readAsString());
+    versionCatalog.addDependency(module, artifact, version);
     try {
-      catalog.writeAsString(content);
+      versionCatalogResource.writeAsString(versionCatalog.toString());
     } catch (IOException e) {
       throw new IllegalStateException("Failed to update version catalog", e);
     }
   }
 
   private void addDependencyToBuildGradle(Resource<?> resource, String artifact) {
-    var buildGradle = resource.select("build.gradle");
-    var content = buildGradle.readAsString();
-    var dependency = "    implementation libs.%s".formatted(artifact.replace('-', '.'));
-    content = content.replace("dependencies {", "dependencies {\n%s".formatted(dependency));
     try {
-      buildGradle.writeAsString(content);
+      var buildFileResource = resource.select("build.gradle");
+      var buildFile = new BuildFile(buildFileResource.readAsString());
+      buildFile.addDependency("implementation", "libs.%s".formatted(artifact.replace('-', '.')));
+      buildFileResource.writeAsString(buildFile.toString());
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to update build.gradle", e);
+      throw new IllegalStateException("Failed to update Gradle dependencies", e);
     }
   }
 

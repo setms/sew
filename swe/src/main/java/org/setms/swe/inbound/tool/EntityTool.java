@@ -98,7 +98,6 @@ public class EntityTool extends ArtifactTool<Entity> {
           resource
               .select("/")
               .select(Inputs.PATH_PHYSICAL_DESIGN)
-              .select(schema.getPackage().replace('.', '/'))
               .select(schema.getName() + ".sql");
       target.writeAsString(schema.getCode());
       return created(target);

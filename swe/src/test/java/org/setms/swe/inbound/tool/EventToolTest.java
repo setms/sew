@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.SequencedCollection;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
@@ -110,7 +109,6 @@ class EventToolTest extends ResolverToolTestCase<Event> {
     assertThat(payload.readFrom()).hasContent(ENTITY_SKELETON);
   }
 
-  @Disabled("TODO: Enable")
   @Test
   void shouldGenerateCodeForEvent() {
     var entity =

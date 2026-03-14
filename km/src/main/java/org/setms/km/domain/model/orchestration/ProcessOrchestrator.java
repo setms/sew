@@ -1,6 +1,7 @@
 package org.setms.km.domain.model.orchestration;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.none;
 import static org.setms.km.domain.model.validation.Level.ERROR;
@@ -344,7 +345,9 @@ public class ProcessOrchestrator {
   }
 
   public Set<Diagnostic> diagnosticsWithSuggestions() {
-    return diagnostics().stream().filter(Diagnostic::hasSuggestion).collect(toSet());
+    return diagnostics().stream()
+        .filter(Diagnostic::hasSuggestion)
+        .collect(toCollection(TreeSet::new));
   }
 
   private synchronized void artifactDeleted(String path) {

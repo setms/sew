@@ -1,3 +1,3 @@
-package com.example.infrastructure.repository;
+package com.example.outbound.db;
 
 public class ProductEntity {}

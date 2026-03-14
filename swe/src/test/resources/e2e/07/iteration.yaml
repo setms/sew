@@ -1,4 +1,5 @@
 outputs:
+  - src/main/architecture/BuildSystem.decision
   - src/main/java/com/example/todo/domain/model/AddTodoItem.java
   - src/main/java/com/example/todo/domain/model/TodoItemAdded.java
   - src/main/java/com/example/todo/domain/services/TodoItemsService.java
@@ -6,7 +7,12 @@ outputs:
   - src/test/java/com/example/todo/TodoItemsAggregateTest.java
   - src/test/java/com/example/todo/TestDataBuilder.java
 
+inputs:
+  - file: BuildSystem.decision
+    location: src/main/architecture
+
 diagnostics:
-  - Missing decision on build system
-  - Missing decision on framework
+  - Gradle project isn't initialized
   - Missing decision on packaging
+  - Missing endpoint
+  - Missing entity object

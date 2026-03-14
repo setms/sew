@@ -48,7 +48,7 @@ public interface Resource<T extends Resource<T>> {
     try (var input = readFrom()) {
       return readAllAsString(input);
     } catch (IOException e) {
-      return null;
+      return "";
     }
   }
 

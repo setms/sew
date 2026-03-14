@@ -200,6 +200,11 @@ class EndToEndTest {
                             "Diagnostics for applying suggestion %s%s"
                                 .formatted(suggestion.code(), toLocation(diagnostic, "at")))
                         .isEmpty();
+                    assertThat(applied.createdOrChanged())
+                        .as(
+                            "Created or changed after applying <%s>"
+                                .formatted(suggestion.message()))
+                        .isNotEmpty();
                     applied.createdOrChanged().stream().map(Resource::name).forEach(created::add);
                     chat.add(
                         true,

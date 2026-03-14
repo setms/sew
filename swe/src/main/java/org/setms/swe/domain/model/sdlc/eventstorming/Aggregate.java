@@ -1,7 +1,6 @@
 package org.setms.swe.domain.model.sdlc.eventstorming;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,7 +21,6 @@ public class Aggregate extends Artifact {
 
   @NotEmpty private String display;
 
-  @NotNull
   @HasType("entity")
   private Link root;
 
