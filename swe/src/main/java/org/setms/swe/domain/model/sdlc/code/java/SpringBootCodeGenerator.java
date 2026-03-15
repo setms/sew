@@ -8,6 +8,7 @@ import static org.setms.km.domain.model.format.Strings.toSnakeCase;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
@@ -87,12 +88,12 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         """
         package %s;
 
+        import jakarta.persistence.Column;
         import jakarta.persistence.Entity;
         import jakarta.persistence.GeneratedValue;
         import jakarta.persistence.GenerationType;
         import jakarta.persistence.Id;
-        import java.util.UUID;
-        import lombok.Getter;
+        %simport lombok.Getter;
         import lombok.Setter;
 
         @Entity
@@ -102,25 +103,45 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
 
           @Id
           @GeneratedValue(strategy = GenerationType.UUID)
-          private UUID id;
         %s}
         """
-            .formatted(entityPackage, entityName, toFields(fields));
+            .formatted(entityPackage, importsFor(fields), entityName, toFields(fields));
     return codeArtifact(entityPackage, entityName, code);
   }
 
+  private String importsFor(Collection<Field> fields) {
+    return fields.stream()
+        .map(Field::getType)
+        .distinct()
+        .map(this::toJavaType)
+        .map(this::toImport)
+        .filter(Objects::nonNull)
+        .map("import %s;%n"::formatted)
+        .sorted()
+        .collect(joining());
+  }
+
+  private String toImport(String type) {
+    return switch (type) {
+      case "LocalTime", "LocalDate", "LocalDateTime" -> "java.time.%s".formatted(type);
+      case "UUID" -> "java.util.%s".formatted(type);
+      default -> null;
+    };
+  }
+
   private String toFields(Collection<Field> fields) {
-    var result =
-        fields.stream()
-            .map(
-                field ->
-                    "  @Column(\"%s\")%n  private %s"
-                        .formatted(toSnakeCase(field.getName()), toField(field)))
-            .collect(joining(";" + NL + NL));
-    if (!result.isEmpty()) {
-      result += NL;
+    if (fields.isEmpty()) {
+      return "";
     }
-    return result;
+    return "%s;%s"
+        .formatted(
+            fields.stream()
+                .map(
+                    field ->
+                        "  @Column(name = \"%s\")%n  private %s"
+                            .formatted(toSnakeCase(field.getName()), toField(field)))
+                .collect(joining(";" + NL + NL)),
+            NL);
   }
 
   private String toField(Field field) {

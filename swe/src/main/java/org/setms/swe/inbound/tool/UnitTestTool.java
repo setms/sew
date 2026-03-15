@@ -1,6 +1,5 @@
 package org.setms.swe.inbound.tool;
 
-import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.buildConfiguration;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
@@ -8,7 +7,6 @@ import static org.setms.swe.inbound.tool.Inputs.initiatives;
 import static org.setms.swe.inbound.tool.Inputs.unitTestHelpers;
 import static org.setms.swe.inbound.tool.Inputs.unitTests;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,10 +18,7 @@ import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
-import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
-import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
-import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 
@@ -67,21 +62,9 @@ public class UnitTestTool extends ArtifactTool<UnitTest> {
       UnitTest unitTest,
       ResolvedInputs inputs,
       Collection<Diagnostic> diagnostics) {
-    if (Decisions.from(inputs).existFor(BuildSystem.TOPIC)) {
-      technologyResolver
-          .codeTester(inputs, new ArrayList<>())
-          .ifPresent(codeTester -> codeTester.test(resource.root(), diagnostics));
-    } else {
-      diagnostics.add(missingBuildSystemDecision());
-    }
-  }
-
-  private Diagnostic missingBuildSystemDecision() {
-    return new Diagnostic(
-        WARN,
-        "Missing decision on build system",
-        null,
-        new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system"));
+    technologyResolver
+        .codeTester(inputs, diagnostics)
+        .ifPresent(codeTester -> codeTester.test(resource.root(), diagnostics));
   }
 
   @Override

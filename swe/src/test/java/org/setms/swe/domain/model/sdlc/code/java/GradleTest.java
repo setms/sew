@@ -344,7 +344,9 @@ class GradleTest {
     var actual = gradle.applySuggestion("unknown.suggestion", workspace.root());
 
     assertThat(actual.createdOrChanged()).isEmpty();
-    assertThat(actual.diagnostics()).isEmpty();
+    assertThat(actual.diagnostics())
+        .extracting(Diagnostic::message)
+        .containsExactly("Unknown suggestion: unknown.suggestion");
   }
 
   private void createFile(String path, String content) throws IOException {

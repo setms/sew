@@ -103,9 +103,6 @@ public class PostgreSql implements Database {
       return null;
     }
     var name = toPascalCase(matcher.group("name"));
-    if (name.equals("Id")) {
-      name = "ID";
-    }
     var result =
         new Field(new FullyQualifiedName("%s.%s.%s".formatted(packageName, tableName, name)));
     result.setType(toFieldType(matcher.group("type")));

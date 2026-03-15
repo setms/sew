@@ -5,6 +5,9 @@ import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator.CREATE_INITIATIVE;
+import static org.setms.swe.domain.model.sdlc.code.java.gradle.Gradle.GENERATE_BUILD_CONFIG;
+import static org.setms.swe.domain.model.sdlc.packaging.docker.Docker.CREATE_DOCKERFILE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,10 +106,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
 
   private Diagnostic missingInitiative() {
     return new Diagnostic(
-        WARN,
-        "Missing initiative",
-        null,
-        new Suggestion(JavaArtifactGenerator.CREATE_INITIATIVE, "Create initiative"));
+        WARN, "Missing initiative", null, new Suggestion(CREATE_INITIATIVE, "Create initiative"));
   }
 
   private Optional<CodeBuilder> codeBuilderFor(
@@ -186,6 +186,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return switch (packaging) {
       case null -> empty(missingPackagingDecision(), diagnostics);
       case "Docker" -> Optional.of(new Docker(initiative.get().getTitle()));
+      case "None" -> Optional.of((r, d) -> {});
       default ->
           empty(new Diagnostic(ERROR, "Decided on unsupported packaging", null), diagnostics);
     };
@@ -262,15 +263,15 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     return switch (suggestionCode) {
       case PICK_PROGRAMMING_LANGUAGE ->
           pickDecision(resource, PROGRAMMING_LANGUAGE_DECISION, ProgrammingLanguage.TOPIC);
-      case JavaArtifactGenerator.CREATE_INITIATIVE, JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE ->
+      case CREATE_INITIATIVE, JavaArtifactGenerator.PICK_TOP_LEVEL_PACKAGE ->
           JavaArtifactGenerator.applySuggestion(suggestionCode, resource, inputs);
       case PICK_BUILD_SYSTEM -> pickDecision(resource, BuildSystem.TOPIC, BuildSystem.TOPIC);
       case PICK_FRAMEWORK -> pickDecision(resource, Framework.TOPIC, Framework.TOPIC);
       case PICK_PACKAGING -> pickDecision(resource, Packaging.TOPIC, Packaging.TOPIC);
       case PICK_DATABASE ->
           pickDecision(resource, DatabaseTopicProvider.TOPIC, DatabaseTopicProvider.TOPIC);
-      case Docker.CREATE_DOCKERFILE -> applyPackagerSuggestion(resource, inputs);
-      case Gradle.GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
+      case CREATE_DOCKERFILE -> applyPackagerSuggestion(resource, inputs);
+      case GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
     };
   }
@@ -278,14 +279,14 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   private AppliedSuggestion applyPackagerSuggestion(Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
     return codePackager(inputs, diagnostics)
-        .map(packager -> packager.applySuggestion(Docker.CREATE_DOCKERFILE, resource, inputs))
+        .map(packager -> packager.applySuggestion(CREATE_DOCKERFILE, resource, inputs))
         .orElseGet(() -> fromDiagnostics(diagnostics));
   }
 
   private AppliedSuggestion generateBuildConfig(Resource<?> resource, ResolvedInputs inputs) {
     var diagnostics = new ArrayList<Diagnostic>();
     return codeBuilder(resource, inputs, diagnostics)
-        .map(bt -> bt.applySuggestion(Gradle.GENERATE_BUILD_CONFIG, resource))
+        .map(bt -> bt.applySuggestion(GENERATE_BUILD_CONFIG, resource))
         .orElseGet(() -> fromDiagnostics(diagnostics));
   }
 

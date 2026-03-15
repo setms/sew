@@ -35,11 +35,7 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
 
   @Override
   public Set<Input<? extends CodeArtifact>> validationTargets() {
-    var result = new HashSet<Input<? extends CodeArtifact>>();
-    result.addAll(Inputs.code());
-    result.addAll(Inputs.unitTests());
-    result.addAll(Inputs.unitTestHelpers());
-    return result;
+    return new HashSet<Input<? extends CodeArtifact>>(Inputs.code());
   }
 
   @Override
@@ -69,10 +65,7 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
       Collection<Diagnostic> diagnostics) {
     var decisions = Decisions.from(inputs);
     if (decisions.existFor(BuildSystem.TOPIC)) {
-      var root = resource.select("/");
-      technologyResolver
-          .codeBuilder(root, inputs, diagnostics)
-          .ifPresent(codeBuilder -> codeBuilder.build(root, diagnostics));
+      validateBuild(resource, inputs, diagnostics);
     } else {
       diagnostics.add(
           new Diagnostic(
@@ -81,6 +74,24 @@ public class CodeTool extends ArtifactTool<CodeArtifact> {
               null,
               new Suggestion(TechnologyResolverImpl.PICK_BUILD_SYSTEM, "Decide on build system")));
     }
+  }
+
+  private void validateBuild(
+      Resource<?> resource, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var root = resource.select("/");
+    technologyResolver
+        .codeBuilder(root, inputs, diagnostics)
+        .filter(ignored -> diagnostics.isEmpty())
+        .ifPresent(
+            codeBuilder -> {
+              var numDiagnostics = diagnostics.size();
+              codeBuilder.build(root, diagnostics);
+              if (numDiagnostics == diagnostics.size()) {
+                technologyResolver
+                    .codePackager(inputs, diagnostics)
+                    .ifPresent(codePackager -> codePackager.packageCode(root, diagnostics));
+              }
+            });
   }
 
   @Override

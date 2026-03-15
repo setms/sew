@@ -1,5 +1,4 @@
 outputs:
-  - Dockerfile
   - .gitattributes
   - .gitignore
   - build.gradle
@@ -10,3 +9,12 @@ outputs:
   - gradle/wrapper/gradle-wrapper.jar
   - gradle/wrapper/gradle-wrapper.properties
   - settings.gradle
+  - src/main/architecture/Packaging.decision
+
+inputs:
+  - file: Packaging.decision
+    location: src/main/architecture
+
+
+diagnostics:
+  - Missing Dockerfile

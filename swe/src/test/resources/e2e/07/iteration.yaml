@@ -13,6 +13,5 @@ inputs:
 
 diagnostics:
   - Gradle project isn't initialized
-  - Missing decision on packaging
   - Missing endpoint
   - Missing entity object

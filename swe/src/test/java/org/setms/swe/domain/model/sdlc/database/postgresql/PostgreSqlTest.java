@@ -66,7 +66,7 @@ class PostgreSqlTest {
 
   private List<Field> productFields() {
     return List.of(
-        newField("ID", FieldType.ID, false),
+        newField("Id", FieldType.ID, false),
         newField("Name", FieldType.TEXT, false),
         newField("Price", FieldType.NUMBER, true));
   }

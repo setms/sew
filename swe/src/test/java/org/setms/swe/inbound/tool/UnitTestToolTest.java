@@ -45,12 +45,16 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
   }
 
   @Test
-  void shouldRequireCodeTesterWhenUnitTestExists() {
+  void shouldRequireBuildSystemWhenUnitTestExists() {
     var diagnostics = new ArrayList<Diagnostic>();
     var unitTest = newUnitTest();
+    var inputs =
+        new ResolvedInputs()
+            .put("decisions", List.of(programmingLanguageDecision()))
+            .put("initiatives", initiatives());
     var tool = (UnitTestTool) getTool();
 
-    tool.validate(null, unitTest, new ResolvedInputs(), diagnostics);
+    tool.validate(null, unitTest, inputs, diagnostics);
 
     assertThatMissingBuildSystemDiagnosticIsEmitted(diagnostics);
   }
@@ -75,7 +79,7 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
   }
 
   @Test
-  void shouldNotRequireCodeTesterWhenBuildSystemAlreadyDecided() {
+  void shouldNotRequireBuildSystemWhenAlreadyDecided() {
     var diagnostics = new ArrayList<Diagnostic>();
     var unitTest = newUnitTest();
     var inputs = givenInputsWithBuildSystemDecision();
@@ -87,7 +91,14 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
   }
 
   private ResolvedInputs givenInputsWithBuildSystemDecision() {
-    return new ResolvedInputs().put("decisions", List.of(buildSystemDecision()));
+    return new ResolvedInputs()
+        .put("decisions", List.of(buildSystemDecision(), programmingLanguageDecision()));
+  }
+
+  private Decision programmingLanguageDecision() {
+    return new Decision(new FullyQualifiedName("technology", ProgrammingLanguage.TOPIC))
+        .setTopic(ProgrammingLanguage.TOPIC)
+        .setChoice("Java");
   }
 
   private Decision buildSystemDecision() {
@@ -123,20 +134,14 @@ class UnitTestToolTest extends ToolTestCase<UnitTest> {
 
   private ResolvedInputs givenInputsWithAllDecisions() {
     return new ResolvedInputs()
-        .put(
-            "initiatives",
-            List.of(
-                new Initiative(new FullyQualifiedName("overview", "Project"))
-                    .setOrganization("Example")
-                    .setTitle("Project")))
-        .put(
-            "decisions",
-            List.of(
-                new Decision(new FullyQualifiedName("technology", "ProgrammingLanguage"))
-                    .setTopic(ProgrammingLanguage.TOPIC)
-                    .setChoice("Java"),
-                new Decision(new FullyQualifiedName("technology", BuildSystem.TOPIC))
-                    .setTopic(BuildSystem.TOPIC)
-                    .setChoice("Gradle")));
+        .put("initiatives", initiatives())
+        .put("decisions", List.of(programmingLanguageDecision(), buildSystemDecision()));
+  }
+
+  private List<Initiative> initiatives() {
+    return List.of(
+        new Initiative(new FullyQualifiedName("overview", "Project"))
+            .setOrganization("Example")
+            .setTitle("Project"));
   }
 }

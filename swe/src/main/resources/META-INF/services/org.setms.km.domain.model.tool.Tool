@@ -12,6 +12,5 @@ org.setms.swe.inbound.tool.EntityTool
 org.setms.swe.inbound.tool.EventTool
 org.setms.swe.inbound.tool.GlossaryTool
 org.setms.swe.inbound.tool.ModulesTool
-org.setms.swe.inbound.tool.PackagerTool
 org.setms.swe.inbound.tool.UnitTestTool
 org.setms.swe.inbound.tool.UseCaseTool

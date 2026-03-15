@@ -13,6 +13,11 @@ public class Packaging implements TopicProvider {
 
   @Override
   public Set<String> dependsOn() {
-    return Set.of();
+    return Set.of(ProgrammingLanguage.TOPIC);
+  }
+
+  @Override
+  public boolean isValidChoice(String topic, String choice) {
+    return TOPIC.equals(topic) && choice.equals("None");
   }
 }

@@ -1,0 +1,6 @@
+package valid
+
+decision Packaging {
+  topic  = "Packaging"
+  choice = "None"
+}

@@ -24,6 +24,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
+import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
@@ -48,9 +49,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
   @Override
   protected void assertValidationTarget(ArtifactTool<?> tool) {
     var targets = tool.validationTargets();
-    assertThat(targets).hasSize(3);
     assertThat(targets).anySatisfy(input -> assertThat(input.path()).isEqualTo("src/main/java"));
-    assertThat(targets).anySatisfy(input -> assertThat(input.path()).isEqualTo("src/test/java"));
     assertThat(targets)
         .allSatisfy(
             input -> {
@@ -127,6 +126,7 @@ class CodeToolTest extends ToolTestCase<CodeArtifact> {
         List.of(
             decision(ProgrammingLanguage.TOPIC, "Java"),
             decision(TopLevelPackage.TOPIC, "com.example"),
+            decision(Packaging.TOPIC, "None"),
             decision(TOPIC, "Gradle"));
     var inputs =
         new ResolvedInputs().put("decisions", decisions).put("initiatives", List.of(initiative()));

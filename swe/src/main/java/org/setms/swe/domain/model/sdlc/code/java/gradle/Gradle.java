@@ -307,7 +307,7 @@ public class Gradle implements CodeBuilder, CodeTester {
   @Override
   public AppliedSuggestion applySuggestion(String suggestionCode, Resource<?> resource) {
     if (!GENERATE_BUILD_CONFIG.equals(suggestionCode)) {
-      return AppliedSuggestion.none();
+      return AppliedSuggestion.unknown(suggestionCode);
     }
     try {
       initializeIn(resource);
