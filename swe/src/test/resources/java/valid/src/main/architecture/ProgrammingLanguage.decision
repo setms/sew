@@ -1,0 +1,6 @@
+package valid
+
+decision ProgrammingLanguage {
+  topic  = "ProgrammingLanguage"
+  choice = "Java"
+}

@@ -1,0 +1,6 @@
+package valid
+
+initiative Project {
+  organization = "Organization"
+  title        = "Project"
+}
