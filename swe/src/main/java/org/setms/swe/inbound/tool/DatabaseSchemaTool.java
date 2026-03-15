@@ -91,7 +91,10 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
         .frameworkCodeGenerator(inputs, new ArrayList<>())
         .map(
             generator ->
-                CodeWriter.writeCode(generator.generateEntityFor(schema, resource), resource))
+                CodeWriter.writeCode(
+                    generator.generateEntityFor(
+                        schema, resolver.database(inputs, new HashSet<>()).orElseThrow(), resource),
+                    resource))
         .orElseGet(AppliedSuggestion::none);
   }
 }

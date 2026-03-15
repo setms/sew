@@ -2,6 +2,7 @@ outputs:
   - src/main/architecture/Packaging.decision
   - src/main/java/com/example/todo/TodoApplication.java
   - src/main/java/com/example/todo/inbound/http/TodoItemsController.java
+  - src/main/java/com/example/todo/outbound/db/TodoItemEntity.java
 
 inputs:
   - file: Packaging.decision

@@ -24,6 +24,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
+import org.setms.swe.domain.model.sdlc.technology.Database;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
@@ -83,7 +84,9 @@ class DatabaseSchemaToolTest extends ResolverToolTestCase<DatabaseSchema> {
     var generator = mock(FrameworkCodeGenerator.class);
     var resolver = mock(TechnologyResolver.class);
     when(resolver.frameworkCodeGenerator(any(), any())).thenReturn(Optional.of(generator));
-    when(generator.generateEntityFor(any(), any())).thenReturn(List.of());
+    var database = mock(Database.class);
+    when(resolver.database(any(), any())).thenReturn(Optional.of(database));
+    when(generator.generateEntityFor(any(), any(), any())).thenReturn(List.of());
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
 
     new DatabaseSchemaTool(resolver)
@@ -94,6 +97,6 @@ class DatabaseSchemaToolTest extends ResolverToolTestCase<DatabaseSchema> {
             new ResolvedInputs(),
             new InMemoryWorkspace().root());
 
-    verify(generator).generateEntityFor(eq(schema), any());
+    verify(generator).generateEntityFor(eq(schema), any(), any());
   }
 }

@@ -1,9 +1,12 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,10 +16,13 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
+import org.setms.swe.domain.model.sdlc.design.Field;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
+import org.setms.swe.domain.model.sdlc.technology.Database;
 
 @ExtendWith(MockitoExtension.class)
 class SpringBootCodeGeneratorTest {
@@ -79,18 +85,25 @@ class SpringBootCodeGeneratorTest {
   @Test
   void shouldGenerateEntity() {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    var database = mock(Database.class);
+    when(database.extractFieldsFrom(schema))
+        .thenReturn(List.of(newField("Name"), newField("Description")));
 
-    var actual = generator.generateEntityFor(schema, workspace.root());
+    var actual = generator.generateEntityFor(schema, database, workspace.root());
 
     assertThat(actual)
         .as("SpringBootCodeGenerator should generate a JPA entity and repository for TodoItem")
         .extracting(CodeArtifact::getName)
         .contains("TodoItemEntity", "TodoItemRepository");
-    assertThatEntityArtifactHasJpaAnnotations(actual);
+    assertThatJpaEntityIsValid(actual);
     assertThatRepositoryArtifactExtendsJpaRepository(actual);
   }
 
-  private void assertThatEntityArtifactHasJpaAnnotations(Collection<CodeArtifact> artifacts) {
+  private Field newField(String name) {
+    return new Field(new FullyQualifiedName(name)).setType(FieldType.TEXT);
+  }
+
+  private void assertThatJpaEntityIsValid(Collection<CodeArtifact> artifacts) {
     assertThat(artifacts)
         .filteredOn(a -> "TodoItemEntity".equals(a.getName()))
         .singleElement()
@@ -98,7 +111,7 @@ class SpringBootCodeGeneratorTest {
             entity ->
                 assertThat(entity.getCode())
                     .as("TodoItemEntity code should have JPA annotations")
-                    .contains("@Entity", "@Id"));
+                    .contains("@Entity", "@Id", "name", "description"));
   }
 
   private void assertThatRepositoryArtifactExtendsJpaRepository(
@@ -116,8 +129,9 @@ class SpringBootCodeGeneratorTest {
   @Test
   void shouldAddJpaDependencyWhenGeneratingEntity() {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    var database = mock(Database.class);
 
-    generator.generateEntityFor(schema, workspace.root());
+    generator.generateEntityFor(schema, database, workspace.root());
 
     verify(codeBuilder)
         .addDependency("org.springframework.boot:spring-boot-starter-data-jpa", workspace.root());

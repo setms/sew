@@ -1,5 +1,5 @@
 CREATE TABLE todo_item (
-  id UUID,
-  task VARCHAR(255),
+  id UUID PRIMARY KEY,
+  task VARCHAR(255) NOT NULL,
   due_date TIMESTAMPTZ
 );

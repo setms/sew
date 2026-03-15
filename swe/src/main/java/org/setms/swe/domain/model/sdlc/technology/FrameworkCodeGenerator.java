@@ -11,7 +11,8 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 
 public interface FrameworkCodeGenerator {
 
-  List<CodeArtifact> generateEntityFor(DatabaseSchema schema, Resource<?> resource);
+  List<CodeArtifact> generateEntityFor(
+      DatabaseSchema schema, Database database, Resource<?> resource);
 
   List<CodeArtifact> generateEndpointFor(
       Resource<?> resource,

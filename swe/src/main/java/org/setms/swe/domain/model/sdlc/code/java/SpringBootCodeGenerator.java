@@ -1,31 +1,36 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
 import static java.util.stream.Collectors.joining;
+import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.initUpper;
+import static org.setms.km.domain.model.format.Strings.toSnakeCase;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.format.Strings;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
 import org.setms.swe.domain.model.sdlc.design.Entity;
+import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.technology.CodeBuilder;
+import org.setms.swe.domain.model.sdlc.technology.Database;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 
 @Slf4j
 public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     implements FrameworkCodeGenerator, TopicProvider {
 
+  private static final String NL = System.lineSeparator();
   private static final String MAIN_CLASS_CODE =
       """
       package %1$s;
@@ -60,13 +65,14 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   }
 
   @Override
-  public List<CodeArtifact> generateEntityFor(DatabaseSchema schema, Resource<?> resource) {
+  public List<CodeArtifact> generateEntityFor(
+      DatabaseSchema schema, Database database, Resource<?> resource) {
     ensureSpringBootJpaDependency(resource);
     var entityPackage = getTopLevelPackage() + ".outbound.db";
     var entityName = schema.getName() + "Entity";
     var repositoryName = schema.getName() + "Repository";
     return List.of(
-        entityFor(entityPackage, entityName),
+        entityFor(entityPackage, entityName, database.extractFieldsFrom(schema)),
         repositoryFor(entityPackage, entityName, repositoryName));
   }
 
@@ -75,7 +81,8 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         "org.springframework.boot:spring-boot-starter-data-jpa", resource.root());
   }
 
-  private CodeArtifact entityFor(String entityPackage, String entityName) {
+  private CodeArtifact entityFor(
+      String entityPackage, String entityName, Collection<Field> fields) {
     var code =
         """
         package %s;
@@ -96,10 +103,28 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
           @Id
           @GeneratedValue(strategy = GenerationType.UUID)
           private UUID id;
-        }
+        %s}
         """
-            .formatted(entityPackage, entityName);
+            .formatted(entityPackage, entityName, toFields(fields));
     return codeArtifact(entityPackage, entityName, code);
+  }
+
+  private String toFields(Collection<Field> fields) {
+    var result =
+        fields.stream()
+            .map(
+                field ->
+                    "  @Column(\"%s\")%n  private %s"
+                        .formatted(toSnakeCase(field.getName()), toField(field)))
+            .collect(joining(";" + NL + NL));
+    if (!result.isEmpty()) {
+      result += NL;
+    }
+    return result;
+  }
+
+  private String toField(Field field) {
+    return "%s %s".formatted(toJavaType(field.getType()), initLower(field.getName()));
   }
 
   private CodeArtifact repositoryFor(
@@ -204,9 +229,9 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
             .sorted()
             .map("import %s;"::formatted)
             .collect(joining("\n"));
-    var paramName = Strings.initLower(command.getName());
-    var serviceFieldName = Strings.initLower(serviceName);
-    var endpointUrl = "/%s".formatted(Strings.initLower(aggregate.getName()));
+    var paramName = initLower(command.getName());
+    var serviceFieldName = initLower(serviceName);
+    var endpointUrl = "/%s".formatted(initLower(aggregate.getName()));
     var code =
         """
         package %s;

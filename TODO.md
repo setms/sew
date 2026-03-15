@@ -7,6 +7,7 @@
 
 ## End-to-end test
 
+- Fix Docker build issue
 - Finish workflow
 
 

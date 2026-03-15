@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 
 @Getter(AccessLevel.PROTECTED)
 @RequiredArgsConstructor
@@ -22,5 +23,17 @@ abstract class JavaBaseCodeGenerator {
 
   protected static CodeArtifact codeArtifact(String packageName, String name, String code) {
     return new CodeArtifact(new FullyQualifiedName(packageName, name)).setCode(code);
+  }
+
+  protected String toJavaType(FieldType type) {
+    return switch (type) {
+      case TEXT, SELECTION -> "String";
+      case NUMBER -> "int";
+      case BOOLEAN -> "boolean";
+      case DATE -> "LocalDate";
+      case TIME -> "LocalTime";
+      case DATETIME -> "LocalDateTime";
+      case ID -> "UUID";
+    };
   }
 }

@@ -62,18 +62,6 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
     return Optional.ofNullable(payload).map(Entity::getFields).stream().flatMap(Collection::stream);
   }
 
-  private static String toJavaType(FieldType type) {
-    return switch (type) {
-      case TEXT, SELECTION -> "String";
-      case NUMBER -> "int";
-      case BOOLEAN -> "boolean";
-      case DATE -> "LocalDate";
-      case TIME -> "LocalTime";
-      case DATETIME -> "LocalDateTime";
-      case ID -> "UUID";
-    };
-  }
-
   private String importsFor(Entity payload) {
     return fieldsOf(payload)
         .map(f -> toImport(f.getType()))
