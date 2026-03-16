@@ -15,10 +15,13 @@ abstract class JavaBaseCodeGenerator {
   private final String topLevelPackage;
 
   protected String packageFor(Artifact artifact, String additionalPackage) {
-    var lastSegment = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
-    return lastSegment.equals(artifact.getPackage())
+    return applicationName().equals(artifact.getPackage())
         ? "%s.%s".formatted(topLevelPackage, additionalPackage)
         : "%s.%s.%s".formatted(topLevelPackage, artifact.getPackage(), additionalPackage);
+  }
+
+  protected String applicationName() {
+    return topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
   }
 
   protected static CodeArtifact codeArtifact(String packageName, String name, String code) {

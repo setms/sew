@@ -84,9 +84,9 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   }
 
   private void ensureApplicationLocalYml(Database database, Resource<?> resource) {
-    var topLevelPackage = getTopLevelPackage();
-    var appName = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
-    database.localDataSourceUrl(appName).ifPresent(url -> writeApplicationLocalYml(url, resource));
+    database
+        .localDataSourceUrl(applicationName())
+        .ifPresent(url -> writeApplicationLocalYml(url, resource));
   }
 
   private void writeApplicationLocalYml(String dataSourceUrl, Resource<?> resource) {
@@ -211,9 +211,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
 
   private Optional<CodeArtifact> ensureMainClass(Resource<?> resource) {
     var mainPackage = getTopLevelPackage();
-    var mainClass =
-        "%sApplication"
-            .formatted(initUpper(mainPackage.substring(mainPackage.lastIndexOf('.') + 1)));
+    var mainClass = "%sApplication".formatted(initUpper(applicationName()));
     var mainResource =
         resource
             .select("src/main/java")
