@@ -37,6 +37,8 @@ public class Docker implements CodePackager {
           environment:
             SPRING_PROFILES_ACTIVE: local
       """;
+  private static final String DOCKER_COMPOSE_APP_DATASOURCE_URL =
+      "      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/%s\n";
   private static final String DOCKER_COMPOSE_APP_DEPENDS_ON =
       """
           depends_on:
@@ -172,7 +174,8 @@ public class Docker implements CodePackager {
     var result = DOCKER_COMPOSE_APP_SERVICE.formatted(applicationName.toLowerCase());
     if (hasPostgres) {
       result +=
-          DOCKER_COMPOSE_APP_DEPENDS_ON
+          DOCKER_COMPOSE_APP_DATASOURCE_URL.formatted(applicationName.toLowerCase())
+              + DOCKER_COMPOSE_APP_DEPENDS_ON
               + DOCKER_COMPOSE_DB_SERVICE.formatted(applicationName.toLowerCase());
     }
     return result;
