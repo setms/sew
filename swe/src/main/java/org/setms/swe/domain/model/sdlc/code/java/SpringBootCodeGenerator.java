@@ -76,6 +76,11 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     ensureMapStructBuildPlugin(resource);
     ensureDriverDependency(database, resource);
     ensureApplicationLocalYml(database, resource);
+    return entityArtifactsFor(aggregate, schema, database);
+  }
+
+  private List<CodeArtifact> entityArtifactsFor(
+      Aggregate aggregate, DatabaseSchema schema, Database database) {
     var entityPackage = getTopLevelPackage() + ".outbound.db";
     var entityName = schema.getName() + "Entity";
     var repositoryName = schema.getName() + "Repository";
