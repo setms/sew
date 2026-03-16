@@ -84,8 +84,11 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
 
   @Test
   void shouldGenerateDomainObjectCode() {
-    var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
-    var inputs = givenInputsWithAllPrerequisites();
+    var entity = newEntityWithTaskAndDueDate();
+    var aggregate =
+        new Aggregate(new FullyQualifiedName("design", "Projects"))
+            .setRoot(new Link("entity", entity.getName()));
+    var inputs = givenInputsWithAllPrerequisites().put("entities", List.of(entity));
     var workspace = new InMemoryWorkspace();
 
     var actual =
@@ -94,12 +97,14 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
                 aggregate, AggregateTool.GENERATE_DOMAIN_OBJECT, null, inputs, workspace.root());
 
     assertThat(actual.createdOrChanged())
-        .as("Should generate a domain object class for the aggregate")
+        .as("Should generate a domain object record for the aggregate")
         .anySatisfy(
             resource ->
                 assertThat(resource.readAsString())
-                    .as("Generated code should declare the Projects domain class")
-                    .contains("class Projects"));
+                    .as("Generated code should declare the Projects domain record with its fields")
+                    .contains("record Projects")
+                    .contains("String task")
+                    .contains("LocalDate dueDate"));
   }
 
   @Test

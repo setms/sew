@@ -195,9 +195,10 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
 
   private AppliedSuggestion generateDomainObjectFor(
       Resource<?> resource, Aggregate aggregate, ResolvedInputs inputs) {
+    var root = resolvePayload(aggregate, inputs);
     return getResolver()
         .codeGenerator(inputs, new ArrayList<>())
-        .map(generator -> writeCode(generator.generate(aggregate), resource))
+        .map(generator -> writeCode(generator.generate(aggregate, root), resource))
         .orElseGet(AppliedSuggestion::none);
   }
 
