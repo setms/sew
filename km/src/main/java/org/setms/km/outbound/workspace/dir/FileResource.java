@@ -1,6 +1,7 @@
 package org.setms.km.outbound.workspace.dir;
 
 import static io.methvin.watcher.DirectoryChangeEvent.EventType.*;
+import static java.nio.file.Files.readAttributes;
 import static java.util.Comparator.comparing;
 
 import io.methvin.watcher.DirectoryChangeEvent;
@@ -119,7 +120,7 @@ class FileResource implements Resource<FileResource> {
   @Override
   public LocalDateTime createdAt() {
     try {
-      var attrs = java.nio.file.Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+      var attrs = readAttributes(file.toPath(), BasicFileAttributes.class);
       return attrs.creationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     } catch (IOException e) {
       return lastModifiedAt();
