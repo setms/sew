@@ -25,11 +25,4 @@ public interface Database {
   default Optional<String> localDataSourceUrl(String databaseName) {
     return Optional.empty();
   }
-
-  /**
-   * @return the driver dependency coordinate (e.g. "org.postgresql:postgresql"), if any
-   */
-  default Optional<String> driverDependency() {
-    return Optional.empty();
-  }
 }

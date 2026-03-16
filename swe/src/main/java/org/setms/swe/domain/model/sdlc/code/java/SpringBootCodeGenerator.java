@@ -19,6 +19,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
+import org.setms.swe.domain.model.sdlc.database.postgresql.PostgreSql;
 import org.setms.swe.domain.model.sdlc.design.Entity;
 import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
@@ -32,6 +33,8 @@ import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     implements FrameworkCodeGenerator, TopicProvider {
 
+  private static final Map<Class<? extends Database>, String> DRIVER_DEPENDENCIES =
+      Map.of(PostgreSql.class, "org.postgresql:postgresql");
   private static final String NL = System.lineSeparator();
   private static final String MAIN_CLASS_CODE =
       """
@@ -88,8 +91,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   }
 
   private void ensureDriverDependency(Database database, Resource<?> resource) {
-    database
-        .driverDependency()
+    Optional.ofNullable(DRIVER_DEPENDENCIES.get(database.getClass()))
         .ifPresent(dep -> codeBuilder.addRuntimeDependency(dep, resource.root()));
   }
 

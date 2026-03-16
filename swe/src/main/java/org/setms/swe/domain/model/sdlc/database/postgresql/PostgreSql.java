@@ -89,11 +89,6 @@ public class PostgreSql implements Database {
   }
 
   @Override
-  public Optional<String> driverDependency() {
-    return Optional.of("org.postgresql:postgresql");
-  }
-
-  @Override
   public Collection<Field> extractFieldsFrom(DatabaseSchema schema) {
     var script = schema.getCode();
     var index = script.indexOf("CREATE TABLE ");
