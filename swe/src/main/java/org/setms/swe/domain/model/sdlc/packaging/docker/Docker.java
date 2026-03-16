@@ -125,14 +125,6 @@ public class Docker implements CodePackager {
     }
   }
 
-  private String dockerComposeFor(Decisions decisions) {
-    var result = DOCKER_COMPOSE_APP_SERVICE.formatted(applicationName.toLowerCase());
-    if ("PostgreSql".equals(decisions.about(DatabaseTopicProvider.TOPIC))) {
-      result += DOCKER_COMPOSE_POSTGRES_SERVICE;
-    }
-    return result;
-  }
-
   private String dockerFileFor(Decisions decisions) {
     var programmingLanguage = decisions.about(ProgrammingLanguage.TOPIC);
     return switch (programmingLanguage) {
@@ -155,5 +147,13 @@ public class Docker implements CodePackager {
   private String gradleDockerFileFor() {
     return JAVA_DOCKERFILE.formatted(
         "COPY build/libs/%s.jar /app/app.jar".formatted(applicationName));
+  }
+
+  private String dockerComposeFor(Decisions decisions) {
+    var result = DOCKER_COMPOSE_APP_SERVICE.formatted(applicationName.toLowerCase());
+    if ("PostgreSql".equals(decisions.about(DatabaseTopicProvider.TOPIC))) {
+      result += DOCKER_COMPOSE_POSTGRES_SERVICE;
+    }
+    return result;
   }
 }
