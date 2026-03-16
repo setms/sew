@@ -180,6 +180,16 @@ class SpringBootCodeGeneratorTest {
   }
 
   @Test
+  void shouldAddMapStructBuildPluginWhenGeneratingEntity() {
+    var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    var database = mock(Database.class);
+
+    generator.generateEntityFor(schema, database, workspace.root());
+
+    verify(codeBuilder).addBuildPlugin("com.github.akazver.mapstruct", workspace.root());
+  }
+
+  @Test
   void shouldAddSpringBootPluginWhenGeneratingEndpoint() {
     generator.generateEndpointFor(workspace.root(), aggregate, command, null, event);
 

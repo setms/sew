@@ -73,6 +73,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   public List<CodeArtifact> generateEntityFor(
       DatabaseSchema schema, Database database, Resource<?> resource) {
     ensureSpringBootJpaDependency(resource);
+    ensureMapStructBuildPlugin(resource);
     ensureDriverDependency(database, resource);
     ensureApplicationLocalYml(database, resource);
     var entityPackage = getTopLevelPackage() + ".outbound.db";
@@ -88,6 +89,10 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         "org.springframework.boot:spring-boot-starter-data-jpa", resource.root());
     codeBuilder.configureTask(
         "bootRun", Map.of("spring.profiles.active", "local"), resource.root());
+  }
+
+  private void ensureMapStructBuildPlugin(Resource<?> resource) {
+    codeBuilder.addBuildPlugin("com.github.akazver.mapstruct", resource.root());
   }
 
   private void ensureDriverDependency(Database database, Resource<?> resource) {
