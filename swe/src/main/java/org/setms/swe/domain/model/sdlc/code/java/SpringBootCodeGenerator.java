@@ -110,6 +110,8 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
               """
               spring:
                 datasource:
+                  password: password
+                  username: postgres
                   url: %s
               """
                   .formatted(dataSourceUrl));
