@@ -168,6 +168,16 @@ class SpringBootCodeGeneratorTest {
   }
 
   @Test
+  void shouldAddPostgresqlDriverWhenGeneratingEntityForPostgreSql() {
+    var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    schema.setCode("CREATE TABLE todo_item (id UUID PRIMARY KEY);");
+
+    generator.generateEntityFor(schema, new PostgreSql(), workspace.root());
+
+    verify(codeBuilder).addRuntimeDependency("org.postgresql:postgresql", workspace.root());
+  }
+
+  @Test
   void shouldAddSpringBootPluginWhenGeneratingEndpoint() {
     generator.generateEndpointFor(workspace.root(), aggregate, command, null, event);
 

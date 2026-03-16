@@ -49,6 +49,14 @@ public interface CodeBuilder {
   void addDependency(String dependency, Resource<?> resource);
 
   /**
+   * Add a runtime-only dependency to the project.
+   *
+   * @param dependency the dependency ID (e.g. "org.postgresql:postgresql")
+   * @param resource the project root resource
+   */
+  void addRuntimeDependency(String dependency, Resource<?> resource);
+
+  /**
    * Configure a build task with the given properties.
    *
    * @param task the task name (e.g. "bootRun")

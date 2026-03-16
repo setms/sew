@@ -97,6 +97,14 @@ public class Gradle implements CodeBuilder, CodeTester {
       lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
       """;
   private static final String LATEST_KNOWN_GRADLE_VERSION = "4.0.3";
+  private static final String TASKS_BLOCK =
+      """
+
+
+      tasks.named('%s') {
+      %s
+      }
+      """;
 
   private final String projectName;
 
@@ -308,6 +316,25 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   @Override
+  public void addRuntimeDependency(String dependency, Resource<?> resource) {
+    initializeIn(resource);
+    var parts = dependency.split(":");
+    addDependencyToVersionCatalog(resource, parts[0], parts[1], parts.length < 3 ? null : parts[2]);
+    addRuntimeDependencyToBuildGradle(resource, parts[1]);
+  }
+
+  private void addRuntimeDependencyToBuildGradle(Resource<?> resource, String artifact) {
+    try {
+      var buildFileResource = resource.select("build.gradle");
+      var buildFile = new BuildFile(buildFileResource.readAsString());
+      buildFile.addDependency("runtimeOnly", "libs.%s".formatted(artifact.replace('-', '.')));
+      buildFileResource.writeAsString(buildFile.toString());
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to update Gradle runtime dependencies", e);
+    }
+  }
+
+  @Override
   public void configureTask(String task, Map<String, String> configuration, Resource<?> resource) {
     try {
       var buildFileResource = resource.select("build.gradle");
@@ -315,14 +342,7 @@ public class Gradle implements CodeBuilder, CodeTester {
           configuration.entrySet().stream()
               .map(e -> "    systemProperty '%s', '%s'".formatted(e.getKey(), e.getValue()))
               .collect(joining("\n"));
-      var taskBlock =
-          """
-
-          tasks.named('%s') {
-          %s
-          }
-          """
-              .formatted(task, properties);
+      var taskBlock = TASKS_BLOCK.formatted(task, properties);
       buildFileResource.writeAsString(buildFileResource.readAsString().stripTrailing() + taskBlock);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to configure task %s".formatted(task), e);
