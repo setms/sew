@@ -197,9 +197,11 @@ class DockerTest {
   private void assertThatDockerComposeHasAppBuildInstruction(Resource<?> resource) {
     assertThat(resource.name()).as("Resource name").isEqualTo("docker-compose.yml");
     assertThat(resource.readAsString())
-        .as("docker-compose.yml should include build instruction under include-app profile")
+        .as(
+            "docker-compose.yml should include build instruction under include-app profile and no depends_on without a database")
         .contains("build: .")
-        .contains("include-app");
+        .contains("include-app")
+        .doesNotContain("depends_on:");
   }
 
   @Test
@@ -225,8 +227,13 @@ class DockerTest {
   private void assertThatDockerComposeHasPostgreSqlContainer(Resource<?> resource) {
     assertThat(resource.name()).as("Resource name").isEqualTo("docker-compose.yml");
     assertThat(resource.readAsString())
-        .as("docker-compose.yml should include a postgres service with POSTGRES_PASSWORD set")
+        .as(
+            "docker-compose.yml should include a 'db' service with postgres image, POSTGRES_PASSWORD, health check, and app depends_on")
+        .contains("db:")
+        .doesNotContain("postgres:")
         .contains("image: postgres")
-        .contains("POSTGRES_PASSWORD:");
+        .contains("POSTGRES_PASSWORD:")
+        .contains("pg_isready")
+        .contains("depends_on:");
   }
 }

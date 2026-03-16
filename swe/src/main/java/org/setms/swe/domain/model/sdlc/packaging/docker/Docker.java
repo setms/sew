@@ -35,12 +35,23 @@ public class Docker implements CodePackager {
           profiles:
             - include-app
       """;
-  private static final String DOCKER_COMPOSE_POSTGRES_SERVICE =
+  private static final String DOCKER_COMPOSE_APP_DEPENDS_ON =
       """
-        postgres:
+          depends_on:
+            db:
+              condition: service_healthy
+      """;
+  private static final String DOCKER_COMPOSE_DB_SERVICE =
+      """
+        db:
           image: postgres
           environment:
             POSTGRES_PASSWORD: password
+          healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
       """;
   private static final String NEUTRAL_DOCKERFILE =
       """
@@ -152,9 +163,10 @@ public class Docker implements CodePackager {
   }
 
   private String dockerComposeFor(Decisions decisions) {
+    var hasPostgres = "PostgreSql".equals(decisions.about(DatabaseTopicProvider.TOPIC));
     var result = DOCKER_COMPOSE_APP_SERVICE.formatted(applicationName.toLowerCase());
-    if ("PostgreSql".equals(decisions.about(DatabaseTopicProvider.TOPIC))) {
-      result += DOCKER_COMPOSE_POSTGRES_SERVICE;
+    if (hasPostgres) {
+      result += DOCKER_COMPOSE_APP_DEPENDS_ON + DOCKER_COMPOSE_DB_SERVICE;
     }
     return result;
   }
