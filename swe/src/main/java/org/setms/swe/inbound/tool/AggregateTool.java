@@ -45,6 +45,7 @@ import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 public class AggregateTool extends DtoCodeTool<Aggregate> {
 
+  static final String GENERATE_DOMAIN_OBJECT = "domainObject.generate";
   static final String GENERATE_SERVICE = "service.generate";
   static final String GENERATE_ENDPOINT = "endpoint.generate";
   static final String GENERATE_SCHEMA = "schema.generate";
@@ -80,10 +81,23 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (hasAggregateScenario(aggregate, inputs)
         && getResolver().codeGenerator(inputs, diagnostics).isPresent()) {
+      validateDomainObject(aggregate, inputs, diagnostics);
       validateDomainService(aggregate, inputs, diagnostics);
       validateController(aggregate, inputs, diagnostics);
     }
     validateRootEntity(aggregate, inputs, diagnostics);
+  }
+
+  private void validateDomainObject(
+      Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    if (missesCode(aggregate, "", inputs)) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing domain object",
+              aggregate.toLocation(),
+              new Suggestion(GENERATE_DOMAIN_OBJECT, "Generate domain object")));
+    }
   }
 
   private void validateDomainService(

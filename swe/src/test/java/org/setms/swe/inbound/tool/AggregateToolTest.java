@@ -44,14 +44,14 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
   }
 
   @Test
-  void shouldWarnAboutMissingDomainService() {
+  void shouldWarnAboutMissingDomainObject() {
     var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
     var inputs = givenInputsWithAggregateScenario(aggregate);
     var diagnostics = new ArrayList<Diagnostic>();
 
     ((AggregateTool) getTool()).validate(aggregate, inputs, diagnostics);
 
-    assertThatDiagnosticsWarnAboutMissingDomainService(diagnostics);
+    assertThatDiagnosticsWarnAboutMissingDomainObject(diagnostics);
   }
 
   private ResolvedInputs givenInputsWithAggregateScenario(Aggregate aggregate) {
@@ -62,6 +62,35 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
             .setVariables(List.of())
             .setScenarios(List.of(scenario));
     return givenInputsWithAllPrerequisites().put("acceptanceTests", List.of(acceptanceTest));
+  }
+
+  private void assertThatDiagnosticsWarnAboutMissingDomainObject(
+      Collection<Diagnostic> diagnostics) {
+    assertThat(diagnostics)
+        .as("Should warn about missing domain object with a suggestion to generate it")
+        .anySatisfy(
+            d -> {
+              assertThat(d.level()).as("Level").isEqualTo(WARN);
+              assertThat(d.message()).as("Message").isEqualTo("Missing domain object");
+              assertThat(d.suggestions())
+                  .hasSize(1)
+                  .allSatisfy(
+                      s ->
+                          assertThat(s.message())
+                              .as("Suggestion")
+                              .isEqualTo("Generate domain object"));
+            });
+  }
+
+  @Test
+  void shouldWarnAboutMissingDomainService() {
+    var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
+    var inputs = givenInputsWithAggregateScenario(aggregate);
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    ((AggregateTool) getTool()).validate(aggregate, inputs, diagnostics);
+
+    assertThatDiagnosticsWarnAboutMissingDomainService(diagnostics);
   }
 
   private void assertThatDiagnosticsWarnAboutMissingDomainService(
