@@ -15,6 +15,7 @@ import static org.setms.swe.domain.model.sdlc.design.FieldType.TIME;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -80,6 +81,11 @@ public class PostgreSql implements Database {
       case TIME -> "TIME";
       case DATETIME -> "TIMESTAMPTZ";
     };
+  }
+
+  @Override
+  public Optional<String> localDataSourceUrl(String databaseName) {
+    return Optional.of("jdbc:postgresql://localhost:5432/" + databaseName);
   }
 
   @Override

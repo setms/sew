@@ -69,6 +69,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   public List<CodeArtifact> generateEntityFor(
       DatabaseSchema schema, Database database, Resource<?> resource) {
     ensureSpringBootJpaDependency(resource);
+    ensureApplicationLocalYml(database, resource);
     var entityPackage = getTopLevelPackage() + ".outbound.db";
     var entityName = schema.getName() + "Entity";
     var repositoryName = schema.getName() + "Repository";
@@ -80,6 +81,29 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   private void ensureSpringBootJpaDependency(Resource<?> resource) {
     codeBuilder.addDependency(
         "org.springframework.boot:spring-boot-starter-data-jpa", resource.root());
+  }
+
+  private void ensureApplicationLocalYml(Database database, Resource<?> resource) {
+    var topLevelPackage = getTopLevelPackage();
+    var appName = topLevelPackage.substring(topLevelPackage.lastIndexOf('.') + 1);
+    database.localDataSourceUrl(appName).ifPresent(url -> writeApplicationLocalYml(url, resource));
+  }
+
+  private void writeApplicationLocalYml(String dataSourceUrl, Resource<?> resource) {
+    try {
+      resource
+          .root()
+          .select("src/main/resources/application-local.yml")
+          .writeAsString(
+              """
+              spring:
+                datasource:
+                  url: %s
+              """
+                  .formatted(dataSourceUrl));
+    } catch (Exception e) {
+      log.error("Failed to write application-local.yml", e);
+    }
   }
 
   private CodeArtifact entityFor(

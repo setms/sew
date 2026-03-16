@@ -16,6 +16,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
+import org.setms.swe.domain.model.sdlc.database.postgresql.PostgreSql;
 import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
@@ -124,6 +125,23 @@ class SpringBootCodeGeneratorTest {
                 assertThat(repository.getCode())
                     .as("TodoItemRepository code should extend JpaRepository")
                     .contains("JpaRepository"));
+  }
+
+  @Test
+  void shouldCreateApplicationLocalYmlWithDataSourceUrlForPostgreSql() {
+    var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    schema.setCode("CREATE TABLE todo_item (id UUID PRIMARY KEY);");
+
+    generator.generateEntityFor(schema, new PostgreSql(), workspace.root());
+
+    var actual = workspace.root().select("src/main/resources/application-local.yml");
+    assertThat(actual.exists())
+        .as("application-local.yml should be created when generating entity for PostgreSQL")
+        .isTrue();
+    assertThat(actual.readAsString())
+        .as(
+            "application-local.yml should configure Spring datasource URL to connect to local PostgreSQL database 'todo'")
+        .contains("jdbc:postgresql://localhost:5432/todo");
   }
 
   @Test
