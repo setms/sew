@@ -8,6 +8,7 @@ import static org.setms.km.domain.model.format.Strings.toSnakeCase;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -81,6 +82,8 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   private void ensureSpringBootJpaDependency(Resource<?> resource) {
     codeBuilder.addDependency(
         "org.springframework.boot:spring-boot-starter-data-jpa", resource.root());
+    codeBuilder.configureTask(
+        "bootRun", Map.of("spring.profiles.active", "local"), resource.root());
   }
 
   private void ensureApplicationLocalYml(Database database, Resource<?> resource) {

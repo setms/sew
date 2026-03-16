@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -153,6 +154,17 @@ class SpringBootCodeGeneratorTest {
 
     verify(codeBuilder)
         .addDependency("org.springframework.boot:spring-boot-starter-data-jpa", workspace.root());
+  }
+
+  @Test
+  void shouldConfigureBootRunWithLocalProfileWhenGeneratingEntity() {
+    var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    var database = mock(Database.class);
+
+    generator.generateEntityFor(schema, database, workspace.root());
+
+    verify(codeBuilder)
+        .configureTask("bootRun", Map.of("spring.profiles.active", "local"), workspace.root());
   }
 
   @Test
