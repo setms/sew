@@ -88,36 +88,6 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     return result;
   }
 
-  private CodeArtifact mapperFor(
-      String entityPackage, String entityName, String mapperName, Aggregate aggregate) {
-    var aggregateName = aggregate.getName();
-    var aggregateFqn = "%s.%s".formatted(packageFor(aggregate, "domain.model"), aggregateName);
-    var code =
-        """
-        package %s;
-
-        import %s;
-        import org.mapstruct.Mapper;
-
-        @Mapper
-        public interface %s {
-
-          %s toAggregate(%s entity);
-
-          %s toEntity(%s aggregate);
-        }
-        """
-            .formatted(
-                entityPackage,
-                aggregateFqn,
-                mapperName,
-                aggregateName,
-                entityName,
-                entityName,
-                aggregateName);
-    return codeArtifact(entityPackage, mapperName, code);
-  }
-
   private void ensureSpringBootJpaDependency(Resource<?> resource) {
     codeBuilder.addDependency(
         "org.springframework.boot:spring-boot-starter-data-jpa", resource.root());
@@ -239,6 +209,36 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         """
             .formatted(entityPackage, repositoryName, entityName);
     return codeArtifact(entityPackage, repositoryName, code);
+  }
+
+  private CodeArtifact mapperFor(
+      String entityPackage, String entityName, String mapperName, Aggregate aggregate) {
+    var aggregateName = aggregate.getName();
+    var aggregateFqn = "%s.%s".formatted(packageFor(aggregate, "domain.model"), aggregateName);
+    var code =
+        """
+        package %s;
+
+        import %s;
+        import org.mapstruct.Mapper;
+
+        @Mapper
+        public interface %s {
+
+          %s toAggregate(%s entity);
+
+          %s toEntity(%s aggregate);
+        }
+        """
+            .formatted(
+                entityPackage,
+                aggregateFqn,
+                mapperName,
+                aggregateName,
+                entityName,
+                entityName,
+                aggregateName);
+    return codeArtifact(entityPackage, mapperName, code);
   }
 
   @Override
