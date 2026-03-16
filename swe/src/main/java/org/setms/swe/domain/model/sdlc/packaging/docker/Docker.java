@@ -26,6 +26,14 @@ import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 public class Docker implements CodePackager {
 
   public static final String CREATE_DOCKERFILE = "dockerfile.create";
+  private static final String DOCKER_COMPOSE =
+      """
+      services:
+        %s:
+          build: .
+          profiles:
+            - include-app
+      """;
   private static final String NEUTRAL_DOCKERFILE =
       """
       FROM ubuntu:latest
@@ -102,7 +110,9 @@ public class Docker implements CodePackager {
     try {
       var dockerfile = resource.select("/Dockerfile");
       dockerfile.writeAsString(dockerFileFor(Decisions.from(inputs)));
-      return created(dockerfile);
+      var dockerCompose = resource.select("/docker-compose.yml");
+      dockerCompose.writeAsString(DOCKER_COMPOSE.formatted(applicationName.toLowerCase()));
+      return created(dockerfile).with(dockerCompose);
     } catch (Exception e) {
       return failedWith(e);
     }

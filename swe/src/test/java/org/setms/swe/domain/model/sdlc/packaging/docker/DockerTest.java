@@ -179,4 +179,25 @@ class DockerTest {
     isJavaDockerFile(assertThatDockerfile);
     assertThatDockerfile.contains("COPY build/libs/%s.jar /app/app.jar".formatted(PROJECT_NAME));
   }
+
+  @Test
+  void shouldCreateDockerComposeFile(@TempDir File tempDir) {
+    workspace = new DirectoryWorkspace(tempDir);
+
+    var applied =
+        new Docker(PROJECT_NAME)
+            .applySuggestion(Docker.CREATE_DOCKERFILE, workspace.root(), new ResolvedInputs());
+
+    assertThat(applied.createdOrChanged())
+        .as("Should create docker-compose.yml alongside Dockerfile")
+        .anySatisfy(this::assertThatDockerComposeHasAppBuildInstruction);
+  }
+
+  private void assertThatDockerComposeHasAppBuildInstruction(Resource<?> resource) {
+    assertThat(resource.name()).as("Resource name").isEqualTo("docker-compose.yml");
+    assertThat(resource.readAsString())
+        .as("docker-compose.yml should include build instruction under include-app profile")
+        .contains("build: .")
+        .contains("include-app");
+  }
 }
