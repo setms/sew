@@ -12,7 +12,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 public interface FrameworkCodeGenerator {
 
   List<CodeArtifact> generateEntityFor(
-      DatabaseSchema schema, Database database, Resource<?> resource);
+      Aggregate aggregate, DatabaseSchema schema, Database database, Resource<?> resource);
 
   List<CodeArtifact> generateEndpointFor(
       Resource<?> resource,

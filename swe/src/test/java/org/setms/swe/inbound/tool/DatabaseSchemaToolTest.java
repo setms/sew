@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,7 +87,7 @@ class DatabaseSchemaToolTest extends ResolverToolTestCase<DatabaseSchema> {
     when(resolver.frameworkCodeGenerator(any(), any())).thenReturn(Optional.of(generator));
     var database = mock(Database.class);
     when(resolver.database(any(), any())).thenReturn(Optional.of(database));
-    when(generator.generateEntityFor(any(), any(), any())).thenReturn(List.of());
+    when(generator.generateEntityFor(any(), any(), any(), any())).thenReturn(List.of());
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
 
     new DatabaseSchemaTool(resolver)
@@ -97,6 +98,6 @@ class DatabaseSchemaToolTest extends ResolverToolTestCase<DatabaseSchema> {
             new ResolvedInputs(),
             new InMemoryWorkspace().root());
 
-    verify(generator).generateEntityFor(eq(schema), any(), any());
+    verify(generator).generateEntityFor(isNull(), eq(schema), any(), any());
   }
 }

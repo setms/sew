@@ -71,7 +71,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
 
   @Override
   public List<CodeArtifact> generateEntityFor(
-      DatabaseSchema schema, Database database, Resource<?> resource) {
+      Aggregate aggregate, DatabaseSchema schema, Database database, Resource<?> resource) {
     ensureSpringBootJpaDependency(resource);
     ensureMapStructBuildPlugin(resource);
     ensureDriverDependency(database, resource);
@@ -79,9 +79,43 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     var entityPackage = getTopLevelPackage() + ".outbound.db";
     var entityName = schema.getName() + "Entity";
     var repositoryName = schema.getName() + "Repository";
-    return List.of(
-        entityFor(entityPackage, entityName, database.extractFieldsFrom(schema)),
-        repositoryFor(entityPackage, entityName, repositoryName));
+    var mapperName = schema.getName() + "Mapper";
+    var result = new ArrayList<CodeArtifact>();
+    result.add(entityFor(entityPackage, entityName, database.extractFieldsFrom(schema)));
+    result.add(repositoryFor(entityPackage, entityName, repositoryName));
+    Optional.ofNullable(aggregate)
+        .ifPresent(a -> result.add(mapperFor(entityPackage, entityName, mapperName, a)));
+    return result;
+  }
+
+  private CodeArtifact mapperFor(
+      String entityPackage, String entityName, String mapperName, Aggregate aggregate) {
+    var aggregateName = aggregate.getName();
+    var aggregateFqn = "%s.%s".formatted(packageFor(aggregate, "domain.model"), aggregateName);
+    var code =
+        """
+        package %s;
+
+        import %s;
+        import org.mapstruct.Mapper;
+
+        @Mapper
+        public interface %s {
+
+          %s toAggregate(%s entity);
+
+          %s toEntity(%s aggregate);
+        }
+        """
+            .formatted(
+                entityPackage,
+                aggregateFqn,
+                mapperName,
+                aggregateName,
+                entityName,
+                entityName,
+                aggregateName);
+    return codeArtifact(entityPackage, mapperName, code);
   }
 
   private void ensureSpringBootJpaDependency(Resource<?> resource) {

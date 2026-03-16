@@ -91,14 +91,16 @@ class SpringBootCodeGeneratorTest {
     when(database.extractFieldsFrom(schema))
         .thenReturn(List.of(newField("Name"), newField("Description")));
 
-    var actual = generator.generateEntityFor(schema, database, workspace.root());
+    var actual = generator.generateEntityFor(aggregate, schema, database, workspace.root());
 
     assertThat(actual)
-        .as("SpringBootCodeGenerator should generate a JPA entity and repository for TodoItem")
+        .as(
+            "SpringBootCodeGenerator should generate a JPA entity, repository, and MapStruct mapper for TodoItem")
         .extracting(CodeArtifact::getName)
-        .contains("TodoItemEntity", "TodoItemRepository");
+        .contains("TodoItemEntity", "TodoItemRepository", "TodoItemMapper");
     assertThatJpaEntityIsValid(actual);
     assertThatRepositoryArtifactExtendsJpaRepository(actual);
+    assertThatMapperConvertsToAndFromAggregateDomainObject(actual);
   }
 
   private Field newField(String name) {
@@ -128,12 +130,27 @@ class SpringBootCodeGeneratorTest {
                     .contains("JpaRepository"));
   }
 
+  private void assertThatMapperConvertsToAndFromAggregateDomainObject(
+      Collection<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .filteredOn(a -> "TodoItemMapper".equals(a.getName()))
+        .singleElement()
+        .satisfies(
+            mapper ->
+                assertThat(mapper.getCode())
+                    .as(
+                        "MapStruct mapper should convert between TodoItems aggregate domain object and TodoItemEntity")
+                    .contains("@Mapper")
+                    .contains("TodoItems toAggregate(TodoItemEntity entity)")
+                    .contains("TodoItemEntity toEntity(TodoItems aggregate)"));
+  }
+
   @Test
   void shouldCreateApplicationLocalYmlWithDataSourceUrlForPostgreSql() {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
     schema.setCode("CREATE TABLE todo_item (id UUID PRIMARY KEY);");
 
-    generator.generateEntityFor(schema, new PostgreSql(), workspace.root());
+    generator.generateEntityFor(aggregate, schema, new PostgreSql(), workspace.root());
 
     var actual = workspace.root().select("src/main/resources/application-local.yml");
     assertThat(actual.exists())
@@ -152,7 +169,7 @@ class SpringBootCodeGeneratorTest {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
     var database = mock(Database.class);
 
-    generator.generateEntityFor(schema, database, workspace.root());
+    generator.generateEntityFor(aggregate, schema, database, workspace.root());
 
     verify(codeBuilder)
         .addDependency("org.springframework.boot:spring-boot-starter-data-jpa", workspace.root());
@@ -163,7 +180,7 @@ class SpringBootCodeGeneratorTest {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
     var database = mock(Database.class);
 
-    generator.generateEntityFor(schema, database, workspace.root());
+    generator.generateEntityFor(aggregate, schema, database, workspace.root());
 
     verify(codeBuilder)
         .configureTask("bootRun", Map.of("spring.profiles.active", "local"), workspace.root());
@@ -174,7 +191,7 @@ class SpringBootCodeGeneratorTest {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
     schema.setCode("CREATE TABLE todo_item (id UUID PRIMARY KEY);");
 
-    generator.generateEntityFor(schema, new PostgreSql(), workspace.root());
+    generator.generateEntityFor(aggregate, schema, new PostgreSql(), workspace.root());
 
     verify(codeBuilder).addRuntimeDependency("org.postgresql:postgresql", workspace.root());
   }
@@ -184,7 +201,7 @@ class SpringBootCodeGeneratorTest {
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
     var database = mock(Database.class);
 
-    generator.generateEntityFor(schema, database, workspace.root());
+    generator.generateEntityFor(aggregate, schema, database, workspace.root());
 
     verify(codeBuilder).addBuildPlugin("com.github.akazver.mapstruct", workspace.root());
   }
