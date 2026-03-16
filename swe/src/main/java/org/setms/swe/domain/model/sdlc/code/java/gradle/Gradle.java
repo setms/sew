@@ -286,10 +286,19 @@ public class Gradle implements CodeBuilder, CodeTester {
 
   @Override
   public void addDependency(String dependency, Resource<?> resource) {
+    addScopedDependency(dependency, "implementation", resource);
+  }
+
+  @Override
+  public void addRuntimeDependency(String dependency, Resource<?> resource) {
+    addScopedDependency(dependency, "runtimeOnly", resource);
+  }
+
+  private void addScopedDependency(String dependency, String scope, Resource<?> resource) {
     initializeIn(resource);
     var parts = dependency.split(":");
     addDependencyToVersionCatalog(resource, parts[0], parts[1], parts.length < 3 ? null : parts[2]);
-    addDependencyToBuildGradle(resource, parts[1]);
+    addDependencyToBuildGradle(resource, parts[1], scope);
   }
 
   private void addDependencyToVersionCatalog(
@@ -304,33 +313,14 @@ public class Gradle implements CodeBuilder, CodeTester {
     }
   }
 
-  private void addDependencyToBuildGradle(Resource<?> resource, String artifact) {
+  private void addDependencyToBuildGradle(Resource<?> resource, String artifact, String scope) {
     try {
       var buildFileResource = resource.select("build.gradle");
       var buildFile = new BuildFile(buildFileResource.readAsString());
-      buildFile.addDependency("implementation", "libs.%s".formatted(artifact.replace('-', '.')));
+      buildFile.addDependency(scope, "libs.%s".formatted(artifact.replace('-', '.')));
       buildFileResource.writeAsString(buildFile.toString());
     } catch (IOException e) {
       throw new IllegalStateException("Failed to update Gradle dependencies", e);
-    }
-  }
-
-  @Override
-  public void addRuntimeDependency(String dependency, Resource<?> resource) {
-    initializeIn(resource);
-    var parts = dependency.split(":");
-    addDependencyToVersionCatalog(resource, parts[0], parts[1], parts.length < 3 ? null : parts[2]);
-    addRuntimeDependencyToBuildGradle(resource, parts[1]);
-  }
-
-  private void addRuntimeDependencyToBuildGradle(Resource<?> resource, String artifact) {
-    try {
-      var buildFileResource = resource.select("build.gradle");
-      var buildFile = new BuildFile(buildFileResource.readAsString());
-      buildFile.addDependency("runtimeOnly", "libs.%s".formatted(artifact.replace('-', '.')));
-      buildFileResource.writeAsString(buildFile.toString());
-    } catch (IOException e) {
-      throw new IllegalStateException("Failed to update Gradle runtime dependencies", e);
     }
   }
 
