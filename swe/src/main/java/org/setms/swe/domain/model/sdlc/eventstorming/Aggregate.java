@@ -30,7 +30,7 @@ public class Aggregate extends Artifact implements HasPayload {
 
   @Override
   public Link getPayload() {
-    return null;
+    return root;
   }
 
   public String getDisplay() {

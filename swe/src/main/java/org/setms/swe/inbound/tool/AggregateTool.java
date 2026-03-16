@@ -51,6 +51,7 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
 
   public AggregateTool() {}
 
+  @SuppressWarnings("unused") // Used by ServiceLoader
   AggregateTool(TechnologyResolver resolver) {
     super(resolver);
   }
