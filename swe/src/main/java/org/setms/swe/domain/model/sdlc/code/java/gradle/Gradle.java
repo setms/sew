@@ -315,10 +315,15 @@ public class Gradle implements CodeBuilder, CodeTester {
           configuration.entrySet().stream()
               .map(e -> "    systemProperty '%s', '%s'".formatted(e.getKey(), e.getValue()))
               .collect(joining("\n"));
-      var content =
-          "%s\ntasks.named('%s') {\n%s\n}\n"
-              .formatted(buildFileResource.readAsString().stripTrailing(), task, properties);
-      buildFileResource.writeAsString(content);
+      var taskBlock =
+          """
+
+          tasks.named('%s') {
+          %s
+          }
+          """
+              .formatted(task, properties);
+      buildFileResource.writeAsString(buildFileResource.readAsString().stripTrailing() + taskBlock);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to configure task %s".formatted(task), e);
     }
