@@ -130,6 +130,9 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
   }
 
   private void showIconFor(String text) {
+    if (text.contains("Applied") || text.contains("Found")) {
+      return;
+    }
     var type = typeOf(text);
     var name = "%s.png".formatted(type);
     Optional.ofNullable(getClass().getClassLoader().getResource("icons/%s".formatted(name)))
@@ -146,6 +149,9 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
     if (text.contains("gradle")) {
       return "gradle";
     }
+    if (text.toLowerCase().contains("docker")) {
+      return "docker";
+    }
     var fileName = text.substring(text.lastIndexOf('/') + 1);
     if (fileName.contains(".")) {
       var extension = text.substring(text.lastIndexOf('.') + 1);
@@ -153,9 +159,6 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
         return "git";
       }
       return extension;
-    }
-    if (fileName.endsWith("Dockerfile")) {
-      return "docker";
     }
     return "unknown";
   }
