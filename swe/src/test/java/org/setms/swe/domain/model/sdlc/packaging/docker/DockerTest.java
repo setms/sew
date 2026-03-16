@@ -184,11 +184,11 @@ class DockerTest {
   void shouldCreateDockerComposeFile(@TempDir File tempDir) {
     workspace = new DirectoryWorkspace(tempDir);
 
-    var applied =
+    var actual =
         new Docker(PROJECT_NAME)
             .applySuggestion(Docker.CREATE_DOCKERFILE, workspace.root(), new ResolvedInputs());
 
-    assertThat(applied.createdOrChanged())
+    assertThat(actual.createdOrChanged())
         .as("Should create docker-compose.yml alongside Dockerfile")
         .anySatisfy(this::assertThatDockerComposeHasAppBuildInstruction);
   }
