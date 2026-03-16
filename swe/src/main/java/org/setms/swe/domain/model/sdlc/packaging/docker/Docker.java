@@ -34,6 +34,8 @@ public class Docker implements CodePackager {
           build: .
           profiles:
             - include-app
+          environment:
+            SPRING_PROFILES_ACTIVE: local
       """;
   private static final String DOCKER_COMPOSE_APP_DEPENDS_ON =
       """
