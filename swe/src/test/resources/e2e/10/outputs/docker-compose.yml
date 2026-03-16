@@ -1,0 +1,7 @@
+services:
+  todo:
+    build: .
+    profiles:
+      - include-app
+  postgres:
+    image: postgres
