@@ -49,6 +49,9 @@ public class Docker implements CodePackager {
           image: postgres
           environment:
             POSTGRES_PASSWORD: password
+            POSTGRES_DB: %s
+          ports:
+            - "5432:5432"
           healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres"]
             interval: 10s
@@ -168,7 +171,9 @@ public class Docker implements CodePackager {
     var hasPostgres = "PostgreSql".equals(decisions.about(DatabaseTopicProvider.TOPIC));
     var result = DOCKER_COMPOSE_APP_SERVICE.formatted(applicationName.toLowerCase());
     if (hasPostgres) {
-      result += DOCKER_COMPOSE_APP_DEPENDS_ON + DOCKER_COMPOSE_DB_SERVICE;
+      result +=
+          DOCKER_COMPOSE_APP_DEPENDS_ON
+              + DOCKER_COMPOSE_DB_SERVICE.formatted(applicationName.toLowerCase());
     }
     return result;
   }

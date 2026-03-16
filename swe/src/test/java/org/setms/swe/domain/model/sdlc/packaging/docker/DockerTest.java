@@ -229,11 +229,13 @@ class DockerTest {
     assertThat(resource.name()).as("Resource name").isEqualTo("docker-compose.yml");
     assertThat(resource.readAsString())
         .as(
-            "docker-compose.yml should include a 'db' service with postgres image, POSTGRES_PASSWORD, health check, and app depends_on")
+            "docker-compose.yml should include a 'db' service with postgres image, POSTGRES_PASSWORD, POSTGRES_DB, port 5432, health check, and app depends_on")
         .contains("db:")
         .doesNotContain("postgres:")
         .contains("image: postgres")
         .contains("POSTGRES_PASSWORD:")
+        .contains("POSTGRES_DB: " + PROJECT_NAME)
+        .contains("5432:5432")
         .contains("pg_isready")
         .contains("depends_on:");
   }
