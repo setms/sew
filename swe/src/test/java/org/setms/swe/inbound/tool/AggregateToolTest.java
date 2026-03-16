@@ -83,6 +83,26 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
   }
 
   @Test
+  void shouldGenerateDomainObjectCode() {
+    var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
+    var inputs = givenInputsWithAllPrerequisites();
+    var workspace = new InMemoryWorkspace();
+
+    var actual =
+        ((AggregateTool) getTool())
+            .applySuggestion(
+                aggregate, AggregateTool.GENERATE_DOMAIN_OBJECT, null, inputs, workspace.root());
+
+    assertThat(actual.createdOrChanged())
+        .as("Should generate a domain object class for the aggregate")
+        .anySatisfy(
+            resource ->
+                assertThat(resource.readAsString())
+                    .as("Generated code should declare the Projects domain class")
+                    .contains("class Projects"));
+  }
+
+  @Test
   void shouldWarnAboutMissingDomainService() {
     var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
     var inputs = givenInputsWithAggregateScenario(aggregate);

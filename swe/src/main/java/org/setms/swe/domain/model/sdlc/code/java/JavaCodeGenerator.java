@@ -32,6 +32,20 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
   }
 
   @Override
+  public List<CodeArtifact> generate(Aggregate aggregate) {
+    var packageName = packageFor(aggregate, "domain.model");
+    var className = aggregate.getName();
+    var code =
+        """
+        package %s;
+
+        public class %s {}
+        """
+            .formatted(packageName, className);
+    return List.of(codeArtifact(packageName, className, code));
+  }
+
+  @Override
   public List<CodeArtifact> generate(Command command, Entity payload) {
     return generateDomainObjectFor(command, payload);
   }

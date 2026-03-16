@@ -181,6 +181,7 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
       Location location,
       ResolvedInputs inputs) {
     return switch (suggestionCode) {
+      case GENERATE_DOMAIN_OBJECT -> generateDomainObjectFor(resource, aggregate, inputs);
       case GENERATE_SERVICE -> generateServiceFor(resource, aggregate, inputs);
       case GENERATE_ENDPOINT -> generateEndpointFor(resource, aggregate, inputs);
       case GENERATE_SCHEMA ->
@@ -190,6 +191,14 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
               inputs);
       default -> unknown(suggestionCode);
     };
+  }
+
+  private AppliedSuggestion generateDomainObjectFor(
+      Resource<?> resource, Aggregate aggregate, ResolvedInputs inputs) {
+    return getResolver()
+        .codeGenerator(inputs, new ArrayList<>())
+        .map(generator -> writeCode(generator.generate(aggregate), resource))
+        .orElseGet(AppliedSuggestion::none);
   }
 
   private AppliedSuggestion generateServiceFor(
