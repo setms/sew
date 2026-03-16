@@ -138,6 +138,11 @@ class VirtualFileResource implements Resource<VirtualFileResource> {
   }
 
   @Override
+  public LocalDateTime createdAt() {
+    return lastModifiedAt();
+  }
+
+  @Override
   public LocalDateTime lastModifiedAt() {
     var result = virtualFile == null ? file.lastModified() : virtualFile.getModificationStamp();
     return Instant.ofEpochMilli(result).atZone(ZoneId.systemDefault()).toLocalDateTime();

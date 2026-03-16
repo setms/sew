@@ -40,7 +40,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   This is non-negotiable.
   In particular, a passing test is a mortal sin.
   Also make sure the test failure clearly indicates what's wrong.
-10. Show the test to the user and ask them to review it.
+10. Show the test to the user and ask them to review and approve it.
   Use the `jetbrains` MCP server's `open_file_in_editor` tool for that. 
   If the user asks for changes, make them and **present the test again for approval**.
   **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE LATEST VERSION OF THE TEST**.
@@ -80,3 +80,5 @@ This is non-negotiable.
 **CRITICAL: You mustn't run any test more than once, unless there were changes to either the test or the code it tests.**
 If you need more information, look at the test report in the `build` directory instead.
 This is critical for not wasting time.
+
+**CRITICAL: You mustn't run tools like `python` or `sed` that require constant approval`.**

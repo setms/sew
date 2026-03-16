@@ -141,8 +141,10 @@ class SpringBootCodeGeneratorTest {
         .isTrue();
     assertThat(actual.readAsString())
         .as(
-            "application-local.yml should configure Spring datasource URL to connect to local PostgreSQL database 'todo'")
-        .contains("jdbc:postgresql://localhost:5432/todo");
+            "application-local.yml should configure Spring datasource URL, username, and password to connect to local PostgreSQL database 'todo'")
+        .contains("jdbc:postgresql://localhost:5432/todo")
+        .contains("username: postgres")
+        .contains("password: password");
   }
 
   @Test

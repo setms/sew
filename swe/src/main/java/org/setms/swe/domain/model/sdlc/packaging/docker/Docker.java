@@ -39,7 +39,7 @@ public class Docker implements CodePackager {
       """;
   private static final String DOCKER_COMPOSE_APP_DATASOURCE_URL =
       """
-          SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/%s
+            SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/%s
       """;
   private static final String DOCKER_COMPOSE_APP_DEPENDS_ON =
       """

@@ -42,6 +42,10 @@
 
 - Render ADR
 
+### Docker
+
+- It knows about Spring, move to `SpringBootCodeGenerator`?
+
 ### Domain story
 
 - Fix rendering

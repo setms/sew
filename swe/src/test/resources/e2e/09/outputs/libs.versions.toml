@@ -6,6 +6,7 @@ lombok-plugin = "9.2.0"
 springframework-boot = "4.0.3"
 
 [libraries]
+postgresql = { module = "org.postgresql:postgresql" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }

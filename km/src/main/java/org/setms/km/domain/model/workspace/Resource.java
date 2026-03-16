@@ -68,6 +68,8 @@ public interface Resource<T extends Resource<T>> {
 
   void doDelete() throws IOException;
 
+  LocalDateTime createdAt();
+
   LocalDateTime lastModifiedAt();
 
   /**
