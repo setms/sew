@@ -198,9 +198,10 @@ class DockerTest {
     assertThat(resource.name()).as("Resource name").isEqualTo("docker-compose.yml");
     assertThat(resource.readAsString())
         .as(
-            "docker-compose.yml should include build instruction under include-app profile and no depends_on without a database")
+            "docker-compose.yml should include build instruction under include-app profile, active 'local' Spring profile, and no depends_on without a database")
         .contains("build: .")
         .contains("include-app")
+        .contains("SPRING_PROFILES_ACTIVE: local")
         .doesNotContain("depends_on:");
   }
 
