@@ -38,7 +38,9 @@ public class Docker implements CodePackager {
             SPRING_PROFILES_ACTIVE: local
       """;
   private static final String DOCKER_COMPOSE_APP_DATASOURCE_URL =
-      "      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/%s\n";
+      """
+          SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/%s
+      """;
   private static final String DOCKER_COMPOSE_APP_DEPENDS_ON =
       """
           depends_on:
