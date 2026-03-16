@@ -10,5 +10,6 @@ diagnostics:
   - Missing decision on build system
   - Missing domain object
   - Missing domain object
+  - Missing domain object
   - Missing domain service
   - Missing unit test

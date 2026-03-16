@@ -8,6 +8,7 @@ import static org.awaitility.Awaitility.await;
 import static org.setms.km.domain.model.file.Files.childrenOf;
 import static org.setms.km.domain.model.format.Strings.NL;
 import static org.setms.km.domain.model.format.Strings.initLower;
+import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Validation.validate;
 
 import java.io.BufferedReader;
@@ -212,6 +213,9 @@ class EndToEndTest {
                             .formatted(suggestion.message(), toLocation(diagnostic, "to")));
                   });
         });
+    assertThat(processOrchestrator.diagnostics().stream().filter(d -> d.level() == ERROR).toList())
+        .as("Errors")
+        .isEmpty();
   }
 
   private String toLocation(Diagnostic diagnostic, String adverb) {

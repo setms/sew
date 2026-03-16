@@ -2,6 +2,7 @@ outputs:
   - src/main/architecture/BuildSystem.decision
   - src/main/java/com/example/todo/domain/model/AddTodoItem.java
   - src/main/java/com/example/todo/domain/model/TodoItemAdded.java
+  - src/main/java/com/example/todo/domain/model/TodoItems.java
   - src/main/java/com/example/todo/domain/services/TodoItemsService.java
   - src/main/java/com/example/todo/domain/services/TodoItemsServiceImpl.java
   - src/test/java/com/example/todo/TodoItemsAggregateTest.java

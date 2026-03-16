@@ -2,6 +2,7 @@ plugins {
     id 'java'
     alias libs.plugins.lombok
     alias libs.plugins.springframework.boot
+    alias libs.plugins.github.akazver.mapstruct
 }
 
 repositories {

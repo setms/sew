@@ -4,6 +4,7 @@ jqwik = "1.9.3"
 junit-jupiter = "6.0.3"
 lombok-plugin = "9.2.0"
 springframework-boot = "4.0.3"
+github-akazver-mapstruct = "1.0.9"
 
 [libraries]
 postgresql = { module = "org.postgresql:postgresql" }
@@ -21,3 +22,4 @@ test-runtime = ["junit-jupiter-launcher"]
 [plugins]
 lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
 springframework-boot = { id = "org.springframework.boot", version.ref = "springframework-boot" }
+github-akazver-mapstruct = { id = "com.github.akazver.mapstruct", version.ref = "github-akazver-mapstruct" }
