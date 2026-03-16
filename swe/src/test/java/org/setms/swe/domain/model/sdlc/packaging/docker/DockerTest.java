@@ -225,7 +225,8 @@ class DockerTest {
   private void assertThatDockerComposeHasPostgreSqlContainer(Resource<?> resource) {
     assertThat(resource.name()).as("Resource name").isEqualTo("docker-compose.yml");
     assertThat(resource.readAsString())
-        .as("docker-compose.yml should include a postgres service")
-        .contains("image: postgres");
+        .as("docker-compose.yml should include a postgres service with POSTGRES_PASSWORD set")
+        .contains("image: postgres")
+        .contains("POSTGRES_PASSWORD:");
   }
 }

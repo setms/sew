@@ -39,6 +39,8 @@ public class Docker implements CodePackager {
       """
         postgres:
           image: postgres
+          environment:
+            POSTGRES_PASSWORD: password
       """;
   private static final String NEUTRAL_DOCKERFILE =
       """

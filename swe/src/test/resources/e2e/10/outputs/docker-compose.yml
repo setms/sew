@@ -5,3 +5,5 @@ services:
       - include-app
   postgres:
     image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
