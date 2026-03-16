@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.technology;
 
 import java.util.Collection;
+import java.util.Map;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
@@ -46,6 +47,15 @@ public interface CodeBuilder {
    * @param resource the project root resource
    */
   void addDependency(String dependency, Resource<?> resource);
+
+  /**
+   * Configure a build task with the given properties.
+   *
+   * @param task the task name (e.g. "bootRun")
+   * @param configuration the properties to set on the task
+   * @param resource the project root resource
+   */
+  void configureTask(String task, Map<String, String> configuration, Resource<?> resource);
 
   /**
    * Apply a suggestion to fix an issue reported earlier.

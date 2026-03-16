@@ -7,6 +7,7 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -337,6 +338,20 @@ class GradleTest {
     var jarPath = "build/libs/%s.jar".formatted(PROJECT_NAME);
     assertThat(diagnostics).isEmpty();
     assertThat(workspace.root().select(jarPath).exists()).as(jarPath).isTrue();
+  }
+
+  @Test
+  void shouldConfigureTaskPropertiesInBuildGradle() throws IOException {
+    createFile("/build.gradle", "plugins { id 'java' }\n");
+    createFile("/settings.gradle", "rootProject.name = 'test'");
+
+    gradle.configureTask("bootRun", Map.of("spring.profiles.active", "local"), workspace.root());
+
+    var actual = workspace.root().select("build.gradle").readAsString();
+    assertThat(actual)
+        .as("build.gradle should configure the bootRun task with its system properties")
+        .contains("tasks.named('bootRun')")
+        .contains("systemProperty 'spring.profiles.active', 'local'");
   }
 
   @Test

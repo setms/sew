@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.code.java.gradle;
 
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Level.WARN;
 
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -94,6 +96,7 @@ public class Gradle implements CodeBuilder, CodeTester {
       [plugins]
       lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
       """;
+  private static final String LATEST_KNOWN_GRADLE_VERSION = "4.0.3";
 
   private final String projectName;
 
@@ -225,8 +228,8 @@ public class Gradle implements CodeBuilder, CodeTester {
               () -> new IllegalStateException("No stable version found at %s".formatted(url)));
     } catch (UnknownHostException ignored) {
       // Probably offline, which means we're probably testing on an airplane or something,
-      // so just return something
-      return "4.0.3";
+      // so just return recent
+      return LATEST_KNOWN_GRADLE_VERSION;
     } catch (IOException e) {
       throw new IllegalStateException("Failed to fetch plugin version from %s".formatted(url), e);
     }
@@ -301,6 +304,23 @@ public class Gradle implements CodeBuilder, CodeTester {
       buildFileResource.writeAsString(buildFile.toString());
     } catch (IOException e) {
       throw new IllegalStateException("Failed to update Gradle dependencies", e);
+    }
+  }
+
+  @Override
+  public void configureTask(String task, Map<String, String> configuration, Resource<?> resource) {
+    try {
+      var buildFileResource = resource.select("build.gradle");
+      var properties =
+          configuration.entrySet().stream()
+              .map(e -> "    systemProperty '%s', '%s'".formatted(e.getKey(), e.getValue()))
+              .collect(joining("\n"));
+      var content =
+          "%s\ntasks.named('%s') {\n%s\n}\n"
+              .formatted(buildFileResource.readAsString().stripTrailing(), task, properties);
+      buildFileResource.writeAsString(content);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to configure task %s".formatted(task), e);
     }
   }
 
