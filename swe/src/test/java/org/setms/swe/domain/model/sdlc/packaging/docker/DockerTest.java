@@ -20,6 +20,7 @@ import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
 import org.setms.km.outbound.workspace.dir.DirectoryWorkspace;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
+import org.setms.swe.domain.model.sdlc.architecture.DatabaseTopicProvider;
 import org.setms.swe.domain.model.sdlc.architecture.Decision;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 
@@ -199,5 +200,32 @@ class DockerTest {
         .as("docker-compose.yml should include build instruction under include-app profile")
         .contains("build: .")
         .contains("include-app");
+  }
+
+  @Test
+  void shouldAddPostgreSqlContainerToDockerComposeFile(@TempDir File tempDir) {
+    workspace = new DirectoryWorkspace(tempDir);
+    var inputs = new ResolvedInputs().put("decisions", List.of(postgresql()));
+
+    var actual =
+        new Docker(PROJECT_NAME)
+            .applySuggestion(Docker.CREATE_DOCKERFILE, workspace.root(), inputs);
+
+    assertThat(actual.createdOrChanged())
+        .as("Should include PostgreSQL container in docker-compose.yml")
+        .anySatisfy(this::assertThatDockerComposeHasPostgreSqlContainer);
+  }
+
+  private Decision postgresql() {
+    return new Decision(new FullyQualifiedName("technology.Database"))
+        .setTopic(DatabaseTopicProvider.TOPIC)
+        .setChoice("PostgreSql");
+  }
+
+  private void assertThatDockerComposeHasPostgreSqlContainer(Resource<?> resource) {
+    assertThat(resource.name()).as("Resource name").isEqualTo("docker-compose.yml");
+    assertThat(resource.readAsString())
+        .as("docker-compose.yml should include a postgres service")
+        .contains("image: postgres");
   }
 }

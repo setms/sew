@@ -17,6 +17,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.architecture.BuildSystem;
+import org.setms.swe.domain.model.sdlc.architecture.DatabaseTopicProvider;
 import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.technology.CodePackager;
@@ -26,13 +27,18 @@ import org.setms.swe.domain.model.sdlc.technology.CodePackager;
 public class Docker implements CodePackager {
 
   public static final String CREATE_DOCKERFILE = "dockerfile.create";
-  private static final String DOCKER_COMPOSE =
+  private static final String DOCKER_COMPOSE_APP_SERVICE =
       """
       services:
         %s:
           build: .
           profiles:
             - include-app
+      """;
+  private static final String DOCKER_COMPOSE_POSTGRES_SERVICE =
+      """
+        postgres:
+          image: postgres
       """;
   private static final String NEUTRAL_DOCKERFILE =
       """
@@ -108,14 +114,23 @@ public class Docker implements CodePackager {
       return AppliedSuggestion.none();
     }
     try {
+      var decisions = Decisions.from(inputs);
       var dockerfile = resource.select("/Dockerfile");
-      dockerfile.writeAsString(dockerFileFor(Decisions.from(inputs)));
+      dockerfile.writeAsString(dockerFileFor(decisions));
       var dockerCompose = resource.select("/docker-compose.yml");
-      dockerCompose.writeAsString(DOCKER_COMPOSE.formatted(applicationName.toLowerCase()));
+      dockerCompose.writeAsString(dockerComposeFor(decisions));
       return created(dockerfile).with(dockerCompose);
     } catch (Exception e) {
       return failedWith(e);
     }
+  }
+
+  private String dockerComposeFor(Decisions decisions) {
+    var result = DOCKER_COMPOSE_APP_SERVICE.formatted(applicationName.toLowerCase());
+    if ("PostgreSql".equals(decisions.about(DatabaseTopicProvider.TOPIC))) {
+      result += DOCKER_COMPOSE_POSTGRES_SERVICE;
+    }
+    return result;
   }
 
   private String dockerFileFor(Decisions decisions) {
