@@ -104,13 +104,13 @@ class EndToEndTest {
   }
 
   private void assertThatIterationIsCorrect(Iteration iteration) throws IOException {
-    assertThatOutputsWereCreatedFor(iteration);
+    assertThatOutputsWereGeneratedFor(iteration);
     copyInputsFrom(iteration);
     showWorkspace();
     assertThatDiagnosticsMatch(iteration);
   }
 
-  private void assertThatOutputsWereCreatedFor(Iteration iteration) {
+  private void assertThatOutputsWereGeneratedFor(Iteration iteration) {
     for (var output : listOf(iteration.getOutputs())) {
       var actual = readText(workspace.root().select(output), Resource::readFrom);
       assertThat(actual).as("Missing " + output).isNotNull();
@@ -123,7 +123,7 @@ class EndToEndTest {
       if (!"<anything>".equals(expected)) {
         assertThat(actual).as(output).isEqualTo(expected);
       }
-      chat.add(false, "Created " + output);
+      chat.add(false, "Generated " + output);
     }
   }
 
