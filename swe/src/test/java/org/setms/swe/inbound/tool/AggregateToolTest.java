@@ -35,6 +35,15 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
   }
 
   @Test
+  void shouldExtendDtoCodeTool() {
+    var actual = new AggregateTool();
+
+    assertThat(actual)
+        .as("AggregateTool should extend DtoCodeTool")
+        .isInstanceOf(DtoCodeTool.class);
+  }
+
+  @Test
   void shouldWarnAboutMissingDomainService() {
     var aggregate = new Aggregate(new FullyQualifiedName("design", "Projects"));
     var inputs = givenInputsWithAggregateScenario(aggregate);

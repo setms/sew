@@ -16,6 +16,7 @@ import org.setms.km.domain.model.workspace.Resource;
 
 record InMemoryResource(
     Map<String, byte[]> artifactsByPath,
+    Map<String, LocalDateTime> createdTimeByPath,
     Map<String, LocalDateTime> modifiedTimeByPath,
     String path,
     Consumer<String> pathChanged,
@@ -25,7 +26,13 @@ record InMemoryResource(
   private static final byte[] EMPTY = new byte[0];
 
   InMemoryResource(String path, Consumer<String> pathChanged, Consumer<String> pathDeleted) {
-    this(new ConcurrentSkipListMap<>(), new ConcurrentHashMap<>(), path, pathChanged, pathDeleted);
+    this(
+        new ConcurrentSkipListMap<>(),
+        new ConcurrentHashMap<>(),
+        new ConcurrentHashMap<>(),
+        path,
+        pathChanged,
+        pathDeleted);
   }
 
   @Override
@@ -49,11 +56,18 @@ record InMemoryResource(
     var index = path.lastIndexOf("/");
     if (index == 0) {
       return Optional.of(
-          new InMemoryResource(artifactsByPath, modifiedTimeByPath, "/", pathChanged, pathDeleted));
+          new InMemoryResource(
+              artifactsByPath,
+              createdTimeByPath,
+              modifiedTimeByPath,
+              "/",
+              pathChanged,
+              pathDeleted));
     }
     return Optional.of(
         new InMemoryResource(
             artifactsByPath,
+            createdTimeByPath,
             modifiedTimeByPath,
             path.substring(0, index),
             pathChanged,
@@ -69,7 +83,12 @@ record InMemoryResource(
         .map(
             child ->
                 new InMemoryResource(
-                    artifactsByPath, modifiedTimeByPath, child, pathChanged, pathDeleted))
+                    artifactsByPath,
+                    createdTimeByPath,
+                    modifiedTimeByPath,
+                    child,
+                    pathChanged,
+                    pathDeleted))
         .toList();
   }
 
@@ -82,7 +101,7 @@ record InMemoryResource(
   public InMemoryResource select(String path) {
     if (path.startsWith("/")) {
       return new InMemoryResource(
-          artifactsByPath, modifiedTimeByPath, path, pathChanged, pathDeleted);
+          artifactsByPath, createdTimeByPath, modifiedTimeByPath, path, pathChanged, pathDeleted);
     }
     var selected = this.path;
     for (var part : path.split("/")) {
@@ -97,7 +116,7 @@ record InMemoryResource(
       }
     }
     return new InMemoryResource(
-        artifactsByPath, modifiedTimeByPath, selected, pathChanged, pathDeleted);
+        artifactsByPath, createdTimeByPath, modifiedTimeByPath, selected, pathChanged, pathDeleted);
   }
 
   @Override
@@ -107,7 +126,12 @@ record InMemoryResource(
         .map(
             match ->
                 new InMemoryResource(
-                    artifactsByPath, modifiedTimeByPath, match, pathChanged, pathDeleted))
+                    artifactsByPath,
+                    createdTimeByPath,
+                    modifiedTimeByPath,
+                    match,
+                    pathChanged,
+                    pathDeleted))
         .toList();
   }
 
@@ -122,7 +146,10 @@ record InMemoryResource(
       @Override
       public void close() {
         artifactsByPath.put(path, toByteArray());
-        modifiedTimeByPath.put(path, now());
+        var timestamp = now();
+        if (modifiedTimeByPath.put(path, timestamp) == null) {
+          createdTimeByPath.put(path, timestamp);
+        }
         pathChanged.accept(path);
       }
     };
@@ -139,6 +166,11 @@ record InMemoryResource(
               modifiedTimeByPath.remove(path);
               pathDeleted.accept(path);
             });
+  }
+
+  @Override
+  public LocalDateTime createdAt() {
+    return createdTimeByPath.get(path);
   }
 
   @Override

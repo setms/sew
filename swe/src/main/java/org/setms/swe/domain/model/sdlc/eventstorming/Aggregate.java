@@ -17,7 +17,7 @@ import org.setms.km.domain.model.artifact.Link;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Aggregate extends Artifact {
+public class Aggregate extends Artifact implements HasPayload {
 
   @NotEmpty private String display;
 
@@ -26,6 +26,11 @@ public class Aggregate extends Artifact {
 
   public Aggregate(FullyQualifiedName fullyQualifiedName) {
     super(fullyQualifiedName);
+  }
+
+  @Override
+  public Link getPayload() {
+    return null;
   }
 
   public String getDisplay() {

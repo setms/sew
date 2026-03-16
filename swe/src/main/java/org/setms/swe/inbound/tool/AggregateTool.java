@@ -21,11 +21,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
-import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
-import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -45,17 +43,16 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Event;
 import org.setms.swe.domain.model.sdlc.eventstorming.HasPayload;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
-@RequiredArgsConstructor
-public class AggregateTool extends ArtifactTool<Aggregate> {
+public class AggregateTool extends DtoCodeTool<Aggregate> {
 
   static final String GENERATE_SERVICE = "service.generate";
   static final String GENERATE_ENDPOINT = "endpoint.generate";
   static final String GENERATE_SCHEMA = "schema.generate";
 
-  private final TechnologyResolver resolver;
+  public AggregateTool() {}
 
-  public AggregateTool() {
-    this(new TechnologyResolverImpl());
+  AggregateTool(TechnologyResolver resolver) {
+    super(resolver);
   }
 
   @Override
@@ -81,7 +78,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
   public void validate(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (hasAggregateScenario(aggregate, inputs)
-        && resolver.codeGenerator(inputs, diagnostics).isPresent()) {
+        && getResolver().codeGenerator(inputs, diagnostics).isPresent()) {
       validateDomainService(aggregate, inputs, diagnostics);
       validateController(aggregate, inputs, diagnostics);
     }
@@ -121,7 +118,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   private void validateController(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    if (resolver.frameworkCodeGenerator(inputs, diagnostics).isPresent()
+    if (getResolver().frameworkCodeGenerator(inputs, diagnostics).isPresent()
         && missesCode(aggregate, "Controller", inputs)) {
       diagnostics.add(
           new Diagnostic(
@@ -148,7 +145,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
       Aggregate aggregate, Entity root, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (inputs.get(DatabaseSchema.class).stream()
         .noneMatch(schema -> schema.getName().equalsIgnoreCase(root.getName()))) {
-      resolver
+      getResolver()
           .database(inputs, diagnostics)
           .ifPresent(
               database ->
@@ -186,7 +183,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         aggregateResource,
         aggregate,
         inputs,
-        resolver.codeGenerator(inputs, new ArrayList<>()),
+        getResolver().codeGenerator(inputs, new ArrayList<>()),
         (generator, pair) ->
             generator.generate(
                 aggregate,
@@ -257,7 +254,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
         aggregateResource,
         aggregate,
         inputs,
-        resolver.frameworkCodeGenerator(inputs, new ArrayList<>()),
+        getResolver().frameworkCodeGenerator(inputs, new ArrayList<>()),
         (generator, pair) ->
             generator.generateEndpointFor(
                 aggregateResource.select("/"),
@@ -269,7 +266,7 @@ public class AggregateTool extends ArtifactTool<Aggregate> {
 
   private AppliedSuggestion generateSchemaFor(
       Resource<?> resource, Entity entity, ResolvedInputs inputs) {
-    return resolver
+    return getResolver()
         .database(inputs, new ArrayList<>())
         .map(database -> writeSchema(database.schemaFor(entity), resource))
         .orElseGet(AppliedSuggestion::none);

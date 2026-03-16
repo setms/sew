@@ -6,6 +6,7 @@ import static java.util.Comparator.comparing;
 import io.methvin.watcher.DirectoryChangeEvent;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -113,6 +114,16 @@ class FileResource implements Resource<FileResource> {
     var path = file.toPath();
     Files.delete(file);
     workspace.fileChanged(new DirectoryChangeEvent(DELETE, false, path, null, 1, null));
+  }
+
+  @Override
+  public LocalDateTime createdAt() {
+    try {
+      var attrs = java.nio.file.Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+      return attrs.creationTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    } catch (IOException e) {
+      return lastModifiedAt();
+    }
   }
 
   @Override
