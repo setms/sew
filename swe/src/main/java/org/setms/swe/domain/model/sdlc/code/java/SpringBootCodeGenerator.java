@@ -110,9 +110,9 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         """
         package %s;
 
+        import %s;
+        import %s;
         import java.util.Collection;
-        import %s;
-        import %s;
         import lombok.RequiredArgsConstructor;
         import org.springframework.stereotype.Service;
 
