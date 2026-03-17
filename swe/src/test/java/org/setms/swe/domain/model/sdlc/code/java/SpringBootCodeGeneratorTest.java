@@ -96,7 +96,7 @@ class SpringBootCodeGeneratorTest {
         .as(
             "SpringBootCodeGenerator should generate a JPA entity, repository, and MapStruct mapper for TodoItem")
         .extracting(CodeArtifact::getName)
-        .contains("TodoItemEntity", "TodoItemRepository", "TodoItemMapper");
+        .contains("TodoItemEntity", "TodoItemJpaRepository", "TodoItemMapper");
     assertThatJpaEntityIsValid(actual);
     assertThatRepositoryArtifactExtendsJpaRepository(actual);
     assertThatMapperConvertsToAndFromAggregateDomainObject(actual);
@@ -120,13 +120,13 @@ class SpringBootCodeGeneratorTest {
   private void assertThatRepositoryArtifactExtendsJpaRepository(
       Collection<CodeArtifact> artifacts) {
     assertThat(artifacts)
-        .filteredOn(a -> "TodoItemRepository".equals(a.getName()))
+        .filteredOn(a -> "TodoItemJpaRepository".equals(a.getName()))
         .singleElement()
         .satisfies(
             repository ->
                 assertThat(repository.getCode())
-                    .as("TodoItemRepository code should extend JpaRepository")
-                    .contains("JpaRepository"));
+                    .as("Generated JPA repository code should extend JpaRepository")
+                    .contains(" extends JpaRepository"));
   }
 
   private void assertThatMapperConvertsToAndFromAggregateDomainObject(
@@ -197,7 +197,7 @@ class SpringBootCodeGeneratorTest {
 
     verify(codeBuilder)
         .configureTask(
-            "mapStruct",
+            "mapstruct",
             List.of(
                 "defaultComponentModel = \"spring\"",
                 "defaultInjectionStrategy = \"constructor\"",

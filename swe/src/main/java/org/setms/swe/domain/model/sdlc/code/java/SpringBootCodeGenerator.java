@@ -81,16 +81,76 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
 
   private List<CodeArtifact> entityArtifactsFor(
       Aggregate aggregate, DatabaseSchema schema, Database database) {
-    var entityPackage = getTopLevelPackage() + ".outbound.db";
+    var dbPackage = getTopLevelPackage() + ".outbound.db";
     var entityName = schema.getName() + "Entity";
-    var repositoryName = schema.getName() + "Repository";
+    var jpaRepositoryName = schema.getName() + "JpaRepository";
+    var domainRepositoryName = aggregate.getName() + "Repository";
     var mapperName = schema.getName() + "Mapper";
     var result = new ArrayList<CodeArtifact>();
-    result.add(entityFor(entityPackage, entityName, database.extractFieldsFrom(schema)));
-    result.add(repositoryFor(entityPackage, entityName, repositoryName));
-    Optional.ofNullable(aggregate)
-        .ifPresent(a -> result.add(mapperFor(entityPackage, entityName, mapperName, a)));
+    result.add(entityFor(dbPackage, entityName, database.extractFieldsFrom(schema)));
+    result.add(jpaRepositoryFor(dbPackage, entityName, jpaRepositoryName));
+    result.add(mapperFor(dbPackage, entityName, mapperName, aggregate));
+    result.add(
+        domainRepositoryFor(
+            dbPackage, domainRepositoryName, jpaRepositoryName, mapperName, aggregate.getName()));
     return result;
+  }
+
+  private CodeArtifact domainRepositoryFor(
+      String dbPackage,
+      String domainRepositoryName,
+      String jpaRepositoryName,
+      String mapperName,
+      String aggregateName) {
+    var aggregateFqn = "%s.%s.%s".formatted(getTopLevelPackage(), "domain.model", aggregateName);
+    var implName = domainRepositoryName + "Impl";
+    var interfaceFqn =
+        "%s.%s.%s".formatted(getTopLevelPackage(), "domain.services", domainRepositoryName);
+    var code =
+        """
+        package %s;
+
+        import java.util.Collection;
+        import %s;
+        import %s;
+        import lombok.RequiredArgsConstructor;
+        import org.springframework.stereotype.Service;
+
+        @Service
+        @RequiredArgsConstructor
+        public class %s implements %s {
+
+          private final %s jpaRepository;
+          private final %s mapper;
+
+          @Override
+          public Collection<%s> loadAll() {
+            return jpaRepository.findAll().stream().map(mapper::toAggregate).toList();
+          }
+
+          @Override
+          public void insert(%s aggregate) {
+            jpaRepository.save(mapper.toEntity(aggregate));
+          }
+
+          @Override
+          public void update(%s aggregate) {
+            jpaRepository.save(mapper.toEntity(aggregate));
+          }
+        }
+        """
+            .formatted(
+                dbPackage,
+                aggregateFqn,
+                interfaceFqn,
+                implName,
+                domainRepositoryName,
+                jpaRepositoryName,
+                mapperName,
+                aggregateName,
+                aggregateName,
+                aggregateName);
+    return codeArtifact(dbPackage, implName, code);
   }
 
   private void ensureSpringBootJpaDependency(Resource<?> resource) {
@@ -103,7 +163,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   private void ensureMapStructBuildPlugin(Resource<?> resource) {
     codeBuilder.addBuildPlugin("com.github.akazver.mapstruct", resource.root());
     codeBuilder.configureTask(
-        "mapStruct",
+        "mapstruct",
         List.of(
             "defaultComponentModel = \"spring\"",
             "defaultInjectionStrategy = \"constructor\"",
@@ -207,7 +267,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     return "%s %s".formatted(toJavaType(field.getType()), initLower(field.getName()));
   }
 
-  private CodeArtifact repositoryFor(
+  private CodeArtifact jpaRepositoryFor(
       String entityPackage, String entityName, String repositoryName) {
     var code =
         """
@@ -216,8 +276,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
         import java.util.UUID;
         import org.springframework.data.jpa.repository.JpaRepository;
 
-        public interface %s extends JpaRepository<%s, UUID> {
-        }
+        public interface %s extends JpaRepository<%s, UUID> {}
         """
             .formatted(entityPackage, repositoryName, entityName);
     return codeArtifact(entityPackage, repositoryName, code);

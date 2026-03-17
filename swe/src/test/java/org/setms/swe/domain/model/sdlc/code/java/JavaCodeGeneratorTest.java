@@ -25,11 +25,23 @@ class JavaCodeGeneratorTest {
 
     var actual = generator.generate(aggregate, command, null, event, null);
 
-    assertThatGeneratedCodeIsServiceInterface(actual.get(0));
-    assertThatGeneratedCodeIsServiceImplementation(actual.get(1));
+    var index = 0;
+    assertThatGeneratedCodeIsDomainRepositoryInterface(actual.get(index++));
+    assertThatGeneratedCodeIsDomainServiceInterface(actual.get(index++));
+    assertThatGeneratedCodeIsDomainServiceImplementation(actual.get(index));
   }
 
-  private void assertThatGeneratedCodeIsServiceInterface(CodeArtifact actual) {
+  private void assertThatGeneratedCodeIsDomainRepositoryInterface(CodeArtifact actual) {
+    assertThat(actual.getName()).isEqualTo("ProjectsRepository");
+    assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
+    assertThat(actual.getCode())
+        .contains("public interface ProjectsRepository {")
+        .contains(" loadAll(")
+        .contains(" insert(")
+        .contains(" update(");
+  }
+
+  private void assertThatGeneratedCodeIsDomainServiceInterface(CodeArtifact actual) {
     assertThat(actual.getName()).isEqualTo("ProjectsService");
     assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
     assertThat(actual.getCode())
@@ -39,7 +51,7 @@ class JavaCodeGeneratorTest {
         .contains("ProjectCreated accept(CreateProject createProject);");
   }
 
-  private void assertThatGeneratedCodeIsServiceImplementation(CodeArtifact actual) {
+  private void assertThatGeneratedCodeIsDomainServiceImplementation(CodeArtifact actual) {
     assertThat(actual.getName()).isEqualTo("ProjectsServiceImpl");
     assertThat(actual.getPackage()).isEqualTo("com.company.project.domain.services");
     assertThat(actual.getCode())
@@ -59,7 +71,7 @@ class JavaCodeGeneratorTest {
 
     var actual = generator.generate(aggregate, command, payload, event, payload);
 
-    assertThatServiceImplCreatesNewEvent(actual.get(1));
+    assertThatServiceImplCreatesNewEvent(actual.get(2));
   }
 
   private Entity givenTodoItemPayload() {

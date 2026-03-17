@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -95,7 +96,8 @@ public class Gradle implements CodeBuilder, CodeTester {
       [plugins]
       lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
       """;
-  private static final String LATEST_KNOWN_GRADLE_VERSION = "4.0.3";
+  private static final Map<String, String> LATEST_KNOWN_VERSIONS =
+      Map.of("org.springframework.boot", "4.0.3", "com.github.akazver.mapstruct", "1.0.9");
   private static final String TASKS_BLOCK =
       """
 
@@ -236,7 +238,7 @@ public class Gradle implements CodeBuilder, CodeTester {
     } catch (UnknownHostException ignored) {
       // Probably offline, which means we're probably testing on an airplane or something,
       // so just return recent
-      return LATEST_KNOWN_GRADLE_VERSION;
+      return LATEST_KNOWN_VERSIONS.getOrDefault(pluginId, "0.1.2");
     } catch (IOException e) {
       throw new IllegalStateException("Failed to fetch plugin version from %s".formatted(url), e);
     }

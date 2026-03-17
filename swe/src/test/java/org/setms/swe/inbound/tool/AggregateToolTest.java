@@ -218,7 +218,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
                 aggregate, AggregateTool.GENERATE_SERVICE, null, inputs, workspace.root());
 
     assertThat(actual.createdOrChanged())
-        .hasSize(2)
+        .hasSize(3)
         .anySatisfy(
             resource ->
                 assertThat(resource.readAsString())

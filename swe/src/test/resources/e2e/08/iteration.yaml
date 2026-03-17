@@ -3,6 +3,8 @@ outputs:
   - src/main/java/com/example/todo/inbound/http/TodoItemsController.java
   - src/main/java/com/example/todo/outbound/db/TodoItemEntity.java
   - src/main/java/com/example/todo/outbound/db/TodoItemMapper.java
+  - src/main/java/com/example/todo/outbound/db/TodoItemJpaRepository.java
+  - src/main/java/com/example/todo/outbound/db/TodoItemsRepositoryImpl.java
   - src/main/resources/application-local.yml
 
 diagnostics:

@@ -99,10 +99,13 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
       Event event,
       Entity eventPayload) {
     var packageName = packageFor(aggregate, "domain.services");
+    var repositoryName = aggregate.getName() + "Repository";
     var serviceName = aggregate.getName() + "Service";
     var commandFqn = "%s.%s".formatted(packageFor(command, "domain.model"), command.getName());
+    var aggregateFqn = "%s.%s".formatted(packageFor(event, "domain.model"), aggregate.getName());
     var eventFqn = "%s.%s".formatted(packageFor(event, "domain.model"), event.getName());
-    var imports =
+    var repositoryImport = "import %s;".formatted(aggregateFqn);
+    var serviceImports =
         Stream.of(commandFqn, eventFqn)
             .sorted()
             .map("import %s;"::formatted)
@@ -111,16 +114,50 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
     var returnExpression =
         buildReturnExpression(event.getName(), eventPayload, commandPayload, paramName);
     return List.of(
+        repositoryInterface(packageName, repositoryImport, repositoryName, aggregate.getName()),
         serviceInterface(
-            packageName, serviceName, command.getName(), event.getName(), imports, paramName),
+            packageName,
+            serviceName,
+            command.getName(),
+            event.getName(),
+            serviceImports,
+            paramName),
         serviceImpl(
             packageName,
             serviceName,
             command.getName(),
             event.getName(),
-            imports,
+            serviceImports,
             paramName,
             returnExpression));
+  }
+
+  private CodeArtifact repositoryInterface(
+      String packageName, String repositoryImport, String repositoryName, String aggregateName) {
+    var code =
+        """
+        package %s;
+
+        import java.util.Collection;
+        %s
+
+        public interface %s {
+
+          Collection<%s> loadAll();
+
+          void insert(%s aggregate);
+
+          void update(%s aggregate);
+        }
+        """
+            .formatted(
+                packageName,
+                repositoryImport,
+                repositoryName,
+                aggregateName,
+                aggregateName,
+                aggregateName);
+    return codeArtifact(packageName, repositoryName, code);
   }
 
   private String buildReturnExpression(
