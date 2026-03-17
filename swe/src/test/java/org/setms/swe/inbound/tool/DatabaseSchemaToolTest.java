@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +17,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -25,6 +25,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
+import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.technology.Database;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
@@ -89,15 +90,22 @@ class DatabaseSchemaToolTest extends ResolverToolTestCase<DatabaseSchema> {
     when(resolver.database(any(), any())).thenReturn(Optional.of(database));
     when(generator.generateEntityFor(any(), any(), any(), any())).thenReturn(List.of());
     var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    var aggregate = givenAggregateWithRoot("TodoItems", "TodoItem");
 
     new DatabaseSchemaTool(resolver)
         .applySuggestion(
             schema,
             DatabaseSchemaTool.CREATE_ENTITY,
             null,
-            new ResolvedInputs(),
+            new ResolvedInputs().put("aggregates", List.of(aggregate)),
             new InMemoryWorkspace().root());
 
-    verify(generator).generateEntityFor(isNull(), eq(schema), any(), any());
+    verify(generator).generateEntityFor(eq(aggregate), eq(schema), any(), any());
+  }
+
+  private Aggregate givenAggregateWithRoot(String aggregateName, String entityName) {
+    return new Aggregate(new FullyQualifiedName("todo", aggregateName))
+        .setDisplay(aggregateName)
+        .setRoot(new Link("entity", entityName));
   }
 }

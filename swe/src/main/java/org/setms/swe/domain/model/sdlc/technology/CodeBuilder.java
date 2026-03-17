@@ -1,7 +1,7 @@
 package org.setms.swe.domain.model.sdlc.technology;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
@@ -63,7 +63,7 @@ public interface CodeBuilder {
    * @param configuration the properties to set on the task
    * @param resource the project root resource
    */
-  void configureTask(String task, Map<String, String> configuration, Resource<?> resource);
+  void configureTask(String task, List<String> configuration, Resource<?> resource);
 
   /**
    * Apply a suggestion to fix an issue reported earlier.

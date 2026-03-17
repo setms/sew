@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -183,7 +182,27 @@ class SpringBootCodeGeneratorTest {
     generator.generateEntityFor(aggregate, schema, database, workspace.root());
 
     verify(codeBuilder)
-        .configureTask("bootRun", Map.of("spring.profiles.active", "local"), workspace.root());
+        .configureTask(
+            "bootRun",
+            List.of("systemProperty 'spring.profiles.active', 'local'"),
+            workspace.root());
+  }
+
+  @Test
+  void shouldConfigureMapStructWhenGeneratingEntity() {
+    var schema = new DatabaseSchema(new FullyQualifiedName("db", "TodoItem"));
+    var database = mock(Database.class);
+
+    generator.generateEntityFor(aggregate, schema, database, workspace.root());
+
+    verify(codeBuilder)
+        .configureTask(
+            "mapStruct",
+            List.of(
+                "defaultComponentModel = \"spring\"",
+                "defaultInjectionStrategy = \"constructor\"",
+                "unmappedSourcePolicy = \"IGNORE\""),
+            workspace.root());
   }
 
   @Test

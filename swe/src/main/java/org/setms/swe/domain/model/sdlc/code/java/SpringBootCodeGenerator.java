@@ -97,11 +97,18 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     codeBuilder.addDependency(
         "org.springframework.boot:spring-boot-starter-data-jpa", resource.root());
     codeBuilder.configureTask(
-        "bootRun", Map.of("spring.profiles.active", "local"), resource.root());
+        "bootRun", List.of("systemProperty 'spring.profiles.active', 'local'"), resource.root());
   }
 
   private void ensureMapStructBuildPlugin(Resource<?> resource) {
     codeBuilder.addBuildPlugin("com.github.akazver.mapstruct", resource.root());
+    codeBuilder.configureTask(
+        "mapStruct",
+        List.of(
+            "defaultComponentModel = \"spring\"",
+            "defaultInjectionStrategy = \"constructor\"",
+            "unmappedSourcePolicy = \"IGNORE\""),
+        resource.root());
   }
 
   private void ensureDriverDependency(Database database, Resource<?> resource) {

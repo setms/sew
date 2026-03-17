@@ -32,6 +32,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.named('bootRun') {
+bootRun {
     systemProperty 'spring.profiles.active', 'local'
+}
+
+mapStruct {
+    defaultComponentModel = "spring"
+    defaultInjectionStrategy = "constructor"
+    unmappedSourcePolicy = "IGNORE"
 }

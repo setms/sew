@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -101,7 +100,7 @@ public class Gradle implements CodeBuilder, CodeTester {
       """
 
 
-      tasks.named('%s') {
+      %s {
       %s
       }
       """;
@@ -325,13 +324,10 @@ public class Gradle implements CodeBuilder, CodeTester {
   }
 
   @Override
-  public void configureTask(String task, Map<String, String> configuration, Resource<?> resource) {
+  public void configureTask(String task, List<String> configuration, Resource<?> resource) {
     try {
       var buildFileResource = resource.select("build.gradle");
-      var properties =
-          configuration.entrySet().stream()
-              .map(e -> "    systemProperty '%s', '%s'".formatted(e.getKey(), e.getValue()))
-              .collect(joining("\n"));
+      var properties = configuration.stream().map("    %s"::formatted).collect(joining("\n"));
       var taskBlock = TASKS_BLOCK.formatted(task, properties);
       buildFileResource.writeAsString(buildFileResource.readAsString().stripTrailing() + taskBlock);
     } catch (IOException e) {

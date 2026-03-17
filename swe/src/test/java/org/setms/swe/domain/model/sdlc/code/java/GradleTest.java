@@ -7,7 +7,7 @@ import static org.setms.km.domain.model.validation.Level.WARN;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -345,12 +345,13 @@ class GradleTest {
     createFile("/build.gradle", "plugins { id 'java' }\n");
     createFile("/settings.gradle", "rootProject.name = 'test'");
 
-    gradle.configureTask("bootRun", Map.of("spring.profiles.active", "local"), workspace.root());
+    gradle.configureTask(
+        "bootRun", List.of("systemProperty 'spring.profiles.active', 'local'"), workspace.root());
 
     var actual = workspace.root().select("build.gradle").readAsString();
     assertThat(actual)
         .as("build.gradle should configure the bootRun task with its system properties")
-        .contains("tasks.named('bootRun')")
+        .contains("bootRun {")
         .contains("systemProperty 'spring.profiles.active', 'local'");
   }
 

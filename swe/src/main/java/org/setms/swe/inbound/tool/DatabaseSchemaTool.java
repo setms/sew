@@ -1,6 +1,7 @@
 package org.setms.swe.inbound.tool;
 
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.Inputs.aggregates;
 import static org.setms.swe.inbound.tool.Inputs.code;
 import static org.setms.swe.inbound.tool.Inputs.databaseSchemas;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
@@ -12,6 +13,8 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.nlp.English;
+import org.setms.km.domain.model.nlp.NaturalLanguage;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
@@ -22,6 +25,7 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.database.DatabaseSchema;
+import org.setms.swe.domain.model.sdlc.eventstorming.Aggregate;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 
 @RequiredArgsConstructor
@@ -30,6 +34,7 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
   static final String CREATE_ENTITY = "entity.object.create";
 
   private final TechnologyResolver resolver;
+  private final NaturalLanguage language = new English();
 
   public DatabaseSchemaTool() {
     this(new TechnologyResolverImpl());
@@ -43,6 +48,7 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
     var result = new HashSet<Input<? extends Artifact>>(code());
+    result.add(aggregates());
     result.add(decisions());
     result.add(initiatives());
     return result;
@@ -93,11 +99,19 @@ public class DatabaseSchemaTool extends ArtifactTool<DatabaseSchema> {
             generator ->
                 CodeWriter.writeCode(
                     generator.generateEntityFor(
-                        null,
+                        aggregateFor(schema, inputs),
                         schema,
                         resolver.database(inputs, new HashSet<>()).orElseThrow(),
                         resource),
                     resource))
         .orElseGet(AppliedSuggestion::none);
+  }
+
+  private Aggregate aggregateFor(DatabaseSchema schema, ResolvedInputs inputs) {
+    var name = language.plural(schema.getName());
+    return inputs.get(Aggregate.class).stream()
+        .filter(a -> a.getName().equals(name))
+        .findFirst()
+        .orElseThrow();
   }
 }
