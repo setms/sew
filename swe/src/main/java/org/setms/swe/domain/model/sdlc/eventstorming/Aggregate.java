@@ -21,7 +21,7 @@ import org.setms.km.domain.model.nlp.NaturalLanguage;
 @EqualsAndHashCode(callSuper = true)
 public class Aggregate extends Artifact implements HasPayload {
 
-  private final NaturalLanguage language = new English();
+  private static final NaturalLanguage LANGUAGE = new English();
 
   @NotEmpty private String display;
 
@@ -42,6 +42,6 @@ public class Aggregate extends Artifact implements HasPayload {
   }
 
   public String domainObjectName() {
-    return root != null ? root.getId() : language.singular(getName());
+    return root != null ? root.getId() : LANGUAGE.singular(getName());
   }
 }
