@@ -42,6 +42,6 @@ public class Aggregate extends Artifact implements HasPayload {
   }
 
   public String domainObjectName() {
-    return root != null ? root.getId() : LANGUAGE.singular(getName());
+    return Optional.ofNullable(root).map(Link::getId).orElseGet(() -> LANGUAGE.singular(getName()));
   }
 }
