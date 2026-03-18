@@ -86,8 +86,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     var jpaRepositoryName = schema.getName() + "JpaRepository";
     var domainRepositoryName = aggregate.getName() + "Repository";
     var mapperName = schema.getName() + "Mapper";
-    var rootEntityName =
-        aggregate.getRoot() != null ? aggregate.getRoot().getId() : aggregate.getName();
+    var rootEntityName = rootEntityNameOf(aggregate);
     var result = new ArrayList<CodeArtifact>();
     result.add(entityFor(dbPackage, entityName, database.extractFieldsFrom(schema)));
     result.add(jpaRepositoryFor(dbPackage, entityName, jpaRepositoryName));
