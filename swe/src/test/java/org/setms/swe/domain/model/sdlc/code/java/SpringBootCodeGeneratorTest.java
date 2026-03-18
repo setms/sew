@@ -138,10 +138,10 @@ class SpringBootCodeGeneratorTest {
             mapper ->
                 assertThat(mapper.getCode())
                     .as(
-                        "MapStruct mapper should convert between TodoItems aggregate domain object and TodoItemEntity")
+                        "MapStruct mapper should convert between TodoItem aggregate domain object and TodoItemEntity")
                     .contains("@Mapper")
-                    .contains("TodoItems toAggregate(TodoItemEntity entity)")
-                    .contains("TodoItemEntity toEntity(TodoItems aggregate)"));
+                    .contains("TodoItem toAggregate(TodoItemEntity entity)")
+                    .contains("TodoItemEntity toEntity(TodoItem aggregate)"));
   }
 
   @Test

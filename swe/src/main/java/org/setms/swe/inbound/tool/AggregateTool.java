@@ -90,7 +90,7 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
 
   private void validateDomainObject(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    if (missesCode(aggregate, "", inputs)) {
+    if (missesCode(aggregate.domainObjectName(), inputs)) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -102,7 +102,7 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
 
   private void validateDomainService(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
-    if (missesCode(aggregate, "Service", inputs)) {
+    if (missesCode(aggregate.getName() + "Service", inputs)) {
       diagnostics.add(
           new Diagnostic(
               WARN,
@@ -126,15 +126,14 @@ public class AggregateTool extends DtoCodeTool<Aggregate> {
         .isPresent();
   }
 
-  private boolean missesCode(Aggregate aggregate, String suffix, ResolvedInputs inputs) {
-    var name = aggregate.getName() + suffix;
+  private boolean missesCode(String name, ResolvedInputs inputs) {
     return inputs.get(CodeArtifact.class).stream().noneMatch(ca -> ca.getName().equals(name));
   }
 
   private void validateController(
       Aggregate aggregate, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
     if (getResolver().frameworkCodeGenerator(inputs, diagnostics).isPresent()
-        && missesCode(aggregate, "Controller", inputs)) {
+        && missesCode(aggregate.getName() + "Controller", inputs)) {
       diagnostics.add(
           new Diagnostic(
               WARN,

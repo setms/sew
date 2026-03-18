@@ -11,6 +11,8 @@ import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.HasType;
 import org.setms.km.domain.model.artifact.Link;
+import org.setms.km.domain.model.nlp.English;
+import org.setms.km.domain.model.nlp.NaturalLanguage;
 
 @Getter
 @Setter
@@ -18,6 +20,8 @@ import org.setms.km.domain.model.artifact.Link;
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 public class Aggregate extends Artifact implements HasPayload {
+
+  private final NaturalLanguage language = new English();
 
   @NotEmpty private String display;
 
@@ -35,5 +39,9 @@ public class Aggregate extends Artifact implements HasPayload {
 
   public String getDisplay() {
     return Optional.ofNullable(display).orElse(getName());
+  }
+
+  public String domainObjectName() {
+    return root != null ? root.getId() : language.singular(getName());
   }
 }

@@ -101,7 +101,7 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
     var packageName = packageFor(aggregate, "domain.services");
     var repositoryName = aggregate.getName() + "Repository";
     var serviceName = aggregate.getName() + "Service";
-    var entityName = rootEntityNameOf(aggregate);
+    var entityName = aggregate.domainObjectName();
     var commandFqn = "%s.%s".formatted(packageFor(command, "domain.model"), command.getName());
     var entityFqn = "%s.%s".formatted(packageFor(aggregate, "domain.model"), entityName);
     var eventFqn = "%s.%s".formatted(packageFor(event, "domain.model"), event.getName());
