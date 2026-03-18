@@ -326,6 +326,118 @@ class JavaUnitTestGeneratorTest {
   }
 
   @Test
+  void shouldGenerateUnitTestWithInitAndState() {
+    var acceptanceTest = givenAcceptanceTestWithInitAndState();
+
+    var actual = generator.generate(acceptanceTest).getFirst();
+
+    assertThatInitStateTestHasCorrectCode(actual);
+  }
+
+  private AcceptanceTest givenAcceptanceTestWithInitAndState() {
+    var message = fieldVariable();
+    var existingNotification =
+        elementVariable(
+            "existingNotification",
+            "aggregate",
+            "Notifications",
+            new FieldAssignment(fqn("a0"))
+                .setFieldName("Message")
+                .setValue(variableLink("message")));
+    var notifyUser =
+        elementVariable(
+            "notifyUser",
+            "command",
+            "NotifyUser",
+            new FieldAssignment(fqn("a1"))
+                .setFieldName("Message")
+                .setValue(variableLink("message")));
+    var updatedNotification =
+        elementVariable(
+            "updatedNotification",
+            "aggregate",
+            "Notifications",
+            new FieldAssignment(fqn("a2"))
+                .setFieldName("Message")
+                .setValue(variableLink("message")));
+    var scenario =
+        new AggregateScenario(fqn("Reject duplicate notification"))
+            .setInit(List.of(variableLink("existingNotification")))
+            .setAccepts(variableLink("notifyUser"))
+            .setState(List.of(variableLink("updatedNotification")));
+    return new AcceptanceTest(fqn(ACCEPTANCE_TEST_PACKAGE, "NotificationsAggregate"))
+        .setSut(new Link("aggregate", "Notifications"))
+        .setVariables(List.of(message, existingNotification, notifyUser, updatedNotification))
+        .setScenarios(List.of(scenario));
+  }
+
+  private void assertThatInitStateTestHasCorrectCode(CodeArtifact actual) {
+    var code = actual.getCode();
+    assertThat(code)
+        .as("Generated test should set up existing aggregate in repository for init state")
+        .contains("var existingNotification = someNotifications();");
+    assertThat(code)
+        .as("Generated test should mock loadAll with init items")
+        .contains("when(repository.loadAll()).thenReturn(List.of(existingNotification));");
+    assertThat(code)
+        .as("Generated test should construct expected state after command")
+        .contains("var expectedUpdatedNotification = new Notifications(notifyUser.message());");
+    assertThat(code)
+        .as("Generated test should verify repository update with expected state")
+        .contains("verify(repository).update(expectedUpdatedNotification);");
+  }
+
+  @Test
+  void shouldGenerateUnitTestWithStateButNoInit() {
+    var acceptanceTest = givenAcceptanceTestWithStateButNoInit();
+
+    var actual = generator.generate(acceptanceTest).getFirst();
+
+    assertThatStateOnlyTestHasCorrectCode(actual);
+  }
+
+  private AcceptanceTest givenAcceptanceTestWithStateButNoInit() {
+    var message = fieldVariable();
+    var notifyUser =
+        elementVariable(
+            "notifyUser",
+            "command",
+            "NotifyUser",
+            new FieldAssignment(fqn("a1"))
+                .setFieldName("Message")
+                .setValue(variableLink("message")));
+    var newNotification =
+        elementVariable(
+            "newNotification",
+            "aggregate",
+            "Notifications",
+            new FieldAssignment(fqn("a2"))
+                .setFieldName("Message")
+                .setValue(variableLink("message")));
+    var scenario =
+        new AggregateScenario(fqn("Accept NotifyUser"))
+            .setAccepts(variableLink("notifyUser"))
+            .setState(List.of(variableLink("newNotification")));
+    return new AcceptanceTest(fqn(ACCEPTANCE_TEST_PACKAGE, "NotificationsAggregate"))
+        .setSut(new Link("aggregate", "Notifications"))
+        .setVariables(List.of(message, notifyUser, newNotification))
+        .setScenarios(List.of(scenario));
+  }
+
+  private void assertThatStateOnlyTestHasCorrectCode(CodeArtifact actual) {
+    var code = actual.getCode();
+    assertThat(code)
+        .as("Generated test should not mock loadAll when init is empty")
+        .doesNotContain("when(repository.loadAll())");
+    assertThat(code)
+        .as("Generated test should construct expected new aggregate state")
+        .contains("var expectedNewNotification = new Notifications(notifyUser.message());");
+    assertThat(code)
+        .as("Generated test should verify repository insert with expected new aggregate")
+        .contains("verify(repository).insert(expectedNewNotification);");
+  }
+
+  @Test
   void shouldGenerateTestDataBuilderWithDateTimeField() {
     var acceptanceTest = givenAcceptanceTestWithDateTimeField();
 

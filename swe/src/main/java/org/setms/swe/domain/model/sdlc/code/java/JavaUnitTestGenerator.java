@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.artifact.Link;
@@ -118,6 +119,13 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     if (regularImports.stream().anyMatch(i -> i.startsWith(packageName + ".domain.model."))) {
       staticImports.add("org.assertj.core.api.Assertions.assertThat");
     }
+    if (hasInit(acceptanceTest)) {
+      staticImports.add("org.mockito.Mockito.when");
+      regularImports.add("java.util.List");
+    }
+    if (hasState(acceptanceTest)) {
+      staticImports.add("org.mockito.Mockito.verify");
+    }
     regularImports.add("org.junit.jupiter.api.Test");
     regularImports.add("org.junit.jupiter.api.extension.ExtendWith");
     regularImports.add("org.mockito.InjectMocks");
@@ -127,6 +135,32 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     appendImports("import static ", staticImports, builder);
     builder.append("\n");
     appendImports("import ", regularImports, builder);
+  }
+
+  private boolean hasInit(AcceptanceTest acceptanceTest) {
+    return acceptanceTest.getScenarios().stream()
+        .filter(AggregateScenario.class::isInstance)
+        .map(AggregateScenario.class::cast)
+        .anyMatch(s -> !resolveElementVariables(s.getInit(), acceptanceTest).isEmpty());
+  }
+
+  private boolean hasState(AcceptanceTest acceptanceTest) {
+    return acceptanceTest.getScenarios().stream()
+        .filter(AggregateScenario.class::isInstance)
+        .map(AggregateScenario.class::cast)
+        .anyMatch(
+            s ->
+                resolveElementVariables(s.getState(), acceptanceTest).stream()
+                    .anyMatch(v -> v.getType().hasType("aggregate")));
+  }
+
+  private List<ElementVariable> resolveElementVariables(
+      List<Link> links, AcceptanceTest acceptanceTest) {
+    return Optional.ofNullable(links).stream()
+        .flatMap(Collection::stream)
+        .map(link -> resolveElementVariable(link, acceptanceTest))
+        .filter(Objects::nonNull)
+        .toList();
   }
 
   private void appendImports(String prefix, Collection<String> imports, StringBuilder builder) {
@@ -141,8 +175,13 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
       AcceptanceTest acceptanceTest,
       TreeSet<String> imports) {
     switch (scenario) {
-      case AggregateScenario s ->
-          addModelImport(packageName, s.getEmitted(), acceptanceTest, imports);
+      case AggregateScenario s -> {
+        addModelImport(packageName, s.getEmitted(), acceptanceTest, imports);
+        resolveElementVariables(s.getState(), acceptanceTest).stream()
+            .filter(v -> v.getType().hasType("aggregate"))
+            .forEach(
+                v -> imports.add("%s.domain.model.%s".formatted(packageName, v.getType().getId())));
+      }
       case PolicyScenario s -> addModelImport(packageName, s.getIssued(), acceptanceTest, imports);
       default -> {}
     }
@@ -181,16 +220,57 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
       AggregateScenario scenario, AcceptanceTest acceptanceTest, StringBuilder builder) {
     var commandVar = resolveElementVariable(scenario.getAccepts(), acceptanceTest);
     var emittedVar = resolveElementVariable(scenario.getEmitted(), acceptanceTest);
+    var initVars = resolveElementVariables(scenario.getInit(), acceptanceTest);
+    var stateVars =
+        resolveElementVariables(scenario.getState(), acceptanceTest).stream()
+            .filter(v -> v.getType().hasType("aggregate"))
+            .toList();
+    initVars.forEach(v -> generateSomeCall(v, builder));
+    if (!initVars.isEmpty()) {
+      generateLoadAllMock(initVars, builder);
+    }
     generateSomeCall(commandVar, builder);
     if (emittedVar != null) {
       generateExpected(emittedVar, commandVar, builder);
     }
+    stateVars.forEach(v -> generateExpectedState(v, commandVar, builder));
     builder.append("\n");
-    builder.append("    var actual = service.accept(%s);\n".formatted(commandVar.getName()));
+    if (emittedVar != null) {
+      builder.append("    var actual = service.accept(%s);\n".formatted(commandVar.getName()));
+    } else {
+      builder.append("    service.accept(%s);\n".formatted(commandVar.getName()));
+    }
     builder.append("\n");
     if (emittedVar != null) {
       builder.append("    assertThat(actual).isEqualTo(expected);\n");
     }
+    stateVars.forEach(v -> generateRepositoryVerification(v, initVars, builder));
+  }
+
+  private void generateLoadAllMock(List<ElementVariable> initVars, StringBuilder builder) {
+    var names = initVars.stream().map(ElementVariable::getName).collect(joining(", "));
+    builder.append("    when(repository.loadAll()).thenReturn(List.of(%s));\n".formatted(names));
+  }
+
+  private void generateExpectedState(
+      ElementVariable stateVar, ElementVariable commandVar, StringBuilder builder) {
+    var typeName = stateVar.getType().getId();
+    var varName = "expected" + initUpper(stateVar.getName());
+    builder.append(
+        "    var %s = new %s(%s);\n"
+            .formatted(varName, typeName, constructorArgs(stateVar, commandVar)));
+  }
+
+  private void generateRepositoryVerification(
+      ElementVariable stateVar, List<ElementVariable> initVars, StringBuilder builder) {
+    var expectedVarName = "expected" + initUpper(stateVar.getName());
+    var method = isUpdate(stateVar, initVars) ? "update" : "insert";
+    builder.append("    verify(repository).%s(%s);\n".formatted(method, expectedVarName));
+  }
+
+  private boolean isUpdate(ElementVariable stateVar, List<ElementVariable> initVars) {
+    return initVars.stream()
+        .anyMatch(init -> init.getType().getId().equals(stateVar.getType().getId()));
   }
 
   private ElementVariable resolveElementVariable(Link link, AcceptanceTest acceptanceTest) {
@@ -283,19 +363,24 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   }
 
   private List<ElementVariable> collectInputVariables(AcceptanceTest acceptanceTest) {
-    return acceptanceTest.getScenarios().stream()
-        .map(
-            scenario ->
-                switch (scenario) {
-                  case AggregateScenario s -> s.getAccepts();
-                  case PolicyScenario s -> s.getHandles();
-                  case ReadModelScenario s -> s.getHandles();
-                  default -> (Link) null;
-                })
-        .map(link -> resolveElementVariable(link, acceptanceTest))
-        .filter(Objects::nonNull)
-        .distinct()
-        .toList();
+    var commandVars =
+        acceptanceTest.getScenarios().stream()
+            .map(
+                scenario ->
+                    switch (scenario) {
+                      case AggregateScenario s -> s.getAccepts();
+                      case PolicyScenario s -> s.getHandles();
+                      case ReadModelScenario s -> s.getHandles();
+                      default -> (Link) null;
+                    })
+            .map(link -> resolveElementVariable(link, acceptanceTest))
+            .filter(Objects::nonNull);
+    var initVars =
+        acceptanceTest.getScenarios().stream()
+            .filter(AggregateScenario.class::isInstance)
+            .map(AggregateScenario.class::cast)
+            .flatMap(s -> resolveElementVariables(s.getInit(), acceptanceTest).stream());
+    return Stream.concat(commandVars, initVars).distinct().toList();
   }
 
   private void addTestDataBuilderImports(
