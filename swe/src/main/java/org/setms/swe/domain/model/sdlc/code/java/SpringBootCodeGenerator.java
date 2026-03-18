@@ -86,13 +86,15 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
     var jpaRepositoryName = schema.getName() + "JpaRepository";
     var domainRepositoryName = aggregate.getName() + "Repository";
     var mapperName = schema.getName() + "Mapper";
+    var rootEntityName =
+        aggregate.getRoot() != null ? aggregate.getRoot().getId() : aggregate.getName();
     var result = new ArrayList<CodeArtifact>();
     result.add(entityFor(dbPackage, entityName, database.extractFieldsFrom(schema)));
     result.add(jpaRepositoryFor(dbPackage, entityName, jpaRepositoryName));
-    result.add(mapperFor(dbPackage, entityName, mapperName, aggregate));
+    result.add(mapperFor(dbPackage, entityName, mapperName, aggregate, rootEntityName));
     result.add(
         domainRepositoryFor(
-            dbPackage, domainRepositoryName, jpaRepositoryName, mapperName, aggregate.getName()));
+            dbPackage, domainRepositoryName, jpaRepositoryName, mapperName, rootEntityName));
     return result;
   }
 
@@ -283,8 +285,11 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
   }
 
   private CodeArtifact mapperFor(
-      String entityPackage, String entityName, String mapperName, Aggregate aggregate) {
-    var aggregateName = aggregate.getName();
+      String entityPackage,
+      String entityName,
+      String mapperName,
+      Aggregate aggregate,
+      String aggregateName) {
     var aggregateFqn = "%s.%s".formatted(packageFor(aggregate, "domain.model"), aggregateName);
     var code =
         """

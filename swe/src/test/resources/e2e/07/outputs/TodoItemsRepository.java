@@ -1,13 +1,13 @@
 package com.example.todo.domain.services;
 
-import com.example.todo.domain.model.TodoItems;
+import com.example.todo.domain.model.TodoItem;
 import java.util.Collection;
 
 public interface TodoItemsRepository {
 
-  Collection<TodoItems> loadAll();
+  Collection<TodoItem> loadAll();
 
-  void insert(TodoItems aggregate);
+  void insert(TodoItem aggregate);
 
-  void update(TodoItems aggregate);
+  void update(TodoItem aggregate);
 }

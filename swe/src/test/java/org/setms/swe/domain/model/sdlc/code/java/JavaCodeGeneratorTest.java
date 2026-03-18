@@ -65,7 +65,9 @@ class JavaCodeGeneratorTest {
   void shouldGenerateAggregateArtifacts() {
     var generator = new JavaCodeGenerator("com.example.todo");
     var root = givenTodoItemPayload();
-    var aggregate = new Aggregate(new FullyQualifiedName("todo", "TodoItems"));
+    var aggregate =
+        new Aggregate(new FullyQualifiedName("todo", "TodoItems"))
+            .setRoot(new Link("entity", root.getName()));
     var command = new Command(new FullyQualifiedName("todo", "AddTodoItem"));
     var event = new Event(new FullyQualifiedName("todo", "TodoItemAdded"));
 
@@ -75,6 +77,11 @@ class JavaCodeGeneratorTest {
     assertThat(domainRecord.getName())
         .as("Aggregate domain record should be named after root entity, not aggregate")
         .isEqualTo("TodoItem");
+    assertThat(serviceArtifacts.getFirst().getCode())
+        .as("Repository interface should use root entity type, not aggregate type")
+        .contains("Collection<TodoItem> loadAll()")
+        .contains("void insert(TodoItem")
+        .contains("void update(TodoItem");
     assertThatServiceImplCreatesNewEvent(serviceArtifacts.get(2));
   }
 

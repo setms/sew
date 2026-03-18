@@ -101,10 +101,12 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
     var packageName = packageFor(aggregate, "domain.services");
     var repositoryName = aggregate.getName() + "Repository";
     var serviceName = aggregate.getName() + "Service";
+    var entityName =
+        aggregate.getRoot() != null ? aggregate.getRoot().getId() : aggregate.getName();
     var commandFqn = "%s.%s".formatted(packageFor(command, "domain.model"), command.getName());
-    var aggregateFqn = "%s.%s".formatted(packageFor(event, "domain.model"), aggregate.getName());
+    var entityFqn = "%s.%s".formatted(packageFor(aggregate, "domain.model"), entityName);
     var eventFqn = "%s.%s".formatted(packageFor(event, "domain.model"), event.getName());
-    var repositoryImport = "import %s;".formatted(aggregateFqn);
+    var repositoryImport = "import %s;".formatted(entityFqn);
     var serviceImports =
         Stream.of(commandFqn, eventFqn)
             .sorted()
@@ -114,7 +116,7 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
     var returnExpression =
         buildReturnExpression(event.getName(), eventPayload, commandPayload, paramName);
     return List.of(
-        repositoryInterface(packageName, repositoryImport, repositoryName, aggregate.getName()),
+        repositoryInterface(packageName, repositoryImport, repositoryName, entityName),
         serviceInterface(
             packageName,
             serviceName,

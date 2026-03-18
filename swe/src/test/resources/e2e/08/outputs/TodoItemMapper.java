@@ -1,12 +1,12 @@
 package com.example.todo.outbound.db;
 
-import com.example.todo.domain.model.TodoItems;
+import com.example.todo.domain.model.TodoItem;
 import org.mapstruct.Mapper;
 
 @Mapper
 public interface TodoItemMapper {
 
-  TodoItems toAggregate(TodoItemEntity entity);
+  TodoItem toAggregate(TodoItemEntity entity);
 
-  TodoItemEntity toEntity(TodoItems aggregate);
+  TodoItemEntity toEntity(TodoItem aggregate);
 }
