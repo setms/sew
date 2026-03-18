@@ -333,7 +333,7 @@ public class Gradle implements CodeBuilder, CodeTester {
     try {
       var buildFileResource = resource.select("build.gradle");
       var content = buildFileResource.readAsString();
-      if (content.contains(task + " {")) {
+      if (content.contains("%s {".formatted(task))) {
         return;
       }
       var properties = configuration.stream().map("    %s"::formatted).collect(joining("\n"));
