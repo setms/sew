@@ -151,7 +151,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
         .anyMatch(
             s ->
                 resolveElementVariables(s.getState(), acceptanceTest).stream()
-                    .anyMatch(v -> v.getType().hasType("aggregate")));
+                    .anyMatch(v -> v.getType().hasType("entity")));
   }
 
   private List<ElementVariable> resolveElementVariables(
@@ -178,7 +178,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
       case AggregateScenario s -> {
         addModelImport(packageName, s.getEmitted(), acceptanceTest, imports);
         resolveElementVariables(s.getState(), acceptanceTest).stream()
-            .filter(v -> v.getType().hasType("aggregate"))
+            .filter(v -> v.getType().hasType("entity"))
             .forEach(v -> addModelImport(packageName, v, imports));
       }
       case PolicyScenario s -> addModelImport(packageName, s.getIssued(), acceptanceTest, imports);
@@ -225,7 +225,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     var initVars = resolveElementVariables(scenario.getInit(), acceptanceTest);
     var stateVars =
         resolveElementVariables(scenario.getState(), acceptanceTest).stream()
-            .filter(v -> v.getType().hasType("aggregate"))
+            .filter(v -> v.getType().hasType("entity"))
             .toList();
     initVars.forEach(v -> generateSomeCall(v, builder));
     if (!initVars.isEmpty()) {

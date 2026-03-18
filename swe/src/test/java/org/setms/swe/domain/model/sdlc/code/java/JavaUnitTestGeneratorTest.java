@@ -339,8 +339,8 @@ class JavaUnitTestGeneratorTest {
     var existingNotification =
         elementVariable(
             "existingNotification",
-            "aggregate",
-            "Notifications",
+            "entity",
+            "Notification",
             new FieldAssignment(fqn("a0"))
                 .setFieldName("Message")
                 .setValue(variableLink("message")));
@@ -355,8 +355,8 @@ class JavaUnitTestGeneratorTest {
     var updatedNotification =
         elementVariable(
             "updatedNotification",
-            "aggregate",
-            "Notifications",
+            "entity",
+            "Notification",
             new FieldAssignment(fqn("a2"))
                 .setFieldName("Message")
                 .setValue(variableLink("message")));
@@ -374,16 +374,16 @@ class JavaUnitTestGeneratorTest {
   private void assertThatInitStateTestHasCorrectCode(CodeArtifact actual) {
     var code = actual.getCode();
     assertThat(code)
-        .as("Generated test should set up existing aggregate in repository for init state")
-        .contains("var existingNotification = someNotifications();");
+        .as("Generated test should set up existing entity in repository for init state")
+        .contains("var existingNotification = someNotification();");
     assertThat(code)
         .as("Generated test should mock loadAll with init items")
         .contains("when(repository.loadAll()).thenReturn(List.of(existingNotification));");
     assertThat(code)
-        .as("Generated test should construct expected state after command")
-        .contains("var expectedUpdatedNotification = new Notifications(notifyUser.message());");
+        .as("Generated test should construct expected entity state after command")
+        .contains("var expectedUpdatedNotification = new Notification(notifyUser.message());");
     assertThat(code)
-        .as("Generated test should verify repository update with expected state")
+        .as("Generated test should verify repository update with expected entity state")
         .contains("verify(repository).update(expectedUpdatedNotification);");
   }
 
@@ -409,8 +409,8 @@ class JavaUnitTestGeneratorTest {
     var newNotification =
         elementVariable(
             "newNotification",
-            "aggregate",
-            "Notifications",
+            "entity",
+            "Notification",
             new FieldAssignment(fqn("a2"))
                 .setFieldName("Message")
                 .setValue(variableLink("message")));
@@ -430,10 +430,10 @@ class JavaUnitTestGeneratorTest {
         .as("Generated test should not mock loadAll when init is empty")
         .doesNotContain("when(repository.loadAll())");
     assertThat(code)
-        .as("Generated test should construct expected new aggregate state")
-        .contains("var expectedNewNotification = new Notifications(notifyUser.message());");
+        .as("Generated test should construct expected new entity state")
+        .contains("var expectedNewNotification = new Notification(notifyUser.message());");
     assertThat(code)
-        .as("Generated test should verify repository insert with expected new aggregate")
+        .as("Generated test should verify repository insert with expected new entity")
         .contains("verify(repository).insert(expectedNewNotification);");
   }
 
