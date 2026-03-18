@@ -332,9 +332,13 @@ public class Gradle implements CodeBuilder, CodeTester {
   public void configureTask(String task, List<String> configuration, Resource<?> resource) {
     try {
       var buildFileResource = resource.select("build.gradle");
+      var content = buildFileResource.readAsString();
+      if (content.contains(task + " {")) {
+        return;
+      }
       var properties = configuration.stream().map("    %s"::formatted).collect(joining("\n"));
-      var taskBlock = TASKS_BLOCK.formatted(task, properties);
-      buildFileResource.writeAsString(buildFileResource.readAsString().stripTrailing() + taskBlock);
+      buildFileResource.writeAsString(
+          content.stripTrailing() + TASKS_BLOCK.formatted(task, properties));
     } catch (IOException e) {
       throw new IllegalStateException("Failed to configure task %s".formatted(task), e);
     }

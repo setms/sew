@@ -356,6 +356,26 @@ class GradleTest {
   }
 
   @Test
+  void shouldNotDuplicateTaskConfiguration() throws IOException {
+    givenBootRunConfigured();
+
+    gradle.configureTask(
+        "bootRun", List.of("systemProperty 'spring.profiles.active', 'local'"), workspace.root());
+
+    var actual = workspace.root().select("build.gradle").readAsString();
+    assertThat(actual)
+        .as("build.gradle should configure bootRun task only once even when called twice")
+        .containsOnlyOnce("bootRun {");
+  }
+
+  private void givenBootRunConfigured() throws IOException {
+    createFile("/build.gradle", "plugins { id 'java' }\n");
+    createFile("/settings.gradle", "rootProject.name = 'test'");
+    gradle.configureTask(
+        "bootRun", List.of("systemProperty 'spring.profiles.active', 'local'"), workspace.root());
+  }
+
+  @Test
   void shouldReturnNoneForUnknownSuggestion() {
     var actual = gradle.applySuggestion("unknown.suggestion", workspace.root());
 
