@@ -12,6 +12,8 @@ outputs:
 inputs:
   - file: BuildSystem.decision
     location: src/main/architecture
+  - file: TodoItemsServiceImpl.java
+    location: src/main/java/com/example/todo/domain/services
 
 diagnostics:
   - Gradle project isn't initialized

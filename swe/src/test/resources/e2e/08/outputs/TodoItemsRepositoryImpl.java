@@ -1,14 +1,14 @@
 package com.example.todo.outbound.db;
 
 import com.example.todo.domain.model.TodoItem;
-import com.example.todo.domain.services.TodoItemRepository;
+import com.example.todo.domain.services.TodoItemsRepository;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class TodoItemRepositoryImpl implements TodoItemRepository {
+public class TodoItemsRepositoryImpl implements TodoItemsRepository {
 
   private final TodoItemJpaRepository jpaRepository;
   private final TodoItemMapper mapper;
