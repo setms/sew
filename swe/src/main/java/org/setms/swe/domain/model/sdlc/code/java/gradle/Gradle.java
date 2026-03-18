@@ -82,15 +82,18 @@ public class Gradle implements CodeBuilder, CodeTester {
       jqwik = "1.9.3"
       junit-jupiter = "6.0.3"
       lombok-plugin = "9.2.0"
+      mockito = "5.22.0"
 
       [libraries]
       assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
       jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
       junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
       junit-jupiter-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit-jupiter" }
+      mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+      mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 
       [bundles]
-      test = ["assertj", "junit-jupiter", "jqwik"]
+      test = ["assertj", "junit-jupiter", "jqwik", "mockito", "mockito-junit"]
       test-runtime = ["junit-jupiter-launcher"]
 
       [plugins]

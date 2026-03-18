@@ -125,6 +125,7 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
         serviceImpl(
             packageName,
             serviceName,
+            repositoryName,
             command.getName(),
             event.getName(),
             serviceImports,
@@ -138,8 +139,8 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
         """
         package %s;
 
-        import java.util.Collection;
         %s
+        import java.util.Collection;
 
         public interface %s {
 
@@ -205,6 +206,7 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
   private CodeArtifact serviceImpl(
       String packageName,
       String serviceName,
+      String repositoryName,
       String commandName,
       String eventName,
       String imports,
@@ -215,8 +217,12 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
         package %s;
 
         %s
+        import lombok.RequiredArgsConstructor;
 
+        @RequiredArgsConstructor
         public class %sImpl implements %s {
+
+          private final %s repository;
 
           @Override
           public %s accept(%s %s) {
@@ -229,6 +235,7 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
                 imports,
                 serviceName,
                 serviceName,
+                repositoryName,
                 eventName,
                 commandName,
                 paramName,

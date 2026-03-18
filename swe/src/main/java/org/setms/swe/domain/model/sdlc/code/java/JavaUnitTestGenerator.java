@@ -56,7 +56,13 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     var builder = new StringBuilder();
     builder.append("package %s;\n".formatted(packageName));
     generateImports(packageName, acceptanceTest, builder);
-    builder.append("\nclass %s {\n".formatted(className));
+    builder.append(
+        """
+
+        @ExtendWith(MockitoExtension.class)
+        class %s {
+        """
+            .formatted(className));
     generateServiceField(acceptanceTest, builder);
     for (var scenario : acceptanceTest.getScenarios()) {
       builder.append("\n  @Test\n");
@@ -100,7 +106,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     var regularImports = new TreeSet<String>();
     var staticImports = new TreeSet<String>();
     var sutName = acceptanceTest.getSut().getId();
-    regularImports.add("%s.domain.services.%sService".formatted(packageName, sutName));
+    regularImports.add("%s.domain.services.%sRepository".formatted(packageName, sutName));
     regularImports.add("%s.domain.services.%sServiceImpl".formatted(packageName, sutName));
     for (var scenario : acceptanceTest.getScenarios()) {
       collectModelImports(packageName, scenario, acceptanceTest, regularImports);
@@ -113,6 +119,10 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
       staticImports.add("org.assertj.core.api.Assertions.assertThat");
     }
     regularImports.add("org.junit.jupiter.api.Test");
+    regularImports.add("org.junit.jupiter.api.extension.ExtendWith");
+    regularImports.add("org.mockito.InjectMocks");
+    regularImports.add("org.mockito.Mock");
+    regularImports.add("org.mockito.junit.jupiter.MockitoExtension");
     builder.append("\n");
     appendImports("import static ", staticImports, builder);
     builder.append("\n");
@@ -149,7 +159,12 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   private void generateServiceField(AcceptanceTest acceptanceTest, StringBuilder builder) {
     var sutName = acceptanceTest.getSut().getId();
     builder.append(
-        "\n  private final %sService service = new %sServiceImpl();\n".formatted(sutName, sutName));
+        """
+
+          @InjectMocks private %sServiceImpl service;
+          @Mock private %sRepository repository;
+        """
+            .formatted(sutName, sutName));
   }
 
   private void generateMethodBody(

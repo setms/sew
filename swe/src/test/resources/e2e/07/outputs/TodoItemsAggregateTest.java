@@ -4,13 +4,19 @@ import static com.example.todo.TestDataBuilder.someAddTodoItem;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.todo.domain.model.TodoItemAdded;
-import com.example.todo.domain.services.TodoItemsService;
+import com.example.todo.domain.services.TodoItemsRepository;
 import com.example.todo.domain.services.TodoItemsServiceImpl;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TodoItemsAggregateTest {
 
-  private final TodoItemsService service = new TodoItemsServiceImpl();
+  @InjectMocks private TodoItemsServiceImpl service;
+  @Mock private TodoItemsRepository repository;
 
   @Test
   void acceptAddTodoItemAndEmitTodoItemAdded() {
