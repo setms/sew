@@ -33,7 +33,7 @@ public class JavaCodeGenerator extends JavaBaseCodeGenerator implements CodeGene
 
   @Override
   public List<CodeArtifact> generate(Aggregate aggregate, Entity root) {
-    return generateDomainObjectFor(aggregate, root);
+    return generateDomainObjectFor(root, root);
   }
 
   @Override

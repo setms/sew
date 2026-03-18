@@ -62,16 +62,20 @@ class JavaCodeGeneratorTest {
   }
 
   @Test
-  void shouldBuildReturnExpressionWhenAllEventFieldsMatchCommand() {
+  void shouldGenerateAggregateArtifacts() {
     var generator = new JavaCodeGenerator("com.example.todo");
+    var root = givenTodoItemPayload();
     var aggregate = new Aggregate(new FullyQualifiedName("todo", "TodoItems"));
     var command = new Command(new FullyQualifiedName("todo", "AddTodoItem"));
     var event = new Event(new FullyQualifiedName("todo", "TodoItemAdded"));
-    var payload = givenTodoItemPayload();
 
-    var actual = generator.generate(aggregate, command, payload, event, payload);
+    var domainRecord = generator.generate(aggregate, root).getFirst();
+    var serviceArtifacts = generator.generate(aggregate, command, root, event, root);
 
-    assertThatServiceImplCreatesNewEvent(actual.get(2));
+    assertThat(domainRecord.getName())
+        .as("Aggregate domain record should be named after root entity, not aggregate")
+        .isEqualTo("TodoItem");
+    assertThatServiceImplCreatesNewEvent(serviceArtifacts.get(2));
   }
 
   private Entity givenTodoItemPayload() {

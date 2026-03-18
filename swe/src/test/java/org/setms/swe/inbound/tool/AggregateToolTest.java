@@ -102,7 +102,7 @@ class AggregateToolTest extends ResolverToolTestCase<Aggregate> {
             resource ->
                 assertThat(resource.readAsString())
                     .as("Generated code should declare the Projects domain record with its fields")
-                    .contains("record Projects")
+                    .contains("record ProjectData")
                     .contains("String task")
                     .contains("LocalDate dueDate"));
   }
