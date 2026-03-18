@@ -13,11 +13,11 @@ IDEA plugin support.
 # Run all tests
 ./gradlew test
 
-# Run tests for specific module
-./gradlew :km:test
-
 # Run specific test class
-./gradlew :swe:test --tests "org.setms.swe.e2e.EndToEndTest"
+./gradlew :swe:test --tests EndToEndTest
+
+# Run all tests except a specific test one
+./gradlew test --tests --exclude EndToEndTest
 
 # Run all checks, including tests
 ./gradlew check

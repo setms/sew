@@ -34,6 +34,8 @@ Review changed code and make sure it follows the following style guide:
 - Use camelCase for identifiers, where acronyms are treated as words.
   Bad: `XMLHTTPRequest`, good: `XmlHttpRequest`. Bad: `CommandDTO`, good: `CommandDto`.
 - Don't put newlines as `\n` in strings, use text blocks instead.
+- Prefer `Optional` over `if`, especially when checking against `null`.
+- Prefer `Stream` over `for`, especially when the loop contains `if`.
 - IMPORTANT: Use meaningful names as identifiers. For example `topLevelPackage` instead of `tlp`.
 - IMPORTANT: Re-use as much as possible; duplication is evil.
   This holds for many things, for example replace multiple instances of the same literal `String` with a constant.

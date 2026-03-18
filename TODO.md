@@ -7,7 +7,6 @@
 
 ## End-to-end test
 
-- Fix Docker build issue
 - Finish workflow
 
 
@@ -37,6 +36,10 @@
 
 - `CodeTool` should use Google Java Formatter to format the code properly before persisting a resource
 - Run linters (without tests)
+
+### Command
+
+- When issued by user, needs `Wireframe`.
 
 ### Decision
 
