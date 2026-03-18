@@ -155,7 +155,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   }
 
   private List<ElementVariable> resolveElementVariables(
-      List<Link> links, AcceptanceTest acceptanceTest) {
+      Collection<Link> links, AcceptanceTest acceptanceTest) {
     return Optional.ofNullable(links).stream()
         .flatMap(Collection::stream)
         .map(link -> resolveElementVariable(link, acceptanceTest))
@@ -179,8 +179,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
         addModelImport(packageName, s.getEmitted(), acceptanceTest, imports);
         resolveElementVariables(s.getState(), acceptanceTest).stream()
             .filter(v -> v.getType().hasType("aggregate"))
-            .forEach(
-                v -> imports.add("%s.domain.model.%s".formatted(packageName, v.getType().getId())));
+            .forEach(v -> addModelImport(packageName, v, imports));
       }
       case PolicyScenario s -> addModelImport(packageName, s.getIssued(), acceptanceTest, imports);
       default -> {}
@@ -189,10 +188,13 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
 
   private void addModelImport(
       String packageName, Link link, AcceptanceTest acceptanceTest, TreeSet<String> imports) {
-    var elementVar = resolveElementVariable(link, acceptanceTest);
-    if (elementVar != null) {
-      imports.add("%s.domain.model.%s".formatted(packageName, elementVar.getType().getId()));
-    }
+    Optional.ofNullable(resolveElementVariable(link, acceptanceTest))
+        .ifPresent(v -> addModelImport(packageName, v, imports));
+  }
+
+  private void addModelImport(
+      String packageName, ElementVariable elementVar, TreeSet<String> imports) {
+    imports.add("%s.domain.model.%s".formatted(packageName, elementVar.getType().getId()));
   }
 
   private void generateServiceField(AcceptanceTest acceptanceTest, StringBuilder builder) {
@@ -247,7 +249,7 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
     stateVars.forEach(v -> generateRepositoryVerification(v, initVars, builder));
   }
 
-  private void generateLoadAllMock(List<ElementVariable> initVars, StringBuilder builder) {
+  private void generateLoadAllMock(Collection<ElementVariable> initVars, StringBuilder builder) {
     var names = initVars.stream().map(ElementVariable::getName).collect(joining(", "));
     builder.append("    when(repository.loadAll()).thenReturn(List.of(%s));\n".formatted(names));
   }
@@ -262,13 +264,13 @@ public class JavaUnitTestGenerator extends JavaArtifactGenerator implements Unit
   }
 
   private void generateRepositoryVerification(
-      ElementVariable stateVar, List<ElementVariable> initVars, StringBuilder builder) {
+      ElementVariable stateVar, Collection<ElementVariable> initVars, StringBuilder builder) {
     var expectedVarName = "expected" + initUpper(stateVar.getName());
     var method = isUpdate(stateVar, initVars) ? "update" : "insert";
     builder.append("    verify(repository).%s(%s);\n".formatted(method, expectedVarName));
   }
 
-  private boolean isUpdate(ElementVariable stateVar, List<ElementVariable> initVars) {
+  private boolean isUpdate(ElementVariable stateVar, Collection<ElementVariable> initVars) {
     return initVars.stream()
         .anyMatch(init -> init.getType().getId().equals(stateVar.getType().getId()));
   }
