@@ -1,5 +1,7 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.swe.inbound.tool.Inputs.designSystems;
+
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
@@ -50,6 +52,11 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   @Override
   public Set<Input<? extends Wireframe>> validationTargets() {
     return Set.of(new GlobInput<>("src/main/ux/wireframes", XmlFormat.INSTANCE, Wireframe.class));
+  }
+
+  @Override
+  public Set<Input<? extends Artifact>> validationContext() {
+    return Set.of(designSystems());
   }
 
   @Override

@@ -8,6 +8,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
@@ -31,6 +32,16 @@ class WireframeToolTest {
     """;
 
   private final WireframeTool tool = new WireframeTool();
+
+  @Test
+  void shouldIncludeDesignSystemsInValidationContext() {
+    var actual = tool.validationContext();
+
+    assertThat(actual.stream().map(Input::path).toList())
+        .as(
+            "WireframeTool validation context should include design systems input at 'src/main/ux/designSystems'")
+        .contains("src/main/ux/designSystems");
+  }
 
   @Test
   void shouldRenderWireframeAsLowFidelityMockup() {
