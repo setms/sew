@@ -113,17 +113,18 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   }
 
   private void collectElement(WireframeElement element, List<WireframeElement> result) {
-    switch (element) {
-      case Container container -> collectContainerElements(container, result);
-      default -> result.add(element);
+    if (element instanceof Container container) {
+      collectContainerElements(container, result);
+    } else {
+      result.add(element);
     }
   }
 
   private int elementHeight(WireframeElement element) {
-    return switch (element) {
-      case Affordance affordance -> affordanceHeight(affordance);
-      default -> BTN_H;
-    };
+    if (element instanceof Affordance affordance) {
+      return affordanceHeight(affordance);
+    }
+    return BTN_H;
   }
 
   private int affordanceHeight(Affordance affordance) {
@@ -160,7 +161,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
     g.setColor(INK);
     roughLine(g, 2, PADDING + TITLE_H, SCREEN_WIDTH - 2, PADDING + TITLE_H);
     g.setFont(TITLE_FONT);
-    g.drawString(wireframe.friendlyName(), PADDING, PADDING + TITLE_H / 2 + 8);
+    g.drawString(withoutLeadingVerb(wireframe.friendlyName()), PADDING, PADDING + TITLE_H / 2 + 8);
   }
 
   private void drawElements(List<WireframeElement> elements, Graphics2D g) {
@@ -171,10 +172,10 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   }
 
   private int drawElement(WireframeElement element, Graphics2D g, int y) {
-    return switch (element) {
-      case Affordance affordance -> drawAffordance(affordance, g, y);
-      default -> drawButton(((Artifact) element).friendlyName(), g, y);
-    };
+    if (element instanceof Affordance affordance) {
+      return drawAffordance(affordance, g, y);
+    }
+    return drawButton(((Artifact) element).friendlyName(), g, y);
   }
 
   private int drawAffordance(Affordance affordance, Graphics2D g, int y) {
@@ -187,7 +188,10 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   }
 
   String affordanceLabel(Affordance affordance) {
-    var name = affordance.friendlyName();
+    return withoutLeadingVerb(affordance.friendlyName());
+  }
+
+  private String withoutLeadingVerb(String name) {
     var spaceIndex = name.indexOf(' ');
     return spaceIndex > 0 ? capitalize(name.substring(spaceIndex + 1)) : name;
   }
