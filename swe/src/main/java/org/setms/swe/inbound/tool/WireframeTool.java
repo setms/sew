@@ -2,6 +2,7 @@ package org.setms.swe.inbound.tool;
 
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.designSystems;
+import static org.setms.swe.inbound.tool.Inputs.wireframes;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
@@ -17,7 +18,6 @@ import java.util.Set;
 import javax.imageio.ImageIO;
 import org.setms.km.domain.model.artifact.Artifact;
 import org.setms.km.domain.model.tool.ArtifactTool;
-import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
@@ -29,7 +29,6 @@ import org.setms.swe.domain.model.sdlc.ux.Container;
 import org.setms.swe.domain.model.sdlc.ux.InputField;
 import org.setms.swe.domain.model.sdlc.ux.Wireframe;
 import org.setms.swe.domain.model.sdlc.ux.WireframeElement;
-import org.setms.swe.inbound.format.xml.XmlFormat;
 
 public class WireframeTool extends ArtifactTool<Wireframe> {
 
@@ -56,7 +55,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
 
   @Override
   public Set<Input<? extends Wireframe>> validationTargets() {
-    return Set.of(new GlobInput<>("src/main/ux/wireframes", XmlFormat.INSTANCE, Wireframe.class));
+    return Set.of(wireframes());
   }
 
   @Override
@@ -79,7 +78,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
 
   @Override
   protected Input<? extends Artifact> reportingTargetInput() {
-    return new GlobInput<>("src/main/ux/wireframes", XmlFormat.INSTANCE, Wireframe.class);
+    return wireframes();
   }
 
   @Override
