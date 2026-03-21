@@ -7,6 +7,8 @@ import static org.setms.swe.domain.model.sdlc.ux.Direction.TOP_TO_BOTTOM;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.artifact.Link;
+import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 
 class WireframeTest {
 
@@ -42,5 +44,26 @@ class WireframeTest {
         .satisfiesExactly(
             c -> assertThat(c).as("First child type").isInstanceOf(Container.class),
             c -> assertThat(c).as("Second child type").isInstanceOf(Affordance.class));
+  }
+
+  @Test
+  void shouldInitiateCommandThroughAffordanceInContainer() {
+    var command = new Command(new FullyQualifiedName("ux", "Submit"));
+    var affordance =
+        new Affordance(new FullyQualifiedName("ux", "Submit"))
+            .setCommand(new Link("command", "Submit"));
+    var container =
+        new Container(new FullyQualifiedName("ux", "Form"))
+            .setDirection(LEFT_TO_RIGHT)
+            .setChildren(List.of(affordance));
+    var wireframe =
+        new Wireframe(new FullyQualifiedName("ux", "HomePage")).setContainers(List.of(container));
+
+    var actual = wireframe.initiates(command);
+
+    assertThat(actual)
+        .as(
+            "Wireframe 'HomePage' should initiate command 'Submit' through an affordance nested in a container")
+        .isTrue();
   }
 }

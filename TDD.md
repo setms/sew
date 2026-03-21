@@ -9,8 +9,9 @@ Don't use headings in this document, it's explicitly designed to be a flat list 
   Each `Container` has a direction (left-to-right, right-to-left, top-to-bottom, or bottom-to-top).
 - [x] A `Container` has a list of children, each of which can be either a `Container`, an `Affordance`, an
   `InputField`, a `View`, or a `Feedback`.
-- [~] Update `Inputs.wireframes()` to use a new `XmlFormat`, which is like `SalFormat` but XML-based and can parse more
+- [x] Update `Inputs.wireframes()` to use a new `XmlFormat`, which is like `SalFormat` but XML-based and can parse more
   deeply nested structures, like `Wireframe`.
-- [ ] Remove `affordances`, `views`, and `feedbacks` from `Wireframe`, since they're all contained in `Container`.
-- [ ] Introduce `WireframeTool`, like `UseCaseTool`, whose `build()` method renders a `Wireframe` as a low-fidelity
+- [~] Remove `affordances`, `views`, and `feedbacks` from `Wireframe`, since they're all contained in `Container`.
+- [ ] Implement `XmlFormat.newBuilder()`
+- [ ] Introduce `WireframeTool`, like `UseCaseTool`, whose `buildHtml()` method renders a `Wireframe` as a low-fidelity
   mockup, honoring the direction of `Container`s.
