@@ -115,19 +115,23 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   private void collectElement(WireframeElement element, List<WireframeElement> result) {
     switch (element) {
       case Container container -> collectContainerElements(container, result);
-      case Affordance affordance -> {
-        Optional.ofNullable(affordance.getInputFields()).ifPresent(result::addAll);
-        result.add(affordance);
-      }
       default -> result.add(element);
     }
   }
 
   private int elementHeight(WireframeElement element) {
     return switch (element) {
-      case InputField ignored -> LABEL_H + LABEL_GAP + INPUT_H;
+      case Affordance affordance -> affordanceHeight(affordance);
       default -> BTN_H;
     };
+  }
+
+  private int affordanceHeight(Affordance affordance) {
+    var inputFieldsH =
+        Optional.ofNullable(affordance.getInputFields())
+            .map(fields -> fields.size() * (LABEL_H + LABEL_GAP + INPUT_H + ELEMENT_GAP))
+            .orElse(0);
+    return inputFieldsH + BTN_H;
   }
 
   private void render(
@@ -168,9 +172,28 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
 
   private int drawElement(WireframeElement element, Graphics2D g, int y) {
     return switch (element) {
-      case InputField field -> drawInputField(field, g, y);
-      default -> drawButton((Artifact) element, g, y);
+      case Affordance affordance -> drawAffordance(affordance, g, y);
+      default -> drawButton(((Artifact) element).friendlyName(), g, y);
     };
+  }
+
+  private int drawAffordance(Affordance affordance, Graphics2D g, int y) {
+    var fields = Optional.ofNullable(affordance.getInputFields()).orElse(List.of());
+    var currentY = y;
+    for (var field : fields) {
+      currentY = drawInputField(field, g, currentY) + ELEMENT_GAP;
+    }
+    return drawButton(affordanceLabel(affordance), g, currentY);
+  }
+
+  String affordanceLabel(Affordance affordance) {
+    var name = affordance.friendlyName();
+    var spaceIndex = name.indexOf(' ');
+    return spaceIndex > 0 ? capitalize(name.substring(spaceIndex + 1)) : name;
+  }
+
+  private String capitalize(String s) {
+    return s.isEmpty() ? s : Character.toUpperCase(s.charAt(0)) + s.substring(1);
   }
 
   private int drawInputField(InputField field, Graphics2D g, int y) {
@@ -186,7 +209,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
     return inputY + INPUT_H;
   }
 
-  private int drawButton(Artifact artifact, Graphics2D g, int y) {
+  private int drawButton(String name, Graphics2D g, int y) {
     var btnW = SCREEN_WIDTH - 2 * PADDING;
     g.setColor(BTN_TINT);
     g.fillRect(PADDING + 1, y + 1, btnW - 1, BTN_H - 1);
@@ -194,7 +217,6 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
     roughRect(g, PADDING, y, btnW, BTN_H);
     g.setFont(BTN_FONT);
     var fm = g.getFontMetrics();
-    var name = artifact.friendlyName();
     var textX = PADDING + (btnW - fm.stringWidth(name)) / 2;
     var textY = y + (BTN_H + fm.getAscent() - fm.getDescent()) / 2;
     g.drawString(name, textX, textY);

@@ -52,6 +52,15 @@ class WireframeToolTest {
   }
 
   @Test
+  void shouldStripLeadingVerbFromAffordanceLabel() {
+    var affordance = new Affordance(new FullyQualifiedName("todo", "InitiateAddTodoItem"));
+
+    var actual = tool.affordanceLabel(affordance);
+
+    assertThat(actual).as("Affordance label with leading verb stripped").isEqualTo("Add todo item");
+  }
+
+  @Test
   void shouldRenderWireframeAsPortraitScreenMockup() throws IOException {
     var wireframe = givenWireframeWithAffordanceContainingInputFields();
     var workspace = new InMemoryWorkspace();
@@ -85,14 +94,16 @@ class WireframeToolTest {
   }
 
   private Wireframe givenWireframeWithAffordanceAndInputField() {
+    var affordance =
+        new Affordance(new FullyQualifiedName("ux", "Login"))
+            .setInputFields(
+                List.of(
+                    new InputField(new FullyQualifiedName("ux", "Password"))
+                        .setType(FieldType.TEXT)));
     var container =
         new Container(new FullyQualifiedName("ux", "Header"))
             .setDirection(Direction.LEFT_TO_RIGHT)
-            .setChildren(
-                List.of(
-                    new Affordance(new FullyQualifiedName("ux", "Login")),
-                    new InputField(new FullyQualifiedName("ux", "Password"))
-                        .setType(FieldType.TEXT)));
+            .setChildren(List.of(affordance));
     return new Wireframe(new FullyQualifiedName("ux", "LoginScreen"))
         .setContainers(List.of(container));
   }

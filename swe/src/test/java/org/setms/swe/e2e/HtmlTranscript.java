@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.setms.km.domain.model.file.Files;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.domain.model.workspace.Workspace;
@@ -178,7 +179,7 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
   }
 
   private void showDiagramFor(String item) {
-    if (item.startsWith("Created") || item.startsWith("Updated")) {
+    if (Stream.of("Created", "Updated", "Generated").anyMatch(item::startsWith)) {
       var path = item.substring(item.indexOf(" ") + 1);
       root.select(".km/reports")
           .matching(path, "png")
