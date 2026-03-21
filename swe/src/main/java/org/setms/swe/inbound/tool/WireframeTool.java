@@ -1,5 +1,9 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
+import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
+import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.designSystems;
 import static org.setms.swe.inbound.tool.Inputs.wireframes;
@@ -17,13 +21,19 @@ import java.util.Random;
 import java.util.Set;
 import javax.imageio.ImageIO;
 import org.setms.km.domain.model.artifact.Artifact;
+import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.ArtifactTool;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
+import org.setms.swe.domain.model.sdlc.ui.Properties;
+import org.setms.swe.domain.model.sdlc.ui.Property;
+import org.setms.swe.domain.model.sdlc.ui.Style;
 import org.setms.swe.domain.model.sdlc.ux.Affordance;
 import org.setms.swe.domain.model.sdlc.ux.Container;
 import org.setms.swe.domain.model.sdlc.ux.InputField;
@@ -74,6 +84,46 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
               wireframe.toLocation(),
               new Suggestion(CREATE_DESIGN_SYSTEM, "Create design system")));
     }
+  }
+
+  @Override
+  protected AppliedSuggestion doApply(
+      Resource<?> resource,
+      Wireframe wireframe,
+      String suggestionCode,
+      Location location,
+      ResolvedInputs inputs)
+      throws Exception {
+    return switch (suggestionCode) {
+      case CREATE_DESIGN_SYSTEM -> createDesignSystemFor(resource, wireframe);
+      default -> unknown(suggestionCode);
+    };
+  }
+
+  private AppliedSuggestion createDesignSystemFor(Resource<?> resource, Wireframe wireframe)
+      throws IOException {
+    var designSystem = toDesignSystem(wireframe);
+    var designSystemResource = resourceFor(designSystem, wireframe, resource);
+    try {
+      builderFor(designSystem).build(designSystem, designSystemResource);
+    } catch (IOException e) {
+      return failedWith(e);
+    }
+    return created(designSystemResource);
+  }
+
+  private DesignSystem toDesignSystem(Wireframe wireframe) {
+    var pkg = wireframe.getPackage();
+    var fqn = new FullyQualifiedName(pkg + ".Default");
+    var properties =
+        Properties.names().stream()
+            .map(
+                name ->
+                    new Property(new FullyQualifiedName(pkg + "." + name))
+                        .setValue(Properties.defaultFor(name)))
+            .toList();
+    var style = new Style(fqn).setProperties(properties);
+    return new DesignSystem(fqn).setStyles(List.of(style));
   }
 
   @Override
