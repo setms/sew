@@ -59,6 +59,7 @@ class Inputs {
   static final String PATH_ARCHITECTURE = "src/main/architecture";
   static final String PATH_OVERVIEW = "src/main/overview";
   static final String PATH_UX = "src/main/ux";
+  private static final String PATH_DESIGN_SYSTEMS = PATH_UX + "/designSystems";
   static final String PATH_WIREFRAME = PATH_UX + "/wireframes";
 
   static Input<AcceptanceTest> acceptanceTests() {
@@ -87,7 +88,7 @@ class Inputs {
   }
 
   static Input<DesignSystem> designSystems() {
-    return new GlobInput<>(PATH_UX + "/designSystems", XmlFormat.INSTANCE, DesignSystem.class);
+    return new GlobInput<>(PATH_DESIGN_SYSTEMS, XmlFormat.INSTANCE, DesignSystem.class);
   }
 
   static Input<Decision> decisions() {

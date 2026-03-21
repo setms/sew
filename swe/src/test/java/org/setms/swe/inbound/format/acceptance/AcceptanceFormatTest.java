@@ -226,18 +226,17 @@ class AcceptanceFormatTest {
             .setSut(new Link("aggregate", "Todos"))
             .setVariables(
                 List.of(
-                    new ElementVariable(new FullyQualifiedName("elementVariable.todo1"))
+                    new ElementVariable(new FullyQualifiedName("todo.todo1"))
                         .setType(new Link("entity", "Todo")),
-                    new ElementVariable(new FullyQualifiedName("elementVariable.todo2"))
+                    new ElementVariable(new FullyQualifiedName("todo.todo2"))
                         .setType(new Link("entity", "Todo")),
-                    new ElementVariable(new FullyQualifiedName("elementVariable.command"))
+                    new ElementVariable(new FullyQualifiedName("todo.command"))
                         .setType(new Link("command", "Command")),
-                    new ElementVariable(new FullyQualifiedName("elementVariable.event"))
+                    new ElementVariable(new FullyQualifiedName("todo.event"))
                         .setType(new Link("event", "Event"))))
             .setScenarios(
                 List.of(
-                    new AggregateScenario(
-                            new FullyQualifiedName("aggregateScenario.AddAnotherTodo"))
+                    new AggregateScenario(new FullyQualifiedName("todo.AddAnotherTodo"))
                         .setInit(List.of(new Link("variable", "todo1")))
                         .setAccepts(new Link("variable", "command"))
                         .setState(

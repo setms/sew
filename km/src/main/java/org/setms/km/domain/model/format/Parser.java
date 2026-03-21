@@ -1,5 +1,6 @@
 package org.setms.km.domain.model.format;
 
+import static java.util.Comparator.comparingInt;
 import static org.setms.km.domain.model.format.Strings.initUpper;
 import static org.setms.km.domain.model.validation.Level.ERROR;
 import static org.setms.km.domain.model.validation.Validation.validate;
@@ -114,10 +115,11 @@ public interface Parser {
   @SuppressWarnings("unchecked")
   default Artifact createObject(NestedObject source, String name, Object parent, boolean validate) {
     var typeName = Optional.ofNullable(source.getType()).orElse(name);
+    var scope = parent instanceof Artifact artifact ? artifact.getPackage() : name;
     return findClassNamed(initUpper(typeName), parent)
         .filter(Artifact.class::isAssignableFrom)
         .map(c -> (Class<Artifact>) c)
-        .map(type -> parseNamedObject(source, type, name, source.getName(), validate))
+        .map(type -> parseNamedObject(source, type, scope, source.getName(), validate))
         .orElse(null);
   }
 
@@ -131,8 +133,8 @@ public interface Parser {
             .scan()) {
       return scanResult.getAllClasses().stream()
           .filter(c -> matchesName(c.getSimpleName(), name))
-          .map(ClassInfo::loadClass)
-          .findFirst();
+          .min(comparingInt(c -> c.getSimpleName().equalsIgnoreCase(name) ? 0 : 1))
+          .map(ClassInfo::loadClass);
     } catch (Exception e) {
       return Optional.empty();
     }

@@ -15,5 +15,6 @@ inputs:
 
 diagnostics:
   - Missing database schema
+  - Missing design system
   - Missing initiative
   - Modules aren't deployed in components

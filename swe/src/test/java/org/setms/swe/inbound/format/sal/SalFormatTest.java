@@ -251,7 +251,7 @@ class SalFormatTest {
                 .setDingo("elephant")
                 .setFox(List.of("giraffe"))
                 .setHyenas(
-                    List.of(new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
+                    List.of(new Hyena(new FullyQualifiedName("ape.iguana")).setJaguar("koala")))
                 .setLeopard(new Link(null, "mule")));
   }
 
@@ -278,7 +278,7 @@ class SalFormatTest {
                 .setDingo("elephant")
                 .setFox(List.of("giraffe"))
                 .setHyenas(
-                    List.of(new Hyena(new FullyQualifiedName("hyenas.iguana")).setJaguar("koala")))
+                    List.of(new Hyena(new FullyQualifiedName("ape.iguana")).setJaguar("koala")))
                 .setLeopard(new Link(null, "mule"))
                 .setOk(true)
                 .setState(State.SUCKS));

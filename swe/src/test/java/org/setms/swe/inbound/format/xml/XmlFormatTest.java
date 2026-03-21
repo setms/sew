@@ -7,13 +7,36 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.format.DataEnum;
 import org.setms.km.domain.model.format.DataList;
 import org.setms.km.domain.model.format.NestedObject;
 import org.setms.km.domain.model.format.RootObject;
+import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
+import org.setms.swe.domain.model.sdlc.ui.Property;
+import org.setms.swe.domain.model.sdlc.ui.Style;
 
 class XmlFormatTest {
+
+  @Test
+  void shouldRoundTripDesignSystemWithStyleProperties() throws IOException {
+    var property = new Property(new FullyQualifiedName("ux.ButtonFontSize")).setValue("14px");
+    var style = new Style(new FullyQualifiedName("ux.Default")).setProperties(List.of(property));
+    var expected = new DesignSystem(new FullyQualifiedName("ux.Default")).setStyles(List.of(style));
+    var output = new ByteArrayOutputStream();
+
+    new XmlFormat().newBuilder().build(expected, output);
+    var actual =
+        new XmlFormat()
+            .newParser()
+            .parse(new ByteArrayInputStream(output.toByteArray()), DesignSystem.class, false);
+
+    assertThat(actual)
+        .as("Parsed DesignSystem should equal the original, including Style.properties")
+        .isEqualTo(expected);
+  }
 
   @Test
   void shouldParseWireframeWithNestedContainers() throws IOException {
