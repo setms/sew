@@ -16,6 +16,6 @@ public class XmlFormat implements Format {
 
   @Override
   public Builder newBuilder() {
-    throw new UnsupportedOperationException("XmlFormat does not support building");
+    return new XmlFormatBuilder();
   }
 }

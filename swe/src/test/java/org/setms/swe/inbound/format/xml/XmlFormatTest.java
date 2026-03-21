@@ -4,7 +4,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.format.DataEnum;
 import org.setms.km.domain.model.format.DataList;
@@ -40,5 +42,26 @@ class XmlFormatTest {
                             new NestedObject("Header")
                                 .set("direction", new DataEnum("LEFT_TO_RIGHT"))
                                 .set("children", new DataList().add(new NestedObject("Submit"))))));
+  }
+
+  @Test
+  void shouldBuildWireframeWithContainers() throws IOException {
+    var root =
+        new RootObject("todo", "wireframe", "InitiateAddTodoItem")
+            .set(
+                "containers",
+                new DataList()
+                    .add(
+                        new NestedObject("Header")
+                            .set("direction", new DataEnum("LEFT_TO_RIGHT"))));
+    var output = new ByteArrayOutputStream();
+
+    new XmlFormat().newBuilder().build(root, new PrintWriter(output, true));
+
+    var actual = new XmlFormat().newParser().parse(new ByteArrayInputStream(output.toByteArray()));
+    assertThat(actual)
+        .as(
+            "Built XML should parse back to the same RootObject representing 'InitiateAddTodoItem' with a 'Header' container")
+        .isEqualTo(root);
   }
 }
