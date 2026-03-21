@@ -12,7 +12,7 @@ Don't use headings in this document, it's explicitly designed to be a flat list 
 - [x] Update `Inputs.wireframes()` to use a new `XmlFormat`, which is like `SalFormat` but XML-based and can parse more
   deeply nested structures, like `Wireframe`.
 - [x] Remove `affordances`, `views`, and `feedbacks` from `Wireframe`, since they're all contained in `Container`.
-- [~] Implement `XmlFormat.newBuilder()`
-- [ ] Introduce `WireframeTool`, like `UseCaseTool`, whose `buildHtml()` method renders a `Wireframe` as a low-fidelity
+- [x] Implement `XmlFormat.newBuilder()`
+- [~] Introduce `WireframeTool`, like `UseCaseTool`, whose `buildHtml()` method renders a `Wireframe` as a low-fidelity
   mockup, honoring the direction of `Container`s.
   See the [image](wireframe.jpg) for an example of a low-fi wireframe.
