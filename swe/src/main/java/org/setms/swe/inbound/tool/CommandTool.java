@@ -90,7 +90,7 @@ public class CommandTool extends DtoCodeTool<Command> {
 
   private boolean initiates(Command command, Wireframe wireframe) {
     return wireframe.initiates(command)
-        || wireframe.getName().equals("Initiate" + command.getName());
+        || wireframe.getName().equals("Initiate%s".formatted(command.getName()));
   }
 
   @Override

@@ -4,8 +4,8 @@ import static java.util.stream.Collectors.groupingBy;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.setms.km.domain.model.format.DataEnum;
@@ -48,13 +48,10 @@ class XmlFormatParser implements Parser {
 
   private void parseAttributes(Element element, DataObject<?> target) {
     var attrs = element.getAttributes();
-    for (var i = 0; i < attrs.getLength(); i++) {
-      var attr = attrs.item(i);
-      var attrName = attr.getNodeName();
-      if (!attrName.equals("package") && !attrName.equals("name")) {
-        target.set(attrName, new DataEnum(attr.getNodeValue()));
-      }
-    }
+    IntStream.range(0, attrs.getLength())
+        .mapToObj(attrs::item)
+        .filter(attr -> !attr.getNodeName().equals("package") && !attr.getNodeName().equals("name"))
+        .forEach(attr -> target.set(attr.getNodeName(), new DataEnum(attr.getNodeValue())));
   }
 
   private void parseChildren(Element element, DataObject<?> target) {
@@ -98,14 +95,10 @@ class XmlFormatParser implements Parser {
   }
 
   private Stream<Element> childElements(Element element) {
-    var result = new ArrayList<Element>();
     var children = element.getChildNodes();
-    for (var i = 0; i < children.getLength(); i++) {
-      var child = children.item(i);
-      if (child.getNodeType() == Node.ELEMENT_NODE) {
-        result.add((Element) child);
-      }
-    }
-    return result.stream();
+    return IntStream.range(0, children.getLength())
+        .mapToObj(children::item)
+        .filter(child -> child.getNodeType() == Node.ELEMENT_NODE)
+        .map(Element.class::cast);
   }
 }
