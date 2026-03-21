@@ -308,7 +308,10 @@ class SalFormatTest {
                 .set(
                     "hyenas",
                     new DataList()
-                        .add(new NestedObject("iguana").set("jaguar", new DataString("koala"))))
+                        .add(
+                            new NestedObject("iguana")
+                                .setType("hyena")
+                                .set("jaguar", new DataString("koala"))))
                 .set("leopard", new Reference("mule"))
                 .set("ok", new DataEnum("true"))
                 .set("state", new DataEnum("sorta_ok")));

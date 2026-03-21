@@ -1,7 +1,10 @@
-package todo
-
-wireframe InitiateAddTodoItem {
-}
-
-affordance InitiateAddTodoItem {
-}
+<wireframe package="todo" name="InitiateAddTodoItem">
+  <container name="InitiateAddTodoItem" direction="top_to_bottom">
+    <children>
+      <affordance name="InitiateAddTodoItem">
+        <inputField name="Task" type="text"/>
+        <inputField name="DueDate" type="datetime"/>
+      </affordance>
+    </children>
+  </container>
+</wireframe>

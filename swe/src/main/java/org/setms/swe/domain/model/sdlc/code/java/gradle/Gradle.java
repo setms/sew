@@ -100,7 +100,7 @@ public class Gradle implements CodeBuilder, CodeTester {
       lombok = { id = "io.freefair.lombok", version.ref = "lombok-plugin" }
       """;
   private static final Map<String, String> LATEST_KNOWN_VERSIONS =
-      Map.of("org.springframework.boot", "4.0.3", "com.github.akazver.mapstruct", "1.0.9");
+      Map.of("org.springframework.boot", "4.0.4", "com.github.akazver.mapstruct", "1.0.9");
   private static final String TASKS_BLOCK =
       """
 

@@ -113,7 +113,8 @@ public interface Parser {
 
   @SuppressWarnings("unchecked")
   default Artifact createObject(NestedObject source, String name, Object parent, boolean validate) {
-    return findClassNamed(initUpper(name), parent)
+    var typeName = source.getType() != null ? source.getType() : name;
+    return findClassNamed(initUpper(typeName), parent)
         .filter(Artifact.class::isAssignableFrom)
         .map(c -> (Class<Artifact>) c)
         .map(type -> parseNamedObject(source, type, name, source.getName(), validate))

@@ -24,6 +24,26 @@ class XmlFormatBuilder implements Builder {
     writer.flush();
   }
 
+  private void writeChildren(
+      PrintWriter writer, String key, DataList list, String indent, int depth) {
+    var items = list.map(NestedObject.class::cast).toList();
+    var singular = language.singular(key);
+    var needsWrapper =
+        items.stream().anyMatch(item -> item.getType() != null && !singular.equals(item.getType()));
+    if (needsWrapper) {
+      var wrapperIndent = "  ".repeat(depth + 1);
+      writer.println("%s<%s>".formatted(wrapperIndent, key));
+      items.forEach(
+          item -> {
+            var itemTag = item.getType() != null ? item.getType() : singular;
+            writeElement(writer, itemTag, null, item.getName(), item, depth + 2);
+          });
+      writer.println("%s</%s>".formatted(wrapperIndent, key));
+    } else {
+      items.forEach(item -> writeElement(writer, singular, null, item.getName(), item, depth + 1));
+    }
+  }
+
   private void writeElement(
       PrintWriter writer, String tag, String scope, String name, DataObject<?> obj, int depth) {
     var indent = "  ".repeat(depth);
@@ -48,18 +68,7 @@ class XmlFormatBuilder implements Builder {
       writer.println("%s<%s%s/>".formatted(indent, tag, attrString));
     } else {
       writer.println("%s<%s%s>".formatted(indent, tag, attrString));
-      childLists.forEach(
-          (key, list) ->
-              list.map(NestedObject.class::cast)
-                  .forEach(
-                      item ->
-                          writeElement(
-                              writer,
-                              language.singular(key),
-                              null,
-                              item.getName(),
-                              item,
-                              depth + 1)));
+      childLists.forEach((key, list) -> writeChildren(writer, key, list, indent, depth));
       writer.println("%s</%s>".formatted(indent, tag));
     }
   }

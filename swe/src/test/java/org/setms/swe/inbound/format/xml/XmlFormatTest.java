@@ -40,8 +40,48 @@ class XmlFormatTest {
                     new DataList()
                         .add(
                             new NestedObject("Header")
+                                .setType("container")
                                 .set("direction", new DataEnum("LEFT_TO_RIGHT"))
-                                .set("children", new DataList().add(new NestedObject("Submit"))))));
+                                .set(
+                                    "children",
+                                    new DataList()
+                                        .add(new NestedObject("Submit").setType("affordance"))))));
+  }
+
+  @Test
+  void shouldRoundTripWireframeWithTypedChildren() throws IOException {
+    var root =
+        new RootObject("todo", "wireframe", "InitiateAddTodoItem")
+            .set(
+                "containers",
+                new DataList()
+                    .add(
+                        new NestedObject("InitiateAddTodoItem")
+                            .setType("container")
+                            .set("direction", new DataEnum("top_to_bottom"))
+                            .set(
+                                "children",
+                                new DataList()
+                                    .add(
+                                        new NestedObject("InitiateAddTodoItem")
+                                            .setType("affordance")
+                                            .set(
+                                                "inputFields",
+                                                new DataList()
+                                                    .add(
+                                                        new NestedObject("Task")
+                                                            .setType("inputField")
+                                                            .set(
+                                                                "type", new DataEnum("text"))))))));
+    var output = new ByteArrayOutputStream();
+
+    new XmlFormat().newBuilder().build(root, new PrintWriter(output, true));
+    var actual = new XmlFormat().newParser().parse(new ByteArrayInputStream(output.toByteArray()));
+
+    assertThat(actual)
+        .as(
+            "Round-tripped wireframe must preserve the type of children (affordance) and their children (inputField)")
+        .isEqualTo(root);
   }
 
   @Test
@@ -53,6 +93,7 @@ class XmlFormatTest {
                 new DataList()
                     .add(
                         new NestedObject("Header")
+                            .setType("container")
                             .set("direction", new DataEnum("LEFT_TO_RIGHT"))));
     var output = new ByteArrayOutputStream();
 

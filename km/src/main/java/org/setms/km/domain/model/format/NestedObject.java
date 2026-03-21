@@ -10,6 +10,12 @@ import lombok.RequiredArgsConstructor;
 public class NestedObject extends DataObject<NestedObject> {
 
   private final String name;
+  private String type;
+
+  public NestedObject setType(String type) {
+    this.type = type;
+    return this;
+  }
 
   @Override
   public String toString() {

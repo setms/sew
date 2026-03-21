@@ -107,7 +107,10 @@ public interface Builder {
   }
 
   default NestedObject toNestedObject(Artifact source) {
-    return setProperties(source, new NestedObject(source.getName()));
+    return setProperties(
+        source,
+        new NestedObject(source.getName())
+            .setType(startLowerCase(source.getClass().getSimpleName())));
   }
 
   default void build(Artifact object, OutputStream output) throws IOException {

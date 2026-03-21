@@ -84,7 +84,13 @@ public class CommandTool extends DtoCodeTool<Command> {
   }
 
   private boolean isInitiatedByWireframe(Command command, ResolvedInputs inputs) {
-    return inputs.get(Wireframe.class).stream().anyMatch(wireframe -> wireframe.initiates(command));
+    return inputs.get(Wireframe.class).stream()
+        .anyMatch(wireframe -> initiates(command, wireframe));
+  }
+
+  private boolean initiates(Command command, Wireframe wireframe) {
+    return wireframe.initiates(command)
+        || wireframe.getName().equals("Initiate" + command.getName());
   }
 
   @Override

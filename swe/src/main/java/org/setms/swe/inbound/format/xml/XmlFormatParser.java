@@ -86,7 +86,7 @@ class XmlFormatParser implements Parser {
   }
 
   private NestedObject parseNestedObject(Element element) {
-    var result = new NestedObject(element.getAttribute("name"));
+    var result = new NestedObject(element.getAttribute("name")).setType(element.getTagName());
     parseProperties(element, result);
     return result;
   }

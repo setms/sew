@@ -2,6 +2,7 @@ package org.setms.swe.domain.model.sdlc.ux;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +35,6 @@ public non-sealed class Affordance extends Artifact implements WireframeElement 
   }
 
   public boolean initiates(Command command) {
-    return this.command.pointsTo(command);
+    return Optional.ofNullable(this.command).map(link -> link.pointsTo(command)).orElse(false);
   }
 }
