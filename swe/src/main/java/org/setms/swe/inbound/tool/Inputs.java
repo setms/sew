@@ -38,8 +38,10 @@ import org.setms.swe.domain.model.sdlc.stakeholders.User;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTestHelper;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
+import org.setms.swe.domain.model.sdlc.ux.Wireframe;
 import org.setms.swe.inbound.format.acceptance.AcceptanceFormat;
 import org.setms.swe.inbound.format.sal.SalFormat;
+import org.setms.swe.inbound.format.xml.XmlFormat;
 
 @NoArgsConstructor(access = PRIVATE)
 class Inputs {
@@ -55,6 +57,8 @@ class Inputs {
   static final String PATH_ANALYSIS = "src/main/analysis";
   static final String PATH_ARCHITECTURE = "src/main/architecture";
   static final String PATH_OVERVIEW = "src/main/overview";
+  static final String PATH_UX = "src/main/ux";
+  static final String PATH_WIREFRAME = PATH_UX + "/wireframes";
 
   static Input<AcceptanceTest> acceptanceTests() {
     return new GlobInput<>(
@@ -131,6 +135,10 @@ class Inputs {
 
   static Input<User> users() {
     return newInput(PATH_STAKEHOLDERS, User.class);
+  }
+
+  static Input<Wireframe> wireframes() {
+    return new GlobInput<>(PATH_WIREFRAME, XmlFormat.INSTANCE, Wireframe.class);
   }
 
   public static Set<Input<? extends CodeArtifact>> buildConfiguration() {
