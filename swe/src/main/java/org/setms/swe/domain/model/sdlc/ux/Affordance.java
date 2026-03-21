@@ -19,7 +19,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Affordance extends Artifact {
+public non-sealed class Affordance extends Artifact implements WireframeElement {
 
   @HasType("command")
   Link command;

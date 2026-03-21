@@ -16,7 +16,7 @@ import org.setms.km.domain.model.artifact.Link;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class View extends Artifact {
+public non-sealed class View extends Artifact implements WireframeElement {
 
   @NotNull
   @HasType("entity")

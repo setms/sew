@@ -7,7 +7,7 @@ Don't use headings in this document, it's explicitly designed to be a flat list 
 
 - [~] Update `Wireframe` to contain a list of `Container`s.
   Each `Container` has a direction (left-to-right, right-to-left, top-to-bottom, or bottom-to-top).
-- [ ] A `Container` has a list of children, each of which can be either a `Container`, an `Affordance`, an
+- [~] A `Container` has a list of children, each of which can be either a `Container`, an `Affordance`, an
   `InputField`, a `View`, or a `Feedback`.
 - [ ] Update `Inputs.wireframes()` to use a new `XmlFormat`, which is like `SalFormat` but XML-based and can parse more
   deeply nested structures, like `Wireframe`.

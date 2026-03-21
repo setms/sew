@@ -15,7 +15,7 @@ import org.setms.swe.domain.model.sdlc.design.FieldType;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class InputField extends Artifact {
+public non-sealed class InputField extends Artifact implements WireframeElement {
 
   @NotNull private FieldType type;
 

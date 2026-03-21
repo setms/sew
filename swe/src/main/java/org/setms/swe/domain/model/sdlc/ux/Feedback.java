@@ -17,7 +17,7 @@ import org.setms.km.domain.model.artifact.Link;
 @Accessors(chain = true)
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
-public class Feedback extends Artifact {
+public non-sealed class Feedback extends Artifact implements WireframeElement {
 
   @HasType("event")
   private List<@Valid Link> supports;
