@@ -159,6 +159,9 @@ public class HtmlTranscript implements Consumer<String>, Closeable {
       if (extension.contains("git")) {
         return "git";
       }
+      if ("yml".equals(extension) && fileName.startsWith("application")) {
+        return "spring";
+      }
       return extension;
     }
     return "unknown";
