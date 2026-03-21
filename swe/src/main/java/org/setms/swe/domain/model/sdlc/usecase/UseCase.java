@@ -3,6 +3,7 @@ package org.setms.swe.domain.model.sdlc.usecase;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,5 +40,9 @@ public class UseCase extends Artifact {
   @Override
   public void validate(Location location, Collection<Diagnostic> diagnostics) {
     scenarios.forEach(scenario -> scenario.validate(scenario.appendTo(location), diagnostics));
+  }
+
+  public Stream<Link> predecessorsOf(Artifact artifact) {
+    return scenarios().map(scenario -> scenario.predecessorsOf(artifact)).flatMap(Optional::stream);
   }
 }

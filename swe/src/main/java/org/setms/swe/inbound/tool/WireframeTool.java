@@ -1,39 +1,60 @@
 package org.setms.swe.inbound.tool;
 
-import static org.setms.swe.inbound.tool.Inputs.wireframes;
-
+import java.awt.*;
+import java.awt.geom.GeneralPath;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.diagram.BaseDiagramTool;
-import org.setms.km.domain.model.diagram.Diagram;
-import org.setms.km.domain.model.diagram.Orientation;
-import org.setms.km.domain.model.diagram.Shape;
-import org.setms.km.domain.model.diagram.ShapeBox;
+import org.setms.km.domain.model.tool.ArtifactTool;
+import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.ux.Affordance;
 import org.setms.swe.domain.model.sdlc.ux.Container;
-import org.setms.swe.domain.model.sdlc.ux.Direction;
-import org.setms.swe.domain.model.sdlc.ux.Feedback;
 import org.setms.swe.domain.model.sdlc.ux.InputField;
-import org.setms.swe.domain.model.sdlc.ux.View;
 import org.setms.swe.domain.model.sdlc.ux.Wireframe;
 import org.setms.swe.domain.model.sdlc.ux.WireframeElement;
+import org.setms.swe.inbound.format.xml.XmlFormat;
 
-public class WireframeTool extends BaseDiagramTool<Wireframe> {
+public class WireframeTool extends ArtifactTool<Wireframe> {
+
+  private static final int SCREEN_WIDTH = 300;
+  private static final int PADDING = 24;
+  private static final int TITLE_H = 56;
+  private static final int LABEL_H = 14;
+  private static final int LABEL_GAP = 6;
+  private static final int INPUT_H = 30;
+  private static final int BTN_H = 40;
+  private static final int ELEMENT_GAP = 20;
+  private static final Color PAPER = new Color(0xFF, 0xFE, 0xF5);
+  private static final Color INK = new Color(0x22, 0x22, 0x22);
+  private static final Color LIGHT_INK = new Color(0x88, 0x88, 0x88);
+  private static final Color FIELD_TINT = new Color(0xF2, 0xF2, 0xF2);
+  private static final Color BTN_TINT = new Color(0xE8, 0xE8, 0xE8);
+  private static final Font TITLE_FONT = new Font("Monospaced", Font.BOLD, 15);
+  private static final Font LABEL_FONT = new Font("Monospaced", Font.PLAIN, 10);
+  private static final Font BTN_FONT = new Font("Monospaced", Font.BOLD, 12);
+  private static final Stroke SKETCH_STROKE =
+      new BasicStroke(1.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
 
   @Override
   public Set<Input<? extends Wireframe>> validationTargets() {
-    return Set.of(wireframes());
+    return Set.of(new GlobInput<>("src/main/ux/wireframes", XmlFormat.INSTANCE, Wireframe.class));
   }
 
   @Override
   protected Input<? extends Artifact> reportingTargetInput() {
-    return wireframes();
+    return new GlobInput<>("src/main/ux/wireframes", XmlFormat.INSTANCE, Wireframe.class);
   }
 
   @Override
@@ -42,38 +63,167 @@ public class WireframeTool extends BaseDiagramTool<Wireframe> {
       ResolvedInputs inputs,
       Resource<?> resource,
       Collection<Diagnostic> diagnostics) {
-    buildHtml(
-        wireframe, null, toDiagram(wireframe), resource.select(wireframe.getName()), diagnostics);
+    var parent = resource.select(wireframe.getName());
+    try {
+      var png = parent.select(wireframe.getName() + ".png");
+      try (var out = png.writeTo()) {
+        ImageIO.write(toImage(wireframe), "PNG", out);
+      }
+      writeHtml(wireframe, parent);
+    } catch (IOException e) {
+      addError(diagnostics, e.getMessage());
+    }
   }
 
-  Diagram toDiagram(Wireframe wireframe) {
-    var result = new Diagram();
+  private void writeHtml(Wireframe wireframe, Resource<?> parent) throws IOException {
+    var html = parent.select(wireframe.getName() + ".html");
+    try (var writer = new PrintWriter(html.writeTo())) {
+      writer.println("<html>");
+      writer.println("  <body>");
+      writer.printf("    <h1>%s</h1>%n", wireframe.friendlyName());
+      writer.printf("    <img src=\"%s.png\" width=\"100%%\">%n", wireframe.getName());
+      writer.println("  </body>");
+      writer.println("</html>");
+    }
+  }
+
+  BufferedImage toImage(Wireframe wireframe) {
+    var elements = collectElements(wireframe);
+    var contentH =
+        elements.stream().mapToInt(this::elementHeight).sum()
+            + (elements.size() > 1 ? (elements.size() - 1) * ELEMENT_GAP : 0);
+    var height = PADDING + TITLE_H + ELEMENT_GAP + contentH + PADDING;
+    var image = new BufferedImage(SCREEN_WIDTH, height, BufferedImage.TYPE_INT_RGB);
+    var g = (Graphics2D) image.getGraphics();
+    render(wireframe, elements, g, height);
+    g.dispose();
+    return image;
+  }
+
+  private List<WireframeElement> collectElements(Wireframe wireframe) {
+    var result = new ArrayList<WireframeElement>();
     Optional.ofNullable(wireframe.getContainers())
-        .ifPresent(containers -> containers.forEach(container -> addContainer(container, result)));
+        .ifPresent(cs -> cs.forEach(c -> collectContainerElements(c, result)));
     return result;
   }
 
-  private void addContainer(Container container, Diagram diagram) {
-    diagram.setOrientation(toOrientation(container.getDirection()));
+  private void collectContainerElements(Container container, List<WireframeElement> result) {
     Optional.ofNullable(container.getChildren())
-        .ifPresent(children -> children.forEach(child -> addElement(child, diagram)));
+        .ifPresent(children -> children.forEach(child -> collectElement(child, result)));
   }
 
-  private Orientation toOrientation(Direction direction) {
-    return switch (direction) {
-      case LEFT_TO_RIGHT, RIGHT_TO_LEFT -> Orientation.LEFT_TO_RIGHT;
-      case TOP_TO_BOTTOM, BOTTOM_TO_TOP -> Orientation.TOP_TO_BOTTOM;
+  private void collectElement(WireframeElement element, List<WireframeElement> result) {
+    switch (element) {
+      case Container container -> collectContainerElements(container, result);
+      case Affordance affordance -> {
+        Optional.ofNullable(affordance.getInputFields()).ifPresent(result::addAll);
+        result.add(affordance);
+      }
+      default -> result.add(element);
+    }
+  }
+
+  private int elementHeight(WireframeElement element) {
+    return switch (element) {
+      case InputField ignored -> LABEL_H + LABEL_GAP + INPUT_H;
+      default -> BTN_H;
     };
   }
 
-  private void addElement(WireframeElement element, Diagram diagram) {
-    switch (element) {
-      case Container container -> addContainer(container, diagram);
-      case Affordance affordance -> diagram.add(new ShapeBox(affordance.getName(), Shape.ELLIPSE));
-      case InputField inputField ->
-          diagram.add(new ShapeBox(inputField.getName(), Shape.RECTANGLE));
-      case View view -> diagram.add(new ShapeBox(view.getName(), Shape.RECTANGLE));
-      case Feedback feedback -> diagram.add(new ShapeBox(feedback.getName(), Shape.ELLIPSE));
+  private void render(
+      Wireframe wireframe, List<WireframeElement> elements, Graphics2D g, int height) {
+    setupGraphics(g);
+    drawBackground(g, height);
+    drawTitle(wireframe, g);
+    drawElements(elements, g);
+  }
+
+  private void setupGraphics(Graphics2D g) {
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g.setRenderingHint(
+        RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    g.setStroke(SKETCH_STROKE);
+  }
+
+  private void drawBackground(Graphics2D g, int height) {
+    g.setColor(PAPER);
+    g.fillRect(0, 0, SCREEN_WIDTH, height);
+    g.setColor(INK);
+    roughRect(g, 2, 2, SCREEN_WIDTH - 4, height - 4);
+  }
+
+  private void drawTitle(Wireframe wireframe, Graphics2D g) {
+    g.setColor(INK);
+    roughLine(g, 2, PADDING + TITLE_H, SCREEN_WIDTH - 2, PADDING + TITLE_H);
+    g.setFont(TITLE_FONT);
+    g.drawString(wireframe.friendlyName(), PADDING, PADDING + TITLE_H / 2 + 8);
+  }
+
+  private void drawElements(List<WireframeElement> elements, Graphics2D g) {
+    var y = PADDING + TITLE_H + ELEMENT_GAP;
+    for (var element : elements) {
+      y = drawElement(element, g, y) + ELEMENT_GAP;
     }
+  }
+
+  private int drawElement(WireframeElement element, Graphics2D g, int y) {
+    return switch (element) {
+      case InputField field -> drawInputField(field, g, y);
+      default -> drawButton((Artifact) element, g, y);
+    };
+  }
+
+  private int drawInputField(InputField field, Graphics2D g, int y) {
+    g.setFont(LABEL_FONT);
+    g.setColor(LIGHT_INK);
+    g.drawString(field.friendlyName(), PADDING, y + LABEL_H);
+    var inputY = y + LABEL_H + LABEL_GAP;
+    var inputW = SCREEN_WIDTH - 2 * PADDING;
+    g.setColor(FIELD_TINT);
+    g.fillRect(PADDING + 1, inputY + 1, inputW - 1, INPUT_H - 1);
+    g.setColor(INK);
+    roughRect(g, PADDING, inputY, inputW, INPUT_H);
+    return inputY + INPUT_H;
+  }
+
+  private int drawButton(Artifact artifact, Graphics2D g, int y) {
+    var btnW = SCREEN_WIDTH - 2 * PADDING;
+    g.setColor(BTN_TINT);
+    g.fillRect(PADDING + 1, y + 1, btnW - 1, BTN_H - 1);
+    g.setColor(INK);
+    roughRect(g, PADDING, y, btnW, BTN_H);
+    g.setFont(BTN_FONT);
+    var fm = g.getFontMetrics();
+    var name = artifact.friendlyName();
+    var textX = PADDING + (btnW - fm.stringWidth(name)) / 2;
+    var textY = y + (BTN_H + fm.getAscent() - fm.getDescent()) / 2;
+    g.drawString(name, textX, textY);
+    return y + BTN_H;
+  }
+
+  private void roughRect(Graphics2D g, int x, int y, int w, int h) {
+    var r = new Random((long) x * 1000 + y);
+    roughLine(g, x + jitter(r), y + jitter(r), x + w + jitter(r), y + jitter(r));
+    roughLine(g, x + w + jitter(r), y + jitter(r), x + w + jitter(r), y + h + jitter(r));
+    roughLine(g, x + w + jitter(r), y + h + jitter(r), x + jitter(r), y + h + jitter(r));
+    roughLine(g, x + jitter(r), y + h + jitter(r), x + jitter(r), y + jitter(r));
+  }
+
+  private void roughLine(Graphics2D g, int x1, int y1, int x2, int y2) {
+    var r = new Random(x1 * 997L + y1 * 31L + x2 * 7L + y2);
+    var path = new GeneralPath();
+    path.moveTo(x1, y1);
+    path.curveTo(
+        x1 + (x2 - x1) / 3.0 + jitter(r),
+        y1 + (y2 - y1) / 3.0 + jitter(r),
+        x1 + 2 * (x2 - x1) / 3.0 + jitter(r),
+        y1 + 2 * (y2 - y1) / 3.0 + jitter(r),
+        x2,
+        y2);
+    g.draw(path);
+  }
+
+  private int jitter(Random r) {
+    return r.nextInt(5) - 2;
   }
 }

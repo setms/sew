@@ -23,6 +23,8 @@ import org.setms.swe.domain.model.sdlc.design.Field;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.eventstorming.Command;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
+import org.setms.swe.domain.model.sdlc.ux.Affordance;
+import org.setms.swe.domain.model.sdlc.ux.InputField;
 
 class CommandToolTest extends ResolverToolTestCase<Command> {
 
@@ -33,6 +35,23 @@ class CommandToolTest extends ResolverToolTestCase<Command> {
   @AfterEach
   void cleanupGeneratedFiles() throws IOException {
     workspaceFor("missing").root().select("src/main/design/logical/Payload.entity").delete();
+  }
+
+  @Test
+  void shouldCreateWireframeAffordanceWithInputFields() {
+    var nameField = new Field(new FullyQualifiedName("design", "name")).setType(FieldType.TEXT);
+    var affordance =
+        new Affordance(new FullyQualifiedName("design", "Submit"))
+            .setInputFields(
+                List.of(
+                    new InputField(nameField.getFullyQualifiedName())
+                        .setType(nameField.getType())));
+
+    assertThat(affordance.getInputFields())
+        .as("Input fields of wireframe affordance 'Submit'")
+        .hasSize(1)
+        .first()
+        .satisfies(f -> assertThat(f.getType()).as("Input field type").isEqualTo(FieldType.TEXT));
   }
 
   @Test

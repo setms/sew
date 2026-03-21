@@ -2,13 +2,12 @@ package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
-import org.setms.km.domain.model.diagram.Orientation;
-import org.setms.km.domain.model.diagram.Shape;
-import org.setms.km.domain.model.diagram.ShapeBox;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
@@ -53,30 +52,36 @@ class WireframeToolTest {
   }
 
   @Test
-  void shouldRenderAffordanceAsButtonAndInputFieldAsTextBox() {
-    var wireframe = givenWireframeWithAffordanceAndInputField();
+  void shouldRenderWireframeAsPortraitScreenMockup() throws IOException {
+    var wireframe = givenWireframeWithAffordanceContainingInputFields();
+    var workspace = new InMemoryWorkspace();
+    var diagnostics = new ArrayList<Diagnostic>();
 
-    var actual = tool.toDiagram(wireframe);
+    tool.buildReportsFor(wireframe, new ResolvedInputs(), workspace.root(), diagnostics);
 
-    assertThat(actual.getOrientation())
-        .as("Diagram orientation should reflect the container's LEFT_TO_RIGHT direction")
-        .isEqualTo(Orientation.LEFT_TO_RIGHT);
-    assertThat(actual.getBoxes())
-        .as(
-            "Wireframe diagram should contain a button (ellipse) for the 'Login' affordance and a text box (rectangle) for the 'Password' input field")
-        .satisfiesExactlyInAnyOrder(
-            box ->
-                assertThat(box)
-                    .as("'Login' affordance rendered as ellipse (button)")
-                    .isInstanceOfSatisfying(
-                        ShapeBox.class,
-                        shapeBox -> assertThat(shapeBox.getShape()).isEqualTo(Shape.ELLIPSE)),
-            box ->
-                assertThat(box)
-                    .as("'Password' input field rendered as rectangle (text box)")
-                    .isInstanceOfSatisfying(
-                        ShapeBox.class,
-                        shapeBox -> assertThat(shapeBox.getShape()).isEqualTo(Shape.RECTANGLE)));
+    assertThat(diagnostics).isEmpty();
+    var actual =
+        ImageIO.read(
+            workspace.root().select("InitiateAddTodoItem/InitiateAddTodoItem.png").readFrom());
+    assertThat(actual.getHeight())
+        .as("Wireframe renders as portrait screen-like image")
+        .isGreaterThan(actual.getWidth());
+  }
+
+  private Wireframe givenWireframeWithAffordanceContainingInputFields() {
+    var affordance =
+        new Affordance(new FullyQualifiedName("todo", "Submit"))
+            .setInputFields(
+                List.of(
+                    new InputField(new FullyQualifiedName("todo", "Task")).setType(FieldType.TEXT),
+                    new InputField(new FullyQualifiedName("todo", "DueDate"))
+                        .setType(FieldType.DATETIME)));
+    var container =
+        new Container(new FullyQualifiedName("todo", "Form"))
+            .setDirection(Direction.TOP_TO_BOTTOM)
+            .setChildren(List.of(affordance));
+    return new Wireframe(new FullyQualifiedName("todo", "InitiateAddTodoItem"))
+        .setContainers(List.of(container));
   }
 
   private Wireframe givenWireframeWithAffordanceAndInputField() {

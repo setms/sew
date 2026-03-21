@@ -3,6 +3,7 @@ outputs:
   - src/main/architecture/Todo.modules
   - src/main/architecture/Database.decision
   - src/main/architecture/ProgrammingLanguage.decision
+  - src/main/ux/wireframes/InitiateAddTodoItem.wireframe
 
 inputs:
   - location: src/test/acceptance

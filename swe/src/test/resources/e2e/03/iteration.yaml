@@ -19,4 +19,5 @@ diagnostics:
   - Missing acceptance test for aggregate TodoItems
   - Missing decision on database
   - Missing decision on programming language
+  - Not initiated by wireframe
   - Subdomains aren't mapped to modules

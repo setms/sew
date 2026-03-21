@@ -1,14 +1,4 @@
 outputs:
-  - .gitattributes
-  - .gitignore
-  - build.gradle
-  - gradle.properties
-  - gradlew
-  - gradlew.bat
-  - gradle/libs.versions.toml
-  - gradle/wrapper/gradle-wrapper.jar
-  - gradle/wrapper/gradle-wrapper.properties
-  - settings.gradle
   - src/main/architecture/Packaging.decision
 
 inputs:

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import lombok.EqualsAndHashCode;
@@ -113,5 +114,12 @@ public class Scenario extends Artifact {
               "Can't end with %s".formatted(last.getType()),
               location.plus(last.getType(), last.getId())));
     }
+  }
+
+  public Optional<Link> predecessorsOf(Artifact artifact) {
+    return Optional.of(steps.indexOf(artifact.linkTo()))
+        .filter(index -> index > 0)
+        .map(index -> index - 1)
+        .map(steps::get);
   }
 }

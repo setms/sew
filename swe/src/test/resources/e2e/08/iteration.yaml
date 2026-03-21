@@ -1,4 +1,14 @@
 outputs:
+  - .gitattributes
+  - .gitignore
+  - build.gradle
+  - gradle.properties
+  - gradlew
+  - gradlew.bat
+  - gradle/libs.versions.toml
+  - gradle/wrapper/gradle-wrapper.jar
+  - gradle/wrapper/gradle-wrapper.properties
+  - settings.gradle
   - src/main/java/com/example/todo/TodoApplication.java
   - src/main/java/com/example/todo/inbound/http/TodoItemsController.java
   - src/main/java/com/example/todo/outbound/db/TodoItemEntity.java
