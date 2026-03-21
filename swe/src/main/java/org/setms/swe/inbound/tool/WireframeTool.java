@@ -100,8 +100,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
     };
   }
 
-  private AppliedSuggestion createDesignSystemFor(Resource<?> resource, Wireframe wireframe)
-      throws IOException {
+  private AppliedSuggestion createDesignSystemFor(Resource<?> resource, Wireframe wireframe) {
     var designSystem = toDesignSystem(wireframe);
     var designSystemResource = resourceFor(designSystem, wireframe, resource);
     try {
