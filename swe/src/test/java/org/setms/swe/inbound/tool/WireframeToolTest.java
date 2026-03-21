@@ -11,6 +11,7 @@ import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.ux.Affordance;
@@ -41,6 +42,28 @@ class WireframeToolTest {
         .as(
             "WireframeTool validation context should include design systems input at 'src/main/ux/designSystems'")
         .contains("src/main/ux/designSystems");
+  }
+
+  @Test
+  void shouldRequireDesignSystem() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "LoginScreen"));
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    tool.validate(wireframe, new ResolvedInputs(), diagnostics);
+
+    assertThat(diagnostics)
+        .as("Diagnostics when wireframe has no design system")
+        .singleElement()
+        .satisfies(this::assertThatDiagnosticSuggestsCreatingDesignSystem);
+  }
+
+  private void assertThatDiagnosticSuggestsCreatingDesignSystem(Diagnostic diagnostic) {
+    assertThat(diagnostic.message())
+        .as("Diagnostic message for missing design system")
+        .isEqualTo("Missing design system");
+    assertThat(diagnostic.suggestions().stream().map(Suggestion::message).toList())
+        .as("Suggestion for missing design system")
+        .containsExactly("Create design system");
   }
 
   @Test

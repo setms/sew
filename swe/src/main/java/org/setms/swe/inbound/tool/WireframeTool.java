@@ -1,5 +1,6 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.designSystems;
 
 import java.awt.*;
@@ -20,7 +21,9 @@ import org.setms.km.domain.model.tool.GlobInput;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
 import org.setms.km.domain.model.validation.Diagnostic;
+import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
+import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
 import org.setms.swe.domain.model.sdlc.ux.Affordance;
 import org.setms.swe.domain.model.sdlc.ux.Container;
 import org.setms.swe.domain.model.sdlc.ux.InputField;
@@ -29,6 +32,8 @@ import org.setms.swe.domain.model.sdlc.ux.WireframeElement;
 import org.setms.swe.inbound.format.xml.XmlFormat;
 
 public class WireframeTool extends ArtifactTool<Wireframe> {
+
+  static final String CREATE_DESIGN_SYSTEM = "designSystem.create";
 
   private static final int SCREEN_WIDTH = 300;
   private static final int PADDING = 24;
@@ -57,6 +62,19 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
     return Set.of(designSystems());
+  }
+
+  @Override
+  public void validate(
+      Wireframe wireframe, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    if (inputs.get(DesignSystem.class).isEmpty()) {
+      diagnostics.add(
+          new Diagnostic(
+              WARN,
+              "Missing design system",
+              wireframe.toLocation(),
+              new Suggestion(CREATE_DESIGN_SYSTEM, "Create design system")));
+    }
   }
 
   @Override
