@@ -39,6 +39,18 @@ class InputsTest {
   }
 
   @Test
+  void shouldUseXmlFormatForDesignSystems() {
+    var actual = Inputs.designSystems();
+
+    assertThat(actual.format())
+        .as("Design systems input should use XmlFormat")
+        .isInstanceOf(XmlFormat.class);
+    assertThat(actual.matches("src/main/ux/designSystems/mySystem.designSystem"))
+        .as("Design systems input should match files in src/main/ux/designSystems")
+        .isTrue();
+  }
+
+  @Test
   void shouldGetDatabaseSchemaInputsFromDatabaseTechnology() {
     var actual = Inputs.databaseSchemas();
 

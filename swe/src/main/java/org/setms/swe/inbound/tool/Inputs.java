@@ -35,6 +35,7 @@ import org.setms.swe.domain.model.sdlc.eventstorming.ReadModel;
 import org.setms.swe.domain.model.sdlc.overview.Initiative;
 import org.setms.swe.domain.model.sdlc.packaging.Packager;
 import org.setms.swe.domain.model.sdlc.stakeholders.User;
+import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTest;
 import org.setms.swe.domain.model.sdlc.unittest.UnitTestHelper;
 import org.setms.swe.domain.model.sdlc.usecase.UseCase;
@@ -83,6 +84,10 @@ class Inputs {
 
   static Input<Components> components() {
     return newInput(PATH_ARCHITECTURE, Components.class);
+  }
+
+  static Input<DesignSystem> designSystems() {
+    return new GlobInput<>(PATH_UX + "/designSystems", XmlFormat.INSTANCE, DesignSystem.class);
   }
 
   static Input<Decision> decisions() {
