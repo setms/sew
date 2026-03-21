@@ -35,7 +35,7 @@ class WireframeToolTest {
 
   @Test
   void shouldRenderWireframeAsLowFidelityMockup() {
-    var wireframe = newWireframeWithAffordanceAndInputField();
+    var wireframe = givenWireframeWithAffordanceAndInputField();
     var workspace = new InMemoryWorkspace();
     var diagnostics = new ArrayList<Diagnostic>();
 
@@ -54,7 +54,7 @@ class WireframeToolTest {
 
   @Test
   void shouldRenderAffordanceAsButtonAndInputFieldAsTextBox() {
-    var wireframe = newWireframeWithAffordanceAndInputField();
+    var wireframe = givenWireframeWithAffordanceAndInputField();
 
     var actual = tool.toDiagram(wireframe);
 
@@ -79,7 +79,7 @@ class WireframeToolTest {
                         shapeBox -> assertThat(shapeBox.getShape()).isEqualTo(Shape.RECTANGLE)));
   }
 
-  private Wireframe newWireframeWithAffordanceAndInputField() {
+  private Wireframe givenWireframeWithAffordanceAndInputField() {
     var container =
         new Container(new FullyQualifiedName("ux", "Header"))
             .setDirection(Direction.LEFT_TO_RIGHT)

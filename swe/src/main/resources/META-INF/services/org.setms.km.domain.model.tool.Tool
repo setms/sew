@@ -14,3 +14,4 @@ org.setms.swe.inbound.tool.GlossaryTool
 org.setms.swe.inbound.tool.ModulesTool
 org.setms.swe.inbound.tool.UnitTestTool
 org.setms.swe.inbound.tool.UseCaseTool
+org.setms.swe.inbound.tool.WireframeTool
