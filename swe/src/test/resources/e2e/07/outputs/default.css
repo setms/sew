@@ -1,0 +1,23 @@
+.Default {
+  ButtonBorderRadius: 8px;
+  LabelTextColor: #1F2937;
+  InputFontSize: 14px;
+  InputBorderColor: #D1D5DB;
+  InputBorderRadius: 8px;
+  ButtonPaddingVertical: 10px;
+  LabelFontWeight: 500;
+  LabelMarginBottom: 6px;
+  ButtonFontWeight: 600;
+  InputPaddingVertical: 10px;
+  ButtonPaddingHorizontal: 14px;
+  InputBorderWidth: 1px;
+  InputTextColor: #1F2937;
+  ButtonTextColor: #FFFFFF;
+  ButtonFontSize: 14px;
+  ButtonBackgroundColor: #2563EB;
+  Gap: 16px;
+  InputPaddingHorizontal: 14px;
+  LabelFontSize: 14px;
+  InputFontWeight: 400;
+  InputBackgroundColor: #FFFFFF;
+}

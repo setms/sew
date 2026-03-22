@@ -25,6 +25,7 @@ import org.setms.km.test.MainArtifact;
 import org.setms.km.test.MainTool;
 import org.setms.km.test.OtherArtifact;
 import org.setms.km.test.OtherTool;
+import org.setms.km.test.RestrictedMainTool;
 import org.setms.km.test.StandaloneTestTool;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
@@ -84,6 +85,21 @@ class ProcessOrchestratorTest {
           .build(artifactCreator.apply(new FullyQualifiedName("ape.Bear")), output);
     }
     return resource.path();
+  }
+
+  @Test
+  void shouldNotDispatchToolToArtifactAtNonMatchingPath() throws IOException {
+    var restrictedMainTool = new RestrictedMainTool();
+    Tools.add(restrictedMainTool);
+    createProcessOrchestrator();
+    mainTool.init();
+    restrictedMainTool.init();
+
+    storeNewMainArtifact();
+
+    assertThat(restrictedMainTool.validated)
+        .as("RestrictedMainTool only handles artifacts under /restricted-main, not /main")
+        .isFalse();
   }
 
   @Test

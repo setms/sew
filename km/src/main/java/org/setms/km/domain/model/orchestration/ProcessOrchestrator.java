@@ -164,7 +164,7 @@ public class ProcessOrchestrator {
   @SuppressWarnings("unchecked")
   private <T extends Artifact> boolean validate(String path, Artifact artifact) {
     var result = true;
-    for (var tool : Tools.validating(artifact.getClass())) {
+    for (var tool : Tools.validating(path, artifact)) {
       var inputs = resolveInputs(tool.validationContext());
       var diagnostics = new LinkedHashSet<Diagnostic>();
       var typedTool = (ArtifactTool<T>) tool;

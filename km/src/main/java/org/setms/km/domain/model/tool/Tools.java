@@ -34,12 +34,15 @@ public class Tools {
     tools.add(tool);
   }
 
-  public static <T extends Artifact> Collection<? extends ArtifactTool<?>> validating(
-      Class<T> type) {
+  public static Collection<? extends ArtifactTool<?>> validating(String path, Artifact artifact) {
     return tools.stream()
         .filter(ArtifactTool.class::isInstance)
         .map(tool -> (ArtifactTool<?>) tool)
-        .filter(tool -> hasInputOfType(type, tool.validationTargets().stream().map(input -> input)))
+        .filter(
+            tool ->
+                hasInputOfType(
+                    artifact.getClass(), tool.validationTargets().stream().map(input -> input)))
+        .filter(tool -> tool.validates(path))
         .toList();
   }
 

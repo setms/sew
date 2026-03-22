@@ -1,7 +1,7 @@
-<wireframe package="todo" name="InitiateAddTodoItem">
-  <container name="InitiateAddTodoItem" direction="top_to_bottom">
+<wireframe package="todo" name="AddTodoItem">
+  <container name="AddTodoItem" direction="top_to_bottom">
     <children>
-      <affordance name="InitiateAddTodoItem">
+      <affordance name="AddTodoItem">
         <inputField name="Task" type="text"/>
         <inputField name="DueDate" type="datetime"/>
       </affordance>

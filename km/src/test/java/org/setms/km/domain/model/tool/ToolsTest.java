@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.setms.km.domain.model.artifact.FullyQualifiedName;
 
 class ToolsTest {
 
@@ -14,16 +15,20 @@ class ToolsTest {
 
   @Test
   void shouldRegisterTool() {
-    assertThat(Tools.validating(Foo.class)).isEmpty();
+    var foo = new Foo(new FullyQualifiedName("foo.Baz"));
+    assertThat(Tools.validating("/foo/Baz.foo", foo)).isEmpty();
 
     var tool = new FooTool();
     Tools.add(tool);
-    assertThat(Tools.validating(Foo.class)).map(ArtifactTool.class::cast).containsExactly(tool);
+    assertThat(Tools.validating("/foo/Baz.foo", foo))
+        .map(ArtifactTool.class::cast)
+        .containsExactly(tool);
   }
 
   @Test
   void shouldRegisterToolsViaServiceLoader() {
-    assertThat(Tools.validating(Bar.class))
+    var bar = new Bar(new FullyQualifiedName("bar.Baz"));
+    assertThat(Tools.validating("/bar/Baz.bar", bar))
         .anySatisfy(tool -> assertThat(tool).isInstanceOf(BarTool.class));
   }
 }
