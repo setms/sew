@@ -40,6 +40,13 @@ class ServerSideHtmlLanguageTest {
   }
 
   @Test
+  void shouldExtractNameFromHtmlTitle() {
+    var actual = language.extractName("<html><head><title>MyPage</title></head></html>");
+
+    assertThat(actual.getName()).as("Name extracted from HTML <title> tag").isEqualTo("MyPage");
+  }
+
+  @Test
   void shouldValidateServerSideAsValidUserInterfaceChoice() {
     var actual = language.isValidChoice(UserInterface.TOPIC, "ServerSide");
 

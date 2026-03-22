@@ -3,6 +3,7 @@ package org.setms.swe.domain.model.sdlc.code.html;
 import static java.util.Collections.emptyList;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.swe.domain.model.sdlc.architecture.TopicProvider;
@@ -10,6 +11,8 @@ import org.setms.swe.domain.model.sdlc.architecture.UserInterface;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 
 public class ServerSideHtmlLanguage implements TopicProvider, ProgrammingLanguageConventions {
+
+  private static final Pattern TITLE_PATTERN = Pattern.compile("<title>(.*?)</title>");
 
   @Override
   public boolean isValidChoice(String topic, String choice) {
@@ -53,6 +56,7 @@ public class ServerSideHtmlLanguage implements TopicProvider, ProgrammingLanguag
 
   @Override
   public FullyQualifiedName extractName(String code) {
-    return new FullyQualifiedName("", "");
+    var matcher = TITLE_PATTERN.matcher(code);
+    return new FullyQualifiedName("", matcher.find() ? matcher.group(1) : "");
   }
 }
