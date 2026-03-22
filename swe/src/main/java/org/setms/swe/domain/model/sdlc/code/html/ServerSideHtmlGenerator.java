@@ -30,21 +30,28 @@ public class ServerSideHtmlGenerator implements UiGenerator {
 
   @Override
   public List<CodeArtifact> generate(Wireframe wireframe, DesignSystem designSystem) {
-    return List.of(htmlFor(wireframe), cssFor(designSystem));
+    return List.of(htmlFor(wireframe, designSystem), cssFor(designSystem));
   }
 
-  private CodeArtifact htmlFor(Wireframe wireframe) {
+  private CodeArtifact htmlFor(Wireframe wireframe, DesignSystem designSystem) {
     var containers = render(wireframe.getContainers(), this::htmlDiv);
     var code =
         """
         <!DOCTYPE html>
         <html data-artifact-name="%s">
-        <head><title>%s</title></head>
+        <head>
+        <title>%s</title>
+        <link rel="stylesheet" href="css/%s.css">
+        </head>
         <body>
         %s</body>
         </html>
         """
-            .formatted(wireframe.getName(), toFriendlyName(wireframe.getName()), containers);
+            .formatted(
+                wireframe.getName(),
+                toFriendlyName(wireframe.getName()),
+                toKebabCase(designSystem.getName()),
+                containers);
     return new CodeArtifact(new FullyQualifiedName("", wireframe.getName())).setCode(code);
   }
 
@@ -69,20 +76,26 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   private String htmlAffordance(Affordance affordance) {
     var inputs = render(affordance.getInputFields(), this::htmlInput);
     return """
-        %s<button>%s</button>
+        <form>
+        %s<button type="submit">%s</button>
+        </form>
         """
         .formatted(inputs, toFriendlyName(affordance.getName()));
   }
 
   private String htmlInput(InputField field) {
     return htmlInputType(field.getType())
-        .map(
-            type ->
-                """
-                <input type="%s" name="%s">
-                """
-                    .formatted(type, toKebabCase(field.getName())))
+        .map(type -> htmlLabeledInput(field.getName(), type))
         .orElse("");
+  }
+
+  private String htmlLabeledInput(String name, String type) {
+    var kebabName = toKebabCase(name);
+    return """
+        <label for="%s">%s</label>
+        <input type="%s" name="%s" id="%s">
+        """
+        .formatted(kebabName, toFriendlyName(name), type, kebabName, kebabName);
   }
 
   private Optional<String> htmlInputType(FieldType type) {

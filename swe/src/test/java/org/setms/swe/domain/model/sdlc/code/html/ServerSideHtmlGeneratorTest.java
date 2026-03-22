@@ -174,9 +174,12 @@ class ServerSideHtmlGeneratorTest {
             artifact ->
                 assertThat(artifact.getCode())
                     .as(
-                        "HTML should have id='main-form' (kebab-case), a <button> for 'PlaceOrder',"
-                            + " and an <input name='item-quantity'> (kebab-case) for the text field")
+                        "HTML should have id='main-form' (kebab-case), a <form> with a <button>"
+                            + " for 'PlaceOrder', a <label> and <input name='item-quantity'>"
+                            + " (kebab-case) for the text field")
                     .contains("id=\"main-form\"")
+                    .contains("<form")
+                    .contains("<label")
                     .contains("<button")
                     .contains("name=\"item-quantity\""));
   }
@@ -210,5 +213,27 @@ class ServerSideHtmlGeneratorTest {
                         "HTML should have a <button> for 'CancelOrder' but no <input> for the ID field")
                     .contains("<button")
                     .doesNotContain("<input"));
+  }
+
+  @Test
+  void shouldIncludeCssStylesheetInHtml() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatHtmlLinksToStylesheet(actual);
+  }
+
+  private void assertThatHtmlLinksToStylesheet(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("HTML artifact should link to the generated CSS stylesheet")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "HTML head should include"
+                            + " <link rel=\"stylesheet\" href=\"css/styles.css\">")
+                    .contains("<link rel=\"stylesheet\" href=\"css/styles.css\">"));
   }
 }
