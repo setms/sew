@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
@@ -213,6 +214,39 @@ class ServerSideHtmlGeneratorTest {
                         "HTML should have a <button> for 'CancelOrder' but no <input> for the ID field")
                     .contains("<button")
                     .doesNotContain("<input"));
+  }
+
+  @Test
+  void shouldSetFormActionToCommandEndpointWhenAffordanceHasLinkedCommand() {
+    var wireframe = givenWireframeWithAffordanceLinkedToCommand();
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatHtmlFormPostsToCommandEndpoint(actual);
+  }
+
+  private Wireframe givenWireframeWithAffordanceLinkedToCommand() {
+    var affordance =
+        new Affordance(new FullyQualifiedName("todo", "AddTodoItem"))
+            .setCommand(new Link("command", "AddTodoItem"));
+    var container =
+        new Container(new FullyQualifiedName("todo", "main")).setChildren(List.of(affordance));
+    return new Wireframe(new FullyQualifiedName("todo", "AddTodoItem"))
+        .setContainers(List.of(container));
+  }
+
+  private void assertThatHtmlFormPostsToCommandEndpoint(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("HTML artifact for affordance with linked command")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "HTML form should POST to '/add-todo-item' endpoint"
+                            + " when affordance is linked to 'AddTodoItem' command")
+                    .contains("action=\"/add-todo-item\"")
+                    .contains("method=\"post\""));
   }
 
   @Test

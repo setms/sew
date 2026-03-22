@@ -75,12 +75,19 @@ public class ServerSideHtmlGenerator implements UiGenerator {
 
   private String htmlAffordance(Affordance affordance) {
     var inputs = render(affordance.getInputFields(), this::htmlInput);
+    var formAttrs = formAttributes(affordance);
     return """
-        <form>
+        <form%s>
         %s<button type="submit">%s</button>
         </form>
         """
-        .formatted(inputs, toFriendlyName(affordance.getName()));
+        .formatted(formAttrs, inputs, toFriendlyName(affordance.getName()));
+  }
+
+  private String formAttributes(Affordance affordance) {
+    return Optional.ofNullable(affordance.getCommand())
+        .map(cmd -> " action=\"/%s\" method=\"post\"".formatted(toKebabCase(cmd.getId())))
+        .orElse("");
   }
 
   private String htmlInput(InputField field) {

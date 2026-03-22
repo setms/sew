@@ -12,7 +12,11 @@ Don't use headings in this document, it's explicitly designed to be a flat list 
   Careful, this title is currently used for extracting the name of the resource; that approach is probably flawed.
 - [x] The HTML that `WireframeTool` generates must create structures that correspond to what's in the `Wireframe`.
   For instance, an affordance needs a button, input fields need corresponding HTML controls, etc.
-- [~] The HTML that `WireframeTool` generates must use CSS classes that correspond to what's in the generated CSS.
+- [x] The HTML that `WireframeTool` generates must use CSS classes that correspond to what's in the generated CSS.
   It must also include the CSS file as stylesheet.
-- [ ] The HTML that `WireframeTool` generates for affordances must invoke the endpoint for the `Command` that the
+- [~] The HTML that `WireframeTool` generates for affordances must invoke the endpoint for the `Command` that the
   `Wireframe` implements.
+  Careful, this endpoint depends on the decision of what framework to use.
+- [ ] The Spring Boot controller that `SpringBootCodeGenerator` generates uses the aggregate name as the endpoint
+  (e.g. `/todoItems`), but it should use the command name in kebab-case (e.g. `/add-todo-item`).
+  This aligns with the endpoint the HTML generator will use for form actions.
