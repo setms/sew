@@ -28,6 +28,11 @@ import org.setms.swe.domain.model.sdlc.ux.WireframeElement;
 
 public class ServerSideHtmlGenerator implements UiGenerator {
 
+  private static final String PADDING_DECLARATION =
+      """
+        padding: 0.5rem;
+      """;
+
   @Override
   public List<CodeArtifact> generate(Wireframe wireframe, DesignSystem designSystem) {
     return List.of(htmlFor(wireframe, designSystem), cssFor(designSystem));
@@ -169,19 +174,13 @@ public class ServerSideHtmlGenerator implements UiGenerator {
         """
           align-self: flex-end;
         """);
-    result.add(
-        """
-          padding: 0.5rem;
-        """);
+    result.add(PADDING_DECLARATION);
     return result;
   }
 
   private List<String> baselineInputDeclarations() {
     var result = new ArrayList<String>();
-    result.add(
-        """
-          padding: 0.5rem;
-        """);
+    result.add(PADDING_DECLARATION);
     result.add(
         """
           width: 100%;
