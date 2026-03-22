@@ -168,6 +168,8 @@ public interface Parser {
           || parameterType.equals(boolean.class)) {
         var booleanValue = Boolean.parseBoolean(targetValue.toString());
         method.invoke(target, booleanValue);
+      } else if (targetValue instanceof String string && parameterType.equals(Link.class)) {
+        method.invoke(target, Link.valueOf(string));
       } else {
         method.invoke(target, targetValue);
       }

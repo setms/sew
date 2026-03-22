@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
+import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.format.DataEnum;
 import org.setms.km.domain.model.format.DataList;
 import org.setms.km.domain.model.format.NestedObject;
@@ -17,8 +18,42 @@ import org.setms.km.domain.model.format.RootObject;
 import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
 import org.setms.swe.domain.model.sdlc.ui.Property;
 import org.setms.swe.domain.model.sdlc.ui.Style;
+import org.setms.swe.domain.model.sdlc.ux.Affordance;
+import org.setms.swe.domain.model.sdlc.ux.Container;
+import org.setms.swe.domain.model.sdlc.ux.Direction;
+import org.setms.swe.domain.model.sdlc.ux.Wireframe;
 
 class XmlFormatTest {
+
+  @Test
+  void shouldRoundTripWireframeWithAffordanceLinkedToCommand() throws IOException {
+    var wireframe = givenWireframeWithAffordanceLinkedToCommand();
+    var output = new ByteArrayOutputStream();
+    new XmlFormat().newBuilder().build(wireframe, output);
+
+    var actual =
+        new XmlFormat()
+            .newParser()
+            .parse("", new ByteArrayInputStream(output.toByteArray()), Wireframe.class, false);
+
+    assertThat(actual)
+        .as(
+            "Round-tripped wireframe should preserve the affordance's command link"
+                + " so that the HTML generator can produce the correct form action")
+        .isEqualTo(wireframe);
+  }
+
+  private Wireframe givenWireframeWithAffordanceLinkedToCommand() {
+    var affordance =
+        new Affordance(new FullyQualifiedName("todo", "AddTodoItem"))
+            .setCommand(new Link("command", "AddTodoItem"));
+    var container =
+        new Container(new FullyQualifiedName("todo", "AddTodoItem"))
+            .setDirection(Direction.TOP_TO_BOTTOM)
+            .setChildren(List.of(affordance));
+    return new Wireframe(new FullyQualifiedName("todo", "AddTodoItem"))
+        .setContainers(List.of(container));
+  }
 
   @Test
   void shouldRoundTripDesignSystemWithStyleProperties() throws IOException {

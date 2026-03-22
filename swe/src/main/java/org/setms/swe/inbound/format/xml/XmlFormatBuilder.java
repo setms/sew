@@ -10,6 +10,7 @@ import org.setms.km.domain.model.format.DataList;
 import org.setms.km.domain.model.format.DataObject;
 import org.setms.km.domain.model.format.DataString;
 import org.setms.km.domain.model.format.NestedObject;
+import org.setms.km.domain.model.format.Reference;
 import org.setms.km.domain.model.format.RootObject;
 import org.setms.km.domain.model.nlp.English;
 import org.setms.km.domain.model.nlp.NaturalLanguage;
@@ -56,6 +57,7 @@ class XmlFormatBuilder implements Builder {
           switch (value) {
             case DataEnum e -> attributes.put(key, e.getName());
             case DataString s -> attributes.put(key, s.getValue());
+            case Reference r -> attributes.put(key, r.toString());
             case DataList list -> childLists.put(key, list);
             default -> {}
           }
