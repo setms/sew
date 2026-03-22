@@ -1,10 +1,16 @@
 package org.setms.swe.inbound.tool;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.setms.km.domain.model.validation.Level.WARN;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
@@ -15,6 +21,9 @@ import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
+import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
+import org.setms.swe.domain.model.sdlc.technology.UiGenerator;
+import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
 import org.setms.swe.domain.model.sdlc.ui.Properties;
 import org.setms.swe.domain.model.sdlc.ux.Affordance;
 import org.setms.swe.domain.model.sdlc.ux.Container;
@@ -53,6 +62,28 @@ class WireframeToolTest {
     assertThat(actual)
         .as("WireframeTool validation context should include UI code input for HTML templates")
         .anyMatch(input -> input.matches("src/main/resources/templates/home.html"));
+  }
+
+  @Test
+  void shouldWarnAboutMissingUiCodeWhenDesignSystemPresentButNoMatchingCodeArtifact() {
+    var resolver = mock(TechnologyResolver.class);
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "LoginScreen"));
+    var inputs = givenInputsWithDesignSystem();
+    var diagnostics = new ArrayList<Diagnostic>();
+    when(resolver.uiGenerator(any(), anyCollection()))
+        .thenReturn(Optional.of(mock(UiGenerator.class)));
+
+    new WireframeTool(resolver).validate(wireframe, inputs, diagnostics);
+
+    assertThat(diagnostics)
+        .as(
+            "WireframeTool should warn about missing UI code when a design system exists but no corresponding code artifact")
+        .anyMatch(d -> d.message().equals("Missing UI code") && d.level() == WARN);
+  }
+
+  private ResolvedInputs givenInputsWithDesignSystem() {
+    return new ResolvedInputs()
+        .put("designSystems", List.of(new DesignSystem(new FullyQualifiedName("ux", "Default"))));
   }
 
   @Test

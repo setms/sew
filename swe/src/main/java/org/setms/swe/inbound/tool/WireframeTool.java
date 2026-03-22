@@ -32,6 +32,8 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Location;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
 import org.setms.swe.domain.model.sdlc.ui.Properties;
 import org.setms.swe.domain.model.sdlc.ui.Property;
@@ -45,6 +47,17 @@ import org.setms.swe.domain.model.sdlc.ux.WireframeElement;
 public class WireframeTool extends ArtifactTool<Wireframe> {
 
   static final String CREATE_DESIGN_SYSTEM = "designSystem.create";
+  static final String CREATE_UI_CODE = "uiCode.create";
+
+  private final TechnologyResolver resolver;
+
+  public WireframeTool() {
+    this(new TechnologyResolverImpl());
+  }
+
+  WireframeTool(TechnologyResolver resolver) {
+    this.resolver = resolver;
+  }
 
   private static final int SCREEN_WIDTH = 300;
   private static final int PADDING = 24;
@@ -87,7 +100,31 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
               "Missing design system",
               wireframe.toLocation(),
               new Suggestion(CREATE_DESIGN_SYSTEM, "Create design system")));
+    } else {
+      validateUiCode(wireframe, inputs, diagnostics);
     }
+  }
+
+  private void validateUiCode(
+      Wireframe wireframe, ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    if (hasMatchingUiCode(wireframe, inputs)) {
+      return;
+    }
+    resolver
+        .uiGenerator(inputs, diagnostics)
+        .ifPresent(
+            generator ->
+                diagnostics.add(
+                    new Diagnostic(
+                        WARN,
+                        "Missing UI code",
+                        wireframe.toLocation(),
+                        new Suggestion(CREATE_UI_CODE, "Create UI code"))));
+  }
+
+  private boolean hasMatchingUiCode(Wireframe wireframe, ResolvedInputs inputs) {
+    return inputs.get(CodeArtifact.class).stream()
+        .anyMatch(ca -> ca.getName().equals(wireframe.getName()));
   }
 
   @Override
