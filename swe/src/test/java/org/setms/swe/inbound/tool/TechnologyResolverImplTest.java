@@ -27,6 +27,8 @@ import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage;
+import org.setms.swe.domain.model.sdlc.architecture.UserInterface;
+import org.setms.swe.domain.model.sdlc.code.html.ServerSideHtmlGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator;
@@ -431,6 +433,21 @@ class TechnologyResolverImplTest {
 
     assertThatSingleWarnDiagnosticHas(
         diagnostics, "Missing decision on user interface", "Decide on user interface");
+  }
+
+  @Test
+  void shouldReturnServerSideHtmlGeneratorWhenUserInterfaceIsServerSide() {
+    var diagnostics = new ArrayList<Diagnostic>();
+    var inputs =
+        new ResolvedInputs().put("decisions", List.of(decision(UserInterface.TOPIC, "ServerSide")));
+
+    var actual = resolver.uiGenerator(inputs, diagnostics);
+
+    assertThat(actual).as("UI generator for ServerSide decision").isPresent();
+    assertThat(actual.get())
+        .as("UI generator type for ServerSide decision")
+        .isInstanceOf(ServerSideHtmlGenerator.class);
+    assertThat(diagnostics).as("Diagnostics").isEmpty();
   }
 
   @Test

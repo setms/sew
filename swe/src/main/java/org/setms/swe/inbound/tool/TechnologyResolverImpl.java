@@ -26,6 +26,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
 import org.setms.swe.domain.model.sdlc.architecture.UserInterface;
+import org.setms.swe.domain.model.sdlc.code.html.ServerSideHtmlGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
@@ -266,6 +267,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
     var userInterface = Decisions.from(inputs).about(UserInterface.TOPIC);
     return switch (userInterface) {
       case null -> empty(missingUserInterfaceDecision(), diagnostics);
+      case "ServerSide" -> Optional.of(new ServerSideHtmlGenerator());
       default -> Optional.empty();
     };
   }
