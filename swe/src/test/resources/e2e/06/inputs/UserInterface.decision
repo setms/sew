@@ -1,0 +1,7 @@
+package technology
+
+decision UserInterface {
+  topic     = "UserInterface"
+  choice    = "ServerSide"
+  rationale = "Simplest Thing That Could Possibly Work"
+}

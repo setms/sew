@@ -5,6 +5,7 @@ import static org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConvention
 
 import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
+import org.setms.swe.domain.model.sdlc.architecture.UserInterface;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 
 class ServerSideHtmlLanguageTest {
@@ -36,6 +37,15 @@ class ServerSideHtmlLanguageTest {
     assertThat(actual)
         .as("ServerSideHtmlLanguage should store templates under src/main/resources/templates")
         .isEqualTo("src/main/resources/templates");
+  }
+
+  @Test
+  void shouldValidateServerSideAsValidUserInterfaceChoice() {
+    var actual = language.isValidChoice(UserInterface.TOPIC, "ServerSide");
+
+    assertThat(actual)
+        .as("ServerSide should be a valid choice for the UserInterface topic")
+        .isTrue();
   }
 
   @Test

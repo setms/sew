@@ -5,6 +5,7 @@ org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage
 org.setms.swe.domain.model.sdlc.architecture.TopLevelPackage
 org.setms.swe.domain.model.sdlc.architecture.DatabaseTopicProvider
 org.setms.swe.domain.model.sdlc.architecture.UserInterface
+org.setms.swe.domain.model.sdlc.code.html.ServerSideHtmlLanguage
 org.setms.swe.domain.model.sdlc.code.java.JavaLanguage
 org.setms.swe.domain.model.sdlc.code.java.SpringBootCodeGenerator
 org.setms.swe.domain.model.sdlc.packaging.docker.DockerPackager
