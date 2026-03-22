@@ -17,7 +17,7 @@ Don't use headings in this document, it's explicitly designed to be a flat list 
 - [x] The HTML that `WireframeTool` generates for affordances must invoke the endpoint for the `Command` that the
   `Wireframe` implements.
   Careful, this endpoint depends on the decision of what framework to use.
-- [~] The XML format doesn't round-trip `Link` fields: `XmlFormatBuilder` silently ignores `Reference` values
+- [x] The XML format doesn't round-trip `Link` fields: `XmlFormatBuilder` silently ignores `Reference` values
   (doesn't write them as attributes), and `Parser.setProperty` can't convert a `String` back to a `Link`.
   Fix both so that a wireframe with an affordance linked to a command survives serialization/deserialization.
 - [ ] `CommandTool.toWireframe()` doesn't set the command link on the generated affordance, so the HTML generator
