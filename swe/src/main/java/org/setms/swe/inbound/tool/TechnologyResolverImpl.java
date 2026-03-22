@@ -25,6 +25,7 @@ import org.setms.swe.domain.model.sdlc.architecture.Decisions;
 import org.setms.swe.domain.model.sdlc.architecture.Framework;
 import org.setms.swe.domain.model.sdlc.architecture.Packaging;
 import org.setms.swe.domain.model.sdlc.architecture.ProgrammingLanguage;
+import org.setms.swe.domain.model.sdlc.architecture.UserInterface;
 import org.setms.swe.domain.model.sdlc.code.java.JavaArtifactGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaCodeGenerator;
 import org.setms.swe.domain.model.sdlc.code.java.JavaUnitTestGenerator;
@@ -40,6 +41,7 @@ import org.setms.swe.domain.model.sdlc.technology.CodeTester;
 import org.setms.swe.domain.model.sdlc.technology.Database;
 import org.setms.swe.domain.model.sdlc.technology.FrameworkCodeGenerator;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
+import org.setms.swe.domain.model.sdlc.technology.UiGenerator;
 import org.setms.swe.domain.model.sdlc.technology.UnitTestGenerator;
 
 public class TechnologyResolverImpl implements TechnologyResolver {
@@ -49,6 +51,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   static final String PICK_FRAMEWORK = "framework.decide";
   static final String PICK_PACKAGING = "packaging.decide";
   static final String PICK_DATABASE = "database.decide";
+  static final String PICK_USER_INTERFACE = "user-interface.decide";
 
   private static final String TECHNOLOGY_DECISIONS_PACKAGE = "technology";
   private static final String PROGRAMMING_LANGUAGE_DECISION = "ProgrammingLanguage";
@@ -255,6 +258,24 @@ public class TechnologyResolverImpl implements TechnologyResolver {
         "Missing decision on database",
         null,
         new Suggestion(PICK_DATABASE, "Decide on database"));
+  }
+
+  @Override
+  public Optional<UiGenerator> uiGenerator(
+      ResolvedInputs inputs, Collection<Diagnostic> diagnostics) {
+    var userInterface = Decisions.from(inputs).about(UserInterface.TOPIC);
+    return switch (userInterface) {
+      case null -> empty(missingUserInterfaceDecision(), diagnostics);
+      default -> Optional.empty();
+    };
+  }
+
+  private Diagnostic missingUserInterfaceDecision() {
+    return new Diagnostic(
+        WARN,
+        "Missing decision on user interface",
+        null,
+        new Suggestion(PICK_USER_INTERFACE, "Decide on user interface"));
   }
 
   @Override

@@ -63,6 +63,13 @@ public interface TechnologyResolver {
    */
   Optional<Database> database(ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
 
+  /**
+   * @param inputs Resolved inputs, including decisions and other artifacts
+   * @param diagnostics where to store any validation issues
+   * @return something that can generate UI code, or empty if there are issues
+   */
+  Optional<UiGenerator> uiGenerator(ResolvedInputs inputs, Collection<Diagnostic> diagnostics);
+
   AppliedSuggestion applySuggestion(
       String suggestionCode, Resource<?> resource, ResolvedInputs inputs);
 }

@@ -424,6 +424,16 @@ class TechnologyResolverImplTest {
   }
 
   @Test
+  void shouldNeedUserInterfaceDecisionForUiGenerator() {
+    var diagnostics = new ArrayList<Diagnostic>();
+
+    resolver.uiGenerator(new ResolvedInputs(), diagnostics);
+
+    assertThatSingleWarnDiagnosticHas(
+        diagnostics, "Missing decision on user interface", "Decide on user interface");
+  }
+
+  @Test
   void shouldNeedDatabaseDecisionWhenNoDatabaseDecisionExists() {
     var diagnostics = new ArrayList<Diagnostic>();
 
