@@ -46,6 +46,7 @@ class EventStormTest {
 
   private UseCase parseUseCase(String name) throws IOException {
     return parser.parse(
+        name,
         new FileInputStream("src/test/resources/eventstorm/%s.useCase".formatted(name)),
         UseCase.class,
         false);

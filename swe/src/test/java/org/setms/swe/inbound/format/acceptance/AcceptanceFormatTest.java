@@ -173,7 +173,7 @@ class AcceptanceFormatTest {
     var actual =
         format
             .newParser()
-            .parse(new ByteArrayInputStream(output.toByteArray()), AcceptanceTest.class, true);
+            .parse("", new ByteArrayInputStream(output.toByteArray()), AcceptanceTest.class, true);
 
     assertThat(actual).isNotNull();
     assertThat(actual.getVariables()).hasSize(3);
@@ -247,7 +247,11 @@ class AcceptanceFormatTest {
     var actual =
         format
             .newParser()
-            .parse(new ByteArrayInputStream(output.toByteArray()), acceptanceTest.getClass(), true);
+            .parse(
+                "",
+                new ByteArrayInputStream(output.toByteArray()),
+                acceptanceTest.getClass(),
+                true);
 
     assertThat(actual).isEqualTo(acceptanceTest);
   }

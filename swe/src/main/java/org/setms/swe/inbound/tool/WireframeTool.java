@@ -1,10 +1,12 @@
 package org.setms.swe.inbound.tool;
 
+import static org.setms.km.domain.model.format.Strings.toKebabCase;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.created;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.CodeWriter.writeCodeArtifact;
 import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.designSystems;
 import static org.setms.swe.inbound.tool.Inputs.uiCode;
@@ -156,10 +158,25 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   }
 
   private AppliedSuggestion writeFrontendCode(List<CodeArtifact> artifacts, Resource<?> resource) {
-    return Inputs.frontendLanguageConventions()
-        .findFirst()
-        .map(conventions -> CodeWriter.writeCode(artifacts, resource.select("/"), conventions))
-        .orElseGet(AppliedSuggestion::none);
+    var index = 0;
+    var result = AppliedSuggestion.none();
+    if (artifacts.size() > index) {
+      var html = artifacts.get(index++);
+      var htmlResource =
+          resource.select(
+              "/src/main/resources/static/%s.html".formatted(toKebabCase(html.getName())));
+      writeCodeArtifact(html, htmlResource);
+      result = AppliedSuggestion.created(htmlResource);
+    }
+    if (artifacts.size() > index) {
+      var css = artifacts.get(index);
+      var cssResource =
+          resource.select(
+              "/src/main/resources/static/css/%s.css".formatted(toKebabCase(css.getName())));
+      writeCodeArtifact(css, cssResource);
+      result = result.with(cssResource);
+    }
+    return result;
   }
 
   private AppliedSuggestion createDesignSystemFor(Resource<?> resource, Wireframe wireframe) {
@@ -296,7 +313,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
     g.setColor(INK);
     roughLine(g, 2, PADDING + TITLE_H, SCREEN_WIDTH - 2, PADDING + TITLE_H);
     g.setFont(TITLE_FONT);
-    g.drawString(withoutLeadingVerb(wireframe.friendlyName()), PADDING, PADDING + TITLE_H / 2 + 8);
+    g.drawString(wireframe.friendlyName(), PADDING, PADDING + TITLE_H / 2 + 8);
   }
 
   private void drawElements(List<WireframeElement> elements, Graphics2D g) {
@@ -323,16 +340,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   }
 
   String affordanceLabel(Affordance affordance) {
-    return withoutLeadingVerb(affordance.friendlyName());
-  }
-
-  private String withoutLeadingVerb(String name) {
-    var spaceIndex = name.indexOf(' ');
-    return spaceIndex > 0 ? capitalize(name.substring(spaceIndex + 1)) : name;
-  }
-
-  private String capitalize(String s) {
-    return s.isEmpty() ? s : Character.toUpperCase(s.charAt(0)) + s.substring(1);
+    return affordance.friendlyName();
   }
 
   private int drawInputField(InputField field, Graphics2D g, int y) {

@@ -32,8 +32,8 @@ import org.setms.km.domain.model.workspace.Resource;
 
 public interface Parser {
 
-  default <T extends Artifact> T parse(InputStream input, Class<T> type, boolean validate)
-      throws IOException {
+  default <T extends Artifact> T parse(
+      String name, InputStream input, Class<T> type, boolean validate) throws IOException {
     return convert(parse(input), type, validate);
   }
 
@@ -254,7 +254,7 @@ public interface Parser {
   default <T extends Artifact> T parse(
       Resource<?> resource, Class<T> type, boolean validate, Collection<Diagnostic> diagnostics) {
     try (var inputStream = resource.readFrom()) {
-      return parse(inputStream, type, validate);
+      return parse(resource.name(), inputStream, type, validate);
     } catch (ValidationException e) {
       diagnostics.addAll(e.getDiagnostics());
     } catch (InvalidPropertyException e) {

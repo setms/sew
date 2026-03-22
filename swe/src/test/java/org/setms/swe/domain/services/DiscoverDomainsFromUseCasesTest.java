@@ -46,7 +46,7 @@ class DiscoverDomainsFromUseCasesTest {
         getClass()
             .getResourceAsStream(
                 "/useCase/valid/src/main/requirements/use-cases/JustDoIt.useCase")) {
-      return new SalFormat().newParser().parse(input, UseCase.class, false);
+      return new SalFormat().newParser().parse("", input, UseCase.class, false);
     }
   }
 }

@@ -140,7 +140,7 @@ abstract class ToolTestCase<A extends Artifact> {
   private Artifact parse(Resource<? extends Resource<?>> source, Input<?> input) {
     Artifact result;
     try (var sutStream = source.readFrom()) {
-      result = input.format().newParser().parse(sutStream, input.type(), false);
+      result = input.format().newParser().parse(source.name(), sutStream, input.type(), false);
     } catch (IOException e) {
       return null;
     }

@@ -32,7 +32,7 @@ public abstract class Workspace<T> {
       return null;
     }
     try (var stream = resource.readFrom()) {
-      return definition.parser().parse(stream, definition.type(), false);
+      return definition.parser().parse(resource.name(), stream, definition.type(), false);
     } catch (IOException e) {
       return null;
     }

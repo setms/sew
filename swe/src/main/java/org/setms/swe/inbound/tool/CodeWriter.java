@@ -28,7 +28,7 @@ class CodeWriter {
         .reduce(AppliedSuggestion.none(), AppliedSuggestion::with, (a, ignored) -> a);
   }
 
-  private static AppliedSuggestion writeCodeArtifact(CodeArtifact artifact, Resource<?> target) {
+  public static AppliedSuggestion writeCodeArtifact(CodeArtifact artifact, Resource<?> target) {
     try {
       target.writeAsString(artifact.getCode());
       return created(target);

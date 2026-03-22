@@ -35,7 +35,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
    The message needs to show the failed expectation.
 9. Make sure the test fails for the correct reason.
   If you invented new types or methods, you'll first have to write just enough code to make the test compile.
-  Then run the test using `./gradlew test --tests '*' --exclude-tests 'EndToEndTest'`
+  Then run the test using `./gradlew test --tests <test-name>`
   **CRITICAL: If the test passes or fails for the wrong reason, update the test until it fails for the correct reason.**
   This is non-negotiable.
   In particular, a passing test is a mortal sin.
@@ -50,6 +50,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
 12. Once this single test passes, run all the tests in the project to ensure the new code didn't break anything.
   If any test **other than `EndToEndTest`** fails, fix it and run all tests again until they all pass.
   **CRITICAL: DO NOT attempt to fix `EndToEnd` test.**
+  **CRITICAL: DO NOT continue until all other tests pass.**
 13. Once these tests pass, commit the changes.
   Write a very short commit message using conventional commits.
 14. Now review the code by invoking the `code-review` skill.

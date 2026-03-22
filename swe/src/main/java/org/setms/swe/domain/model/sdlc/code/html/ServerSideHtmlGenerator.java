@@ -19,12 +19,12 @@ public class ServerSideHtmlGenerator implements UiGenerator {
 
   @Override
   public List<CodeArtifact> generate(Wireframe wireframe, DesignSystem designSystem) {
-    return List.of(cssFor(designSystem), htmlFor(wireframe));
+    return List.of(htmlFor(wireframe), cssFor(designSystem));
   }
 
   private CodeArtifact cssFor(DesignSystem designSystem) {
     var code = render(designSystem.getStyles(), this::cssRule);
-    return new CodeArtifact(new FullyQualifiedName("", designSystem.getName())).setCode(code);
+    return new CodeArtifact(new FullyQualifiedName("css", designSystem.getName())).setCode(code);
   }
 
   private String cssRule(Style style) {

@@ -1,9 +1,12 @@
 outputs:
   - src/main/architecture/Framework.decision
   - src/main/architecture/TopLevelPackage.decision
+  - src/main/architecture/UserInterface.decision
 
 inputs:
   - file: Framework.decision
+    location: src/main/architecture
+  - file: UserInterface.decision
     location: src/main/architecture
 
 diagnostics:
@@ -12,4 +15,5 @@ diagnostics:
   - Missing domain object
   - Missing domain object
   - Missing domain service
+  - Missing UI code
   - Missing unit test

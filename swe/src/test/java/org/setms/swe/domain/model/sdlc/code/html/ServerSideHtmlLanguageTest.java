@@ -35,8 +35,8 @@ class ServerSideHtmlLanguageTest {
     var actual = language.codePath();
 
     assertThat(actual)
-        .as("ServerSideHtmlLanguage should store templates under src/main/resources/templates")
-        .isEqualTo("src/main/resources/templates");
+        .as("ServerSideHtmlLanguage should store templates under src/main/resources/static")
+        .isEqualTo("src/main/resources/static");
   }
 
   @Test

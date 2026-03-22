@@ -21,8 +21,11 @@ class InputsTest {
     var actual = Inputs.uiCode();
 
     assertThat(actual)
-        .as("UI code inputs should include HTML templates from the frontend language")
-        .anyMatch(input -> input.matches("src/main/resources/templates/home.html"));
+        .anySatisfy(
+            input -> assertThat(input.matches("src/main/resources/static/home.html")).isTrue())
+        .anySatisfy(
+            input ->
+                assertThat(input.matches("src/main/resources/static/css/default.css")).isTrue());
   }
 
   @Test

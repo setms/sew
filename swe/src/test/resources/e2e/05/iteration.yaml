@@ -12,3 +12,4 @@ inputs:
 diagnostics:
   - Missing decision on framework
   - Missing decision on top-level package
+  - Missing decision on user interface approach

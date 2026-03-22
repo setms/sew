@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -71,7 +70,7 @@ public class CommandTool extends DtoCodeTool<Command> {
       diagnostics.add(
           new Diagnostic(
               Level.WARN,
-              "Not initiated by wireframe",
+              "Missing wireframe to initiate command from",
               command.toLocation(),
               new Suggestion(CREATE_WIREFRAME, "Create wireframe")));
     }
@@ -89,8 +88,7 @@ public class CommandTool extends DtoCodeTool<Command> {
   }
 
   private boolean initiates(Command command, Wireframe wireframe) {
-    return wireframe.initiates(command)
-        || wireframe.getName().equals("Initiate%s".formatted(command.getName()));
+    return wireframe.initiates(command) || wireframe.getName().equals(command.getName());
   }
 
   @Override
@@ -134,8 +132,7 @@ public class CommandTool extends DtoCodeTool<Command> {
   }
 
   private Wireframe toWireframe(Command command, ResolvedInputs inputs) {
-    var fqn =
-        new FullyQualifiedName("%s.Initiate%s".formatted(command.getPackage(), command.getName()));
+    var fqn = command.getFullyQualifiedName();
     var affordance =
         new Affordance(fqn)
             .setInputFields(

@@ -432,7 +432,9 @@ class TechnologyResolverImplTest {
     resolver.uiGenerator(new ResolvedInputs(), diagnostics);
 
     assertThatSingleWarnDiagnosticHas(
-        diagnostics, "Missing decision on user interface", "Decide on user interface");
+        diagnostics,
+        "Missing decision on user interface approach",
+        "Decide on user interface approach");
   }
 
   @Test

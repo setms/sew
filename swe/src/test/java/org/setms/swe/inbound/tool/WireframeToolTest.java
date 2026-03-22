@@ -62,7 +62,7 @@ class WireframeToolTest {
 
     assertThat(actual)
         .as("WireframeTool validation context should include UI code input for HTML templates")
-        .anyMatch(input -> input.matches("src/main/resources/templates/home.html"));
+        .anyMatch(input -> input.matches("src/main/resources/static/home.html"));
   }
 
   @Test
@@ -132,17 +132,20 @@ class WireframeToolTest {
     when(generator.generate(wireframe, designSystem))
         .thenReturn(
             List.of(
-                new CodeArtifact(new FullyQualifiedName("", "LoginScreen")).setCode("<html/>")));
+                new CodeArtifact(new FullyQualifiedName("html", "LoginScreen")).setCode("<html/>"),
+                new CodeArtifact(new FullyQualifiedName("css", "Default")).setCode(".btn {}")));
 
     var actual =
         new WireframeTool(resolver)
             .applySuggestion(wireframe, WireframeTool.CREATE_UI_CODE, null, inputs, wireframeFile);
 
-    var htmlTemplate = workspace.root().select("src/main/resources/templates/LoginScreen.html");
+    var cssFile = workspace.root().select("src/main/resources/static/css/default.css");
+    var htmlTemplate = workspace.root().select("src/main/resources/static/login-screen.html");
     assertThat(actual.createdOrChanged())
         .as(
-            "Applying 'Create UI code' should create the HTML template file at 'src/main/resources/templates/LoginScreen.html'")
-        .containsExactly(htmlTemplate);
+            "Applying 'Create UI code' should create CSS at 'src/main/resources/static/css/Default.css'"
+                + " and HTML at 'src/main/resources/static/LoginScreen.html'")
+        .containsExactlyInAnyOrder(cssFile, htmlTemplate);
   }
 
   @Test
@@ -201,7 +204,7 @@ class WireframeToolTest {
 
   @Test
   void shouldStripLeadingVerbFromAffordanceLabel() {
-    var affordance = new Affordance(new FullyQualifiedName("todo", "InitiateAddTodoItem"));
+    var affordance = new Affordance(new FullyQualifiedName("todo", "AddTodoItem"));
 
     var actual = tool.affordanceLabel(affordance);
 
@@ -217,9 +220,7 @@ class WireframeToolTest {
     tool.buildReportsFor(wireframe, new ResolvedInputs(), workspace.root(), diagnostics);
 
     assertThat(diagnostics).isEmpty();
-    var actual =
-        ImageIO.read(
-            workspace.root().select("InitiateAddTodoItem/InitiateAddTodoItem.png").readFrom());
+    var actual = ImageIO.read(workspace.root().select("AddTodoItem/AddTodoItem.png").readFrom());
     assertThat(actual.getHeight())
         .as("Wireframe renders as portrait screen-like image")
         .isGreaterThan(actual.getWidth());
@@ -237,7 +238,7 @@ class WireframeToolTest {
         new Container(new FullyQualifiedName("todo", "Form"))
             .setDirection(Direction.TOP_TO_BOTTOM)
             .setChildren(List.of(affordance));
-    return new Wireframe(new FullyQualifiedName("todo", "InitiateAddTodoItem"))
+    return new Wireframe(new FullyQualifiedName("todo", "AddTodoItem"))
         .setContainers(List.of(container));
   }
 

@@ -31,7 +31,7 @@ class XmlFormatTest {
     var actual =
         new XmlFormat()
             .newParser()
-            .parse(new ByteArrayInputStream(output.toByteArray()), DesignSystem.class, false);
+            .parse("", new ByteArrayInputStream(output.toByteArray()), DesignSystem.class, false);
 
     assertThat(actual)
         .as("Parsed DesignSystem should equal the original, including Style.properties")
@@ -42,7 +42,7 @@ class XmlFormatTest {
   void shouldParseWireframeWithNestedContainers() throws IOException {
     var xml =
         """
-        <wireframe package="todo" name="InitiateAddTodoItem">
+        <wireframe package="todo" name="AddTodoItem">
           <container name="Header" direction="LEFT_TO_RIGHT">
             <children>
               <affordance name="Submit"/>
@@ -57,7 +57,7 @@ class XmlFormatTest {
         .as(
             "Parsed wireframe should have container 'Header' with direction and an affordance child")
         .isEqualTo(
-            new RootObject("todo", "wireframe", "InitiateAddTodoItem")
+            new RootObject("todo", "wireframe", "AddTodoItem")
                 .set(
                     "containers",
                     new DataList()
@@ -74,19 +74,19 @@ class XmlFormatTest {
   @Test
   void shouldRoundTripWireframeWithTypedChildren() throws IOException {
     var root =
-        new RootObject("todo", "wireframe", "InitiateAddTodoItem")
+        new RootObject("todo", "wireframe", "AddTodoItem")
             .set(
                 "containers",
                 new DataList()
                     .add(
-                        new NestedObject("InitiateAddTodoItem")
+                        new NestedObject("AddTodoItem")
                             .setType("container")
                             .set("direction", new DataEnum("top_to_bottom"))
                             .set(
                                 "children",
                                 new DataList()
                                     .add(
-                                        new NestedObject("InitiateAddTodoItem")
+                                        new NestedObject("AddTodoItem")
                                             .setType("affordance")
                                             .set(
                                                 "inputFields",
@@ -110,7 +110,7 @@ class XmlFormatTest {
   @Test
   void shouldBuildWireframeWithContainers() throws IOException {
     var root =
-        new RootObject("todo", "wireframe", "InitiateAddTodoItem")
+        new RootObject("todo", "wireframe", "AddTodoItem")
             .set(
                 "containers",
                 new DataList()
@@ -125,7 +125,7 @@ class XmlFormatTest {
     var actual = new XmlFormat().newParser().parse(new ByteArrayInputStream(output.toByteArray()));
     assertThat(actual)
         .as(
-            "Built XML should parse back to the same RootObject representing 'InitiateAddTodoItem' with a 'Header' container")
+            "Built XML should parse back to the same RootObject representing 'AddTodoItem' with a 'Header' container")
         .isEqualTo(root);
   }
 }

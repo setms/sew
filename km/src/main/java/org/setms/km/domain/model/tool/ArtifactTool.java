@@ -57,7 +57,7 @@ public abstract non-sealed class ArtifactTool<A extends Artifact> extends Tool {
             .findFirst()
             .orElseGet(() -> validationTargets().iterator().next());
     try (var sutStream = resource.readFrom()) {
-      var result = input.format().newParser().parse(sutStream, input.type(), true);
+      var result = input.format().newParser().parse(resource.name(), sutStream, input.type(), true);
       validate(resource, result, context, diagnostics);
       return result;
     } catch (Exception e) {

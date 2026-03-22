@@ -2,6 +2,7 @@ package org.setms.km.domain.model.format;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.setms.km.domain.model.format.Strings.toFriendlyName;
+import static org.setms.km.domain.model.format.Strings.toKebabCase;
 import static org.setms.km.domain.model.format.Strings.toPascalCase;
 import static org.setms.km.domain.model.format.Strings.toSnakeCase;
 import static org.setms.km.domain.model.format.Strings.wrap;
@@ -43,5 +44,11 @@ class StringsTest {
   @CsvSource({"ape,Ape", "bear_cheetah,BearCheetah"})
   void shouldConvertToPascalCase(String input, String expected) {
     assertThat(toPascalCase(input)).isEqualTo(expected);
+  }
+
+  @ParameterizedTest
+  @CsvSource({"Ape,ape", "BearCheetah,bear-cheetah"})
+  void shouldConvertToKebabCase(String input, String expected) {
+    assertThat(toKebabCase(input)).isEqualTo(expected);
   }
 }

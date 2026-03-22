@@ -36,7 +36,7 @@ public class ServerSideHtmlLanguage implements TopicProvider, ProgrammingLanguag
 
   @Override
   public String codePath() {
-    return "src/main/resources/templates";
+    return "src/main/resources/static";
   }
 
   @Override

@@ -93,6 +93,10 @@ public class Strings {
     return result.toString();
   }
 
+  public static String toKebabCase(String name) {
+    return toSnakeCase(name).replace('_', '-');
+  }
+
   public static String wrap(String text, int maxLength) {
     if (text == null) {
       return "";

@@ -40,11 +40,15 @@ class ServerSideHtmlGeneratorTest {
     assertThat(artifacts)
         .as("CSS artifact for DesignSystem")
         .anySatisfy(
-            artifact ->
-                assertThat(artifact.getCode())
-                    .as("CSS code with '.button { color: red; }'")
-                    .contains(".button")
-                    .contains("color: red"));
+            artifact -> {
+              assertThat(artifact.getPackage())
+                  .as("CSS artifact should have package 'css' to indicate its extension")
+                  .isEqualTo("css");
+              assertThat(artifact.getCode())
+                  .as("CSS code with '.button { color: red; }'")
+                  .contains(".button")
+                  .contains("color: red");
+            });
   }
 
   @Test

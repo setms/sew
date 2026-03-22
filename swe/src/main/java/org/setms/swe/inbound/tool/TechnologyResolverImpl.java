@@ -275,9 +275,9 @@ public class TechnologyResolverImpl implements TechnologyResolver {
   private Diagnostic missingUserInterfaceDecision() {
     return new Diagnostic(
         WARN,
-        "Missing decision on user interface",
+        "Missing decision on user interface approach",
         null,
-        new Suggestion(PICK_USER_INTERFACE, "Decide on user interface"));
+        new Suggestion(PICK_USER_INTERFACE, "Decide on user interface approach"));
   }
 
   @Override

@@ -24,10 +24,10 @@ class CodeParser implements Parser {
   }
 
   @Override
-  public <T extends Artifact> T parse(InputStream input, Class<T> type, boolean validate)
-      throws IOException {
+  public <T extends Artifact> T parse(
+      String resourceName, InputStream input, Class<T> type, boolean validate) throws IOException {
     var code = readAllAsString(input);
-    var name = extractName(code);
+    var name = extractName(code, resourceName);
     try {
       var result = type.getConstructor(FullyQualifiedName.class).newInstance(name);
       if (result instanceof CodeArtifact codeArtifact) {
@@ -39,9 +39,9 @@ class CodeParser implements Parser {
     }
   }
 
-  private FullyQualifiedName extractName(String code) {
+  private FullyQualifiedName extractName(String code, String resourceName) {
     return Optional.ofNullable(nameExtractor)
         .map(c -> c.extractName(code))
-        .orElseGet(() -> new FullyQualifiedName("", ""));
+        .orElseGet(() -> new FullyQualifiedName("", resourceName));
   }
 }
