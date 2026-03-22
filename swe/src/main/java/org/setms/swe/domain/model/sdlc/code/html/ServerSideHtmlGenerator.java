@@ -156,6 +156,10 @@ public class ServerSideHtmlGenerator implements UiGenerator {
         """
           flex-direction: column;
         """);
+    result.add(
+        """
+          max-width: 800px;
+        """);
     return result;
   }
 

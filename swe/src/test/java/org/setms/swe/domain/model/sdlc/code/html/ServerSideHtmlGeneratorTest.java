@@ -308,6 +308,29 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldGenerateCssWithMaxWidthForForm() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssHasMaxWidthForForm(actual);
+  }
+
+  private void assertThatCssHasMaxWidthForForm(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should include max-width for form")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "CSS 'form' rule should include 'max-width: 800px'"
+                            + " so it doesn't stretch across wide screens")
+                    .contains("form {")
+                    .contains("max-width: 800px"));
+  }
+
+  @Test
   void shouldGenerateCssWithFlexColumnLayoutForForm() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
