@@ -6,10 +6,13 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
 import org.setms.swe.domain.model.sdlc.ui.Property;
 import org.setms.swe.domain.model.sdlc.ui.Style;
+import org.setms.swe.domain.model.sdlc.ux.Affordance;
 import org.setms.swe.domain.model.sdlc.ux.Container;
+import org.setms.swe.domain.model.sdlc.ux.InputField;
 import org.setms.swe.domain.model.sdlc.ux.Wireframe;
 
 class ServerSideHtmlGeneratorTest {
@@ -139,5 +142,40 @@ class ServerSideHtmlGeneratorTest {
                             + " and data-artifact-name='LoginScreen' for name extraction")
                     .contains("<title>Login screen</title>")
                     .contains("data-artifact-name=\"LoginScreen\""));
+  }
+
+  @Test
+  void shouldGenerateHtmlElementsForAffordanceWithInputField() {
+    var wireframe = givenWireframeWithAffordanceContainingInputField();
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatHtmlContainsButtonForAffordanceAndInputForField(actual);
+  }
+
+  private Wireframe givenWireframeWithAffordanceContainingInputField() {
+    var inputField = new InputField(new FullyQualifiedName("", "quantity")).setType(FieldType.TEXT);
+    var affordance =
+        new Affordance(new FullyQualifiedName("", "PlaceOrder"))
+            .setInputFields(List.of(inputField));
+    var container =
+        new Container(new FullyQualifiedName("", "main")).setChildren(List.of(affordance));
+    return new Wireframe(new FullyQualifiedName("ux", "Checkout"))
+        .setContainers(List.of(container));
+  }
+
+  private void assertThatHtmlContainsButtonForAffordanceAndInputForField(
+      List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("HTML artifact should contain a button for the affordance and an input for the field")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "HTML should have a <button> for the 'PlaceOrder' affordance"
+                            + " and an <input> for the 'quantity' text field")
+                    .contains("<button")
+                    .contains("<input"));
   }
 }

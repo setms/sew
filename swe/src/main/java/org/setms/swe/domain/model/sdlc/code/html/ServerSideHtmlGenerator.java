@@ -12,12 +12,18 @@ import java.util.Optional;
 import java.util.function.Function;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.technology.UiGenerator;
 import org.setms.swe.domain.model.sdlc.ui.DesignSystem;
 import org.setms.swe.domain.model.sdlc.ui.Property;
 import org.setms.swe.domain.model.sdlc.ui.Style;
+import org.setms.swe.domain.model.sdlc.ux.Affordance;
 import org.setms.swe.domain.model.sdlc.ux.Container;
+import org.setms.swe.domain.model.sdlc.ux.Feedback;
+import org.setms.swe.domain.model.sdlc.ux.InputField;
+import org.setms.swe.domain.model.sdlc.ux.View;
 import org.setms.swe.domain.model.sdlc.ux.Wireframe;
+import org.setms.swe.domain.model.sdlc.ux.WireframeElement;
 
 public class ServerSideHtmlGenerator implements UiGenerator {
 
@@ -42,10 +48,49 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   }
 
   private String htmlDiv(Container container) {
+    var children = render(container.getChildren(), this::htmlElement);
     return """
-        <div id="%s"></div>
+        <div id="%s">
+        %s</div>
         """
-        .formatted(container.getName());
+        .formatted(container.getName(), children);
+  }
+
+  private String htmlElement(WireframeElement element) {
+    return switch (element) {
+      case Container c -> htmlDiv(c);
+      case Affordance a -> htmlAffordance(a);
+      case View ignored -> "";
+      case Feedback ignored -> "";
+    };
+  }
+
+  private String htmlAffordance(Affordance affordance) {
+    var inputs = render(affordance.getInputFields(), this::htmlInput);
+    return """
+        %s<button>%s</button>
+        """
+        .formatted(inputs, toFriendlyName(affordance.getName()));
+  }
+
+  private String htmlInput(InputField field) {
+    return """
+        <input type="%s" name="%s">
+        """
+        .formatted(htmlInputType(field.getType()), field.getName());
+  }
+
+  private String htmlInputType(FieldType type) {
+    return switch (type) {
+      case TEXT -> "text";
+      case NUMBER -> "number";
+      case BOOLEAN -> "checkbox";
+      case DATE -> "date";
+      case TIME -> "time";
+      case DATETIME -> "datetime-local";
+      case ID -> "hidden";
+      case SELECTION -> "text";
+    };
   }
 
   private <T> String render(List<T> items, Function<T, String> renderer) {
