@@ -158,7 +158,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   private AppliedSuggestion writeFrontendCode(List<CodeArtifact> artifacts, Resource<?> resource) {
     return Inputs.frontendLanguageConventions()
         .findFirst()
-        .map(conventions -> CodeWriter.writeCode(artifacts, resource, conventions))
+        .map(conventions -> CodeWriter.writeCode(artifacts, resource.select("/"), conventions))
         .orElseGet(AppliedSuggestion::none);
   }
 

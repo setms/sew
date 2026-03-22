@@ -127,6 +127,7 @@ class WireframeToolTest {
     var designSystem = new DesignSystem(new FullyQualifiedName("ux", "Default"));
     var inputs = new ResolvedInputs().put("designSystems", List.of(designSystem));
     var workspace = new InMemoryWorkspace();
+    var wireframeFile = workspace.root().select("src/main/ux/wireframes/LoginScreen.wireframe");
     when(resolver.uiGenerator(any(), anyCollection())).thenReturn(Optional.of(generator));
     when(generator.generate(wireframe, designSystem))
         .thenReturn(
@@ -135,8 +136,7 @@ class WireframeToolTest {
 
     var actual =
         new WireframeTool(resolver)
-            .applySuggestion(
-                wireframe, WireframeTool.CREATE_UI_CODE, null, inputs, workspace.root());
+            .applySuggestion(wireframe, WireframeTool.CREATE_UI_CODE, null, inputs, wireframeFile);
 
     var htmlTemplate = workspace.root().select("src/main/resources/templates/LoginScreen.html");
     assertThat(actual.createdOrChanged())
