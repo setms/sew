@@ -1,8 +1,11 @@
 package org.setms.swe.domain.model.sdlc.code.html;
 
+import static java.util.stream.Collectors.joining;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.technology.UiGenerator;
@@ -20,20 +23,12 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   }
 
   private CodeArtifact cssFor(DesignSystem designSystem) {
-    var code =
-        Optional.ofNullable(designSystem.getStyles()).stream()
-            .flatMap(Collection::stream)
-            .map(this::cssRule)
-            .reduce("", (a, b) -> a + b);
+    var code = render(designSystem.getStyles(), this::cssRule);
     return new CodeArtifact(new FullyQualifiedName("", designSystem.getName())).setCode(code);
   }
 
   private String cssRule(Style style) {
-    var properties =
-        Optional.ofNullable(style.getProperties()).stream()
-            .flatMap(Collection::stream)
-            .map(this::cssProperty)
-            .reduce("", (a, b) -> a + b);
+    var properties = render(style.getProperties(), this::cssProperty);
     return ".%s {\n%s}\n".formatted(style.getName(), properties);
   }
 
@@ -42,11 +37,7 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   }
 
   private CodeArtifact htmlFor(Wireframe wireframe) {
-    var containers =
-        Optional.ofNullable(wireframe.getContainers()).stream()
-            .flatMap(Collection::stream)
-            .map(this::htmlDiv)
-            .reduce("", (a, b) -> a + b);
+    var containers = render(wireframe.getContainers(), this::htmlDiv);
     var code =
         """
         <!DOCTYPE html>
@@ -62,5 +53,12 @@ public class ServerSideHtmlGenerator implements UiGenerator {
 
   private String htmlDiv(Container container) {
     return "<div id=\"%s\"></div>\n".formatted(container.getName());
+  }
+
+  private <T> String render(List<T> items, Function<T, String> renderer) {
+    return Optional.ofNullable(items).stream()
+        .flatMap(Collection::stream)
+        .map(renderer)
+        .collect(joining());
   }
 }
