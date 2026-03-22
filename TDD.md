@@ -23,3 +23,4 @@ Don't use headings in this document, it's explicitly designed to be a flat list 
   corresponds to the wireframe.
   If that returns something, then it should issue a warning about the missing UI code, with suggestion to create it.
 - [ ] `WireframeTool.doApply()` should handle this suggestion, by calling `UiGenerator.generate()`.
+- [ ] `TechnologyResolverImpl.uiGenerator()` should return an instance of `

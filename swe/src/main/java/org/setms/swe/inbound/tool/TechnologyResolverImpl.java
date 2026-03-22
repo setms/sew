@@ -291,6 +291,7 @@ public class TechnologyResolverImpl implements TechnologyResolver {
       case PICK_PACKAGING -> pickDecision(resource, Packaging.TOPIC, Packaging.TOPIC);
       case PICK_DATABASE ->
           pickDecision(resource, DatabaseTopicProvider.TOPIC, DatabaseTopicProvider.TOPIC);
+      case PICK_USER_INTERFACE -> pickDecision(resource, UserInterface.TOPIC, UserInterface.TOPIC);
       case CREATE_DOCKERFILE -> applyPackagerSuggestion(resource, inputs);
       case GENERATE_BUILD_CONFIG -> generateBuildConfig(resource, inputs);
       default -> AppliedSuggestion.none();
