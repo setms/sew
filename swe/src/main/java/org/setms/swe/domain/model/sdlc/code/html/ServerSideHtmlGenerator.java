@@ -79,13 +79,10 @@ public class ServerSideHtmlGenerator implements UiGenerator {
 
   private void collectPropertyDeclaration(
       Property property, String fallbackStyleName, Map<String, List<String>> declarations) {
-    var translation = CssPropertyTranslation.of(property.getName());
+    var translation = CssProperties.of(property.getName());
     var selector =
-        translation
-            .map(CssPropertyTranslation.Translation::selector)
-            .orElse("." + fallbackStyleName);
-    var cssProperty =
-        translation.map(CssPropertyTranslation.Translation::cssProperty).orElse(property.getName());
+        translation.map(CssProperties.CssProperty::selector).orElse("." + fallbackStyleName);
+    var cssProperty = translation.map(CssProperties.CssProperty::name).orElse(property.getName());
     declarations
         .computeIfAbsent(selector, ignored -> new ArrayList<>())
         .add(

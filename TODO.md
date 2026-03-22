@@ -28,6 +28,10 @@
   - All variables used in scenarios
   - No undeclared variables used in scenarios
 
+### Command
+
+- When generating endpoint, also generate OpenAPI spec.
+
 ### Code
 
 - `CodeTool` should use Google Java Formatter to format the code properly before persisting a resource
