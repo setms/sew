@@ -6,10 +6,10 @@ import static org.setms.km.domain.model.format.Strings.toKebabCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.function.Function;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
@@ -130,13 +130,13 @@ public class ServerSideHtmlGenerator implements UiGenerator {
     var declarationsBySelector = collectDeclarations(designSystem);
     var code =
         declarationsBySelector.entrySet().stream()
-            .map(e -> cssRule(e.getKey(), e.getValue()))
+            .map(e -> cssRule(e.getKey(), e.getValue().stream().sorted().toList()))
             .collect(joining());
     return new CodeArtifact(new FullyQualifiedName("css", designSystem.getName())).setCode(code);
   }
 
   private Map<String, List<String>> collectDeclarations(DesignSystem designSystem) {
-    var result = new LinkedHashMap<String, List<String>>();
+    var result = new TreeMap<String, List<String>>();
     result.put("form", baselineFormDeclarations());
     result.put("input", baselineFullWidthDeclarations());
     result.put("button", baselineFullWidthDeclarations());

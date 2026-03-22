@@ -299,6 +299,51 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldOrderSelectorsAndPropertiesAlphabetically() {
+    var designSystem = givenDesignSystemWithButtonFontSizeAndTextColor();
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssSelectorsAndPropertiesAreAlphabetical(actual);
+  }
+
+  private DesignSystem givenDesignSystemWithButtonFontSizeAndTextColor() {
+    return new DesignSystem(new FullyQualifiedName("ui", "Styles"))
+        .setStyles(
+            List.of(
+                new Style(new FullyQualifiedName("ui", "Default"))
+                    .setProperties(
+                        List.of(
+                            new Property(new FullyQualifiedName("", "ButtonFontSize"))
+                                .setValue("14px"),
+                            new Property(new FullyQualifiedName("", "ButtonTextColor"))
+                                .setValue("red")))));
+  }
+
+  private void assertThatCssSelectorsAndPropertiesAreAlphabetical(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should have selectors and properties in alphabetical order")
+        .anySatisfy(
+            artifact -> {
+              var code = artifact.getCode();
+              assertThat(code.indexOf("button {"))
+                  .as("'button' selector should appear before 'form' selector alphabetically")
+                  .isLessThan(code.indexOf("form {"));
+              assertThat(code.indexOf("form {"))
+                  .as("'form' selector should appear before 'input' selector alphabetically")
+                  .isLessThan(code.indexOf("input {"));
+              var buttonStart = code.indexOf("button {");
+              var buttonBlock = code.substring(buttonStart, code.indexOf("}", buttonStart));
+              assertThat(buttonBlock.indexOf("color:"))
+                  .as(
+                      "'color' property should appear before 'font-size' property alphabetically"
+                          + " in the 'button' rule")
+                  .isLessThan(buttonBlock.indexOf("font-size:"));
+            });
+  }
+
+  @Test
   void shouldIncludeCssStylesheetInHtml() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
