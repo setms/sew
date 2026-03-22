@@ -18,6 +18,14 @@
   - Terms from glossary
 
 
+## Collaboration
+
+- Add skills, roles, people, and teams
+- Task list
+  - filterable for person
+  - grouped by in-progress domain story
+
+
 ## Tools
 
 ### Acceptance test
