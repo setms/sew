@@ -59,9 +59,10 @@ public class ServerSideHtmlGenerator implements UiGenerator {
     var children = render(container.getChildren(), this::htmlElement);
     return """
         <div id="%s">
+        <h1>%s</h1>
         %s</div>
         """
-        .formatted(toKebabCase(container.getName()), children);
+        .formatted(toKebabCase(container.getName()), toFriendlyName(container.getName()), children);
   }
 
   private String htmlElement(WireframeElement element) {

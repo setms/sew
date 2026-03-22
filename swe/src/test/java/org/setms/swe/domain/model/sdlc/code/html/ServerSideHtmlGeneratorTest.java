@@ -108,7 +108,7 @@ class ServerSideHtmlGeneratorTest {
 
   private Wireframe givenWireframeWithMainContainer() {
     return new Wireframe(new FullyQualifiedName("ux", "Checkout"))
-        .setContainers(List.of(new Container(new FullyQualifiedName("", "main"))));
+        .setContainers(List.of(new Container(new FullyQualifiedName("", "Main"))));
   }
 
   private void assertThatHtmlArtifactContainsMainContainer(List<CodeArtifact> artifacts) {
@@ -117,9 +117,10 @@ class ServerSideHtmlGeneratorTest {
         .anySatisfy(
             artifact ->
                 assertThat(artifact.getCode())
-                    .as("HTML code containing 'main' container")
+                    .as("HTML code containing 'main' container with an <h1> heading")
                     .contains("<!DOCTYPE html>")
-                    .contains("main"));
+                    .contains("id=\"main\"")
+                    .contains("<h1>Main</h1>"));
   }
 
   @Test
