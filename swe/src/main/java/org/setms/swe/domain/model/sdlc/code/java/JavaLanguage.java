@@ -20,6 +20,11 @@ public class JavaLanguage implements TopicProvider, ProgrammingLanguageConventio
       Pattern.compile("[a-z][a-z0-9]*(\\.[a-z][a-z0-9]*)*");
 
   @Override
+  public Type type() {
+    return Type.BACKEND;
+  }
+
+  @Override
   public Collection<Glob> buildConfigurationFiles() {
     return List.of(new Glob("/", "build.gradle"), new Glob("/", "settings.gradle"));
   }

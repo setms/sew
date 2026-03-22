@@ -1,7 +1,8 @@
 package org.setms.swe.domain.model.sdlc.code.html;
 
+import static java.util.Collections.emptyList;
+
 import java.util.Collection;
-import java.util.List;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
 import org.setms.km.domain.model.workspace.Glob;
 import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
@@ -9,8 +10,13 @@ import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 public class ServerSideHtmlLanguage implements ProgrammingLanguageConventions {
 
   @Override
+  public Type type() {
+    return Type.FRONTEND;
+  }
+
+  @Override
   public Collection<Glob> buildConfigurationFiles() {
-    return List.of();
+    return emptyList();
   }
 
   @Override

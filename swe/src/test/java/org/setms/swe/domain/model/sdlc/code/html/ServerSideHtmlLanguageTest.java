@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.code.html;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions.Type.FRONTEND;
 
 import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,15 @@ import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 class ServerSideHtmlLanguageTest {
 
   private final ServerSideHtmlLanguage language = new ServerSideHtmlLanguage();
+
+  @Test
+  void shouldBeAFrontendLanguage() {
+    var actual = language.type();
+
+    assertThat(actual)
+        .as("Server-side HTML is a frontend programming language")
+        .isEqualTo(FRONTEND);
+  }
 
   @Test
   void shouldUseHtmlExtension() {

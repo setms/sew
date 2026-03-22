@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.code.java;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions.Type.BACKEND;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,6 +10,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 class JavaLanguageTest {
 
   private final JavaLanguage language = new JavaLanguage();
+
+  @Test
+  void shouldBeABackendLanguage() {
+    var actual = language.type();
+
+    assertThat(actual).as("Java is a backend programming language").isEqualTo(BACKEND);
+  }
 
   @ParameterizedTest
   @ValueSource(strings = {"class", "interface", "record"})

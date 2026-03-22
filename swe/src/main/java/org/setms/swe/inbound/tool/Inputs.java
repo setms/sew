@@ -154,7 +154,8 @@ class Inputs {
   }
 
   private static Stream<ProgrammingLanguageConventions> programmingLanguageConventions() {
-    return loadServices(ProgrammingLanguageConventions.class);
+    return loadServices(ProgrammingLanguageConventions.class)
+        .filter(c -> c.type() == ProgrammingLanguageConventions.Type.BACKEND);
   }
 
   private static <T> Stream<T> loadServices(Class<T> serviceType) {
