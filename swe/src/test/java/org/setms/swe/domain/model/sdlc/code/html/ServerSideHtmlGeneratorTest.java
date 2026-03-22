@@ -251,6 +251,30 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldGenerateCssWithFlexColumnLayoutForForm() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssHasFlexColumnLayoutForForm(actual);
+  }
+
+  private void assertThatCssHasFlexColumnLayoutForForm(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should include flex column layout for form elements")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "CSS should have 'display: flex' and 'flex-direction: column' for 'form'"
+                            + " so that labels and inputs stack vertically")
+                    .contains("form")
+                    .contains("display: flex")
+                    .contains("flex-direction: column"));
+  }
+
+  @Test
   void shouldIncludeCssStylesheetInHtml() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));

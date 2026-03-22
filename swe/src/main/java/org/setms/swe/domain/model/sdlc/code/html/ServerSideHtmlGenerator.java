@@ -129,10 +129,15 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   private CodeArtifact cssFor(DesignSystem designSystem) {
     var declarationsBySelector = collectDeclarations(designSystem);
     var code =
-        declarationsBySelector.entrySet().stream()
-            .map(e -> cssRule(e.getKey(), e.getValue()))
-            .collect(joining());
+        baselineCss()
+            + declarationsBySelector.entrySet().stream()
+                .map(e -> cssRule(e.getKey(), e.getValue()))
+                .collect(joining());
     return new CodeArtifact(new FullyQualifiedName("css", designSystem.getName())).setCode(code);
+  }
+
+  private String baselineCss() {
+    return cssRule("form", List.of("  display: flex;\n", "  flex-direction: column;\n"));
   }
 
   private Map<String, List<String>> collectDeclarations(DesignSystem designSystem) {
