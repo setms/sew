@@ -3,6 +3,7 @@ package org.setms.swe.domain.model.sdlc.code.java;
 import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.initLower;
 import static org.setms.km.domain.model.format.Strings.initUpper;
+import static org.setms.km.domain.model.format.Strings.toKebabCase;
 import static org.setms.km.domain.model.format.Strings.toSnakeCase;
 
 import java.util.ArrayList;
@@ -402,7 +403,7 @@ public class SpringBootCodeGenerator extends JavaBaseCodeGenerator
             .collect(joining("\n"));
     var paramName = initLower(command.getName());
     var serviceFieldName = initLower(serviceName);
-    var endpointUrl = "/%s".formatted(initLower(aggregate.getName()));
+    var endpointUrl = "/%s".formatted(toKebabCase(command.getName()));
     var code =
         """
         package %s;

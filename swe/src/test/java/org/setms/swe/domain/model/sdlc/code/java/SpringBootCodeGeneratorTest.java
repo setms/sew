@@ -70,7 +70,7 @@ class SpringBootCodeGeneratorTest {
         .contains("import org.springframework.web.bind.annotation.RequestBody;")
         .contains("import org.springframework.web.bind.annotation.RestController;")
         .contains("private final TodoItemsService todoItemsService;")
-        .contains("@PostMapping(\"/todoItems\")")
+        .contains("@PostMapping(\"/add-todo-item\")")
         .contains("public TodoItemAdded addTodoItem(@RequestBody AddTodoItem addTodoItem)")
         .contains("return todoItemsService.accept(addTodoItem);");
   }
