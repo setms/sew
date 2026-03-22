@@ -284,6 +284,36 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldGenerateCssWithRightAlignedCompactButton() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssButtonIsRightAlignedAndCompact(actual);
+  }
+
+  private void assertThatCssButtonIsRightAlignedAndCompact(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should have a compact, right-aligned button")
+        .anySatisfy(
+            artifact -> {
+              var code = artifact.getCode();
+              assertThat(code).as("CSS should have 'button {' selector").contains("button {");
+              var buttonStart = code.indexOf("button {");
+              var buttonBlock = code.substring(buttonStart, code.indexOf("}", buttonStart));
+              assertThat(buttonBlock)
+                  .as(
+                      "'button' rule should use 'align-self: flex-end'"
+                          + " to right-align in the flex column form")
+                  .contains("align-self: flex-end");
+              assertThat(buttonBlock)
+                  .as("'button' rule should not have 'width: 100%' so it stays compact")
+                  .doesNotContain("width: 100%");
+            });
+  }
+
+  @Test
   void shouldGenerateCssWithFullWidthForInputsAndButton() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));

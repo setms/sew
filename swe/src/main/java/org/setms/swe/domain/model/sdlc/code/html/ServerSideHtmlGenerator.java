@@ -138,8 +138,8 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   private Map<String, List<String>> collectDeclarations(DesignSystem designSystem) {
     var result = new TreeMap<String, List<String>>();
     result.put("form", baselineFormDeclarations());
-    result.put("input", baselineFullWidthDeclarations());
-    result.put("button", baselineFullWidthDeclarations());
+    result.put("button", baselineButtonDeclarations());
+    result.put("input", baselineInputDeclarations());
     Optional.ofNullable(designSystem.getStyles()).stream()
         .flatMap(Collection::stream)
         .forEach(style -> collectStyleDeclarations(style, result));
@@ -163,7 +163,20 @@ public class ServerSideHtmlGenerator implements UiGenerator {
     return result;
   }
 
-  private List<String> baselineFullWidthDeclarations() {
+  private List<String> baselineButtonDeclarations() {
+    var result = new ArrayList<String>();
+    result.add(
+        """
+          align-self: flex-end;
+        """);
+    result.add(
+        """
+          padding: 0.5rem;
+        """);
+    return result;
+  }
+
+  private List<String> baselineInputDeclarations() {
     var result = new ArrayList<String>();
     result.add(
         """
