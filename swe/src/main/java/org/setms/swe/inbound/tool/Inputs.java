@@ -154,8 +154,12 @@ class Inputs {
   }
 
   private static Stream<ProgrammingLanguageConventions> programmingLanguageConventions() {
-    return loadServices(ProgrammingLanguageConventions.class)
-        .filter(c -> c.type() == ProgrammingLanguageConventions.Type.BACKEND);
+    return conventionsByType(ProgrammingLanguageConventions.Type.BACKEND);
+  }
+
+  private static Stream<ProgrammingLanguageConventions> conventionsByType(
+      ProgrammingLanguageConventions.Type type) {
+    return loadServices(ProgrammingLanguageConventions.class).filter(c -> c.type() == type);
   }
 
   private static <T> Stream<T> loadServices(Class<T> serviceType) {
@@ -204,6 +208,14 @@ class Inputs {
         Glob.of(conventions.codePath(), conventions.extension()),
         new CodeFormat(conventions),
         CodeArtifact.class);
+  }
+
+  public static Set<Input<? extends CodeArtifact>> uiCode() {
+    return frontendProgrammingLanguageConventions().map(Inputs::toCodeInput).collect(toSet());
+  }
+
+  private static Stream<ProgrammingLanguageConventions> frontendProgrammingLanguageConventions() {
+    return conventionsByType(ProgrammingLanguageConventions.Type.FRONTEND);
   }
 
   public static Set<Input<? extends DatabaseSchema>> databaseSchemas() {

@@ -17,6 +17,15 @@ class InputsTest {
   }
 
   @Test
+  void shouldGetUiCodeInputsFromFrontendProgrammingLanguageConventions() {
+    var actual = Inputs.uiCode();
+
+    assertThat(actual)
+        .as("UI code inputs should include HTML templates from the frontend language")
+        .anyMatch(input -> input.matches("src/main/resources/templates/home.html"));
+  }
+
+  @Test
   void shouldGetUnitTestInputsFromProgrammingLanguageConventions() {
     var actual = Inputs.unitTests();
 
