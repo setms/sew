@@ -2,7 +2,9 @@ package org.setms.swe.domain.model.sdlc.code.html;
 
 import static java.util.stream.Collectors.joining;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -23,17 +25,44 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   }
 
   private CodeArtifact cssFor(DesignSystem designSystem) {
-    var code = render(designSystem.getStyles(), this::cssRule);
+    var declarationsBySelector = collectDeclarations(designSystem);
+    var code =
+        declarationsBySelector.entrySet().stream()
+            .map(e -> cssRule(e.getKey(), e.getValue()))
+            .collect(joining());
     return new CodeArtifact(new FullyQualifiedName("css", designSystem.getName())).setCode(code);
   }
 
-  private String cssRule(Style style) {
-    var properties = render(style.getProperties(), this::cssProperty);
-    return ".%s {\n%s}\n".formatted(style.getName(), properties);
+  private LinkedHashMap<String, List<String>> collectDeclarations(DesignSystem designSystem) {
+    var result = new LinkedHashMap<String, List<String>>();
+    Optional.ofNullable(designSystem.getStyles()).stream()
+        .flatMap(Collection::stream)
+        .forEach(style -> collectStyleDeclarations(style, result));
+    return result;
   }
 
-  private String cssProperty(Property property) {
-    return "  %s: %s;\n".formatted(property.getName(), property.getValue());
+  private void collectStyleDeclarations(Style style, LinkedHashMap<String, List<String>> result) {
+    Optional.ofNullable(style.getProperties()).stream()
+        .flatMap(Collection::stream)
+        .forEach(property -> collectPropertyDeclaration(property, style.getName(), result));
+  }
+
+  private void collectPropertyDeclaration(
+      Property property, String fallbackStyleName, LinkedHashMap<String, List<String>> result) {
+    var translation = CssPropertyTranslation.of(property.getName());
+    var selector =
+        translation
+            .map(CssPropertyTranslation.Translation::selector)
+            .orElse("." + fallbackStyleName);
+    var cssProperty =
+        translation.map(CssPropertyTranslation.Translation::cssProperty).orElse(property.getName());
+    result
+        .computeIfAbsent(selector, ignored -> new ArrayList<>())
+        .add("  %s: %s;\n".formatted(cssProperty, property.getValue()));
+  }
+
+  private String cssRule(String selector, List<String> declarations) {
+    return "%s {\n%s}\n".formatted(selector, String.join("", declarations));
   }
 
   private CodeArtifact htmlFor(Wireframe wireframe) {

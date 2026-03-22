@@ -52,6 +52,47 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldTranslateSewPropertyNamesToCssPropertyNamesScopedToTheirElement() {
+    var designSystem = givenDesignSystemWithButtonFontSizeAndInputFontSize();
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssScopesFontSizeToButtonAndInput(actual);
+  }
+
+  private DesignSystem givenDesignSystemWithButtonFontSizeAndInputFontSize() {
+    return new DesignSystem(new FullyQualifiedName("ui", "Styles"))
+        .setStyles(
+            List.of(
+                new Style(new FullyQualifiedName("ui", "Default"))
+                    .setProperties(
+                        List.of(
+                            new Property(new FullyQualifiedName("", "ButtonFontSize"))
+                                .setValue("14px"),
+                            new Property(new FullyQualifiedName("", "InputFontSize"))
+                                .setValue("12px")))));
+  }
+
+  private void assertThatCssScopesFontSizeToButtonAndInput(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should scope translated properties to their HTML element")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "CSS should have 'font-size: 14px' scoped to 'button' and"
+                            + " 'font-size: 12px' scoped to 'input',"
+                            + " not mixed in a single 'Default' rule")
+                    .contains("button")
+                    .contains("input")
+                    .contains("font-size: 14px")
+                    .contains("font-size: 12px")
+                    .doesNotContain("ButtonFontSize")
+                    .doesNotContain("InputFontSize"));
+  }
+
+  @Test
   void shouldGenerateHtmlForWireframe() {
     var wireframe = givenWireframeWithMainContainer();
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
