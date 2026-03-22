@@ -211,10 +211,10 @@ class Inputs {
   }
 
   public static Set<Input<? extends CodeArtifact>> uiCode() {
-    return frontendProgrammingLanguageConventions().map(Inputs::toCodeInput).collect(toSet());
+    return frontendLanguageConventions().map(Inputs::toCodeInput).collect(toSet());
   }
 
-  private static Stream<ProgrammingLanguageConventions> frontendProgrammingLanguageConventions() {
+  static Stream<ProgrammingLanguageConventions> frontendLanguageConventions() {
     return conventionsByType(ProgrammingLanguageConventions.Type.FRONTEND);
   }
 

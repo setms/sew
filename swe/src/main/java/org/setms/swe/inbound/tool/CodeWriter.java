@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
+import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 
 @NoArgsConstructor(access = PRIVATE)
 class CodeWriter {
@@ -25,6 +26,30 @@ class CodeWriter {
       var path = artifact.getPackage().replace('.', '/');
       var target =
           resource.select("/src/main/java").select(path).select(artifact.getName() + ".java");
+      target.writeAsString(artifact.getCode());
+      return created(target);
+    } catch (Exception e) {
+      return failedWith(e);
+    }
+  }
+
+  static AppliedSuggestion writeCode(
+      Collection<CodeArtifact> artifacts,
+      Resource<?> resource,
+      ProgrammingLanguageConventions conventions) {
+    return artifacts.stream()
+        .map(artifact -> writeCodeArtifact(artifact, conventions, resource))
+        .flatMap(applied -> applied.createdOrChanged().stream())
+        .reduce(AppliedSuggestion.none(), AppliedSuggestion::with, (a, ignored) -> a);
+  }
+
+  private static AppliedSuggestion writeCodeArtifact(
+      CodeArtifact artifact, ProgrammingLanguageConventions conventions, Resource<?> resource) {
+    try {
+      var target =
+          resource
+              .select(conventions.codePath())
+              .select(artifact.getName() + "." + conventions.extension());
       target.writeAsString(artifact.getCode());
       return created(target);
     } catch (Exception e) {

@@ -137,8 +137,27 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
       throws Exception {
     return switch (suggestionCode) {
       case CREATE_DESIGN_SYSTEM -> createDesignSystemFor(resource, wireframe);
+      case CREATE_UI_CODE -> createUiCodeFor(resource, wireframe, inputs);
       default -> unknown(suggestionCode);
     };
+  }
+
+  private AppliedSuggestion createUiCodeFor(
+      Resource<?> resource, Wireframe wireframe, ResolvedInputs inputs) {
+    var diagnostics = new ArrayList<Diagnostic>();
+    return inputs.get(DesignSystem.class).stream()
+        .findFirst()
+        .flatMap(
+            ds -> resolver.uiGenerator(inputs, diagnostics).map(gen -> gen.generate(wireframe, ds)))
+        .map(artifacts -> writeFrontendCode(artifacts, resource))
+        .orElseGet(AppliedSuggestion::none);
+  }
+
+  private AppliedSuggestion writeFrontendCode(List<CodeArtifact> artifacts, Resource<?> resource) {
+    return Inputs.frontendLanguageConventions()
+        .findFirst()
+        .map(conventions -> CodeWriter.writeCode(artifacts, resource, conventions))
+        .orElseGet(AppliedSuggestion::none);
   }
 
   private AppliedSuggestion createDesignSystemFor(Resource<?> resource, Wireframe wireframe) {

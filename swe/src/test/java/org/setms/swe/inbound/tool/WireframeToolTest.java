@@ -20,6 +20,7 @@ import org.setms.km.domain.model.validation.Diagnostic;
 import org.setms.km.domain.model.validation.Suggestion;
 import org.setms.km.domain.model.workspace.Resource;
 import org.setms.km.outbound.workspace.memory.InMemoryWorkspace;
+import org.setms.swe.domain.model.sdlc.code.CodeArtifact;
 import org.setms.swe.domain.model.sdlc.design.FieldType;
 import org.setms.swe.domain.model.sdlc.technology.TechnologyResolver;
 import org.setms.swe.domain.model.sdlc.technology.UiGenerator;
@@ -106,6 +107,32 @@ class WireframeToolTest {
     assertThat(diagnostic.suggestions().stream().map(Suggestion::message).toList())
         .as("Suggestion for missing design system")
         .containsExactly("Create design system");
+  }
+
+  @Test
+  void shouldCreateUiCodeWhenCreateUiCodeSuggestionApplied() {
+    var resolver = mock(TechnologyResolver.class);
+    var generator = mock(UiGenerator.class);
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "LoginScreen"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ux", "Default"));
+    var inputs = new ResolvedInputs().put("designSystems", List.of(designSystem));
+    var workspace = new InMemoryWorkspace();
+    when(resolver.uiGenerator(any(), anyCollection())).thenReturn(Optional.of(generator));
+    when(generator.generate(wireframe, designSystem))
+        .thenReturn(
+            List.of(
+                new CodeArtifact(new FullyQualifiedName("", "LoginScreen")).setCode("<html/>")));
+
+    var actual =
+        new WireframeTool(resolver)
+            .applySuggestion(
+                wireframe, WireframeTool.CREATE_UI_CODE, null, inputs, workspace.root());
+
+    var htmlTemplate = workspace.root().select("src/main/resources/templates/LoginScreen.html");
+    assertThat(actual.createdOrChanged())
+        .as(
+            "Applying 'Create UI code' should create the HTML template file at 'src/main/resources/templates/LoginScreen.html'")
+        .containsExactly(htmlTemplate);
   }
 
   @Test
