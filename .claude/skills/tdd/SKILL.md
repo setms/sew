@@ -35,7 +35,8 @@ description: Write code following the TDD style. Use when there is a non-empty, 
    The message needs to show the failed expectation.
 9. Make sure the test fails for the correct reason.
   If you invented new types or methods, you'll first have to write just enough code to make the test compile.
-  Then run the test using `./gradlew test --tests <test-name>`
+  Then run the test using `./gradlew test --tests <test-name>`.
+  (Note that you can't exclude just `EndToEndTest` in Gradle.)
   **CRITICAL: If the test passes or fails for the wrong reason, update the test until it fails for the correct reason.**
   This is non-negotiable.
   In particular, a passing test is a mortal sin.
