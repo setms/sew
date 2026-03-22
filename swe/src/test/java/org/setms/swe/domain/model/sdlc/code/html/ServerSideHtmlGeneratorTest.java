@@ -251,6 +251,30 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldGenerateCssWithFullWidthForInputsAndButton() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssHasFullWidthForInputsAndButton(actual);
+  }
+
+  private void assertThatCssHasFullWidthForInputsAndButton(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should include full-width styling for inputs and button")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "CSS should have 'width: 100%' for both 'input' and 'button'"
+                            + " so they span the full form width")
+                    .contains("input")
+                    .contains("button")
+                    .contains("width: 100%"));
+  }
+
+  @Test
   void shouldGenerateCssWithFlexColumnLayoutForForm() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));

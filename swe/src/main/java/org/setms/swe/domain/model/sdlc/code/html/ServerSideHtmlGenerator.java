@@ -138,6 +138,8 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   private Map<String, List<String>> collectDeclarations(DesignSystem designSystem) {
     var result = new LinkedHashMap<String, List<String>>();
     result.put("form", baselineFormDeclarations());
+    result.put("input", baselineFullWidthDeclarations());
+    result.put("button", baselineFullWidthDeclarations());
     Optional.ofNullable(designSystem.getStyles()).stream()
         .flatMap(Collection::stream)
         .forEach(style -> collectStyleDeclarations(style, result));
@@ -153,6 +155,15 @@ public class ServerSideHtmlGenerator implements UiGenerator {
     result.add(
         """
           flex-direction: column;
+        """);
+    return result;
+  }
+
+  private List<String> baselineFullWidthDeclarations() {
+    var result = new ArrayList<String>();
+    result.add(
+        """
+          width: 100%;
         """);
     return result;
   }
