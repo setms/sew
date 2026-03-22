@@ -114,7 +114,30 @@ class ServerSideHtmlGeneratorTest {
             artifact ->
                 assertThat(artifact.getCode())
                     .as("HTML code containing 'main' container")
-                    .contains("<html>")
+                    .contains("<!DOCTYPE html>")
                     .contains("main"));
+  }
+
+  @Test
+  void shouldSetHtmlTitleToHumanReadableName() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "LoginScreen"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatHtmlHasFriendlyTitleAndArtifactName(actual);
+  }
+
+  private void assertThatHtmlHasFriendlyTitleAndArtifactName(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("HTML artifact should have a human-readable title and a machine-readable artifact name")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "HTML should have title 'Login screen' for browser display"
+                            + " and data-artifact-name='LoginScreen' for name extraction")
+                    .contains("<title>Login screen</title>")
+                    .contains("data-artifact-name=\"LoginScreen\""));
   }
 }

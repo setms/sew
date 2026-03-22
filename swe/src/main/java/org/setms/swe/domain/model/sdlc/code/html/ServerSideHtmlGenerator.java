@@ -1,6 +1,7 @@
 package org.setms.swe.domain.model.sdlc.code.html;
 
 import static java.util.stream.Collectors.joining;
+import static org.setms.km.domain.model.format.Strings.toFriendlyName;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,13 +31,13 @@ public class ServerSideHtmlGenerator implements UiGenerator {
     var code =
         """
         <!DOCTYPE html>
-        <html>
+        <html data-artifact-name="%s">
         <head><title>%s</title></head>
         <body>
         %s</body>
         </html>
         """
-            .formatted(wireframe.getName(), containers);
+            .formatted(wireframe.getName(), toFriendlyName(wireframe.getName()), containers);
     return new CodeArtifact(new FullyQualifiedName("", wireframe.getName())).setCode(code);
   }
 

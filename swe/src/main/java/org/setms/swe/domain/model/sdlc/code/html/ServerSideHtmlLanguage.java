@@ -12,7 +12,7 @@ import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
 
 public class ServerSideHtmlLanguage implements TopicProvider, ProgrammingLanguageConventions {
 
-  private static final Pattern TITLE_PATTERN = Pattern.compile("<title>(.*?)</title>");
+  private static final Pattern NAME_PATTERN = Pattern.compile("data-artifact-name=\"(.*?)\"");
 
   @Override
   public boolean isValidChoice(String topic, String choice) {
@@ -56,7 +56,7 @@ public class ServerSideHtmlLanguage implements TopicProvider, ProgrammingLanguag
 
   @Override
   public FullyQualifiedName extractName(String code) {
-    var matcher = TITLE_PATTERN.matcher(code);
-    return new FullyQualifiedName("", matcher.find() ? matcher.group(1) : "");
+    var matcher = NAME_PATTERN.matcher(code);
+    return matcher.find() ? new FullyQualifiedName("", matcher.group(1)) : null;
   }
 }

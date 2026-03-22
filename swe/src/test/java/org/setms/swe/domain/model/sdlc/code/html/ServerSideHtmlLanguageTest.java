@@ -40,10 +40,14 @@ class ServerSideHtmlLanguageTest {
   }
 
   @Test
-  void shouldExtractNameFromHtmlTitle() {
-    var actual = language.extractName("<html><head><title>MyPage</title></head></html>");
+  void shouldExtractNameFromDataArtifactNameAttribute() {
+    var actual =
+        language.extractName(
+            "<html data-artifact-name=\"LoginScreen\"><head><title>Login screen</title></head></html>");
 
-    assertThat(actual.getName()).as("Name extracted from HTML <title> tag").isEqualTo("MyPage");
+    assertThat(actual.getName())
+        .as("Name extracted from data-artifact-name attribute, not from the human-readable title")
+        .isEqualTo("LoginScreen");
   }
 
   @Test
