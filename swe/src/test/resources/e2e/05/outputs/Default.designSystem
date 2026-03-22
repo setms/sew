@@ -1,0 +1,27 @@
+<designSystem package="todo" name="Default">
+  <styles>
+    <style name="Default">
+      <property name="ButtonBorderRadius" value="8px"/>
+      <property name="LabelTextColor" value="#1F2937"/>
+      <property name="InputFontSize" value="14px"/>
+      <property name="InputBorderColor" value="#D1D5DB"/>
+      <property name="InputBorderRadius" value="8px"/>
+      <property name="ButtonPaddingVertical" value="10px"/>
+      <property name="LabelFontWeight" value="500"/>
+      <property name="LabelMarginBottom" value="6px"/>
+      <property name="ButtonFontWeight" value="600"/>
+      <property name="InputPaddingVertical" value="10px"/>
+      <property name="ButtonPaddingHorizontal" value="14px"/>
+      <property name="InputBorderWidth" value="1px"/>
+      <property name="InputTextColor" value="#1F2937"/>
+      <property name="ButtonTextColor" value="#FFFFFF"/>
+      <property name="ButtonFontSize" value="14px"/>
+      <property name="ButtonBackgroundColor" value="#2563EB"/>
+      <property name="Gap" value="16px"/>
+      <property name="InputPaddingHorizontal" value="14px"/>
+      <property name="LabelFontSize" value="14px"/>
+      <property name="InputFontWeight" value="400"/>
+      <property name="InputBackgroundColor" value="#FFFFFF"/>
+    </style>
+  </styles>
+</designSystem>

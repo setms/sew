@@ -2,6 +2,7 @@ outputs:
   - src/main/architecture/Todo.components
   - src/main/design/physical/TodoItem.sql
   - src/main/overview/Project.initiative
+  - src/main/ux/designSystems/Default.designSystem
 
 inputs:
   - location: src/main/overview
