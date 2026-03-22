@@ -6,6 +6,7 @@ import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
 import static org.setms.swe.inbound.tool.Inputs.designSystems;
+import static org.setms.swe.inbound.tool.Inputs.uiCode;
 import static org.setms.swe.inbound.tool.Inputs.wireframes;
 
 import java.awt.*;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -70,7 +72,9 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
 
   @Override
   public Set<Input<? extends Artifact>> validationContext() {
-    return Set.of(designSystems());
+    var result = new HashSet<Input<? extends Artifact>>(uiCode());
+    result.add(designSystems());
+    return result;
   }
 
   @Override

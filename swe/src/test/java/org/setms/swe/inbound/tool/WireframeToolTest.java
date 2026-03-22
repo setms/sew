@@ -47,6 +47,15 @@ class WireframeToolTest {
   }
 
   @Test
+  void shouldIncludeUiCodeInValidationContext() {
+    var actual = tool.validationContext();
+
+    assertThat(actual)
+        .as("WireframeTool validation context should include UI code input for HTML templates")
+        .anyMatch(input -> input.matches("src/main/resources/templates/home.html"));
+  }
+
+  @Test
   void shouldRequireDesignSystem() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "LoginScreen"));
     var diagnostics = new ArrayList<Diagnostic>();
