@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html data-artifact-name="AddTodoItem">
-<head><title>Add todo item</title></head>
+<head>
+<title>Add todo item</title>
+<link rel="stylesheet" href="css/default.css">
+</head>
 <body>
 <div id="add-todo-item">
-<input type="text" name="task">
-<input type="datetime-local" name="due-date">
-<button>Add todo item</button>
+<form>
+<label for="task">Task</label>
+<input type="text" name="task" id="task">
+<label for="due-date">Due date</label>
+<input type="datetime-local" name="due-date" id="due-date">
+<button type="submit">Add todo item</button>
+</form>
 </div>
 </body>
 </html>
