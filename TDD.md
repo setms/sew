@@ -20,7 +20,7 @@ Don't use headings in this document, it's explicitly designed to be a flat list 
 - [x] The XML format doesn't round-trip `Link` fields: `XmlFormatBuilder` silently ignores `Reference` values
   (doesn't write them as attributes), and `Parser.setProperty` can't convert a `String` back to a `Link`.
   Fix both so that a wireframe with an affordance linked to a command survives serialization/deserialization.
-- [ ] `CommandTool.toWireframe()` doesn't set the command link on the generated affordance, so the HTML generator
+- [~] `CommandTool.toWireframe()` doesn't set the command link on the generated affordance, so the HTML generator
   can't produce the correct form action. Fix it to call `.setCommand()` with a link to the command.
 - [ ] The Spring Boot controller that `SpringBootCodeGenerator` generates uses the aggregate name as the endpoint
   (e.g. `/todoItems`), but it should use the command name in kebab-case (e.g. `/add-todo-item`).

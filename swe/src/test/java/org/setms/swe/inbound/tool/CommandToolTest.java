@@ -38,6 +38,26 @@ class CommandToolTest extends ResolverToolTestCase<Command> {
   }
 
   @Test
+  void shouldLinkWireframeAffordanceToCommand() {
+    var command = new Command(new FullyQualifiedName("design", "AddTodoItem"));
+    var wireframe = ((CommandTool) getTool()).toWireframe(command, new ResolvedInputs());
+
+    var actual =
+        wireframe.getContainers().stream()
+            .flatMap(c -> c.getChildren().stream())
+            .filter(Affordance.class::isInstance)
+            .map(Affordance.class::cast)
+            .findFirst()
+            .orElseThrow();
+
+    assertThat(actual.getCommand())
+        .as("Command link on wireframe affordance for command 'AddTodoItem'")
+        .isNotNull()
+        .satisfies(
+            link -> assertThat(link.pointsTo(command)).as("Link points to command").isTrue());
+  }
+
+  @Test
   void shouldCreateWireframeAffordanceWithInputFields() {
     var nameField = new Field(new FullyQualifiedName("design", "name")).setType(FieldType.TEXT);
     var affordance =
