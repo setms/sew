@@ -180,6 +180,10 @@ public class ServerSideHtmlGenerator implements UiGenerator {
 
   private List<String> baselineInputDeclarations() {
     var result = new ArrayList<String>();
+    result.add(
+        """
+          box-sizing: border-box;
+        """);
     result.add(PADDING_DECLARATION);
     result.add(
         """

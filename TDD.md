@@ -5,5 +5,5 @@ Each test scenario is an item in a list and should be marked with its status: `[
 progress, and `[x]` for completed.
 Don't use headings in this document, it's explicitly designed to be a flat list of prioritized test scenarios.
 
-- [~] The submit button should be compact and right-aligned, not full-width like inputs.
-  It should use `align-self: flex-end` (to right-align in the flex column) and not have `width: 100%`.
+- [~] Input fields get `box-sizing: border-box` so their right edge aligns with the button's right edge.
+- [ ] The `todo` service in `docker-compose.yml` exposes its server port (8080) to the host machine.

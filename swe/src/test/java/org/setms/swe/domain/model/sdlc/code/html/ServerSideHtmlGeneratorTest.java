@@ -314,6 +314,33 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldGenerateCssWithBoxSizingBorderBoxForInputs() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssInputUsesBoxSizingBorderBox(actual);
+  }
+
+  private void assertThatCssInputUsesBoxSizingBorderBox(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should use box-sizing: border-box on inputs")
+        .anySatisfy(
+            artifact -> {
+              var code = artifact.getCode();
+              assertThat(code).as("CSS should have 'input {' selector").contains("input {");
+              var inputStart = code.indexOf("input {");
+              var inputBlock = code.substring(inputStart, code.indexOf("}", inputStart));
+              assertThat(inputBlock)
+                  .as(
+                      "'input' rule should include 'box-sizing: border-box'"
+                          + " so padding is included in width, aligning right edge with button")
+                  .contains("box-sizing: border-box");
+            });
+  }
+
+  @Test
   void shouldGenerateCssWithFullWidthForInputsAndButton() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
