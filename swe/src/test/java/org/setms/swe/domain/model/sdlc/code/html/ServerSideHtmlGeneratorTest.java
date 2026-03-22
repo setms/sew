@@ -155,12 +155,13 @@ class ServerSideHtmlGeneratorTest {
   }
 
   private Wireframe givenWireframeWithAffordanceContainingInputField() {
-    var inputField = new InputField(new FullyQualifiedName("", "quantity")).setType(FieldType.TEXT);
+    var inputField =
+        new InputField(new FullyQualifiedName("", "itemQuantity")).setType(FieldType.TEXT);
     var affordance =
         new Affordance(new FullyQualifiedName("", "PlaceOrder"))
             .setInputFields(List.of(inputField));
     var container =
-        new Container(new FullyQualifiedName("", "main")).setChildren(List.of(affordance));
+        new Container(new FullyQualifiedName("", "mainForm")).setChildren(List.of(affordance));
     return new Wireframe(new FullyQualifiedName("ux", "Checkout"))
         .setContainers(List.of(container));
   }
@@ -173,9 +174,41 @@ class ServerSideHtmlGeneratorTest {
             artifact ->
                 assertThat(artifact.getCode())
                     .as(
-                        "HTML should have a <button> for the 'PlaceOrder' affordance"
-                            + " and an <input> for the 'quantity' text field")
+                        "HTML should have id='main-form' (kebab-case), a <button> for 'PlaceOrder',"
+                            + " and an <input name='item-quantity'> (kebab-case) for the text field")
+                    .contains("id=\"main-form\"")
                     .contains("<button")
-                    .contains("<input"));
+                    .contains("name=\"item-quantity\""));
+  }
+
+  @Test
+  void shouldNotGenerateHtmlInputForIdField() {
+    var wireframe = givenWireframeWithAffordanceContainingIdField();
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatHtmlContainsNoInputForIdField(actual);
+  }
+
+  private Wireframe givenWireframeWithAffordanceContainingIdField() {
+    var idField = new InputField(new FullyQualifiedName("", "orderId")).setType(FieldType.ID);
+    var affordance =
+        new Affordance(new FullyQualifiedName("", "CancelOrder")).setInputFields(List.of(idField));
+    var container =
+        new Container(new FullyQualifiedName("", "main")).setChildren(List.of(affordance));
+    return new Wireframe(new FullyQualifiedName("ux", "Orders")).setContainers(List.of(container));
+  }
+
+  private void assertThatHtmlContainsNoInputForIdField(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("HTML artifact should not generate any <input> for an ID-type field")
+        .anySatisfy(
+            artifact ->
+                assertThat(artifact.getCode())
+                    .as(
+                        "HTML should have a <button> for 'CancelOrder' but no <input> for the ID field")
+                    .contains("<button")
+                    .doesNotContain("<input"));
   }
 }

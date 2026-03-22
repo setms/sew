@@ -2,6 +2,7 @@ package org.setms.swe.domain.model.sdlc.code.html;
 
 import static java.util.stream.Collectors.joining;
 import static org.setms.km.domain.model.format.Strings.toFriendlyName;
+import static org.setms.km.domain.model.format.Strings.toKebabCase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +54,7 @@ public class ServerSideHtmlGenerator implements UiGenerator {
         <div id="%s">
         %s</div>
         """
-        .formatted(container.getName(), children);
+        .formatted(toKebabCase(container.getName()), children);
   }
 
   private String htmlElement(WireframeElement element) {
@@ -74,22 +75,26 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   }
 
   private String htmlInput(InputField field) {
-    return """
-        <input type="%s" name="%s">
-        """
-        .formatted(htmlInputType(field.getType()), field.getName());
+    return htmlInputType(field.getType())
+        .map(
+            type ->
+                """
+                <input type="%s" name="%s">
+                """
+                    .formatted(type, toKebabCase(field.getName())))
+        .orElse("");
   }
 
-  private String htmlInputType(FieldType type) {
+  private Optional<String> htmlInputType(FieldType type) {
     return switch (type) {
-      case TEXT -> "text";
-      case NUMBER -> "number";
-      case BOOLEAN -> "checkbox";
-      case DATE -> "date";
-      case TIME -> "time";
-      case DATETIME -> "datetime-local";
-      case ID -> "hidden";
-      case SELECTION -> "text";
+      case TEXT -> Optional.of("text");
+      case NUMBER -> Optional.of("number");
+      case BOOLEAN -> Optional.of("checkbox");
+      case DATE -> Optional.of("date");
+      case TIME -> Optional.of("time");
+      case DATETIME -> Optional.of("datetime-local");
+      case ID -> Optional.empty();
+      case SELECTION -> Optional.of("text");
     };
   }
 
