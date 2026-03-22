@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.setms.km.domain.model.artifact.Artifact;
-import org.setms.km.domain.model.artifact.Link;
 import org.setms.km.domain.model.tool.AppliedSuggestion;
 import org.setms.km.domain.model.tool.Input;
 import org.setms.km.domain.model.tool.ResolvedInputs;
@@ -136,7 +135,7 @@ public class CommandTool extends DtoCodeTool<Command> {
     var fqn = command.getFullyQualifiedName();
     var affordance =
         new Affordance(fqn)
-            .setCommand(new Link(command))
+            .setCommand(command.linkTo())
             .setInputFields(
                 Optional.ofNullable(command.getPayload())
                     .flatMap(payload -> payload.resolveFrom(inputs.get(Entity.class)))

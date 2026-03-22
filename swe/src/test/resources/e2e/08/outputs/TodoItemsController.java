@@ -14,7 +14,7 @@ public class TodoItemsController {
 
   private final TodoItemsService todoItemsService;
 
-  @PostMapping("/todoItems")
+  @PostMapping("/add-todo-item")
   public TodoItemAdded addTodoItem(@RequestBody AddTodoItem addTodoItem) {
     return todoItemsService.accept(addTodoItem);
   }

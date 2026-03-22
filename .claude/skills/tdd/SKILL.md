@@ -44,6 +44,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
   Use the `jetbrains` MCP server's `open_file_in_editor` tool for that. 
   If the user asks for changes, make them and **present the test again for approval**.
   **CRITICAL: DO NOT PROCEED WITHOUT EXPLICIT APPROVAL OF THE LATEST VERSION OF THE TEST**.
+  If the user asks a question, that's by definition **NOT** approval.
 11. Once you have approval, write code to make the failing test pass.
   Write the minimal amount of code you can get away with.
   Don't look ahead to other tests, just optimize for the minimum amount of code change that makes this single test pass.
@@ -70,7 +71,7 @@ description: Write code following the TDD style. Use when there is a non-empty, 
 
 Implementation notes:
 
-- Don't use tools like `sed` that require constant approval.
+- Don't use tools like `cat` or `sed` that require constant approval.
 - Prefer tools from the `jetbrains` MCP server.
   The project prefix is `sew/`.
 

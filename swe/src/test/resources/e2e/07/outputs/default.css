@@ -1,33 +1,36 @@
+button {
+  background-color: #2563EB;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  padding-block: 10px;
+  padding-inline: 14px;
+  padding: 0.5rem;
+  width: 100%;
+}
 form {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 800px;
 }
 input {
-  width: 100%;
-  font-size: 14px;
+  background-color: #FFFFFF;
   border-color: #D1D5DB;
   border-radius: 8px;
-  padding-block: 10px;
   border-width: 1px;
   color: #1F2937;
-  padding-inline: 14px;
-  font-weight: 400;
-  background-color: #FFFFFF;
-}
-button {
-  width: 100%;
-  border-radius: 8px;
-  padding-block: 10px;
-  font-weight: 600;
-  padding-inline: 14px;
-  color: #FFFFFF;
   font-size: 14px;
-  background-color: #2563EB;
+  font-weight: 400;
+  padding-block: 10px;
+  padding-inline: 14px;
+  padding: 0.5rem;
+  width: 100%;
 }
 label {
   color: #1F2937;
+  font-size: 14px;
   font-weight: 500;
   margin-bottom: 6px;
-  font-size: 14px;
 }
