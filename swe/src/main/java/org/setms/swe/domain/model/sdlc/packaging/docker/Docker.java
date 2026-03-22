@@ -33,7 +33,9 @@ public class Docker implements CodePackager {
         %s:
           build: .
           profiles:
-            - include-app
+            - app
+          ports:
+            - "8080:8080"
           environment:
             SPRING_PROFILES_ACTIVE: local
       """;
