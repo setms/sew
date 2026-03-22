@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import org.setms.km.domain.model.artifact.FullyQualifiedName;
@@ -24,47 +25,6 @@ public class ServerSideHtmlGenerator implements UiGenerator {
     return List.of(htmlFor(wireframe), cssFor(designSystem));
   }
 
-  private CodeArtifact cssFor(DesignSystem designSystem) {
-    var declarationsBySelector = collectDeclarations(designSystem);
-    var code =
-        declarationsBySelector.entrySet().stream()
-            .map(e -> cssRule(e.getKey(), e.getValue()))
-            .collect(joining());
-    return new CodeArtifact(new FullyQualifiedName("css", designSystem.getName())).setCode(code);
-  }
-
-  private LinkedHashMap<String, List<String>> collectDeclarations(DesignSystem designSystem) {
-    var result = new LinkedHashMap<String, List<String>>();
-    Optional.ofNullable(designSystem.getStyles()).stream()
-        .flatMap(Collection::stream)
-        .forEach(style -> collectStyleDeclarations(style, result));
-    return result;
-  }
-
-  private void collectStyleDeclarations(Style style, LinkedHashMap<String, List<String>> result) {
-    Optional.ofNullable(style.getProperties()).stream()
-        .flatMap(Collection::stream)
-        .forEach(property -> collectPropertyDeclaration(property, style.getName(), result));
-  }
-
-  private void collectPropertyDeclaration(
-      Property property, String fallbackStyleName, LinkedHashMap<String, List<String>> result) {
-    var translation = CssPropertyTranslation.of(property.getName());
-    var selector =
-        translation
-            .map(CssPropertyTranslation.Translation::selector)
-            .orElse("." + fallbackStyleName);
-    var cssProperty =
-        translation.map(CssPropertyTranslation.Translation::cssProperty).orElse(property.getName());
-    result
-        .computeIfAbsent(selector, ignored -> new ArrayList<>())
-        .add("  %s: %s;\n".formatted(cssProperty, property.getValue()));
-  }
-
-  private String cssRule(String selector, List<String> declarations) {
-    return "%s {\n%s}\n".formatted(selector, String.join("", declarations));
-  }
-
   private CodeArtifact htmlFor(Wireframe wireframe) {
     var containers = render(wireframe.getContainers(), this::htmlDiv);
     var code =
@@ -81,7 +41,10 @@ public class ServerSideHtmlGenerator implements UiGenerator {
   }
 
   private String htmlDiv(Container container) {
-    return "<div id=\"%s\"></div>\n".formatted(container.getName());
+    return """
+        <div id="%s"></div>
+        """
+        .formatted(container.getName());
   }
 
   private <T> String render(List<T> items, Function<T, String> renderer) {
@@ -89,5 +52,54 @@ public class ServerSideHtmlGenerator implements UiGenerator {
         .flatMap(Collection::stream)
         .map(renderer)
         .collect(joining());
+  }
+
+  private CodeArtifact cssFor(DesignSystem designSystem) {
+    var declarationsBySelector = collectDeclarations(designSystem);
+    var code =
+        declarationsBySelector.entrySet().stream()
+            .map(e -> cssRule(e.getKey(), e.getValue()))
+            .collect(joining());
+    return new CodeArtifact(new FullyQualifiedName("css", designSystem.getName())).setCode(code);
+  }
+
+  private Map<String, List<String>> collectDeclarations(DesignSystem designSystem) {
+    var result = new LinkedHashMap<String, List<String>>();
+    Optional.ofNullable(designSystem.getStyles()).stream()
+        .flatMap(Collection::stream)
+        .forEach(style -> collectStyleDeclarations(style, result));
+    return result;
+  }
+
+  private void collectStyleDeclarations(Style style, Map<String, List<String>> declarations) {
+    Optional.ofNullable(style.getProperties()).stream()
+        .flatMap(Collection::stream)
+        .forEach(property -> collectPropertyDeclaration(property, style.getName(), declarations));
+  }
+
+  private void collectPropertyDeclaration(
+      Property property, String fallbackStyleName, Map<String, List<String>> declarations) {
+    var translation = CssPropertyTranslation.of(property.getName());
+    var selector =
+        translation
+            .map(CssPropertyTranslation.Translation::selector)
+            .orElse("." + fallbackStyleName);
+    var cssProperty =
+        translation.map(CssPropertyTranslation.Translation::cssProperty).orElse(property.getName());
+    declarations
+        .computeIfAbsent(selector, ignored -> new ArrayList<>())
+        .add(
+            """
+              %s: %s;
+            """
+                .formatted(cssProperty, property.getValue()));
+  }
+
+  private String cssRule(String selector, List<String> declarations) {
+    return """
+        %s {
+        %s}
+        """
+        .formatted(selector, String.join("", declarations));
   }
 }
