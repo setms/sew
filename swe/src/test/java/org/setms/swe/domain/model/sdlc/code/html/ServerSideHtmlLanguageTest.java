@@ -1,0 +1,42 @@
+package org.setms.swe.domain.model.sdlc.code.html;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ServiceLoader;
+import org.junit.jupiter.api.Test;
+import org.setms.swe.domain.model.sdlc.code.ProgrammingLanguageConventions;
+
+class ServerSideHtmlLanguageTest {
+
+  private final ServerSideHtmlLanguage language = new ServerSideHtmlLanguage();
+
+  @Test
+  void shouldUseHtmlExtension() {
+    var actual = language.extension();
+
+    assertThat(actual)
+        .as("ServerSideHtmlLanguage should use 'html' as its file extension")
+        .isEqualTo("html");
+  }
+
+  @Test
+  void shouldUseTemplatesAsCodePath() {
+    var actual = language.codePath();
+
+    assertThat(actual)
+        .as("ServerSideHtmlLanguage should store templates under src/main/resources/templates")
+        .isEqualTo("src/main/resources/templates");
+  }
+
+  @Test
+  void shouldBeRegisteredAsProgrammingLanguageConventions() {
+    var actual =
+        ServiceLoader.load(ProgrammingLanguageConventions.class).stream()
+            .map(ServiceLoader.Provider::get)
+            .toList();
+
+    assertThat(actual)
+        .as("ServiceLoader should provide a ServerSideHtmlLanguage instance")
+        .anyMatch(l -> l instanceof ServerSideHtmlLanguage);
+  }
+}
