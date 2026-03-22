@@ -5,6 +5,7 @@ import static org.setms.km.domain.model.tool.AppliedSuggestion.failedWith;
 import static org.setms.km.domain.model.tool.AppliedSuggestion.unknown;
 import static org.setms.km.domain.model.tool.Tools.builderFor;
 import static org.setms.km.domain.model.validation.Level.WARN;
+import static org.setms.swe.inbound.tool.Inputs.decisions;
 import static org.setms.swe.inbound.tool.Inputs.designSystems;
 import static org.setms.swe.inbound.tool.Inputs.uiCode;
 import static org.setms.swe.inbound.tool.Inputs.wireframes;
@@ -87,6 +88,7 @@ public class WireframeTool extends ArtifactTool<Wireframe> {
   public Set<Input<? extends Artifact>> validationContext() {
     var result = new HashSet<Input<? extends Artifact>>(uiCode());
     result.add(designSystems());
+    result.add(decisions());
     return result;
   }
 

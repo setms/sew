@@ -66,6 +66,16 @@ class WireframeToolTest {
   }
 
   @Test
+  void shouldIncludeDecisionsInValidationContext() {
+    var actual = tool.validationContext();
+
+    assertThat(actual.stream().map(Input::path).toList())
+        .as(
+            "WireframeTool validation context should include decisions so user interface choice is visible")
+        .contains("src/main/architecture");
+  }
+
+  @Test
   void shouldWarnAboutMissingUiCodeWhenDesignSystemPresentButNoMatchingCodeArtifact() {
     var resolver = mock(TechnologyResolver.class);
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "LoginScreen"));
