@@ -5,9 +5,6 @@ Each test scenario is an item in a list and should be marked with its status: `[
 progress, and `[x]` for completed.
 Don't use headings in this document, it's explicitly designed to be a flat list of prioritized test scenarios.
 
-- [x] `ServerSideHtmlGenerator` should add an `<h1>` heading derived from the container name (e.g. "Add todo item")
-  to the `<div>` it generates for a container, so the page has a visible title matching the wireframe.
-- [x] The CSS generated for the form should include `display: flex` and `flex-direction: column` so that
-  labels and inputs stack vertically, matching the wireframe's top-to-bottom layout.
-- [~] The CSS generated for inputs and button should include `width: 100%` so they span the full width
-  of the form, matching the wireframe.
+- [~] Update the e2e expected output `e2e/07/outputs/default.css` to include `width: 100%` in `input`
+  and `button`, and reflect the new selector ordering: `form`, `input`, `button`, then `label`.
+- [ ] The generated CSS should order selectors alphabetically, and properties within a selector as well.

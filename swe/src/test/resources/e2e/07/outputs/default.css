@@ -1,4 +1,22 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+input {
+  width: 100%;
+  font-size: 14px;
+  border-color: #D1D5DB;
+  border-radius: 8px;
+  padding-block: 10px;
+  border-width: 1px;
+  color: #1F2937;
+  padding-inline: 14px;
+  font-weight: 400;
+  background-color: #FFFFFF;
+}
 button {
+  width: 100%;
   border-radius: 8px;
   padding-block: 10px;
   font-weight: 600;
@@ -12,18 +30,4 @@ label {
   font-weight: 500;
   margin-bottom: 6px;
   font-size: 14px;
-}
-input {
-  font-size: 14px;
-  border-color: #D1D5DB;
-  border-radius: 8px;
-  padding-block: 10px;
-  border-width: 1px;
-  color: #1F2937;
-  padding-inline: 14px;
-  font-weight: 400;
-  background-color: #FFFFFF;
-}
-form {
-  gap: 16px;
 }
