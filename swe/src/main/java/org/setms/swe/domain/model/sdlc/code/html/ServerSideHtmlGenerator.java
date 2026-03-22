@@ -163,6 +163,10 @@ public class ServerSideHtmlGenerator implements UiGenerator {
     var result = new ArrayList<String>();
     result.add(
         """
+          padding: 0.5rem;
+        """);
+    result.add(
+        """
           width: 100%;
         """);
     return result;

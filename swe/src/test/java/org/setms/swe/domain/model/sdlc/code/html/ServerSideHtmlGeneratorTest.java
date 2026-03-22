@@ -251,6 +251,39 @@ class ServerSideHtmlGeneratorTest {
   }
 
   @Test
+  void shouldGenerateCssWithPaddingOnAllSidesForInputsAndButton() {
+    var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
+    var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
+
+    var actual = generator.generate(wireframe, designSystem);
+
+    assertThatCssHasPaddingForInputsAndButton(actual);
+  }
+
+  private void assertThatCssHasPaddingForInputsAndButton(List<CodeArtifact> artifacts) {
+    assertThat(artifacts)
+        .as("CSS artifact should include padding for inputs and button")
+        .anySatisfy(
+            artifact -> {
+              var code = artifact.getCode();
+              assertThat(code)
+                  .as("CSS should have 'button {' and 'input {' selectors")
+                  .contains("button {")
+                  .contains("input {");
+              var buttonStart = code.indexOf("button {");
+              var buttonBlock = code.substring(buttonStart, code.indexOf("}", buttonStart));
+              assertThat(buttonBlock)
+                  .as("'button' rule should include 'padding' to add space on all sides")
+                  .contains("padding:");
+              var inputStart = code.indexOf("input {");
+              var inputBlock = code.substring(inputStart, code.indexOf("}", inputStart));
+              assertThat(inputBlock)
+                  .as("'input' rule should include 'padding' to add space on all sides")
+                  .contains("padding:");
+            });
+  }
+
+  @Test
   void shouldGenerateCssWithFullWidthForInputsAndButton() {
     var wireframe = new Wireframe(new FullyQualifiedName("ux", "Checkout"));
     var designSystem = new DesignSystem(new FullyQualifiedName("ui", "Styles"));
